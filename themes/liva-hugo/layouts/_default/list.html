@@ -32,9 +32,17 @@
               </div>
               {{ end }}
               
-              <!-- 顯示前50個字符的摘要 -->
+              <!-- 顯示摘要，安全處理長度 -->
               <div class="mt-1">
-                <p class="text-muted mb-0">{{ slicestr .Summary 0 50 }}...</p>
+                <p class="text-muted mb-0">
+                  {{ if .Summary }}
+                    {{ if gt (len .Summary) 50 }}
+                      {{ slicestr .Summary 0 50 }}...
+                    {{ else }}
+                      {{ .Summary }}
+                    {{ end }}
+                  {{ end }}
+                </p>
               </div>
             </li>
             {{ end }}

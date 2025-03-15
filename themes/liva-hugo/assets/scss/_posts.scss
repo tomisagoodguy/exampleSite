@@ -22,6 +22,12 @@
   
   --shadow-light: 0 8px 16px rgba(0, 0, 0, 0.1); /* 亮色模式陰影 */
   --shadow-dark: 0 8px 16px rgba(0, 0, 0, 0.25); /* 暗色模式陰影 */
+  
+  /* 新增標籤背景色 */
+  --tag-bg-light: #f0f9ff;           /* 亮色模式標籤背景 */
+  --tag-bg-dark: #1e293b;            /* 暗色模式標籤背景 */
+  --tag-text-light: #0284c7;         /* 亮色模式標籤文字 */
+  --tag-text-dark: #7dd3fc;          /* 暗色模式標籤文字 */
 }
 
 /* ==========================================
@@ -77,23 +83,26 @@
   display: none;
 }
 
-/* 分類標籤 */
+/* 分類標籤 - 改進版本 */
 .post-categories a {
   display: inline-block;
   padding: 6px 12px;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: white;
+  background: var(--primary-color);  /* 純色背景，不用漸變 */
+  color: white !important;           /* 確保文字是白色 */
   border-radius: 8px;
   font-size: 12px;
   font-weight: bold;
   text-transform: uppercase;
   text-decoration: none;
   transition: all 0.3s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* 增加陰影提高可見度 */
+  letter-spacing: 0.5px;             /* 增加字間距 */
 }
 
 .post-categories a:hover {
-  background: linear-gradient(135deg, var(--primary-hover), var(--secondary-hover));
+  background: var(--primary-hover);
   transform: translateY(-4px) scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* 標題 */
@@ -460,19 +469,24 @@ body article h6 {
   /* 修正分類標籤樣式 */
   .badge, .category-badge {
     display: inline-block;
-    padding: 4px 8px;
+    padding: 5px 10px;                 /* 增加內邊距 */
     background-color: var(--primary-color);
-    color: white !important;
+    color: white !important;           /* 確保文字是白色 */
     border-radius: 4px;
     font-size: 0.75rem;
     font-weight: 600;
     margin-right: 5px;
     transition: all 0.3s ease;
-    
-    &:hover {
-      background-color: var(--primary-hover);
-      transform: translateY(-2px);
-    }
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15); /* 增加陰影 */
+    letter-spacing: 0.5px;             /* 增加字間距 */
+    border: none;                      /* 移除邊框 */
+  }
+
+  .badge:hover, 
+  .category-badge:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
   
   .text-muted {
@@ -496,10 +510,13 @@ body article h6 {
     
     .badge, .category-badge {
       background-color: var(--secondary-color);
-      
-      &:hover {
-        background-color: var(--secondary-hover);
-      }
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .badge:hover, 
+    .category-badge:hover {
+      background-color: var(--secondary-hover);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     }
     
     .text-muted {
@@ -611,12 +628,12 @@ body article h6 {
   .badge, .category-badge {
     display: inline-block;
     padding: 0.25rem 0.75rem;
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--accent-color) !important;
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    background: var(--accent-color);   /* 使用純色背景 */
+    color: white !important;           /* 確保文字是白色 */
+    border: none;                      /* 移除邊框 */
     border-radius: 0;
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 600;
     margin-right: 0.5rem;
     font-family: 'Rajdhani', sans-serif;
     letter-spacing: 0.5px;
@@ -629,11 +646,16 @@ body article h6 {
       0 100%,
       0 5px
     );
-    
-    &:hover {
-      background: rgba(16, 185, 129, 0.2);
-      color: var(--dark-text) !important;
-    }
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3); /* 增加發光效果 */
+    transition: all 0.3s ease;
+  }
+
+  .badge:hover, 
+  .category-badge:hover {
+    background: var(--accent-hover);
+    color: white !important;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+    transform: translateY(-2px);
   }
   
   .text-muted {
@@ -675,13 +697,14 @@ body article h6 {
     }
     
     .badge, .category-badge {
-      background: rgba(16, 185, 129, 0.1);
-      color: var(--accent-hover) !important;
-      
-      &:hover {
-        background: rgba(16, 185, 129, 0.2);
-        color: var(--light-text) !important;
-      }
+      background: var(--accent-color);
+      color: white !important;
+    }
+    
+    .badge:hover, 
+    .category-badge:hover {
+      background: var(--accent-hover);
+      color: white !important;
     }
     
     .text-muted {
