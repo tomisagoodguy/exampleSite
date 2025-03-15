@@ -8,14 +8,39 @@
       {{ partial "sidebar.html" . }}
       <!-- /sidebar -->
       <div class="col-lg-8 mb-5 mb-lg-0">
-        <div class="row">
-          {{ $paginator := .Paginate .Data.Pages }}
-          {{ range $paginator.Pages }}
-          {{ .Render "post" }}
-          {{ end }}
+        <div class="title text-center">
+          <h2 class="mb-5">所有文章</h2>
+        </div>
+        <div class="content">
+          <ul class="list-group list-group-flush article-list">
+            {{ $paginator := .Paginate .Data.Pages }}
+            {{ range $paginator.Pages }}
+            <li class="list-group-item bg-transparent border-bottom py-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <a href="{{ .Permalink }}" class="article-link">
+                  <h4>{{ .Title }}</h4>
+                </a>
+                <span class="text-muted small">{{ .Date.Format "2006-01-02" }}</span>
+              </div>
+              
+              <!-- 分類標籤 -->
+              {{ if .Params.categories }}
+              <div class="mt-1 mb-2">
+                {{ range .Params.categories }}
+                <a href="{{ `categories/` | relLangURL }}{{ . | urlize | lower }}" class="badge badge-primary">{{ . }}</a>
+                {{ end }}
+              </div>
+              {{ end }}
+              
+              <!-- 顯示前50個字符的摘要 -->
+              <div class="mt-1">
+                <p class="text-muted mb-0">{{ slicestr .Summary 0 50 }}...</p>
+              </div>
+            </li>
+            {{ end }}
+          </ul>
         </div>
       </div>
-
 
       <!-- pagination -->
       <div class="col-12 mt-5">

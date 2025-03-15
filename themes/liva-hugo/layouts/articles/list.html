@@ -1,0 +1,32 @@
+{{ define "main" }}
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <h1 class="mb-5">{{ .Title }}</h1>
+        
+        <div class="row">
+          {{ range .Pages }}
+          <div class="col-lg-4 col-sm-6 mb-5">
+            <article class="card shadow">
+              {{ if .Params.image }}
+              <img class="rounded card-img-top" src="{{ .Params.image | absURL }}" alt="{{ .Title }}">
+              {{ end }}
+              <div class="card-body">
+                <h4 class="card-title"><a class="text-dark" href="{{ .Permalink }}">{{ .Title }}</a></h4>
+                <p class="cars-text">{{ .Summary }}</p>
+                <a href="{{ .Permalink }}" class="btn btn-sm btn-primary">閱讀更多</a>
+              </div>
+            </article>
+          </div>
+          {{ else }}
+          <div class="col-12">
+            <p>目前沒有文章可以顯示。</p>
+          </div>
+          {{ end }}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{{ end }}

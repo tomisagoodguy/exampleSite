@@ -6,6 +6,12 @@ theme = "liva-hugo"
 summaryLength = "10"
 paginate = 6
 disqusShortname = "tomisagoodguy"
+defaultContentLanguage = "zh-tw"
+
+[languages]
+  [languages.zh-tw]
+    languageName = "繁體中文"
+    weight = 1
 
 [outputs]
 home = ["HTML", "RSS", "JSON"]
@@ -44,48 +50,39 @@ URL = "plugins/search/search.js"
 [menu]
 
 [[menu.main]]
-name = "Home"
+name = "首頁"
 URL = "/"
 weight = 1
 
 [[menu.main]]
-name = "About"
+name = "關於"
 URL = "about"
 weight = 2
 
-# [[menu.main]]
-# name = "Post"
-# URL = "blog/"
-# weight = 2
-
-# [[menu.main]]
-# name = "Contact"
-# URL = "contact/"
-# weight = 3
+[[menu.main]]
+name = "所有文章"
+URL = "blog/"  # 使用實際存放文章的目錄
+weight = 3
 
 # footer menu
 [[menu.footer]]
-name = "About"
+name = "關於"
 URL = "about/"
 weight = 1
 
-# [[menu.footer]]
-# name = "Post"
-# URL = "blog/"
-# weight = 2
-
-# [[menu.footer]]
-# name = "Contact"
-# URL = "contact/"
-# weight = 3
+[[menu.footer]]
+name = "所有文章"
+URL = "blog/"  # 使用實際存放文章的目錄
+weight = 2
 
 
 #################### default parameters ################################
 [params]
 # 放主題圖片
 logo = "images/law.png"
-home = "Home"
-mainSections = ["post", "posts", "blog"]
+home = "首頁"
+# 指定主要內容區塊
+mainSections = ["blog"]  # 使用實際存放文章的目錄
 
 # Meta data
 description = "定康的讀書筆記"
@@ -110,8 +107,8 @@ enable = true
 ############################ news letter ########################
 [params.newsletter]
 enable = false
-title = "Join Our Newsletter"
-content = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero"
+title = "訂閱我們的電子報"
+content = "獲取最新的文章和更新"
 
 
 # cookies
@@ -126,26 +123,10 @@ title = "facebook"
 icon = "ti-facebook"                                             # themify icon : https://themify.me/themify-icons
 link = "https://www.facebook.com/profile.php?id=100005583693079"
 
-# [[params.social]]
-# title = "twitter"
-# icon = "ti-twitter-alt" # themify icon : https://themify.me/themify-icons
-# link = "#"
-
-# [[params.social]]
-# title = "instagram"
-# icon = "ti-instagram" # themify icon : https://themify.me/themify-icons
-# link = "#"
-
 [[params.social]]
 title = "github"
 icon = "ti-github"                                         # themify icon : https://themify.me/themify-icons
 link = "https://github.com/tomisagoodguy?tab=repositories"
-
-# [[params.social]]
-# title = "linkedin"
-# icon = "ti-linkedin" # themify icon : https://themify.me/themify-icons
-# link = "#"
-
 
 
 [markup]
@@ -153,4 +134,3 @@ link = "https://github.com/tomisagoodguy?tab=repositories"
     endLevel = 4
     ordered = false
     startLevel = 2
-

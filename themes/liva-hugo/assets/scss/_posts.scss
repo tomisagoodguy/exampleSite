@@ -1,5 +1,31 @@
 /* ==========================================
-   第一部分：文章卡片設計（保持不變）
+   統一色彩變量定義
+   ========================================== */
+:root {
+  --primary-color: #4f46e5;          /* 主色調：靛藍色 */
+  --primary-hover: #4338ca;          /* 主色調懸停 */
+  --secondary-color: #8b5cf6;        /* 次要色調：紫色 */
+  --secondary-hover: #7c3aed;        /* 次要色調懸停 */
+  --accent-color: #10b981;           /* 強調色：綠色 */
+  --accent-hover: #059669;           /* 強調色懸停 */
+  
+  --light-bg: rgba(249, 250, 251, 0.8);  /* 亮色背景 */
+  --dark-bg: rgba(15, 23, 42, 0.8);      /* 暗色背景 */
+  
+  --light-text: #1f2937;             /* 亮色模式文字 */
+  --light-text-muted: #6b7280;       /* 亮色模式次要文字 */
+  --dark-text: #f3f4f6;              /* 暗色模式文字 */
+  --dark-text-muted: #9ca3af;        /* 暗色模式次要文字 */
+  
+  --border-light: rgba(0, 0, 0, 0.1); /* 亮色模式邊框 */
+  --border-dark: rgba(255, 255, 255, 0.1); /* 暗色模式邊框 */
+  
+  --shadow-light: 0 8px 16px rgba(0, 0, 0, 0.1); /* 亮色模式陰影 */
+  --shadow-dark: 0 8px 16px rgba(0, 0, 0, 0.25); /* 暗色模式陰影 */
+}
+
+/* ==========================================
+   第一部分：文章卡片設計（統一顏色）
    ========================================== */
 /* 文章卡片 - 強化版（無描述，增加動畫感） */
 .article-card, .card, .post-item {
@@ -7,11 +33,11 @@
   margin-bottom: 28px;
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease-in-out;
   border: none;
-  background: rgba(255, 255, 255, 0.85); /* 玻璃擬態效果 */
+  background: var(--light-bg);
   backdrop-filter: blur(12px);
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-light);
 }
 
 .article-card:hover {
@@ -55,7 +81,7 @@
 .post-categories a {
   display: inline-block;
   padding: 6px 12px;
-  background: linear-gradient(135deg, #4f46e5, #8b5cf6);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: white;
   border-radius: 8px;
   font-size: 12px;
@@ -66,7 +92,7 @@
 }
 
 .post-categories a:hover {
-  background: linear-gradient(135deg, #4338ca, #6d28d9);
+  background: linear-gradient(135deg, var(--primary-hover), var(--secondary-hover));
   transform: translateY(-4px) scale(1.1);
 }
 
@@ -74,13 +100,13 @@
 .card-title a {
   font-size: 20px;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--light-text);
   text-decoration: none;
   transition: color 0.4s ease-in-out;
 }
 
 .card-title a:hover {
-  color: #6366f1;
+  color: var(--primary-color);
   letter-spacing: 0.5px;
 }
 
@@ -90,7 +116,7 @@
   justify-content: center;
   align-items: center;
   font-size: 14px;
-  color: #6b7280;
+  color: var(--light-text-muted);
   margin-top: 10px;
 }
 
@@ -110,17 +136,17 @@
 /* 支援暗黑模式 */
 @media (prefers-color-scheme: dark) {
   .article-card {
-    background: rgba(31, 41, 55, 0.85);
-    color: white;
+    background: var(--dark-bg);
+    box-shadow: var(--shadow-dark);
   }
   .card-title a {
-    color: #e0e7ff;
+    color: var(--dark-text);
   }
   .card-title a:hover {
-    color: #a5b4fc;
+    color: var(--secondary-color);
   }
   .card-meta {
-    color: #9ca3af;
+    color: var(--dark-text-muted);
   }
 }
 
@@ -251,17 +277,18 @@ body article h6 {
   text-align: left !important;
 }
 
-
-// 文章導航樣式
+/* ==========================================
+   第三部分：文章導航樣式（統一顏色）
+   ========================================== */
 .post-navigation {
   margin: 3rem 0;
   padding-top: 2rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid var(--border-light);
   
   span {
     display: block;
     font-size: 0.9rem;
-    color: #6c757d;
+    color: var(--light-text-muted);
     margin-bottom: 0.5rem;
   }
   
@@ -293,13 +320,13 @@ body article h6 {
   }
 }
 
-// 綜合導航區
+/* 綜合導航區 */
 .navigation-container {
   margin: 3rem 0;
   
   .post-navigation {
     padding-bottom: 2rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid var(--border-light);
     
     .prev-post, .next-post {
       padding: 1rem;
@@ -311,7 +338,7 @@ body article h6 {
       
       span {
         font-size: 0.85rem;
-        color: #6c757d;
+        color: var(--light-text-muted);
         margin-bottom: 0.5rem;
         display: block;
       }
@@ -329,7 +356,7 @@ body article h6 {
         color: inherit;
         
         &:hover {
-          color: var(--primary-color, #007bff);
+          color: var(--primary-color);
         }
       }
     }
@@ -341,23 +368,23 @@ body article h6 {
   
   .navigation-tabs {
     .nav-tabs {
-      border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+      border-bottom: 2px solid var(--border-light);
       
       .nav-link {
         border: none;
         padding: 0.75rem 1.5rem;
         font-weight: 500;
-        color: #6c757d;
+        color: var(--light-text-muted);
         
         &.active {
-          color: var(--primary-color, #007bff);
+          color: var(--primary-color);
           background-color: transparent;
-          border-bottom: 2px solid var(--primary-color, #007bff);
+          border-bottom: 2px solid var(--primary-color);
           margin-bottom: -2px;
         }
         
         &:hover {
-          color: var(--primary-color, #007bff);
+          color: var(--primary-color);
           border-color: transparent;
         }
       }
@@ -375,19 +402,295 @@ body article h6 {
       a {
         display: block;
         text-decoration: none;
-        color: var(--text-color, #333);
+        color: var(--light-text);
         margin-bottom: 0.25rem;
         font-weight: 500;
         
         &:hover {
-          color: var(--primary-color, #007bff);
+          color: var(--primary-color);
         }
       }
       
       small {
-        color: #6c757d;
+        color: var(--light-text-muted);
         font-size: 0.8rem;
       }
+    }
+  }
+}
+
+/* ==========================================
+   第四部分：條列式文章列表樣式（統一顏色）
+   ========================================== */
+.article-list {
+  .list-group-item {
+    padding: 1rem 0;
+    background: transparent;
+    border-bottom: 1px solid var(--border-light);
+    transition: background-color 0.3s ease;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+    
+    &:last-child {
+      border-bottom: none !important;
+    }
+  }
+  
+  .article-link {
+    color: var(--light-text);
+    text-decoration: none;
+    transition: color 0.3s;
+    
+    h4 {
+      margin-bottom: 0;
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+    
+    &:hover {
+      color: var(--primary-color);
+      
+      h4 {
+        transform: translateX(5px);
+      }
+    }
+  }
+  
+  /* 修正分類標籤樣式 */
+  .badge, .category-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    background-color: var(--primary-color);
+    color: white !important;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 5px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+  }
+  
+  .text-muted {
+    font-size: 0.9rem;
+    color: var(--light-text-muted) !important;
+  }
+  
+  /* 支援暗黑模式 */
+  @media (prefers-color-scheme: dark) {
+    .list-group-item {
+      border-bottom: 1px solid var(--border-dark);
+    }
+    
+    .article-link {
+      color: var(--dark-text);
+      
+      &:hover {
+        color: var(--secondary-color);
+      }
+    }
+    
+    .badge, .category-badge {
+      background-color: var(--secondary-color);
+      
+      &:hover {
+        background-color: var(--secondary-hover);
+      }
+    }
+    
+    .text-muted {
+      color: var(--dark-text-muted) !important;
+    }
+  }
+}
+
+/* ==========================================
+   第五部分：科幻UI風格文章列表樣式（統一顏色）
+   ========================================== */
+.article-list-scifi {
+  .list-group-item {
+    padding: 1.5rem;
+    background: var(--dark-bg);
+    border: none;
+    border-radius: 0;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    clip-path: polygon(
+      0 0,
+      calc(100% - 15px) 0,
+      100% 15px,
+      100% 100%,
+      15px 100%,
+      0 calc(100% - 15px)
+    );
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 15px;
+      height: 15px;
+      background: var(--accent-color);
+      clip-path: polygon(0 0, 100% 0, 100% 100%);
+    }
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 15px;
+      height: 15px;
+      background: var(--accent-color);
+      clip-path: polygon(0 0, 100% 100%, 0 100%);
+    }
+    
+    &:hover {
+      background: rgba(15, 23, 42, 0.9);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+      transform: translateX(5px);
+      
+      &::before, &::after {
+        background: var(--accent-hover);
+      }
+    }
+  }
+  
+  .article-meta {
+    border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .article-link {
+    color: var(--dark-text);
+    text-decoration: none;
+    display: block;
+    
+    h4 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0;
+      font-family: 'Rajdhani', sans-serif;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      position: relative;
+      padding-left: 1rem;
+      
+      &::before {
+        content: '>';
+        position: absolute;
+        left: 0;
+        color: var(--accent-color);
+        opacity: 0;
+        transform: translateX(-5px);
+        transition: all 0.3s ease;
+      }
+    }
+    
+    &:hover h4 {
+      color: var(--accent-color);
+      padding-left: 1.5rem;
+      
+      &::before {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  }
+  
+  .badge, .category-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--accent-color) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    clip-path: polygon(
+      5px 0,
+      100% 0,
+      100% calc(100% - 5px),
+      calc(100% - 5px) 100%,
+      0 100%,
+      0 5px
+    );
+    
+    &:hover {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--dark-text) !important;
+    }
+  }
+  
+  .text-muted {
+    font-size: 0.85rem;
+    color: var(--dark-text-muted) !important;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  
+  .article-preview {
+    color: #d4d4d8;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    font-family: 'Rajdhani', sans-serif;
+    border-left: 2px solid rgba(16, 185, 129, 0.3);
+    padding-left: 1rem;
+  }
+  
+  /* 亮色模式 */
+  @media (prefers-color-scheme: light) {
+    .list-group-item {
+      background: var(--light-bg);
+      
+      &:hover {
+        background: rgba(249, 250, 251, 0.9);
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+      }
+    }
+    
+    .article-meta {
+      border-bottom-color: rgba(16, 185, 129, 0.2);
+    }
+    
+    .article-link {
+      color: var(--light-text);
+      
+      &:hover h4 {
+        color: var(--accent-hover);
+      }
+    }
+    
+    .badge, .category-badge {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--accent-hover) !important;
+      
+      &:hover {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--light-text) !important;
+      }
+    }
+    
+    .text-muted {
+      color: var(--light-text-muted) !important;
+    }
+    
+    .article-preview {
+      color: var(--light-text);
+      border-left-color: rgba(16, 185, 129, 0.2);
     }
   }
 }
