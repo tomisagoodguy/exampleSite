@@ -1,62 +1,115 @@
 {{ define "main" }}
 
-<!-- blog post -->
+<!-- Blog Post Section -->
 <section class="section-sm">
   <div class="container">
     <div class="row">
-      <!-- sidebar -->
+      
+      <!-- Sidebar -->
       {{ partial "sidebar.html" . }}
-      <!-- /sidebar -->
+      
+      <!-- Main Content -->
       <div class="col-lg-8 mb-5 mb-lg-0">
         <div class="title text-center">
           <h2 class="mb-5">所有文章</h2>
         </div>
+        
         <div class="content">
           <ul class="list-group list-group-flush article-list">
             {{ $paginator := .Paginate .Data.Pages }}
             {{ range $paginator.Pages }}
-            <li class="list-group-item bg-transparent border-bottom py-3">
-              <div class="d-flex justify-content-between align-items-center">
-                <a href="{{ .Permalink }}" class="article-link">
-                  <h4>{{ .Title }}</h4>
-                </a>
-                <span class="text-muted small">{{ .Date.Format "2006-01-02" }}</span>
-              </div>
+            <li class="list-group-item bg-transparent border-bottom py-3 px-2">
               
-              <!-- 分類標籤 -->
-              {{ if .Params.categories }}
-              <div class="mt-1 mb-2">
-                {{ range .Params.categories }}
-                <a href="{{ `categories/` | relLangURL }}{{ . | urlize | lower }}" class="badge badge-primary">{{ . }}</a>
-                {{ end }}
-              </div>
-              {{ end }}
-              
-              <!-- 顯示摘要，安全處理長度 -->
-              <div class="mt-1">
-                <p class="text-muted mb-0">
-                  {{ if .Summary }}
-                    {{ if gt (len .Summary) 50 }}
-                      {{ slicestr .Summary 0 50 }}...
-                    {{ else }}
-                      {{ .Summary }}
-                    {{ end }}
+              <!-- 文章區塊 -->
+              <article class="article-preview">
+                <header>
+                  <a href="{{ .Permalink }}" class="article-link">
+                    <h3 class="font-weight-bold text-primary hover-title mb-1">{{ .Title }}</h3>
+                  </a>
+                  <time class="text-muted small" datetime="{{ .Date }}">發布於：{{ .Date.Format "2006-01-02" }}</time>
+                </header>
+                
+                <!-- 文章摘要 -->
+                <p class="text-muted mt-1 mb-2 small">
+                  {{ with .Summary }}
+                    {{ slicestr . 0 50 }}{{ if gt (len .) 50 }}...{{ end }}
                   {{ end }}
                 </p>
-              </div>
+                
+                <!-- 標籤 & 繼續閱讀按鈕 -->
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                  <div class="article-tags">
+                    {{ with .Params.categories }}
+                      {{ range . }}
+                        <a href="{{ `categories/` | relLangURL }}{{ . | urlize | lower }}" class="badge badge-primary badge-sm">{{ . }}</a>
+                      {{ end }}
+                    {{ end }}
+                  </div>
+                  <a href="{{ .Permalink }}" class="btn btn-sm btn-primary read-more-btn">
+                    <span class="read-more-text">閱讀更多</span> <i class="fas fa-arrow-right ml-1"></i>
+                  </a>
+                </div>
+              </article>
             </li>
             {{ end }}
           </ul>
         </div>
       </div>
-
-      <!-- pagination -->
+      
+      <!-- Pagination -->
       <div class="col-12 mt-5">
-        {{ template "_internal/pagination.html" . }}
+        <nav aria-label="Page navigation">
+          {{ template "_internal/pagination.html" . }}
+        </nav>
       </div>
     </div>
   </div>
 </section>
-<!-- /blog post -->
+
+<!-- Custom CSS -->
+<style>
+  /* 標題懸停效果 */
+  .hover-title {
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+    position: relative;
+  }
+  .hover-title:hover {
+    color: #0056b3;
+    text-decoration: underline;
+  }
+
+  /* 縮小列表項目間距 */
+  .list-group-item {
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    padding: 10px 15px !important;
+  }
+  .list-group-item:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+    transform: scale(1.02);
+  }
+
+  /* 繼續閱讀按鈕效果 */
+  .read-more-btn {
+    transition: all 0.3s ease;
+    color: white !important;
+    font-size: 0.85rem;
+  }
+  .read-more-btn:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 5px rgba(0, 0, 255, 0.2);
+  }
+
+  /* 分類標籤效果 - 縮小 */
+  .badge-primary {
+    transition: all 0.3s ease;
+    font-size: 0.75rem;
+    padding: 3px 6px;
+  }
+  .badge-primary:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+</style>
 
 {{ end }}
