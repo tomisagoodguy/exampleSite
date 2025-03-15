@@ -2,24 +2,24 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on land-knowledege</title>
-    <link>http://localhost:1313/tags/</link>
+    <link>https://tomisagoodguy.github.io/tags/</link>
     <description>Recent content in Tags on land-knowledege</description>
     <generator>Hugo</generator>
     <language>zh-tw</language>
     <lastBuildDate>Fri, 20 Dec 2024 10:07:47 +0800</lastBuildDate>
-    <atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://tomisagoodguy.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>地價稅</title>
-      <link>http://localhost:1313/tags/%E5%9C%B0%E5%83%B9%E7%A8%85/</link>
+      <link>https://tomisagoodguy.github.io/tags/%E5%9C%B0%E5%83%B9%E7%A8%85/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/tags/%E5%9C%B0%E5%83%B9%E7%A8%85/</guid>
+      <guid>https://tomisagoodguy.github.io/tags/%E5%9C%B0%E5%83%B9%E7%A8%85/</guid>
       <description></description>
     </item>
     <item>
       <title>優先購買權</title>
-      <link>http://localhost:1313/tags/%E5%84%AA%E5%85%88%E8%B3%BC%E8%B2%B7%E6%AC%8A/</link>
+      <link>https://tomisagoodguy.github.io/tags/%E5%84%AA%E5%85%88%E8%B3%BC%E8%B2%B7%E6%AC%8A/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/tags/%E5%84%AA%E5%85%88%E8%B3%BC%E8%B2%B7%E6%AC%8A/</guid>
+      <guid>https://tomisagoodguy.github.io/tags/%E5%84%AA%E5%85%88%E8%B3%BC%E8%B2%B7%E6%AC%8A/</guid>
       <description></description>
     </item>
   </channel>
