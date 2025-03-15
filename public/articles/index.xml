@@ -2,10 +2,10 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>所有文章 on land-knowledege</title>
-    <link>http://localhost:64879/articles/</link>
+    <link>https://tomisagoodguy.github.io/articles/</link>
     <description>Recent content in 所有文章 on land-knowledege</description>
     <generator>Hugo</generator>
     <language>zh-tw</language>
-    <atom:link href="http://localhost:64879/articles/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://tomisagoodguy.github.io/articles/index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>
