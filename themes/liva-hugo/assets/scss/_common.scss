@@ -236,3 +236,32 @@ a.bg-primary:focus, a.bg-primary:hover, button.bg-primary:focus, button.bg-prima
     background: rgba(0, 0, 0, 0.9); /* 滑鼠懸停時的背景顏色 */
   }
 }
+
+
+
+#go-to-bottom {
+  position: fixed; /* 固定位置 */
+  bottom: 80px; /* 距離底部 80px，放在返回頂部按鈕上方 */
+  right: 20px; /* 距離右側 20px */
+  background: rgba(0, 0, 0, 0.7); /* 背景顏色，帶透明度 */
+  width: 50px;
+  height: 50px;
+  display: none; /* 預設隱藏 */
+  text-decoration: none;
+  border-radius: 50%;
+
+  i {
+    color: #fff; /* 箭頭顏色 */
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.9); /* 滑鼠懸停時的背景顏色 */
+  }
+}
+

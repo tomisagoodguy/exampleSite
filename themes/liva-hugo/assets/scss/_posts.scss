@@ -250,3 +250,144 @@ body article h5,
 body article h6 {
   text-align: left !important;
 }
+
+
+// 文章導航樣式
+.post-navigation {
+  margin: 3rem 0;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  
+  span {
+    display: block;
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+  }
+  
+  h5 {
+    margin: 0;
+    transition: color 0.3s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  a {
+    text-decoration: none;
+    
+    &:hover {
+      h5 {
+        color: var(--primary-color);
+      }
+    }
+  }
+  
+  .prev-post {
+    padding-right: 1rem;
+  }
+  
+  .next-post {
+    padding-left: 1rem;
+    text-align: right;
+  }
+}
+
+// 綜合導航區
+.navigation-container {
+  margin: 3rem 0;
+  
+  .post-navigation {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    
+    .prev-post, .next-post {
+      padding: 1rem;
+      transition: transform 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-3px);
+      }
+      
+      span {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+      
+      h5 {
+        font-weight: 600;
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      
+      a {
+        text-decoration: none;
+        color: inherit;
+        
+        &:hover {
+          color: var(--primary-color, #007bff);
+        }
+      }
+    }
+    
+    .next-post {
+      text-align: right;
+    }
+  }
+  
+  .navigation-tabs {
+    .nav-tabs {
+      border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+      
+      .nav-link {
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        color: #6c757d;
+        
+        &.active {
+          color: var(--primary-color, #007bff);
+          background-color: transparent;
+          border-bottom: 2px solid var(--primary-color, #007bff);
+          margin-bottom: -2px;
+        }
+        
+        &:hover {
+          color: var(--primary-color, #007bff);
+          border-color: transparent;
+        }
+      }
+    }
+    
+    .post-item {
+      padding: 0.75rem;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+      
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+      }
+      
+      a {
+        display: block;
+        text-decoration: none;
+        color: var(--text-color, #333);
+        margin-bottom: 0.25rem;
+        font-weight: 500;
+        
+        &:hover {
+          color: var(--primary-color, #007bff);
+        }
+      }
+      
+      small {
+        color: #6c757d;
+        font-size: 0.8rem;
+      }
+    }
+  }
+}

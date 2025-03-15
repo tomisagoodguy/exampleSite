@@ -85,6 +85,8 @@ weight = 1
 # 放主題圖片
 logo = "images/law.png"
 home = "Home"
+mainSections = ["post", "posts", "blog"]
+
 # Meta data
 description = "定康的讀書筆記"
 author = "定康"
