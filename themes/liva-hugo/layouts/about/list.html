@@ -1,0 +1,139 @@
+{{ define "main" }}
+<section class="section-sm">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                {{ if .Params.Image }}
+                <img src="{{ .Params.Image | absURL }}" alt="" class="img-fluid d-block mx-auto rounded-circle mb-4">
+                {{ end }}
+                
+                <!-- About -->
+                <h4 class="widget-title">{{ .Title | markdownify }}</h4>
+                <div class="content">
+                    {{ .Content }}
+                </div>
+
+                <!-- Experience -->
+                <h4 class="widget-title">Experience</h4>
+                <div class="timeline">
+                    <!-- 2024 -->
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <span class="timeline-year">2024</span>
+                            <h3>持續成長</h3>
+                            <p>朝地政士邁進</p>
+                        </div>
+                    </div>
+
+                    <!-- 2023 -->
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <span class="timeline-year">2023</span>
+                            <h3>專業進修與證照</h3>
+                            <p>國家考試不動產經紀人合格</p>
+                            <p>金融市場常識與職業道德合格</p>
+                            <p>投信投顧相關法規（含自律規範）合格</p>
+                            <p>信託業管理人員合格</p>
+                        </div>
+                    </div>
+
+                    <!-- 2022 -->
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <span class="timeline-year">2022-2023</span>
+                            <h3>學術基礎</h3>
+                            <p>台北大學不動產與城鄉環境學系</p>
+                            <p>台北大學企業管理學系</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills -->
+                <h4 class="widget-title">Skills</h4>
+                <div class="skills-container">
+                    <!-- 文書處理技能 -->
+                    <div class="skill-category">
+                        <h5>辦公室應用</h5>
+                        <div class="skill-item">
+                            <div class="skill-name">Excel</div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-name">PowerPoint</div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-name">Word</div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 90%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 程式技能 -->
+                    <div class="skill-category">
+                        <h5>程式開發</h5>
+                        <div class="skill-item">
+                            <div class="skill-name">Python</div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 50%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-name">SQL</div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 40%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-name">JavaScript</div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 40%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-name">HTML/CSS</div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 40%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 專業技能 -->
+                    <div class="skill-category">
+                        <h5>專業能力</h5>
+                        <div class="skill-item">
+                            <div class="skill-name">文書處理</div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-name">資料分析</div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 95%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-name">報告撰寫</div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 80%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-name">簡報技巧</div>
+                            <div class="skill-bar">
+                                <div class="skill-level" style="width: 80%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{{ end }}

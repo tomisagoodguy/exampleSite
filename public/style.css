@@ -1,0 +1,5 @@
+.navbar-brand img {
+    max-height: 45px;
+    /* 調整這個數值來改變 logo 大小 */
+    width: auto;
+}

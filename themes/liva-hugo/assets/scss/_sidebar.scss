@@ -1,0 +1,254 @@
+// _sidebar.scss
+// 側邊欄樣式
+
+@import "variables"; // 引入變數
+
+.sidebar-container {
+  background-color: $sidebar-bg;
+  color: $sidebar-text;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 30px;
+
+  // 改進的固定定位功能 - 即使滾動到頁面底部仍然顯示
+  &.sticky {
+    position: sticky; // 改為使用 sticky 定位，更適合側邊欄
+    top: 80px; // 與導航欄底部保持距離
+    height: auto; // 自適應高度
+    max-height: calc(100vh - 120px); // 設置最大高度，避免過長
+    overflow-y: auto; // 內容過多時可滾動
+    z-index: 100;
+    transition: all 0.3s ease;
+  }
+
+  // 響應式樣式
+  @media (max-width: 991px) {
+    &.sticky {
+      position: static; // 小螢幕上取消固定效果
+      width: 100%;
+      max-height: none;
+    }
+  }
+
+  // 側邊欄標題
+  .sidebar-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: $sidebar-text;
+    border-bottom: 1px solid rgba($sidebar-text, 0.2);
+    padding-bottom: 10px;
+  }
+
+  // 側邊欄導航
+  .sidebar-nav {
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+      margin-bottom: 0;
+
+      li {
+        margin-bottom: 3px;
+        border-left: 3px solid transparent;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.05);
+          border-left-color: rgba($sidebar-hover, 0.5);
+        }
+
+        &.active {
+          background-color: rgba(255, 255, 255, 0.1);
+          border-left-color: $sidebar-active;
+        }
+      }
+    }
+
+    // 目錄層級區分
+    .nav-level-1 {
+      background-color: $sidebar-level-1-bg;
+
+      a {
+        padding: 8px 10px;
+      }
+    }
+
+    .nav-level-2 {
+      background-color: $sidebar-level-2-bg;
+      padding-left: 15px;
+
+      a {
+        padding: 6px 10px;
+      }
+    }
+
+    .nav-level-3 {
+      background-color: $sidebar-level-3-bg;
+      padding-left: 25px;
+
+      a {
+        padding: 5px 10px;
+      }
+    }
+
+    .nav-level-4 {
+      background-color: $sidebar-level-4-bg;
+      padding-left: 35px;
+
+      a {
+        padding: 4px 10px;
+        font-size: 0.9rem;
+      }
+    }
+
+    // 通用連結樣式
+    a {
+      color: $sidebar-text;
+      text-decoration: none;
+      display: block;
+      font-size: 0.95rem;
+
+      &:hover {
+        color: $sidebar-hover;
+      }
+
+      &.active {
+        color: $sidebar-active;
+        font-weight: 500;
+      }
+    }
+  }
+
+  /* 標籤樣式 */
+  .widget {
+    .list-inline {
+      padding-left: 0;
+      list-style: none;
+
+      .list-inline-item {
+        margin: 0 5px 5px 0;
+
+        a {
+          display: inline-block;
+          padding: 5px 10px;
+          background-color: $tag-bg; /* 使用變數設定標籤背景顏色 */
+          border-radius: 5px;
+          color: $tag-text; /* 使用變數設定標籤文字顏色 */
+        }
+      }
+    }
+  }
+}
+
+// TOC 相關樣式
+// ===================================
+
+// TOC 相關樣式 - 中等深度灰色主題
+// ===================================
+
+.toc-container {
+  background-color: #e9ecef; // 中等深度的灰色背景
+  color: #212529; // 更深的文字顏色
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 30px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  // 使用與側邊欄相同的 sticky 行為
+  &.sticky-toc {
+    position: sticky !important;
+    top: 80px; // 與導航欄保持一致的距離
+    height: auto;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    z-index: 99;
+    transition: all 0.3s ease;
+  }
+
+  // 標題樣式
+  .toc-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #343a40; // 更深的標題顏色
+    border-bottom: 1px solid #ced4da;
+    padding-bottom: 10px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    // 折疊指示器
+    &:after {
+      content: "▼";
+      font-size: 0.8em;
+      transition: transform 0.3s ease;
+      color: #495057;
+    }
+  }
+
+  // 折疊樣式
+  &.collapsed {
+    .toc-content {
+      display: none;
+    }
+
+    .toc-title:after {
+      content: "►";
+    }
+  }
+
+  // 響應式樣式
+  @media (max-width: 991px) {
+    &.sticky-toc {
+      position: static !important;
+      width: 100%;
+      max-height: none;
+    }
+  }
+
+  // TOC 內容樣式
+  .toc-content {
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+      margin-bottom: 0;
+
+      li {
+        margin-bottom: 3px;
+        border-left: 3px solid transparent;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.05);
+          border-left-color: #6c757d;
+        }
+      }
+    }
+
+    // 目錄層級樣式
+    ul ul {
+      padding-left: 15px;
+    }
+
+    a {
+      color: #343a40;
+      text-decoration: none;
+      display: block;
+      font-size: 0.95rem;
+      padding: 6px 10px;
+
+      &:hover {
+        color: #000;
+      }
+
+      &.active {
+        color: #0d6efd; // 保持藍色高亮
+        font-weight: 500;
+        background-color: rgba(13, 110, 253, 0.08);
+        border-left: 3px solid #0d6efd;
+      }
+    }
+  }
+}

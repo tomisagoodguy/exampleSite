@@ -1,0 +1,252 @@
+/* ==========================================
+   第一部分：文章卡片設計（保持不變）
+   ========================================== */
+/* 文章卡片 - 強化版（無描述，增加動畫感） */
+.article-card, .card, .post-item {
+  position: relative;
+  margin-bottom: 28px;
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease-in-out;
+  border: none;
+  background: rgba(255, 255, 255, 0.85); /* 玻璃擬態效果 */
+  backdrop-filter: blur(12px);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.article-card:hover {
+  transform: translateY(-12px) scale(1.05) rotateX(8deg) rotateY(3deg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+
+/* 卡片圖片 */
+.card-img-top, .post-thumb img {
+  height: 220px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 12px 12px 0 0;
+  filter: brightness(0.95);
+  transition: all 0.6s ease-in-out;
+}
+
+.article-card:hover .card-img-top,
+.article-card:hover .post-thumb img {
+  filter: brightness(1.1);
+  transform: scale(1.1) rotate(2deg);
+}
+
+/* 卡片內容 */
+.card-body, .post-content {
+  padding: 24px;
+  text-align: center;
+  transition: transform 0.3s ease-in-out;
+}
+
+.article-card:hover .card-body {
+  transform: translateY(-6px);
+}
+
+/* 隱藏描述文字 */
+.card-text, .post-description {
+  display: none;
+}
+
+/* 分類標籤 */
+.post-categories a {
+  display: inline-block;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #4f46e5, #8b5cf6);
+  color: white;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 0.3s ease-in-out;
+}
+
+.post-categories a:hover {
+  background: linear-gradient(135deg, #4338ca, #6d28d9);
+  transform: translateY(-4px) scale(1.1);
+}
+
+/* 標題 */
+.card-title a {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+  text-decoration: none;
+  transition: color 0.4s ease-in-out;
+}
+
+.card-title a:hover {
+  color: #6366f1;
+  letter-spacing: 0.5px;
+}
+
+/* 元數據 */
+.card-meta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 10px;
+}
+
+.card-meta img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+  transition: transform 0.3s ease-in-out;
+}
+
+.card-meta img:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* 支援暗黑模式 */
+@media (prefers-color-scheme: dark) {
+  .article-card {
+    background: rgba(31, 41, 55, 0.85);
+    color: white;
+  }
+  .card-title a {
+    color: #e0e7ff;
+  }
+  .card-title a:hover {
+    color: #a5b4fc;
+  }
+  .card-meta {
+    color: #9ca3af;
+  }
+}
+
+/* ==========================================
+   第二部分：文章內容頁面靠左對齊（強化版）
+   ========================================== */
+/* 強化版文章靠左對齊 - 增加選擇器優先級 */
+body .single-post .entry-content,
+body .post-template .post-content,
+body .article-page .article-body,
+body .blog-post-content,
+body .wordpress-post-content,
+body .page-content,
+body.single article .entry-content,
+body .post-full-content,
+body .content-single,
+body main article .entry-content,
+body main .article-content,
+body .content-area article,
+body .site-main article,
+body .main-content article {
+  text-align: left !important;
+  display: block !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+}
+
+/* 針對單獨元素強化靠左對齊 */
+body article p,
+body article ul,
+body article ol,
+body article li,
+body article h1,
+body article h2,
+body article h3,
+body article h4,
+body article h5,
+body article h6,
+body article figure,
+body article table,
+body article blockquote,
+body article pre,
+body article code,
+body .entry-content p, 
+body .post-content p,
+body .article-body p,
+body .blog-post-content p,
+body .entry-content ul, 
+body .entry-content ol,
+body .entry-content h1,
+body .entry-content h2,
+body .entry-content h3,
+body .entry-content h4,
+body .entry-content h5,
+body .entry-content h6,
+body .entry-content blockquote,
+body .entry-content pre,
+body .wp-block-paragraph {
+  text-align: left !important;
+}
+
+/* 修正可能的flex容器問題 */
+body article .entry-content,
+body .post-content,
+body .article-body,
+body .blog-post-content,
+body main article {
+  display: block !important;
+}
+
+/* 確保內容容器不會被外部強制置中 */
+body .content-wrapper,
+body .site-content,
+body .content-area,
+body .site-main,
+body main {
+  align-items: stretch !important;
+  text-align: left !important;
+}
+
+/* 確保引用、代碼塊等特殊元素也是左對齊 */
+body .entry-content blockquote,
+body .post-content blockquote,
+body .article-body blockquote,
+body .blog-post-content blockquote,
+body .entry-content pre,
+body .post-content pre,
+body .article-body pre,
+body .blog-post-content pre,
+body article blockquote,
+body article pre {
+  text-align: left !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* 針對標題元素強化靠左對齊 */
+body .entry-content h1,
+body .post-content h1,
+body .article-body h1,
+body .blog-post-content h1,
+body .entry-content h2,
+body .post-content h2,
+body .article-body h2,
+body .blog-post-content h2,
+body .entry-content h3,
+body .post-content h3,
+body .article-body h3,
+body .blog-post-content h3,
+body .entry-content h4,
+body .post-content h4,
+body .article-body h4,
+body .blog-post-content h4,
+body .entry-content h5,
+body .post-content h5,
+body .article-body h5,
+body .blog-post-content h5,
+body .entry-content h6,
+body .post-content h6,
+body .article-body h6,
+body .blog-post-content h6,
+body article h1,
+body article h2,
+body article h3,
+body article h4,
+body article h5,
+body article h6 {
+  text-align: left !important;
+}

@@ -1,0 +1,154 @@
+######################## default configuration ####################
+baseURL = "https://tomisagoodguy.github.io"
+languageCode = "zh-tw"
+title = "land-knowledege"
+theme = "liva-hugo"
+summaryLength = "10"
+paginate = 6
+disqusShortname = "tomisagoodguy"
+
+[outputs]
+home = ["HTML", "RSS", "JSON"]
+
+############################# Plugins ##############################
+[params.plugins]
+
+# CSS Plugins
+[[params.plugins.css]]
+URL = "plugins/bootstrap/bootstrap.min.css"
+[[params.plugins.css]]
+URL = "plugins/slick/slick.css"
+[[params.plugins.css]]
+URL = "plugins/themify-icons/themify-icons.css"
+[[params.plugins.css]]
+URL = "plugins/venobox/venobox.css"
+
+# JS Plugins
+[[params.plugins.js]]
+URL = "plugins/jQuery/jquery.min.js"
+[[params.plugins.js]]
+URL = "plugins/bootstrap/bootstrap.min.js"
+[[params.plugins.js]]
+URL = "plugins/slick/slick.min.js"
+[[params.plugins.js]]
+URL = "plugins/venobox/venobox.min.js"
+[[params.plugins.js]]
+URL = "plugins/search/fuse.min.js"
+[[params.plugins.js]]
+URL = "plugins/search/mark.js"
+[[params.plugins.js]]
+URL = "plugins/search/search.js"
+
+
+############################## navigation ###############################
+[menu]
+
+[[menu.main]]
+name = "Home"
+URL = "/"
+weight = 1
+
+[[menu.main]]
+name = "About"
+URL = "about"
+weight = 2
+
+# [[menu.main]]
+# name = "Post"
+# URL = "blog/"
+# weight = 2
+
+# [[menu.main]]
+# name = "Contact"
+# URL = "contact/"
+# weight = 3
+
+# footer menu
+[[menu.footer]]
+name = "About"
+URL = "about/"
+weight = 1
+
+# [[menu.footer]]
+# name = "Post"
+# URL = "blog/"
+# weight = 2
+
+# [[menu.footer]]
+# name = "Contact"
+# URL = "contact/"
+# weight = 3
+
+
+#################### default parameters ################################
+[params]
+# 放主題圖片
+logo = "images/law.png"
+home = "Home"
+# Meta data
+description = "定康的讀書筆記"
+author = "定康"
+
+# Contact Information
+mobile = "0911445898"
+email = "tom890108159@gmail.com"
+location = "Taiwan"
+# copyright
+copyright = "| copyright &copy; 2021 [Themefisher](https://themefisher.com/hugo-themes/) All Rights Reserved |"
+
+# Preloader
+[params.preloader]
+enable = true
+preloader = "" # use .png , .svg or .gif format
+
+# search
+[params.search]
+enable = true
+
+############################ news letter ########################
+[params.newsletter]
+enable = false
+title = "Join Our Newsletter"
+content = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero"
+
+
+# cookies
+[params.cookies]
+enable = true
+expire_days = 2
+
+
+############################# social site ########################
+[[params.social]]
+title = "facebook"
+icon = "ti-facebook"                                             # themify icon : https://themify.me/themify-icons
+link = "https://www.facebook.com/profile.php?id=100005583693079"
+
+# [[params.social]]
+# title = "twitter"
+# icon = "ti-twitter-alt" # themify icon : https://themify.me/themify-icons
+# link = "#"
+
+# [[params.social]]
+# title = "instagram"
+# icon = "ti-instagram" # themify icon : https://themify.me/themify-icons
+# link = "#"
+
+[[params.social]]
+title = "github"
+icon = "ti-github"                                         # themify icon : https://themify.me/themify-icons
+link = "https://github.com/tomisagoodguy?tab=repositories"
+
+# [[params.social]]
+# title = "linkedin"
+# icon = "ti-linkedin" # themify icon : https://themify.me/themify-icons
+# link = "#"
+
+
+
+[markup]
+  [markup.tableOfContents]
+    endLevel = 4
+    ordered = false
+    startLevel = 2
+

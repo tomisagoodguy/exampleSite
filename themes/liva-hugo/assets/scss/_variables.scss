@@ -1,0 +1,80 @@
+// Color Variables
+// $primary-color: #00AAA1;
+// $text-color: #666666;
+// $text-color-dark: #222222;
+// $text-color-light: #959595;
+// $body-color: #fff;
+// $border-color: #ACB9C4;
+// $black: #000;
+// $white: #fff;
+// $gray: #f4fcff;
+
+// Font Variables
+// $primary-font: 'Raleway', sans-serif;
+// $icon-font: 'themify';
+
+
+
+// 整體主題設定
+
+
+// 基礎顏色
+$white: #FFFFFF;
+$black: #000000;
+
+// 主要配色 - 使用更富活力的藍色系
+$primary-color: #2196F3;        // 亮藍色，活潑但專業
+$secondary-color: #1976D2;      // 稍深藍色，用於重點強調
+
+// 輔助色彩 - 增添活力
+$accent-color-1: #FF9800;       // 明亮橙色，增添活力
+$accent-color-2: #4CAF50;       // 清新綠色，傳達成長
+$accent-color-3: #9C27B0;       // 紫色，創意感
+
+// 文字顏色
+$text-color: #424242;          // 主要文字顏色
+$text-color-dark: #212121;     // 標題文字
+$text-color-light: #757575;    // 次要文字
+
+// 背景與輔助色
+$body-color: $white;           // 純白背景
+$gray: #F5F7FA;               // 淺灰色背景，更柔和
+$border-color: #E0E0E0;       // 邊框顏色
+
+// 功能性顏色
+$success-color: #4CAF50;      // 綠色，成功提示
+$warning-color: #FF9800;      // 橙色，警告提示
+// $error-color: #F44336;        // 紅色，錯誤提示
+
+// 漸層效果
+$gradient-primary: linear-gradient(45deg, $primary-color, #03A9F4);
+$gradient-accent: linear-gradient(45deg, $accent-color-1, #FFC107);
+
+// 中性色
+$neutral-100: #FAFAFA;
+$neutral-200: #EEEEEE;
+$neutral-300: #E0E0E0;
+$neutral-400: #BDBDBD;
+
+// 字體設定
+$primary-font: 'Noto Sans TC', 'Helvetica Neue', sans-serif;
+$secondary-font: 'Playfair Display', serif;
+$icon-font: 'themify';
+
+
+// 側邊欄專用顏色
+$sidebar-bg: #1E2A3A;          // 深色背景，偏藍黑色
+$sidebar-text: #E0E0E0;        // 側邊欄文字顏色，接近白色但不刺眼
+$sidebar-hover: $primary-color; // 懸停時使用主色調
+$sidebar-active: $accent-color-1; // 當前選中項使用橙色強調
+$sidebar-border: $neutral-300;  // 分隔線顏色
+
+// 側邊欄層級背景
+$sidebar-level-1-bg: $sidebar-bg;
+$sidebar-level-2-bg: darken($sidebar-bg, 3%);     // 稍微更深一點的背景
+$sidebar-level-3-bg: darken($sidebar-bg, 6%);     // 更深一點
+$sidebar-level-4-bg: darken($sidebar-bg, 9%);     // 最深的背景
+
+// 標籤顏色變數
+$tag-bg: #333; // 標籤背景顏色
+$tag-text: #fff; // 標籤文字顏色

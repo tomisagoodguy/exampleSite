@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>私土地 on land-knowledege</title>
+    <link>http://localhost:1313/tags/%E7%A7%81%E5%9C%9F%E5%9C%B0/</link>
+    <description>Recent content in 私土地 on land-knowledege</description>
+    <generator>Hugo</generator>
+    <language>zh-tw</language>
+    <lastBuildDate>Fri, 20 Dec 2024 10:07:47 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/%E7%A7%81%E5%9C%9F%E5%9C%B0/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>第一篇文章</title>
+      <link>http://localhost:1313/blog/landlaw2/</link>
+      <pubDate>Fri, 20 Dec 2024 10:07:47 +0800</pubDate>
+      <guid>http://localhost:1313/blog/landlaw2/</guid>
+      <description>這是測試檔</description>
+    </item>
+  </channel>
+</rss>

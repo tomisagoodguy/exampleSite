@@ -1,0 +1,13 @@
+{{- $headers := findRE "<h[1-6].*?>(.|\n])+?</h[1-6]>" .Content -}}
+    {{ if ge (len $headers) 1 }}
+    <div class="toc">
+        <details {{ if $.Params.openToc }}open{{ end }}>
+            <summary>
+                <span class="details">{{ T "toc" }}</span>
+            </summary>
+            <div class="inner">
+                {{ .TableOfContents }}
+            </div>
+        </details>
+    </div>
+    {{ end }}
