@@ -1,22 +1,46 @@
 <head>
   <meta charset="utf-8">
-  <title>{{ .Site.Title }}</title>
+  <title>{{ .Title }}{{ if not .IsHome }} | {{ .Site.Title }}{{ end }}</title>
 
   {{ "<!-- mobile responsive meta -->" | safeHTML }}
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description"
-    content="{{ with .Description }}{{ . }}{{ else }}{{ with .Site.Params.description }}{{ . }}{{ end }}{{ end }}">
-  {{ with .Site.Params.author }}
-  <meta name="author" content="{{ . }}">{{ end }}
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+  <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ with .Summary }}{{ . | plainify }}{{ else }}{{ with .Site.Params.description }}{{ . }}{{ end }}{{ end }}{{ end }}">
+  {{ with .Site.Params.author }}<meta name="author" content="{{ . }}">{{ end }}
+  <meta name="theme-color" content="{{ .Site.Params.themeColor | default "#fff" }}">
+  
+  {{ "<!-- canonical link -->" | safeHTML }}
+  <link rel="canonical" href="{{ .Permalink }}">
 
-  <!-- theme meta -->
+  {{ "<!-- theme meta -->" | safeHTML }}
   <meta name="theme-name" content="liva-hugo" />
-
   {{ hugo.Generator }}
+
+  {{ "<!-- Open Graph & Twitter Card -->" | safeHTML }}
+  <meta property="og:title" content="{{ .Title }}{{ if not .IsHome }} | {{ .Site.Title }}{{ end }}">
+  <meta property="og:description" content="{{ with .Description }}{{ . }}{{ else }}{{ with .Summary }}{{ . | plainify }}{{ else }}{{ with .Site.Params.description }}{{ . }}{{ end }}{{ end }}{{ end }}">
+  <meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
+  <meta property="og:url" content="{{ .Permalink }}">
+  {{ with .Params.image }}<meta property="og:image" content="{{ . | absURL }}">{{ else }}{{ with .Site.Params.image }}<meta property="og:image" content="{{ . | absURL }}">{{ end }}{{ end }}
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ .Title }}{{ if not .IsHome }} | {{ .Site.Title }}{{ end }}">
+  <meta name="twitter:description" content="{{ with .Description }}{{ . }}{{ else }}{{ with .Summary }}{{ . | plainify }}{{ else }}{{ with .Site.Params.description }}{{ . }}{{ end }}{{ end }}{{ end }}">
+  {{ with .Site.Params.twitter }}<meta name="twitter:site" content="@{{ . }}">{{ end }}
+  {{ with .Params.image }}<meta name="twitter:image" content="{{ . | absURL }}">{{ else }}{{ with .Site.Params.image }}<meta name="twitter:image" content="{{ . | absURL }}">{{ end }}{{ end }}
+
+  {{ "<!-- Resource Hints -->" | safeHTML }}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  {{ if .Site.Params.googleAnalytics }}
+  <link rel="preconnect" href="https://www.googletagmanager.com">
+  <link rel="preconnect" href="https://www.google-analytics.com">
+  {{ end }}
 
   {{ "<!-- plugins -->" | safeHTML }}
   {{ range .Site.Params.plugins.css }}
-  <link rel="stylesheet" href="{{ .URL | absURL }} ">
+  <link rel="stylesheet" href="{{ .URL | absURL }}" {{ if .async }}media="print" onload="this.media='all'"{{ end }}>
+  {{ if .async }}<noscript><link rel="stylesheet" href="{{ .URL | absURL }}"></noscript>{{ end }}
   {{ end }}
 
   {{ "<!-- Main Stylesheet -->" | safeHTML }}
@@ -24,19 +48,88 @@
   <link rel="stylesheet" href="{{ $styles.Permalink }}" media="screen">
 
   {{ "<!-- Font Awesome CSS -->" | safeHTML }}
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
 
   {{ "<!--Favicon-->" | safeHTML }}
-  <link rel="shortcut icon" href="{{ `images/favicon.png` | absURL }} " type="image/x-icon">
-  <link rel="icon" href="{{ `images/favicon.png` | absURL }} " type="image/x-icon">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ `images/apple-touch-icon.png` | absURL }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ `images/favicon-32x32.png` | absURL }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ `images/favicon-16x16.png` | absURL }}">
+  <link rel="shortcut icon" href="{{ `images/favicon.ico` | absURL }}" type="image/x-icon">
+  <link rel="manifest" href="{{ `images/site.webmanifest` | absURL }}">
 
+  {{ "<!-- Structured Data -->" | safeHTML }}
+  {{ if .IsHome }}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "{{ .Site.Title }}",
+      "url": "{{ .Site.BaseURL }}",
+      "description": "{{ .Site.Params.description }}",
+      "publisher": {
+        "@type": "Organization",
+        "name": "{{ .Site.Title }}",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "{{ .Site.Params.logo | absURL }}"
+        }
+      }
+    }
+  </script>
+  {{ else if .IsPage }}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "{{ .Permalink }}"
+      },
+      "headline": "{{ .Title }}",
+      "description": "{{ with .Description }}{{ . }}{{ else }}{{ with .Summary }}{{ . | plainify }}{{ end }}{{ end }}",
+      {{ with .Params.image }}
+      "image": "{{ . | absURL }}",
+      {{ end }}
+      "datePublished": "{{ .PublishDate.Format "2006-01-02T15:04:05-07:00" }}",
+      "dateModified": "{{ .Lastmod.Format "2006-01-02T15:04:05-07:00" }}",
+      "author": {
+        "@type": "Person",
+        "name": "{{ .Params.author | default .Site.Params.author }}"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "{{ .Site.Title }}",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "{{ .Site.Params.logo | absURL }}"
+        }
+      }
+    }
+  </script>
+  {{ end }}
+
+  {{ "<!-- Google Analytics -->" | safeHTML }}
+  {{ if not .Site.IsServer }}
+  <script>
+    // 設置不追蹤功能，直到獲得用戶同意
+    window['ga-disable-G-ZZ3XT9EZKH'] = true;
+    
+    // 檢查是否已獲得同意
+    if (localStorage.getItem('cookie-consent') === 'true') {
+      window['ga-disable-G-ZZ3XT9EZKH'] = false;
+    }
+  </script>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZZ3XT9EZKH"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
-
-    gtag('config', 'G-ZZ3XT9EZKH');
+    gtag('config', 'G-ZZ3XT9EZKH', {
+      'anonymize_ip': true,
+      'cookie_flags': 'SameSite=None;Secure'
+    });
   </script>
+  {{ end }}
 </head>

@@ -176,6 +176,69 @@ $(window).on('load', function () {
         scrollTop: docHeight - winHeight
       }, 500);
     });
+    
+    // 水平副導覽列下拉菜單功能 - 依據螢幕大小調整行為
+    function setupDropdowns() {
+      const dropdownItems = $('.sub-nav-list li.dropdown');
+      
+      // 移除可能存在的點擊事件處理程序
+      dropdownItems.find('> a').off('click.dropdown');
+      $(document).off('click.dropdown-close');
+      
+      // 桌面版本使用懸停效果 (已在 CSS 中實現)
+      // 移動版本使用點擊效果
+      if ($(window).width() <= 768) {
+        dropdownItems.find('> a').on('click.dropdown', function(e) {
+          e.preventDefault();
+          const parent = $(this).parent();
+          
+          // 關閉其他打開的下拉菜單
+          dropdownItems.not(parent).removeClass('show');
+          
+          // 切換當前下拉菜單
+          parent.toggleClass('show');
+        });
+        
+        // 點擊其他地方關閉下拉菜單
+        $(document).on('click.dropdown-close', function(e) {
+          if (!dropdownItems.is(e.target) && dropdownItems.has(e.target).length === 0) {
+            dropdownItems.removeClass('show');
+          }
+        });
+      }
+    }
+    
+    // 初始化下拉菜單功能
+    setupDropdowns();
+    
+    // 窗口大小變化時重新設置下拉菜單行為
+    $(window).on('resize', function() {
+      setupDropdowns();
+    });
+    
+    // 確保移動設備上的下拉菜單可以正確關閉
+    $('.sub-nav-list li.dropdown .dropdown-menu a').on('click', function() {
+      if ($(window).width() <= 768) {
+        $(this).closest('.dropdown').removeClass('show');
+      }
+    });
+    
+    // 修正 FontAwesome 圖標問題 (如果需要)
+    if ($('.sub-nav-list li.dropdown > a').length && !$('.sub-nav-list li.dropdown > a').find('i.fa').length) {
+      $('.sub-nav-list li.dropdown > a').append(' <i class="fa fa-angle-down"></i>');
+    }
+    
+    // 添加副導覽列的滾動陰影效果
+    $(window).on('scroll', function() {
+      const subNav = $('.sub-navigation');
+      if (subNav.length) {
+        if ($(window).scrollTop() > 50) {
+          subNav.addClass('scrolled');
+        } else {
+          subNav.removeClass('scrolled');
+        }
+      }
+    });
   });
 
 })(jQuery);

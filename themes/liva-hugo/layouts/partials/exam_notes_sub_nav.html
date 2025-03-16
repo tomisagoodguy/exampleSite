@@ -1,0 +1,27 @@
+<div class="sub-navigation">
+  <div class="container">
+    <ul class="sub-nav-list">
+      {{ $currentPage := . }}
+      {{ range .Site.Menus.exam_notes }}
+      <li{{ if or ($currentPage.IsMenuCurrent "exam_notes" .) ($currentPage.HasMenuCurrent "exam_notes" .) }} class="active"{{ end }}>
+        <a href="{{ .URL | absURL }}">
+          {{ if .HasChildren }}
+            {{ .Name }} <i class="fa fa-angle-down"></i>
+          {{ else }}
+            {{ .Name }}
+          {{ end }}
+        </a>
+        {{ if .HasChildren }}
+        <ul class="dropdown-menu">
+          {{ range .Children }}
+          <li{{ if $currentPage.IsMenuCurrent "exam_notes" . }} class="active"{{ end }}>
+            <a href="{{ .URL | absURL }}">{{ .Name }}</a>
+          </li>
+          {{ end }}
+        </ul>
+        {{ end }}
+      </li>
+      {{ end }}
+    </ul>
+  </div>
+</div>

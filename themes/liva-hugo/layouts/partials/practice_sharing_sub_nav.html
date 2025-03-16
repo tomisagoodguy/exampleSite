@@ -1,0 +1,23 @@
+<div class="sub-navigation">
+  <div class="container">
+    <ul class="sub-nav-list">
+      {{ $currentPage := . }}
+      {{ range .Site.Menus.practice_sharing }}
+      <li{{ if or ($currentPage.IsMenuCurrent "practice_sharing" .) ($currentPage.HasMenuCurrent "practice_sharing" .) }} class="active"{{ end }}{{ if .HasChildren }} class="dropdown"{{ end }}>
+        <a href="{{ if .HasChildren }}javascript:void(0){{ else }}{{ .URL | absURL }}{{ end }}">
+          {{ .Name }}{{ if .HasChildren }} <i class="fa fa-angle-down"></i>{{ end }}
+        </a>
+        {{ if .HasChildren }}
+        <ul class="dropdown-menu">
+          {{ range .Children }}
+          <li{{ if $currentPage.IsMenuCurrent "practice_sharing" . }} class="active"{{ end }}>
+            <a href="{{ .URL | absURL }}">{{ .Name }}</a>
+          </li>
+          {{ end }}
+        </ul>
+        {{ end }}
+      </li>
+      {{ end }}
+    </ul>
+  </div>
+</div>

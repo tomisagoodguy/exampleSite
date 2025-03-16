@@ -47,8 +47,6 @@
           </li>
           {{ end }}
           {{ end }}
-          
-          <!-- 已移除硬編碼的「所有文章」導覽項目 -->
         </ul>
 
         {{ if .Site.Params.search.enable }}
@@ -66,11 +64,33 @@
 
         {{ if .Site.Params.navButton.enable }}
         {{ "<!-- get start btn -->" | safeHTML }}
-        <a href="{{ .Site.Params.navButton.link | absURL }}"
-          class="btn btn-primary ml-lg-4">{{ .Site.Params.navButton.label }}</a>
+        <a href="{{ .Site.Params.navButton.link | absURL }}" class="btn btn-primary ml-lg-4">{{
+          .Site.Params.navButton.label }}</a>
         {{ end }}
       </div>
     </nav>
   </div>
 </header>
-{{ "<!-- /navigation -->" | safeHTML }}
+
+
+
+{{ if .Site.Params.subnavigation.enable }}
+  {{ if or 
+       (and .IsHome .Site.Params.subnavigation.showOnHome) 
+       (and .IsPage .Site.Params.subnavigation.showOnSingle) 
+       (and (or .IsSection .IsNode) .Site.Params.subnavigation.showOnList) }}
+    
+    {{ if eq .Section "articles" }}
+      {{ partial "all_articles_sub_nav.html" . }}
+    {{ else if eq .Section "exam-notes" }}
+      {{ partial "exam_notes_sub_nav.html" . }}
+    {{ else if eq .Section "practice-sharing" }}
+      {{ partial "practice_sharing_sub_nav.html" . }}
+    {{ else if eq .Section "other" }}
+      {{ partial "other_sub_nav.html" . }}
+    {{ end }}
+    
+  {{ end }}
+{{ end }}
+
+

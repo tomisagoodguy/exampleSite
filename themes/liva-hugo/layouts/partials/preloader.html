@@ -1,9 +1,126 @@
 {{ if .Site.Params.preloader.enable }}
 {{ "<!-- preloader start -->" | safeHTML }}
-<div class="preloader">
-  {{ if ne .Site.Params.preloader.preloader "" }}
-  <img src="{{ .Site.Params.preloader.preloader | absURL }} " alt="preloader">
-  {{ end }}
+<div class="preloader" id="preloader" aria-hidden="true" aria-label="頁面加載中">
+  <div class="preloader-content">
+    {{ if ne .Site.Params.preloader.preloader "" }}
+    <img src="{{ .Site.Params.preloader.preloader | absURL }}" alt="頁面加載中" width="80" height="80">
+    {{ else }}
+    <div class="preloader-spinner"></div>
+    {{ end }}
+    <p class="preloader-text">{{ .Site.Params.preloader.text | default "加載中..." }}</p>
+  </div>
 </div>
+
+<style>
+  .preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: {{ .Site.Params.preloader.background | default "#ffffff" }};
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+  }
+  
+  .preloader.loaded {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  
+  .preloader-content {
+    text-align: center;
+  }
+  
+  .preloader img {
+    max-width: 80px;
+    width: auto;
+    height: auto;
+    animation: pulse 1.5s ease infinite;
+  }
+  
+  .preloader-text {
+    margin-top: 15px;
+    font-size: 14px;
+    color: {{ .Site.Params.preloader.textColor | default "#333333" }};
+    opacity: 0.8;
+  }
+  
+  .preloader-spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto;
+    border: 3px solid {{ .Site.Params.preloader.spinnerColor | default "#f3f3f3" }};
+    border-top: 3px solid {{ .Site.Params.preloader.spinnerActiveColor | default "#3498db" }};
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* 確保頁面內容在預加載器消失前不可見 */
+  body.loading {
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.body.classList.add('loading');
+    
+    // 當頁面完全加載後
+    window.addEventListener('load', function() {
+      const preloader = document.getElementById('preloader');
+      if (preloader) {
+        // 添加loaded類以觸發過渡效果
+        preloader.classList.add('loaded');
+        
+        // 延遲移除body的loading類
+        setTimeout(function() {
+          document.body.classList.remove('loading');
+        }, 500);
+        
+        // 完全移除預加載器元素（可選，在過渡完成後）
+        setTimeout(function() {
+          preloader.parentNode.removeChild(preloader);
+        }, 1000);
+      }
+    });
+    
+    // 備用計時器 - 即使某些資源加載失敗，也確保預加載器最終會消失
+    setTimeout(function() {
+      const preloader = document.getElementById('preloader');
+      if (preloader && !preloader.classList.contains('loaded')) {
+        preloader.classList.add('loaded');
+        document.body.classList.remove('loading');
+      }
+    }, {{ .Site.Params.preloader.timeout | default 8000 }});
+  });
+</script>
 {{ "<!-- preloader end -->" | safeHTML }}
 {{ end }}

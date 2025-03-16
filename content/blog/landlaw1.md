@@ -5,13 +5,11 @@ toc: true
 draft: false
 description: "地價稅課徵範圍、納稅義務人及一般用地之稅率結構完整介紹"
 categories:
-  - "土地稅法"
+  - "土地稅法規"
 tags:
   - "地價稅"
 type: "post"
 ---
-
-
 ## 一、意義
 
 地價稅是對土地價值所課徵的賦稅。

@@ -6,7 +6,7 @@ draft: false
 description: "稅捐"
 weight: 3
 categories:
-  - "土地稅法"
+  - "土地稅法規"
 tags:
   - ""
 type: "post"
