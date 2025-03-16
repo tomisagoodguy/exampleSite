@@ -6,27 +6,117 @@
         <h1 class="mb-5">{{ .Title }}</h1>
         
         <div class="row">
-          {{ range .Pages }}
+          {{ $paginator := .Paginate (where .Pages "Type" "post") }}
+          {{ range $paginator.Pages }}
           <div class="col-lg-4 col-sm-6 mb-5">
-            <article class="card shadow">
+            <article class="card shadow h-100">
               {{ if .Params.image }}
               <img class="rounded card-img-top" src="{{ .Params.image | absURL }}" alt="{{ .Title }}">
               {{ end }}
-              <div class="card-body">
+              <div class="card-body d-flex flex-column">
                 <h4 class="card-title"><a class="text-dark" href="{{ .Permalink }}">{{ .Title }}</a></h4>
-                <p class="cars-text">{{ .Summary }}</p>
-                <a href="{{ .Permalink }}" class="btn btn-sm btn-primary">閱讀更多</a>
+                <p class="card-text flex-grow-1">
+                  {{ if .Summary }}
+                    {{ truncate 150 .Summary }}
+                  {{ else }}
+                    {{ truncate 150 .Content }}
+                  {{ end }}
+                </p>
+                <div class="mt-2 mb-3">
+                  {{ with .Params.categories }}
+                    {{ range . }}
+                      <a href="{{ "categories/" | relLangURL }}{{ . | urlize | lower }}/" class="badge badge-primary badge-sm">{{ . }}</a>
+                    {{ end }}
+                  {{ end }}
+                  
+                  {{ with .Params.tags }}
+                    {{ range . }}
+                      <a href="{{ "tags/" | relLangURL }}{{ . | urlize | lower }}/" class="badge badge-secondary badge-sm">{{ . }}</a>
+                    {{ end }}
+                  {{ end }}
+                </div>
+                <a href="{{ .Permalink }}" class="btn btn-sm btn-primary mt-auto">閱讀更多</a>
               </div>
             </article>
           </div>
-          {{ else }}
+          {{ end }}
+          
+          {{ if eq (len $paginator.Pages) 0 }}
           <div class="col-12">
-            <p>目前沒有文章可以顯示。</p>
+            <div class="alert alert-info text-center">
+              目前沒有文章可以顯示。請確保您的文章位於正確的目錄下，並且前置元數據中設置了正確的類型。
+            </div>
           </div>
           {{ end }}
         </div>
+        
+        <!-- 分頁 -->
+        {{ if gt $paginator.TotalPages 1 }}
+        <div class="row mt-5">
+          <div class="col-12">
+            <nav aria-label="Page navigation">
+              <ul class="pagination justify-content-center">
+                {{ if $paginator.HasPrev }}
+                <li class="page-item">
+                  <a class="page-link" href="{{ $paginator.Prev.URL }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                  </a>
+                </li>
+                {{ end }}
+                
+                {{ range $paginator.Pagers }}
+                <li class="page-item {{ if eq . $paginator }}active{{ end }}">
+                  <a class="page-link" href="{{ .URL }}">{{ .PageNumber }}</a>
+                </li>
+                {{ end }}
+                
+                {{ if $paginator.HasNext }}
+                <li class="page-item">
+                  <a class="page-link" href="{{ $paginator.Next.URL }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                  </a>
+                </li>
+                {{ end }}
+              </ul>
+            </nav>
+          </div>
+        </div>
+        {{ end }}
       </div>
     </div>
   </div>
 </section>
+
+<style>
+  .card {
+    transition: transform 0.3s;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+  }
+  .card-title a {
+    text-decoration: none;
+  }
+  .card-title a:hover {
+    color: #007bff !important;
+  }
+  .badge {
+    margin-right: 5px;
+    margin-bottom: 5px;
+    transition: all 0.3s;
+  }
+  .badge-primary:hover {
+    background-color: #0056b3;
+  }
+  .badge-secondary:hover {
+    background-color: #545b62;
+  }
+  .btn-primary {
+    transition: all 0.3s;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+</style>
 {{ end }}
