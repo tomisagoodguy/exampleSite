@@ -44,7 +44,13 @@
     <loc>http://localhost:1313/other/</loc>
     <lastmod>2025-03-16T09:00:00+08:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/other/other1/</loc>
+    <lastmod>2025-03-16T09:00:00+08:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/articles/</loc>
+    <lastmod>2025-03-16T09:00:00+08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/articles/article1/</loc>
     <lastmod>2025-03-16T09:00:00+08:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/tags/%E9%87%8D%E9%BB%9E%E6%95%B4%E7%90%86/</loc>

@@ -29,10 +29,10 @@
                   <time class="text-muted small" datetime="{{ .Date }}">發布於：{{ .Date.Format "2006-01-02" }}</time>
                 </header>
                 
-                <!-- 文章摘要 -->
+                <!-- 文章摘要 - 使用 truncate 函數 -->
                 <p class="text-muted mt-1 mb-2 small">
                   {{ with .Summary }}
-                    {{ slicestr . 0 50 }}{{ if gt (len .) 50 }}...{{ end }}
+                    {{ truncate 50 . }}
                   {{ end }}
                 </p>
                 
