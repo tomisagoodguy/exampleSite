@@ -3,13 +3,9 @@
     <ul class="sub-nav-list">
       {{ $currentPage := . }}
       {{ range .Site.Menus.exam_notes }}
-      <li{{ if or ($currentPage.IsMenuCurrent "exam_notes" .) ($currentPage.HasMenuCurrent "exam_notes" .) }} class="active"{{ end }}>
-        <a href="{{ .URL | absURL }}">
-          {{ if .HasChildren }}
-            {{ .Name }} <i class="fa fa-angle-down"></i>
-          {{ else }}
-            {{ .Name }}
-          {{ end }}
+      <li{{ if or ($currentPage.IsMenuCurrent "exam_notes" .) ($currentPage.HasMenuCurrent "exam_notes" .) }} class="active"{{ end }}{{ if .HasChildren }} class="dropdown"{{ end }}>
+        <a href="{{ if .HasChildren }}javascript:void(0){{ else }}{{ .URL | absURL }}{{ end }}">
+          {{ .Name }}{{ if .HasChildren }} <i class="fa fa-angle-down"></i>{{ end }}
         </a>
         {{ if .HasChildren }}
         <ul class="dropdown-menu">

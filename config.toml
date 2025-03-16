@@ -62,21 +62,25 @@ weight = 1
 name = "所有文章"
 URL = "articles/"
 weight = 2
+hasChildren = true  # 添加這一行，表示有子菜單
 
 [[menu.main]]
 name = "考試筆記"
 URL = "exam-notes/"
 weight = 3
+hasChildren = true  # 添加這一行，表示有子菜單
 
 [[menu.main]]
 name = "實務分享"
 URL = "practice-sharing/"
 weight = 4
+hasChildren = true  # 添加這一行，表示有子菜單
 
 [[menu.main]]
 name = "其他"
 URL = "other/"
 weight = 5
+hasChildren = true  # 添加這一行，表示有子菜單
 
 [[menu.main]]
 name = "關於"

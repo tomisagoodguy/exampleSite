@@ -25,21 +25,35 @@
 
         <ul class="navbar-nav">
           {{ range .Site.Menus.main }}
-          {{ if .HasChildren }}
+          {{ if .Params.hasChildren }}
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
+            <a class="nav-link dropdown-toggle" href="{{ .URL | absURL }}" role="button" data-toggle="dropdown" aria-haspopup="true"
               aria-expanded="false">
               {{ .Name }}
             </a>
             <div class="dropdown-menu">
-              {{ range .Children }}
-              <a class="dropdown-item" href="{{ .URL | absURL }}">{{ .Name }}</a>
+              {{ if eq .Name "所有文章" }}
+                {{ range .Site.Menus.articles }}
+                <a class="dropdown-item" href="{{ .URL | absURL }}">{{ .Name }}</a>
+                {{ end }}
+              {{ else if eq .Name "考試筆記" }}
+                {{ range .Site.Menus.exam_notes }}
+                <a class="dropdown-item" href="{{ .URL | absURL }}">{{ .Name }}</a>
+                {{ end }}
+              {{ else if eq .Name "實務分享" }}
+                {{ range .Site.Menus.practice_sharing }}
+                <a class="dropdown-item" href="{{ .URL | absURL }}">{{ .Name }}</a>
+                {{ end }}
+              {{ else if eq .Name "其他" }}
+                {{ range .Site.Menus.other }}
+                <a class="dropdown-item" href="{{ .URL | absURL }}">{{ .Name }}</a>
+                {{ end }}
               {{ end }}
             </div>
           </li>
           {{ else }}
           <li class="nav-item">
-            {{ if eq .Name "About" }}
+            {{ if eq .Name "關於" }}
             <a class="nav-link about-me-nav" href="{{ .URL | absURL }}">{{ .Name }}</a>
             {{ else }}
             <a class="nav-link" href="{{ .URL | absURL }}">{{ .Name }}</a>
@@ -55,7 +69,7 @@
           <button id="searchOpen" class="search-btn"><i class="ti-search"></i></button>
           <div class="search-wrapper">
             <form action="{{ .Site.BaseURL }}/search" class="h-100">
-              <input class="search-box px-4" id="search-query" name="s" type="search" placeholder="Type & Hit Enter...">
+              <input class="search-box px-4" id="search-query" name="s" type="search" placeholder="輸入關鍵字並按 Enter...">
             </form>
             <button id="searchClose" class="search-close"><i class="ti-close text-dark"></i></button>
           </div>
@@ -72,25 +86,34 @@
   </div>
 </header>
 
-
-
 {{ if .Site.Params.subnavigation.enable }}
+  {{ $currentSection := .Section }}
   {{ if or 
        (and .IsHome .Site.Params.subnavigation.showOnHome) 
        (and .IsPage .Site.Params.subnavigation.showOnSingle) 
        (and (or .IsSection .IsNode) .Site.Params.subnavigation.showOnList) }}
     
-    {{ if eq .Section "articles" }}
+    {{ if eq $currentSection "articles" }}
       {{ partial "all_articles_sub_nav.html" . }}
-    {{ else if eq .Section "exam-notes" }}
+    {{ else if eq $currentSection "exam-notes" }}
       {{ partial "exam_notes_sub_nav.html" . }}
-    {{ else if eq .Section "practice-sharing" }}
+    {{ else if eq $currentSection "practice-sharing" }}
       {{ partial "practice_sharing_sub_nav.html" . }}
-    {{ else if eq .Section "other" }}
+    {{ else if eq $currentSection "other" }}
       {{ partial "other_sub_nav.html" . }}
+    {{ else }}
+      {{ with .Params.section }}
+        {{ if eq . "articles" }}
+          {{ partial "all_articles_sub_nav.html" $ }}
+        {{ else if eq . "exam-notes" }}
+          {{ partial "exam_notes_sub_nav.html" $ }}
+        {{ else if eq . "practice-sharing" }}
+          {{ partial "practice_sharing_sub_nav.html" $ }}
+        {{ else if eq . "other" }}
+          {{ partial "other_sub_nav.html" $ }}
+        {{ end }}
+      {{ end }}
     {{ end }}
     
   {{ end }}
 {{ end }}
-
-
