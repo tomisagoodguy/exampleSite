@@ -80,6 +80,9 @@
     <loc>http://localhost:1313/categories/%E5%9C%9F%E5%9C%B0%E6%B3%95%E8%A6%8F/</loc>
     <lastmod>2024-12-20T10:07:47+08:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/categories/%E6%B0%91%E6%B3%95%E6%A6%82%E8%A6%81/</loc>
+    <lastmod>2024-12-20T10:07:47+08:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/categories/%E5%9C%B0%E6%94%BF%E5%A3%AB%E6%B3%95/</loc>
     <lastmod>2024-12-20T10:07:47+08:00</lastmod>
   </url><url>
@@ -87,6 +90,12 @@
     <lastmod>2024-12-20T10:07:47+08:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/landlaw1/</loc>
+    <lastmod>2024-12-20T10:07:47+08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/%E5%82%B5%E7%AF%87/</loc>
+    <lastmod>2024-12-20T10:07:47+08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/blog/landlaw5/</loc>
     <lastmod>2024-12-20T10:07:47+08:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/tags/%E5%84%AA%E5%85%88%E8%B3%BC%E8%B2%B7%E6%AC%8A/</loc>
