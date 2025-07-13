@@ -57,17 +57,7 @@ name = "首頁"
 URL = "/"
 weight = 1
 
-[[menu.main]]
-name = "考試筆記"
-URL = "exam-notes/"
-weight = 3
-hasChildren = true  # 表示有子菜單
 
-[[menu.main]]
-name = "實務分享"
-URL = "practice-sharing/"
-weight = 4
-hasChildren = true  # 表示有子菜單
 
 [[menu.main]]
 name = "其他"
@@ -80,67 +70,9 @@ name = "關於"
 URL = "about/"
 weight = 6
 
-# 副導覽列 - 所有文章分類
-[[menu.articles]]
-name = "土地法"
-URL = "categories/土地法/"
-weight = 1
 
-[[menu.articles]]
-name = "民法"
-URL = "categories/民法/"
-weight = 2
 
-[[menu.articles]]
-name = "土地登記"
-URL = "categories/土地登記/"
-weight = 3
 
-[[menu.articles]]
-name = "國土計畫"
-URL = "categories/國土計畫/"
-weight = 4
-
-[[menu.articles]]
-name = "區域計畫"
-URL = "categories/區域計畫/"
-weight = 5
-
-[[menu.articles]]
-name = "都市計畫"
-URL = "categories/都市計畫/"
-weight = 6
-
-[[menu.articles]]
-name = "平均地權"
-URL = "categories/平均地權/"
-weight = 7
-
-[[menu.articles]]
-name = "不動產經紀業"
-URL = "categories/不動產經紀業/"
-weight = 8
-
-# 副導覽列 - 考試筆記分類
-[[menu.exam_notes]]
-name = "土地法規"
-URL = "categories/土地法規/"
-weight = 1
-
-[[menu.exam_notes]]
-name = "民法概要"
-URL = "categories/民法概要/"
-weight = 2
-
-[[menu.exam_notes]]
-name = "土地登記實務"
-URL = "categories/土地登記實務/"
-weight = 3
-
-[[menu.exam_notes]]
-name = "土地稅法規"
-URL = "categories/土地稅法規/"
-weight = 4
 
 # # 副導覽列 - 實務分享分類
 # [[menu.practice_sharing]]
@@ -175,15 +107,7 @@ name = "關於"
 URL = "about/"
 weight = 1
 
-[[menu.footer]]
-name = "考試筆記"
-URL = "exam-notes/"
-weight = 3
 
-[[menu.footer]]
-name = "實務分享"
-URL = "practice-sharing/"
-weight = 4
 
 [[menu.footer]]
 name = "隱私政策"
@@ -201,10 +125,10 @@ weight = 6
 logo = "images/law.png"
 home = "首頁"
 # 指定主要內容區塊
-mainSections = ["articles", "exam-notes", "practice-sharing", "other"]
+mainSections = ["other"]
 
 # Meta data
-description = "定康的地政士考試筆記與實務分享"
+description = "定康的地政筆記"
 author = "定康"
 
 # Contact Information

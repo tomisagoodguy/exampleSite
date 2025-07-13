@@ -1,147 +1,97 @@
 {{ define "main" }}
 <section class="section-sm">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto text-center">
-                {{ if .Params.Image }}
-                <img src="{{ .Params.Image | absURL }}" alt="" class="img-fluid d-block mx-auto rounded-circle mb-4">
-                {{ end }}
-                
-                <!-- About -->
-                <h4 class="widget-title">{{ .Title | markdownify }}</h4>
-                <div class="content">
-                    {{ .Content }}
+        <div class="row align-items-start">
+            <!-- Profile Sidebar -->
+            <div class="col-lg-4 col-md-5 mb-4 mb-md-0">
+                <div class="profile-sidebar sticky-top">
+                    {{ if .Params.Image }}
+                    <img src="{{ .Params.Image | absURL }}" alt="{{ .Title }}" class="img-fluid w-100 rounded-lg shadow-sm">
+                    {{ end }}
+                    <h4 class="mt-4">{{ .Title | markdownify }}</h4>
+                    <p>熱愛學習新知、運動、程式</p>
+
+                    <!-- Social Links -->
+                    <ul class="list-inline social-links mt-3">
+                        {{ range .Site.Params.social }}
+                        <li class="list-inline-item"><a href="{{ .link | safeURL }}" target="_blank" rel="noopener noreferrer"><i class="{{ .icon }}"></i></a></li>
+                        {{ end }}
+                    </ul>
                 </div>
+            </div>
 
-                <!-- 筆記資源 -->
-                <h4 class="widget-title">筆記資源</h4>
-                <div class="github-projects mb-4">
-                    <div class="github-project-card">
-                        <a href="https://github.com/tomisagoodguy/landnote" target="_blank" class="github-link">
-                            <i class="fab fa-github"></i> landnote - 地政相關筆記
-                        </a>
-                        <p class="project-description">
-                            爬取高點補習班相關文章，給準備地政考試的朋友參考。
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Experience -->
-                <h4 class="widget-title">Experience</h4>
-                <div class="timeline">
-                    <!-- 2024 -->
-                    <div class="timeline-item">
-                        <div class="timeline-content">
-                            <span class="timeline-year">2024</span>
-                            <h3>持續成長</h3>
-                            <p>朝地政士邁進</p>
-                        </div>
+            <!-- Main Content -->
+            <div class="col-lg-8 col-md-7">
+                <div class="main-content">
+                    <div class="content mb-5">
+                        <h3 class="mb-4">關於我</h3>
+                        {{ .Content }}
                     </div>
 
-                    <!-- 2023 -->
-                    <div class="timeline-item">
-                        <div class="timeline-content">
-                            <span class="timeline-year">2023</span>
-                            <h3>專業進修與證照</h3>
-                            <p>國家考試不動產經紀人合格</p>
-                            <p>金融市場常識與職業道德合格</p>
-                            <p>投信投顧相關法規（含自律規範）合格</p>
-                            <p>信託業管理人員合格</p>
-                        </div>
-                    </div>
-
-                    <!-- 2022 -->
-                    <div class="timeline-item">
-                        <div class="timeline-content">
-                            <span class="timeline-year">2022-2023</span>
-                            <h3>學術基礎</h3>
-                            <p>台北大學不動產與城鄉環境學系</p>
-                            <p>台北大學企業管理學系</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Skills -->
-                <h4 class="widget-title">Skills</h4>
-                <div class="skills-container">
-                    <!-- 文書處理技能 -->
-                    <div class="skill-category">
-                        <h5>辦公室應用</h5>
-                        <div class="skill-item">
-                            <div class="skill-name">Excel</div>
-                            <div class="skill-bar">
-                                <div class="skill-level" style="width: 90%"></div>
+                    <!-- Experience -->
+                    <div class="experience mb-5">
+                        <h3 class="mb-4">我的歷程</h3>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-content">
+                                    <h5 class="timeline-year">2024 - 現在</h5>
+                                    <h6>持續成長</h6>
+                                    <p>朝地政士邁進</p>
+                                </div>
                             </div>
-                        </div>
-                        <div class="skill-item">
-                            <div class="skill-name">PowerPoint</div>
-                            <div class="skill-bar">
-                                <div class="skill-level" style="width: 90%"></div>
+                            <div class="timeline-item">
+                                <div class="timeline-content">
+                                    <h5 class="timeline-year">2023</h5>
+                                    <h6>專業進修與證照</h6>
+                                    <p>國家考試不動產經紀人合格、金融市場常識與職業道德、投信投顧相關法規、信託業管理人員合格</p>
+                                </div>
                             </div>
-                        </div>
-                        <div class="skill-item">
-                            <div class="skill-name">Word</div>
-                            <div class="skill-bar">
-                                <div class="skill-level" style="width: 90%"></div>
+                            <div class="timeline-item">
+                                <div class="timeline-content">
+                                    <h5 class="timeline-year">2022 - 2023</h5>
+                                    <h6>學術基礎</h6>
+                                    <p>台北大學不動產與城鄉環境學系 / 企業管理學系</p>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 程式技能 -->
-                    <div class="skill-category">
-                        <h5>程式開發</h5>
-                        <div class="skill-item">
-                            <div class="skill-name">Python</div>
-                            <div class="skill-bar">
-                                <div class="skill-level" style="width: 50%"></div>
-                            </div>
+                    <!-- Skills -->
+                    <div class="skills mb-5">
+                        <h3 class="mb-4">專業技能</h3>
+                        <div class="skill-category">
+                            <h5>辦公室應用 & 專業能力</h5>
+                            <ul class="skill-tags">
+                                <li>Excel</li>
+                                <li>PowerPoint</li>
+                                <li>Word</li>
+                                <li>文書處理</li>
+                                <li>資料分析</li>
+                                <li>報告撰寫</li>
+                                <li>簡報技巧</li>
+                            </ul>
                         </div>
-                        <div class="skill-item">
-                            <div class="skill-name">SQL</div>
-                            <div class="skill-bar">
-                                <div class="skill-level" style="width: 40%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <div class="skill-name">JavaScript</div>
-                            <div class="skill-bar">
-                                <div class="skill-level" style="width: 40%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <div class="skill-name">HTML/CSS</div>
-                            <div class="skill-bar">
-                                <div class="skill-level" style="width: 40%"></div>
-                            </div>
+                        <div class="skill-category">
+                            <h5>程式開發</h5>
+                            <ul class="skill-tags">
+                                <li>Python</li>
+                                <li>SQL</li>
+                                <li>JavaScript</li>
+                                <li>HTML/CSS</li>
+                            </ul>
                         </div>
                     </div>
 
-                    <!-- 專業技能 -->
-                    <div class="skill-category">
-                        <h5>專業能力</h5>
-                        <div class="skill-item">
-                            <div class="skill-name">文書處理</div>
-                            <div class="skill-bar">
-                                <div class="skill-level" style="width: 90%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <div class="skill-name">資料分析</div>
-                            <div class="skill-bar">
-                                <div class="skill-level" style="width: 95%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <div class="skill-name">報告撰寫</div>
-                            <div class="skill-bar">
-                                <div class="skill-level" style="width: 80%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <div class="skill-name">簡報技巧</div>
-                            <div class="skill-bar">
-                                <div class="skill-level" style="width: 80%"></div>
-                            </div>
+                    <!-- GitHub Projects -->
+                    <div class="github-projects">
+                        <h3 class="mb-4">筆記資源</h3>
+                        <div class="github-project-card">
+                            <a href="https://github.com/tomisagoodguy/landnote" target="_blank" class="github-link">
+                                <i class="fab fa-github"></i> landnote - 地政相關筆記
+                            </a>
+                            <p class="project-description">
+                                爬取高點補習班相關文章，給準備地政考試的朋友參考。
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -149,50 +99,4 @@
         </div>
     </div>
 </section>
-
-<style>
-/* GitHub 項目卡片樣式 */
-.github-projects {
-    margin-bottom: 2rem;
-}
-
-.github-project-card {
-    padding: 1.5rem;
-    border-radius: 8px;
-    background-color: #f8f9fa;
-    border-left: 4px solid #0366d6;
-    text-align: left;
-    margin-bottom: 1rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.github-project-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-.github-link {
-    display: flex;
-    align-items: center;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #0366d6;
-    text-decoration: none;
-    margin-bottom: 0.5rem;
-}
-
-.github-link i {
-    margin-right: 0.5rem;
-    font-size: 1.3rem;
-}
-
-.github-link:hover {
-    text-decoration: underline;
-}
-
-.project-description {
-    margin-top: 0.5rem;
-    color: #6c757d;
-}
-</style>
 {{ end }}

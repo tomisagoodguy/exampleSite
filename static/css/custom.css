@@ -1,0 +1,123 @@
+/* About Page Styles */
+.profile-sidebar {
+    text-align: center;
+}
+
+.profile-sidebar img {
+    border: 5px solid #fff;
+}
+
+.social-links a {
+    font-size: 1.5rem;
+    margin: 0 10px;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+    color: #007bff;
+}
+
+.main-content h3 {
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+/* Timeline */
+.timeline {
+    position: relative;
+    padding-left: 20px;
+    border-left: 2px solid #e9ecef;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.timeline-item:before {
+    content: '';
+    position: absolute;
+    left: -29px;
+    top: 5px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #007bff;
+    border: 2px solid #fff;
+}
+
+.timeline-year {
+    font-weight: 700;
+    color: #007bff;
+}
+
+/* Skills */
+.skill-category h5 {
+    font-weight: 600;
+    margin-top: 20px;
+}
+
+.skill-tags {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.skill-tags li {
+    display: inline-block;
+    background-color: #e9ecef;
+    color: #333;
+    padding: 8px 15px;
+    margin: 5px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.skill-tags li:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+
+/* GitHub Project Card */
+.github-project-card {
+    padding: 1.5rem;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    border-left: 4px solid #0366d6;
+    text-align: left;
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.github-project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.github-link {
+    display: flex;
+    align-items: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0366d6;
+    text-decoration: none;
+    margin-bottom: 0.5rem;
+}
+
+.github-link i {
+    margin-right: 0.5rem;
+    font-size: 1.3rem;
+}
+
+.github-link:hover {
+    text-decoration: underline;
+}
+
+.project-description {
+    margin-top: 0.5rem;
+    color: #6c757d;
+}
