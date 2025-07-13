@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>其他 on land-knowledege</title>
-    <link>https://tomisagoodguy.github.io/other/</link>
+    <link>http://localhost:1313/other/</link>
     <description>Recent content in 其他 on land-knowledege</description>
     <generator>Hugo</generator>
     <language>zh-tw</language>
     <lastBuildDate>Sun, 16 Mar 2025 09:00:00 +0800</lastBuildDate>
-    <atom:link href="https://tomisagoodguy.github.io/other/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/other/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>其他</title>
-      <link>https://tomisagoodguy.github.io/other/other1/</link>
+      <link>http://localhost:1313/other/other1/</link>
       <pubDate>Sun, 16 Mar 2025 09:00:00 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/other/other1/</guid>
+      <guid>http://localhost:1313/other/other1/</guid>
       <description>這個專區收集了不屬於上述分類的其他主題，包含學習心得、工具介紹、行業動態等多元內容。</description>
     </item>
   </channel>

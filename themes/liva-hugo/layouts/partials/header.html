@@ -44,10 +44,7 @@
                 {{ range .Site.Menus.practice_sharing }}
                 <a class="dropdown-item" href="{{ .URL | absURL }}">{{ .Name }}</a>
                 {{ end }}
-              {{ else if eq .Name "其他" }}
-                {{ range .Site.Menus.other }}
-                <a class="dropdown-item" href="{{ .URL | absURL }}">{{ .Name }}</a>
-                {{ end }}
+              
               {{ end }}
             </div>
           </li>
@@ -99,8 +96,7 @@
       {{ partial "exam_notes_sub_nav.html" . }}
     {{ else if eq $currentSection "practice-sharing" }}
       {{ partial "practice_sharing_sub_nav.html" . }}
-    {{ else if eq $currentSection "other" }}
-      {{ partial "other_sub_nav.html" . }}
+    
     {{ else }}
       {{ with .Params.section }}
         {{ if eq . "articles" }}

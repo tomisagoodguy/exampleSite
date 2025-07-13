@@ -1,88 +1,22 @@
-/* About Page Styles */
-.profile-sidebar {
-    text-align: center;
+/* Article Card Enhancements */
+.card {
+  background-color: #F8F8F8; /* 非常淺的灰色背景 */
+  border-radius: 8px; /* 稍微圓潤的邊角 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* 柔和的陰影 */
+  transition: all 0.3s ease; /* 平滑過渡效果 */
+  border: none; /* 移除預設邊框 */
 }
 
-.profile-sidebar img {
-    border: 5px solid #fff;
+.card:hover {
+  transform: translateY(-5px); /* 懸停時輕微上浮 */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* 懸停時陰影加深 */
 }
 
-.social-links a {
-    font-size: 1.5rem;
-    margin: 0 10px;
-    color: #333;
-    transition: color 0.3s ease;
+/* GitHub 項目卡片樣式 */
+.github-projects {
+    margin-bottom: 2rem;
 }
 
-.social-links a:hover {
-    color: #007bff;
-}
-
-.main-content h3 {
-    border-bottom: 2px solid #007bff;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-    font-weight: 600;
-}
-
-/* Timeline */
-.timeline {
-    position: relative;
-    padding-left: 20px;
-    border-left: 2px solid #e9ecef;
-}
-
-.timeline-item {
-    position: relative;
-    margin-bottom: 30px;
-}
-
-.timeline-item:before {
-    content: '';
-    position: absolute;
-    left: -29px;
-    top: 5px;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background-color: #007bff;
-    border: 2px solid #fff;
-}
-
-.timeline-year {
-    font-weight: 700;
-    color: #007bff;
-}
-
-/* Skills */
-.skill-category h5 {
-    font-weight: 600;
-    margin-top: 20px;
-}
-
-.skill-tags {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.skill-tags li {
-    display: inline-block;
-    background-color: #e9ecef;
-    color: #333;
-    padding: 8px 15px;
-    margin: 5px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-}
-
-.skill-tags li:hover {
-    background-color: #007bff;
-    color: #fff;
-}
-
-/* GitHub Project Card */
 .github-project-card {
     padding: 1.5rem;
     border-radius: 8px;
@@ -120,4 +54,45 @@
 .project-description {
     margin-top: 0.5rem;
     color: #6c757d;
+}
+
+/* Skills */
+.skill-category h5 {
+    font-weight: 600;
+    margin-top: 20px;
+}
+
+.skill-tags {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.skill-tags li {
+    display: inline-block;
+    background-color: #e9ecef;
+    color: #333;
+    padding: 8px 15px;
+    margin: 5px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.skill-tags li:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+
+/* Section Background for Boundary Sense */
+.section {
+  background-color: #FFFFFF; /* 純白色背景 */
+  border-radius: 8px; /* 輕微圓角 */
+  margin-bottom: 30px; /* 增加區塊間距 */
+  padding: 40px 0; /* 增加區塊內邊距 */
+}
+
+/* Adjust padding for smaller sections if needed */
+.section-sm {
+  padding: 30px 0; /* 較小的區塊內邊距 */
 }

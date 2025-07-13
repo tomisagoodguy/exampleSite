@@ -57,13 +57,14 @@ name = "首頁"
 URL = "/"
 weight = 1
 
-
-
 [[menu.main]]
-name = "其他"
-URL = "other/"
-weight = 5
-hasChildren = true  # 表示有子菜單
+name = "考試筆記"
+URL = "exam-notes/"
+weight = 3
+
+
+
+
 
 [[menu.main]]
 name = "關於"
@@ -74,38 +75,18 @@ weight = 6
 
 
 
-# # 副導覽列 - 實務分享分類
-# [[menu.practice_sharing]]
-# name = "案例分析"
-# URL = "categories/案例分析/"
-# weight = 1
 
-# [[menu.practice_sharing]]
-# name = "工作心得"
-# URL = "categories/工作心得/"
-# weight = 2
-
-# [[menu.practice_sharing]]
-# name = "實務技巧"
-# URL = "categories/實務技巧/"
-# weight = 3
-
-# # 副導覽列 - 其他分類
-# [[menu.other]]
-# name = "生活隨筆"
-# URL = "categories/生活隨筆/"
-# weight = 1
-
-# [[menu.other]]
-# name = "讀書心得"
-# URL = "categories/讀書心得/"
-# weight = 2
 
 # footer menu
 [[menu.footer]]
 name = "關於"
 URL = "about/"
 weight = 1
+
+[[menu.footer]]
+name = "考試筆記"
+URL = "exam-notes/"
+weight = 3
 
 
 
@@ -125,7 +106,7 @@ weight = 6
 logo = "images/law.png"
 home = "首頁"
 # 指定主要內容區塊
-mainSections = ["other"]
+mainSections = ["exam-notes"]
 
 # Meta data
 description = "定康的地政筆記"
@@ -175,6 +156,8 @@ link = "https://www.facebook.com/profile.php?id=100005583693079"
 title = "github"
 icon = "ti-github"                                         # themify icon : https://themify.me/themify-icons
 link = "https://github.com/tomisagoodguy?tab=repositories"
+
+
 
 [markup]
   [markup.tableOfContents]
