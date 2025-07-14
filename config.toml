@@ -71,6 +71,11 @@ name = "關於"
 URL = "about/"
 weight = 6
 
+[[menu.main]]
+name = "相關連結"
+URL = "links/"
+weight = 7
+
 
 
 
@@ -87,18 +92,6 @@ weight = 1
 name = "考試筆記"
 URL = "exam-notes/"
 weight = 3
-
-
-
-[[menu.footer]]
-name = "隱私政策"
-URL = "privacy-policy/"
-weight = 5
-
-[[menu.footer]]
-name = "聯絡我們"
-URL = "contact/"
-weight = 6
 
 #################### default parameters ################################
 [params]
@@ -168,5 +161,4 @@ link = "https://github.com/tomisagoodguy?tab=repositories"
 # 添加自定義分類法
 [taxonomies]
   category = "categories"
-  tag = "tags"
   author = "authors"

@@ -1,15 +1,30 @@
 /* Article Card Enhancements */
 .card {
-  background-color: #F8F8F8; /* 非常淺的灰色背景 */
-  border-radius: 8px; /* 稍微圓潤的邊角 */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* 柔和的陰影 */
-  transition: all 0.3s ease; /* 平滑過渡效果 */
-  border: none; /* 移除預設邊框 */
+  background-color: #E8DAEF; /* 更清晰的紫色背景 */
+  border-radius: 12px; /* 稍微圓潤的邊角 */
+  border: 1px solid rgba(0, 0, 0, 0.05); /* 非常輕微的邊框 */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.05); /* 多層次柔和陰影 */
+  transition: all 0.3s ease-in-out; /* 平滑過渡效果 */
 }
 
 .card:hover {
-  transform: translateY(-5px); /* 懸停時輕微上浮 */
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* 懸停時陰影加深 */
+  transform: translateY(-8px); /* 懸停時輕微上浮 */
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08); /* 懸停時陰影加深 */
+}
+
+/* Exam Notes Article Preview Enhancements */
+.article-preview {
+  background-color: #D9EDF7; /* 清晰的淡藍色背景，增加對比 */
+  border-radius: 12px; /* 圓潤邊角 */
+  border: 1px solid rgba(0, 0, 0, 0.05); /* 輕微邊框 */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.05); /* 多層次柔和陰影 */
+  transition: all 0.3s ease-in-out; /* 平滑過渡效果 */
+  padding: 15px; /* 增加內邊距 */
+}
+
+.article-preview:hover {
+  transform: translateY(-8px); /* 懸停時輕微上浮 */
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08); /* 懸停時陰影加深 */
 }
 
 /* GitHub 項目卡片樣式 */
@@ -95,4 +110,98 @@
 /* Adjust padding for smaller sections if needed */
 .section-sm {
   padding: 30px 0; /* 較小的區塊內邊距 */
+}
+
+/* Improved Table of Contents (TOC) Styles */
+.toc-container {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 100px; /* Adjusted for better spacing */
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  padding: 25px; /* Increased padding */
+  background-color: rgba(255, 255, 255, 0.95); /* More solid background */
+  backdrop-filter: blur(8px); /* Slightly less blur */
+  border-radius: 15px; /* More rounded corners */
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.06); /* Deeper, multi-layered shadow */
+}
+
+.toc-title {
+  font-size: 20px; /* Slightly larger title */
+  font-weight: 700;
+  margin-bottom: 20px; /* More space below title */
+  padding-bottom: 12px;
+  border-bottom: 3px solid var(--primary-color, #4f46e5); /* Thicker border */
+  color: var(--text-color-dark, #333);
+  text-align: center; /* Center align title */
+}
+
+.toc-content nav ul {
+  padding-left: 0;
+  list-style: none;
+}
+
+.toc-content nav > ul > li {
+  margin-bottom: 8px; /* Slightly less margin for compactness */
+}
+
+.toc-content nav > ul > li > a {
+  display: block;
+  padding: 10px 15px; /* Increased padding */
+  font-weight: 500; /* Slightly lighter font weight */
+  color: var(--text-color, #555);
+  text-decoration: none;
+  border-radius: 10px; /* More rounded links */
+  transition: all 0.3s ease-in-out; /* Smoother transition */
+  border-left: 4px solid transparent; /* Thicker left border for active state */
+}
+
+.toc-content nav > ul > li > a:hover {
+  background-color: rgba(79, 70, 229, 0.08); /* Lighter hover background */
+  color: var(--primary-color, #4f46e5);
+  transform: translateX(3px); /* Subtle slide effect */
+}
+
+.toc-content nav > ul > li.active > a {
+  color: var(--primary-color, #4f46e5);
+  background-color: rgba(79, 70, 229, 0.15); /* More pronounced active background */
+  border-left: 4px solid var(--primary-color, #4f46e5); /* Solid active border */
+  font-weight: 600; /* Bolder active text */
+}
+
+/* Sub-TOC Styles */
+.toc-content nav ul ul {
+  padding-left: 25px; /* Increased indentation */
+  margin-top: 5px;
+}
+
+.toc-content nav ul ul li a {
+  font-weight: 400;
+  padding: 6px 10px; /* Adjusted padding */
+  color: var(--text-color-light, #666);
+  border-left: none;
+}
+
+.toc-content nav ul ul li.active > a {
+  color: var(--primary-color, #4f46e5);
+  font-weight: 500;
+}
+
+/* Scrollbar Beautification */
+.toc-container::-webkit-scrollbar {
+  width: 8px; /* Slightly wider scrollbar */
+}
+
+.toc-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.toc-container::-webkit-scrollbar-thumb {
+  background: rgba(79, 70, 229, 0.2); /* Lighter scrollbar thumb */
+  border-radius: 4px;
+}
+
+.toc-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(79, 70, 229, 0.4); /* Darker on hover */
 }

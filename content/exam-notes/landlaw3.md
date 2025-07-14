@@ -2,13 +2,13 @@
 title: "地政士法"
 date: 2024-12-20T10:07:47+08:00
 toc: true
-draft: false
+draft: True
 description: "地政士必背條文"
 weight: 1
 categories:
   - "地政士法"
 tags:
-  - ""
+  
 type: "post"
 ---
 # 地政士法重點整理

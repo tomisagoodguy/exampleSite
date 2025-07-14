@@ -12,12 +12,7 @@ description: "this is meta description"
 # taxonomies
 categories: 
   - "Go Language"
-tags:
-  - "Photos"
-  - "Game"
-  - "HTML"
-  - "Python"
-  - "New"
+
 
 # post type
 type: "post"

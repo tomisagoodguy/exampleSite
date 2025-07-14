@@ -2,18 +2,11 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>實務分享 on land-knowledege</title>
-    <link>http://localhost:1313/practice-sharing/</link>
+    <link>https://tomisagoodguy.github.io/practice-sharing/</link>
     <description>Recent content in 實務分享 on land-knowledege</description>
     <generator>Hugo</generator>
     <language>zh-tw</language>
-    <lastBuildDate>Sat, 13 Jul 2024 00:00:00 +0800</lastBuildDate>
-    <atom:link href="http://localhost:1313/practice-sharing/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>繼承登記實務案例</title>
-      <link>http://localhost:1313/practice-sharing/inheritance-case-study/</link>
-      <pubDate>Sat, 13 Jul 2024 00:00:00 +0800</pubDate>
-      <guid>http://localhost:1313/practice-sharing/inheritance-case-study/</guid>
-      <description>這是繼承登記的實務案例範例文章內容。</description>
-    </item>
+    <lastBuildDate></lastBuildDate>
+    <atom:link href="https://tomisagoodguy.github.io/practice-sharing/index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>

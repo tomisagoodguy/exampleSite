@@ -2,12 +2,11 @@
 title: "地價稅課徵制度概述"
 date: 2024-12-20T10:07:47+08:00
 toc: true
-draft: false
+draft: True
 description: "地價稅課徵範圍、納稅義務人及一般用地之稅率結構完整介紹"
 categories:
   - "土地稅法規"
-tags:
-  - "地價稅"
+
 type: "post"
 ---
 ## 一、意義

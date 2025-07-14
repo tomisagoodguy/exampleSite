@@ -6,8 +6,7 @@ draft: false
 description: "優先購買權比較"
 categories:
   - "土地法規"
-tags:
-  - "優先購買權"
+
 type: "post"
 ---
 # 優先購買權比較
