@@ -2,11 +2,25 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Blogs on land-knowledege</title>
-    <link>https://tomisagoodguy.github.io/blog/</link>
+    <link>http://localhost:1313/blog/</link>
     <description>Recent content in Blogs on land-knowledege</description>
     <generator>Hugo</generator>
     <language>zh-tw</language>
-    <lastBuildDate></lastBuildDate>
-    <atom:link href="https://tomisagoodguy.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 06 Sep 2025 00:00:00 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>法式麵糊油炸蘋果附杏桃果醬</title>
+      <link>http://localhost:1313/blog/%E6%B3%95%E5%BC%8F%E9%BA%B5%E7%B3%8A%E6%B2%B9%E7%82%B8%E8%98%8B%E6%9E%9C%E9%99%84%E6%9D%8F%E6%A1%83%E6%9E%9C%E9%86%AC/</link>
+      <pubDate>Sat, 06 Sep 2025 00:00:00 +0800</pubDate>
+      <guid>http://localhost:1313/blog/%E6%B3%95%E5%BC%8F%E9%BA%B5%E7%B3%8A%E6%B2%B9%E7%82%B8%E8%98%8B%E6%9E%9C%E9%99%84%E6%9D%8F%E6%A1%83%E6%9E%9C%E9%86%AC/</guid>
+      <description>法式麵糊油炸蘋果附杏桃果醬 Apple fritters with apricot sauce&#xA;材料 (Ingredients) 組成部分 (Component) 材料 (Ingredient) 份量 (Quantity) 主要 蘋果 (Apple) 4個 麵糊 (Fritter Batter) T55 麵粉 (T55 Flour) 250g 雞蛋 (Eggs) 2個 糖 (Sugar) 10g 鹽 (Salt) 5g 融化的無鹽奶油 (Melted Unsalted Butter) 25ml 啤酒 (Beer) 150ml 蛋白 (Egg Whites) 3個 水 (Water) 適量 (to adjust) 醃料 (Marinade) 糖粉 (Powdered Sugar) 40g 卡爾瓦杜斯蘋果白蘭地 (Calvados) 20ml 檸檬 (Lemon) 1/2 個 收尾 (To Finish) 杏桃果醬 (Apricot Jam) 150g 炸油 (Frying Oil) 適量 (to taste) 糖粉 (Powdered Sugar) 適量 (to taste) 🍺 麵糊準備 (Batter Preparation) 食材：中筋或 T55 麵粉、糖、鹽、全蛋、啤酒、融化奶油。 麵粉置入鋼盆，麵粉中間挖洞放糖、鹽。 打散的全蛋倒入麵粉中間，用打蛋器攪拌至 雪花狀。 分次加入啤酒，攪拌至 無顆粒的麵糊。 分次加入融化奶油，攪拌均勻。 若太稠可加少量水調整。 用保鮮膜封住，冷藏靜置 至少 20 分鐘 → 【備用 A】。 🍏 蘋果處理與醃漬 (Apple Preparation &amp;amp; Marinade) 蘋果去皮、去頭尾、去核，切成 1~1.</description>
+    </item>
+    <item>
+      <title>7月月營收股票進場檢討</title>
+      <link>http://localhost:1313/blog/stock-review-july/</link>
+      <pubDate>Sun, 27 Jul 2025 00:00:00 +0800</pubDate>
+      <guid>http://localhost:1313/blog/stock-review-july/</guid>
+      <description>7月份策略強勢股觀察&#xA;2059 川湖 2404 漢唐 2449 京元電子 3032 偉訓 3037 欣興 3167 大量 3543 未知 4721 美琪瑪 4931 新盛力 6191 精成科 8358 金居 </description>
+    </item>
   </channel>
 </rss>

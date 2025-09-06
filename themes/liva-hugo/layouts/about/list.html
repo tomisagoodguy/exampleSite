@@ -17,6 +17,14 @@
                         <li class="list-inline-item"><a href="{{ .link | safeURL }}" target="_blank" rel="noopener noreferrer"><i class="{{ .icon }}"></i></a></li>
                         {{ end }}
                     </ul>
+
+                    <!-- LINE QR Code -->
+                    <div class="line-qr-code mt-4">
+                        <h5 class="mb-3">Line</h5>
+                        <a href="{{ `images/line.jpg` | absURL }}" class="venobox">
+                            <img src="{{ `images/line.jpg` | absURL }}" alt="LINE QR Code - Click to view" class="img-fluid w-100 rounded-lg shadow-sm">
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -34,23 +42,36 @@
                         <div class="timeline">
                             <div class="timeline-item">
                                 <div class="timeline-content">
-                                    <h5 class="timeline-year">2024 - 現在</h5>
+                                    <h5 class="timeline-year">2025</h5>
+                                    <h6>永慶房屋地政士</h6>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-content">
+                                    <h5 class="timeline-year">2024</h5>
                                     <h6>專業認證與持續成長</h6>
-                                    <p>TQC人工智慧應用與技術、朝地政士邁進</p>
+                                    <ul class="list-unstyled mb-0">
+                                        <li><strong>台北市職能發展學院python應用實戰班</strong> &rarr; <strong>TQC人工智慧應用與技術</strong></li>
+                                    </ul>
                                 </div>
                             </div>
                             <div class="timeline-item">
                                 <div class="timeline-content">
                                     <h5 class="timeline-year">2023</h5>
                                     <h6>專業進修與證照</h6>
-                                    <p>國家考試不動產經紀人合格、金融市場常識與職業道德、投信投顧相關法規、信託業管理人員合格</p>
+                                    <ul class="list-unstyled mb-0">
+                                        <li><strong>國家考試不動產經紀人合格</strong></li>
+                                        <li><strong>金融市場常識與職業道德</strong></li>
+                                        <li><strong>投信投顧相關法規</strong></li>
+                                        <li><strong>信託業管理人員合格</strong></li>
+                                    </ul>
                                 </div>
                             </div>
                             <div class="timeline-item">
                                 <div class="timeline-content">
-                                    <h5 class="timeline-year">2022 - 2023</h5>
+                                    <h5 class="timeline-year">2018~2023</h5>
                                     <h6>學術基礎</h6>
-                                    <p>台北大學不動產與城鄉環境學系 / 企業管理學系</p>
+                                    <p><strong>台北大學不動產與城鄉環境學系 / 企業管理學系</strong></p>
                                 </div>
                             </div>
                         </div>
@@ -91,6 +112,19 @@
                             </a>
                             <p class="project-description">
                                 爬取高點補習班相關文章，給準備地政考試的朋友參考。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- GitHub Projects -->
+                    <div class="github-projects">
+                        <h3 class="mb-4">Projects</h3>
+                        <div class="github-project-card">
+                            <a href="https://github.com/tomisagoodguy/taiwan_essay_download?tab=readme-ov-file" target="_blank" class="github-link">
+                                <i class="fab fa-github"></i> 臺灣博碩士論文網自動下載器
+                            </a>
+                            <p class="project-description">
+                                自動下載臺灣博碩士論文網的論文。
                             </p>
                         </div>
                     </div>

@@ -62,10 +62,6 @@ name = "考試筆記"
 URL = "exam-notes/"
 weight = 3
 
-
-
-
-
 [[menu.main]]
 name = "關於"
 URL = "about/"
