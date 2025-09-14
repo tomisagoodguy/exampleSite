@@ -5,7 +5,7 @@ toc: true
 draft: false
 description: "優先購買權比較"
 categories:
-  - "土地法規"
+  - "土地稅法規"
 
 type: "post"
 ---

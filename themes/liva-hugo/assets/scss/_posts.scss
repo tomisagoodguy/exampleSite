@@ -9,7 +9,7 @@
   --accent-color: #10b981;           /* 強調色：綠色 */
   --accent-hover: #059669;           /* 強調色懸停 */
   
-  --light-bg: rgba(249, 250, 251, 0.8);  /* 亮色背景 */
+  --light-bg: #faf8f5;  /* 亮色背景 */
   --dark-bg: rgba(15, 23, 42, 0.8);      /* 暗色背景 */
   
   --light-text: #1f2937;             /* 亮色模式文字 */
@@ -34,7 +34,7 @@
    第一部分：文章卡片設計（統一顏色）
    ========================================== */
 /* 文章卡片 - 強化版（無描述，增加動畫感） */
-.article-card, .card, .post-item {
+.article-card, .card, .post-item, .article-preview {
   position: relative;
   margin-bottom: 28px;
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease-in-out;

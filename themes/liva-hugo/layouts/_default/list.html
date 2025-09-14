@@ -11,13 +11,13 @@
       <!-- Main Content -->
       <div class="col-lg-8 mb-5 mb-lg-0">
         <div class="title text-center">
-          <h2 class="mb-5">所有文章</h2>
+          <h2 class="mb-5">{{ .Title | markdownify }}</h2>
         </div>
         
         <div class="content">
           <ul class="list-group list-group-flush article-list">
             <!-- 修改：使用 Site.RegularPages 而不是 .Data.Pages -->
-            {{ $paginator := .Paginate (where .Site.RegularPages "Section" .Section) }}
+            {{ $paginator := .Paginate .Pages }}
             {{ range $paginator.Pages }}
             <li class="list-group-item bg-transparent border-bottom py-3 px-2">
               
@@ -102,7 +102,6 @@
     padding: 10px 15px !important;
   }
   .list-group-item:hover {
-    background-color: rgba(0, 123, 255, 0.05);
     transform: scale(1.02);
   }
 
@@ -127,7 +126,7 @@
   .badge-primary:hover {
     background-color: #0056b3;
     transform: translateY(-2px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   }
   
   

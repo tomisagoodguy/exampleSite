@@ -1,32 +1,3 @@
-/* Article Card Enhancements */
-.card {
-  background-color: #E8DAEF; /* 更清晰的紫色背景 */
-  border-radius: 12px; /* 稍微圓潤的邊角 */
-  border: 1px solid rgba(0, 0, 0, 0.05); /* 非常輕微的邊框 */
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.05); /* 多層次柔和陰影 */
-  transition: all 0.3s ease-in-out; /* 平滑過渡效果 */
-}
-
-.card:hover {
-  transform: translateY(-8px); /* 懸停時輕微上浮 */
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08); /* 懸停時陰影加深 */
-}
-
-/* Exam Notes Article Preview Enhancements */
-.article-preview {
-  background-color: #D9EDF7; /* 清晰的淡藍色背景，增加對比 */
-  border-radius: 12px; /* 圓潤邊角 */
-  border: 1px solid rgba(0, 0, 0, 0.05); /* 輕微邊框 */
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.05); /* 多層次柔和陰影 */
-  transition: all 0.3s ease-in-out; /* 平滑過渡效果 */
-  padding: 15px; /* 增加內邊距 */
-}
-
-.article-preview:hover {
-  transform: translateY(-8px); /* 懸停時輕微上浮 */
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08); /* 懸停時陰影加深 */
-}
-
 /* GitHub 項目卡片樣式 */
 .github-projects {
     margin-bottom: 2rem;

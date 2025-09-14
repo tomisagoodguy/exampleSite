@@ -1,7 +1,11 @@
 // 基礎樣式
 body {
-  background-color: $body-color;
+  background-color: #ffffff;
   overflow-x: hidden;
+  background-image:
+    linear-gradient(rgba(150, 160, 170, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(150, 160, 170, 0.12) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
 ::selection {
