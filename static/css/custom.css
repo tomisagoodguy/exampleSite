@@ -72,7 +72,7 @@
 
 /* Section Background for Boundary Sense */
 .section {
-  background-color: #FFFFFF; /* 純白色背景 */
+  background-color: #e9ecef; /* 稍深灰色背景 */
   border-radius: 8px; /* 輕微圓角 */
   margin-bottom: 30px; /* 增加區塊間距 */
   padding: 40px 0; /* 增加區塊內邊距 */
