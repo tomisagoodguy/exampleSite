@@ -1,111 +1,137 @@
+/**
+ * @doc
+ * 網站整體樣式表 (完整修正版)
+ * -----------------------------------------
+ * 包含所有原始樣式 (GitHub卡片, 技能標籤, 目錄等)
+ * 並整合了修正版的「黑白主題」頁首與頁尾樣式，解決導覽列顏色與文字問題。
+ *
+ * 使用方式：直接複製全部內容，取代您現有的 CSS 檔案。
+ * 最後更新時間：2025-09-27
+ */
+
 /* GitHub 項目卡片樣式 */
 .github-projects {
-    margin-bottom: 2rem;
+  margin-bottom: 2rem;
 }
 
 .github-project-card {
-    padding: 1.5rem;
-    border-radius: 8px;
-    background-color: #f8f9fa;
-    border-left: 4px solid #0366d6;
-    text-align: left;
-    margin-bottom: 1rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  padding: 1.5rem;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  border-left: 4px solid #0366d6;
+  text-align: left;
+  margin-bottom: 1rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .github-project-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .github-link {
-    display: flex;
-    align-items: center;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #0366d6;
-    text-decoration: none;
-    margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0366d6;
+  text-decoration: none;
+  margin-bottom: 0.5rem;
 }
 
 .github-link i {
-    margin-right: 0.5rem;
-    font-size: 1.3rem;
+  margin-right: 0.5rem;
+  font-size: 1.3rem;
 }
 
 .github-link:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .project-description {
-    margin-top: 0.5rem;
-    color: #6c757d;
+  margin-top: 0.5rem;
+  color: #6c757d;
 }
 
 /* Skills */
 .skill-category h5 {
-    font-weight: 600;
-    margin-top: 20px;
+  font-weight: 600;
+  margin-top: 20px;
 }
 
 .skill-tags {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .skill-tags li {
-    display: inline-block;
-    background-color: #e9ecef;
-    color: #333;
-    padding: 8px 15px;
-    margin: 5px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
+  display: inline-block;
+  background-color: #e9ecef;
+  color: #333;
+  padding: 8px 15px;
+  margin: 5px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
 }
 
 .skill-tags li:hover {
-    background-color: #007bff;
-    color: #fff;
+  background-color: #007bff;
+  color: #fff;
 }
 
 /* Section Background for Boundary Sense */
 .section {
-  background-color: #e9ecef; /* 稍深灰色背景 */
-  border-radius: 8px; /* 輕微圓角 */
-  margin-bottom: 30px; /* 增加區塊間距 */
-  padding: 40px 0; /* 增加區塊內邊距 */
+  background-color: #e9ecef;
+  /* 稍深灰色背景 */
+  border-radius: 8px;
+  /* 輕微圓角 */
+  margin-bottom: 30px;
+  /* 增加區塊間距 */
+  padding: 40px 0;
+  /* 增加區塊內邊距 */
 }
 
 /* Adjust padding for smaller sections if needed */
 .section-sm {
-  padding: 30px 0; /* 較小的區塊內邊距 */
+  padding: 30px 0;
+  /* 較小的區塊內邊距 */
 }
 
 /* Improved Table of Contents (TOC) Styles */
 .toc-container {
   position: -webkit-sticky;
   position: sticky;
-  top: 100px; /* Adjusted for better spacing */
+  top: 100px;
+  /* Adjusted for better spacing */
   max-height: calc(100vh - 120px);
   overflow-y: auto;
-  padding: 25px; /* Increased padding */
-  background-color: rgba(255, 255, 255, 0.95); /* More solid background */
-  backdrop-filter: blur(8px); /* Slightly less blur */
-  border-radius: 15px; /* More rounded corners */
+  padding: 25px;
+  /* Increased padding */
+  background-color: rgba(255, 255, 255, 0.95);
+  /* More solid background */
+  backdrop-filter: blur(8px);
+  /* Slightly less blur */
+  border-radius: 15px;
+  /* More rounded corners */
   border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.06); /* Deeper, multi-layered shadow */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.06);
+  /* Deeper, multi-layered shadow */
 }
 
 .toc-title {
-  font-size: 20px; /* Slightly larger title */
+  font-size: 20px;
+  /* Slightly larger title */
   font-weight: 700;
-  margin-bottom: 20px; /* More space below title */
+  margin-bottom: 20px;
+  /* More space below title */
   padding-bottom: 12px;
-  border-bottom: 3px solid var(--primary-color, #4f46e5); /* Thicker border */
+  border-bottom: 3px solid var(--primary-color, #4f46e5);
+  /* Thicker border */
   color: var(--text-color-dark, #333);
-  text-align: center; /* Center align title */
+  text-align: center;
+  /* Center align title */
 }
 
 .toc-content nav ul {
@@ -113,55 +139,69 @@
   list-style: none;
 }
 
-.toc-content nav > ul > li {
-  margin-bottom: 8px; /* Slightly less margin for compactness */
+.toc-content nav>ul>li {
+  margin-bottom: 8px;
+  /* Slightly less margin for compactness */
 }
 
-.toc-content nav > ul > li > a {
+.toc-content nav>ul>li>a {
   display: block;
-  padding: 10px 15px; /* Increased padding */
-  font-weight: 500; /* Slightly lighter font weight */
+  padding: 10px 15px;
+  /* Increased padding */
+  font-weight: 500;
+  /* Slightly lighter font weight */
   color: var(--text-color, #555);
   text-decoration: none;
-  border-radius: 10px; /* More rounded links */
-  transition: all 0.3s ease-in-out; /* Smoother transition */
-  border-left: 4px solid transparent; /* Thicker left border for active state */
+  border-radius: 10px;
+  /* More rounded links */
+  transition: all 0.3s ease-in-out;
+  /* Smoother transition */
+  border-left: 4px solid transparent;
+  /* Thicker left border for active state */
 }
 
-.toc-content nav > ul > li > a:hover {
-  background-color: rgba(79, 70, 229, 0.08); /* Lighter hover background */
+.toc-content nav>ul>li>a:hover {
+  background-color: rgba(79, 70, 229, 0.08);
+  /* Lighter hover background */
   color: var(--primary-color, #4f46e5);
-  transform: translateX(3px); /* Subtle slide effect */
+  transform: translateX(3px);
+  /* Subtle slide effect */
 }
 
-.toc-content nav > ul > li.active > a {
+.toc-content nav>ul>li.active>a {
   color: var(--primary-color, #4f46e5);
-  background-color: rgba(79, 70, 229, 0.15); /* More pronounced active background */
-  border-left: 4px solid var(--primary-color, #4f46e5); /* Solid active border */
-  font-weight: 600; /* Bolder active text */
+  background-color: rgba(79, 70, 229, 0.15);
+  /* More pronounced active background */
+  border-left: 4px solid var(--primary-color, #4f46e5);
+  /* Solid active border */
+  font-weight: 600;
+  /* Bolder active text */
 }
 
 /* Sub-TOC Styles */
 .toc-content nav ul ul {
-  padding-left: 25px; /* Increased indentation */
+  padding-left: 25px;
+  /* Increased indentation */
   margin-top: 5px;
 }
 
 .toc-content nav ul ul li a {
   font-weight: 400;
-  padding: 6px 10px; /* Adjusted padding */
+  padding: 6px 10px;
+  /* Adjusted padding */
   color: var(--text-color-light, #666);
   border-left: none;
 }
 
-.toc-content nav ul ul li.active > a {
+.toc-content nav ul ul li.active>a {
   color: var(--primary-color, #4f46e5);
   font-weight: 500;
 }
 
 /* Scrollbar Beautification */
 .toc-container::-webkit-scrollbar {
-  width: 8px; /* Slightly wider scrollbar */
+  width: 8px;
+  /* Slightly wider scrollbar */
 }
 
 .toc-container::-webkit-scrollbar-track {
@@ -169,94 +209,208 @@
 }
 
 .toc-container::-webkit-scrollbar-thumb {
-  background: rgba(79, 70, 229, 0.2); /* Lighter scrollbar thumb */
+  background: rgba(79, 70, 229, 0.2);
+  /* Lighter scrollbar thumb */
   border-radius: 4px;
 }
 
 .toc-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(79, 70, 229, 0.4); /* Darker on hover */
+  background: rgba(79, 70, 229, 0.4);
+  /* Darker on hover */
 }
 
 /* Recipe Gallery Styles */
 .recipe-gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
-    margin: 2rem 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
 }
 
 .recipe-gallery-item {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 0.5rem;
-    text-align: center;
-    background-color: #f9f9f9;
-    margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.5rem;
+  text-align: center;
+  background-color: #f9f9f9;
+  margin-bottom: 1rem;
 }
 
 .recipe-gallery-item img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 4px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
 }
 
 .recipe-gallery-item figcaption {
-    margin-top: 0.5rem;
-    font-size: 0.9rem;
-    color: #555;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #555;
 }
 
 /* Arrow for image captions */
 .recipe-gallery-item figcaption::before {
-    content: '↑' !important;
-    display: block !important;
-    font-size: 1.5rem !important;
-    color: #888 !important;
-    margin-bottom: 4px !important;
+  content: '↑' !important;
+  display: block !important;
+  font-size: 1.5rem !important;
+  color: #888 !important;
+  margin-bottom: 4px !important;
 }
 
 /* Category-specific backgrounds */
 section.category-french-dessert,
 section.category-belgian-cuisine,
 section.category-french-cuisine {
-    background-color: #fdf8f0; /* Warm, light beige */
+  background-color: #fdf8f0;
+  /* Warm, light beige */
 }
 
 section.category-stock-research {
-    background-color: #f8f8f8; /* Clean, light grey */
+  background-color: #f8f8f8;
+  /* Clean, light grey */
 }
 
 /* Table border style */
-table, th, td {
+table,
+th,
+td {
   border: 1px solid black !important;
 }
 
 .skill-title {
   display: flex;
   align-items: center;
-  font-size: 1.1rem; /* Slightly larger font */
+  font-size: 1.1rem;
+  /* Slightly larger font */
   color: #333;
   padding: 10px 15px;
   background-color: #f8f9fa;
   border-radius: 5px;
-  border-left: 5px solid #007bff; /* Accent color from other styles */
+  border-left: 5px solid #007bff;
+  /* Accent color from other styles */
   margin-top: 20px;
   margin-bottom: 15px;
 }
 
 .skill-title i {
-  margin-right: 10px; /* Space between icon and text */
-  color: #007bff; /* Icon color */
+  margin-right: 10px;
+  /* Space between icon and text */
+  color: #007bff;
+  /* Icon color */
 }
 
 /* Dropdown on hover */
 .navbar-nav .dropdown:hover .dropdown-menu {
-    display: block;
-    margin-top: 0; /* remove the gap so it doesn't close */
+  display: block;
+  margin-top: 0;
+  /* remove the gap so it doesn't close */
 }
 
-/* Navigation link hover effect */
-.navbar-nav .nav-item .nav-link:hover {
-    background-color: rgba(79, 70, 229, 0.1) !important; /* A light version of the primary color */
-    border-radius: 5px !important;
+
+/* =================================================================
+   Header and Footer Color Customization (Black & White Theme) - 【修正版】
+   ================================================================= */
+
+/**
+ * @doc
+ * 頁首與頁尾顏色主題優化 (黑白版) - 修正版
+ * -----------------------------------------
+ *
+ * 1.  【修正】強制將頁首背景色設定為純黑色 (#000000)，覆寫 Bootstrap 的 'bg-transparent' 樣式。
+ * 2.  【修正】強制將導覽列文字顏色調整為白色 (#ffffff)，覆寫 Bootstrap 的 'navbar-white' 樣式。
+ * 3.  反轉 Logo 顏色以適應黑色背景 (維持不變)。
+ * 4.  修正了下拉式選單的樣式，使其與黑色導覽列保持一致 (維持不變)。
+ * 5.  為導覽列連結的 hover 效果設定為深灰色 (#333333)，提供清晰的互動回饋 (維持不變)。
+ */
+
+/* 基礎設定：設定頁首與頁尾的背景色為黑色 */
+header.navigation,
+footer.footer-section,
+.newsletter-section {
+  background-color: #000000;
 }
+
+/* 【修正 1】強制覆寫 Bootstrap 樣式，確保導覽列背景為純黑 */
+/* 透過更精確的選擇器來提高優先級 */
+header.navigation .navbar {
+  background-color: #000000 !important;
+  /* 使用 !important 確保最高優先級 */
+}
+
+/* 頁首：品牌 Logo 與文字顏色 */
+.navigation .navbar-brand {
+  color: #ffffff;
+}
+
+/* 【修正 2】強制覆寫 Bootstrap 'navbar-white' 的文字顏色，確保連結文字為純白 */
+.navigation .navbar-nav .nav-link {
+  color: #ffffff !important;
+  /* 使用 !important 確保文字為白色 */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 頁首：導覽連結的 Hover 與 Active 效果 (此部分設計正確，問題在於基礎顏色) */
+/* 當基礎文字顏色修正後，這個 hover 效果就能正常顯示 */
+.navigation .navbar-nav .nav-link:hover,
+.navigation .navbar-nav .nav-item.active .nav-link {
+  background-color: #333333;
+  /* 使用深灰色作為 hover/active 背景 */
+  color: #ffffff !important;
+  /* 同樣確保 hover 時文字也是白色 */
+  border-radius: 5px;
+}
+
+/* 頁首：反轉 Logo 顏色以適應黑色背景 */
+.navigation .navbar-brand img,
+.navigation.nav-bg .navbar-brand img {
+  filter: invert(1) brightness(100);
+}
+
+/* 頁首：行動版漢堡選單圖示顏色 */
+.navbar-toggler i,
+.nav-bg .navbar-toggler i {
+  color: #ffffff;
+}
+
+/* 【重要修正】下拉式選單樣式，使其與黑色主題一致 (維持不變) */
+.navbar-nav .dropdown-menu {
+  background-color: #000000;
+  /* 同樣的黑色背景 */
+  border: 1px solid #333333;
+  /* 邊框顏色為深灰色 */
+}
+
+.navbar-nav .dropdown-item {
+  color: #ffffff;
+  /* 文字改為純白 */
+  transition: background-color 0.3s ease;
+}
+
+.navbar-nav .dropdown-item:hover {
+  color: #ffffff;
+  background-color: #333333;
+  /* 使用與導覽列一致的 hover 背景色 */
+}
+
+/* 頁尾：統一設定文字顏色 */
+footer.footer-section,
+footer.footer-section h6,
+footer.footer-section a,
+.newsletter-section h2,
+.newsletter-section p {
+  color: #ffffff;
+  /* 文字全部改為純白 */
+}
+
+/* 頁尾：Copyright 文字使用淺灰色，稍微降低視覺權重 */
+.footer-copyright {
+  color: #cccccc;
+}
+
+/* 頁尾：連結 hover 效果 */
+footer.footer-section a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+/* --- End of Customization --- */
