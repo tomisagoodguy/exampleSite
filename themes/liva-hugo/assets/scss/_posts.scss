@@ -717,3 +717,179 @@ body article h6 {
     }
   }
 }
+
+
+/* ==========================================
+   第六部分：文章內容頁面樣式（統一顏色）
+   ========================================== */
+.post-content-area {
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--light-text);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+  
+  p {
+    color: var(--light-text-muted);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+  }
+  
+  a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      color: var(--primary-hover);
+      text-decoration: underline;
+    }
+  }
+  
+  ul, ol {
+    padding-left: 2rem;
+    margin-bottom: 1.5rem;
+    
+    li {
+      color: var(--light-text-muted);
+      margin-bottom: 0.75rem;
+      line-height: 1.8;
+    }
+  }
+  
+  blockquote {
+    border-left: 4px solid var(--accent-color);
+    padding: 1rem 1.5rem;
+    margin: 2rem 0;
+    background: rgba(16, 185, 129, 0.05);
+    border-radius: 0 8px 8px 0;
+    
+    p {
+      margin: 0;
+      font-style: italic;
+      color: var(--light-text);
+    }
+  }
+  
+  pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 1.5rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 2rem 0;
+    
+    code {
+      font-family: 'Fira Code', 'Courier New', monospace;
+      background: transparent;
+      padding: 0;
+      color: inherit;
+    }
+  }
+  
+  table {
+    width: 100%;
+    margin: 2rem 0;
+    border-collapse: collapse;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    overflow: hidden;
+    
+    th, td {
+      padding: 1rem 1.25rem;
+      text-align: left;
+      border-bottom: 2px solid #888;
+    }
+    
+    thead {
+      background: #f8f9fa;
+      
+      th {
+        font-weight: 600;
+        color: var(--light-text);
+        border-bottom-width: 3px;
+      }
+    }
+    
+    tbody {
+      tr {
+        transition: background-color 0.3s ease;
+        
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        &:last-child {
+          td {
+            border-bottom: none;
+          }
+        }
+      }
+    }
+  }
+  
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 2rem 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* 支援暗黑模式 */
+  @media (prefers-color-scheme: dark) {
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--dark-text);
+    }
+    
+    p, ul li, ol li {
+      color: var(--dark-text-muted);
+    }
+    
+    a {
+      color: var(--secondary-color);
+      
+      &:hover {
+        color: var(--secondary-hover);
+      }
+    }
+    
+    blockquote {
+      border-left-color: var(--secondary-color);
+      background: rgba(139, 92, 246, 0.1);
+      
+      p {
+        color: var(--dark-text);
+      }
+    }
+    
+    table {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      
+      th, td {
+        border-bottom: 1px solid var(--border-dark);
+      }
+      
+      thead {
+        background: #1e293b;
+        
+        th {
+          color: var(--dark-text);
+        }
+      }
+      
+      tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+    }
+    
+    img {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+  }
+}

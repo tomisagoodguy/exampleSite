@@ -1,5 +1,15 @@
 {{ define "main" }}
-<section class="section-sm">
+{{- $cat_class := "" -}}
+{{- with .Params.categories -}}
+    {{- if reflect.IsSlice . -}}
+        {{- if gt (len .) 0 -}}
+            {{- $cat_class = printf "category-%s" ((index . 0) | urlize) -}}
+        {{- end -}}
+    {{- else if reflect.IsString . -}}
+        {{- $cat_class = printf "category-%s" (. | urlize) -}}
+    {{- end -}}
+{{- end -}}
+<section class="section-sm {{ $cat_class }}">
   <div class="container">
     <div class="row">
       <!-- 左側滾動目錄（保留） -->

@@ -2,63 +2,78 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>http://localhost:1313/categories/belgian-cuisine/</loc>
+    <loc>https://tomisagoodguy.github.io/blog/</loc>
+    <lastmod>2025-09-27T00:00:00+08:00</lastmod>
+  </url><url>
+    <loc>https://tomisagoodguy.github.io/categories/</loc>
+    <lastmod>2025-09-27T00:00:00+08:00</lastmod>
+  </url><url>
+    <loc>https://tomisagoodguy.github.io/categories/french-dessert/</loc>
+    <lastmod>2025-09-27T00:00:00+08:00</lastmod>
+  </url><url>
+    <loc>https://tomisagoodguy.github.io/</loc>
+    <lastmod>2025-09-27T00:00:00+08:00</lastmod>
+  </url><url>
+    <loc>https://tomisagoodguy.github.io/blog/%E6%B3%95%E5%BC%8F%E7%B3%96%E5%A1%94/</loc>
+    <lastmod>2025-09-27T00:00:00+08:00</lastmod>
+  </url><url>
+    <loc>https://tomisagoodguy.github.io/categories/%E5%9C%9F%E5%9C%B0%E7%A8%85%E6%B3%95%E8%A6%8F/</loc>
+    <lastmod>2025-09-21T10:07:47+08:00</lastmod>
+  </url><url>
+    <loc>https://tomisagoodguy.github.io/exam-notes/real-estate-tax-comparison/</loc>
+    <lastmod>2025-09-21T10:07:47+08:00</lastmod>
+  </url><url>
+    <loc>https://tomisagoodguy.github.io/categories/stock-research/</loc>
+    <lastmod>2025-09-21T00:00:00+08:00</lastmod>
+  </url><url>
+    <loc>https://tomisagoodguy.github.io/blog/revenue-announcement-as-investment-reference/</loc>
+    <lastmod>2025-09-21T00:00:00+08:00</lastmod>
+  </url><url>
+    <loc>https://tomisagoodguy.github.io/categories/belgian-cuisine/</loc>
     <lastmod>2025-09-18T00:00:00+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/blog/</loc>
+    <loc>https://tomisagoodguy.github.io/blog/%E9%98%BF%E7%88%BE%E9%9A%86%E5%BC%8F%E8%B1%AC%E8%8F%B2%E5%8A%9B%E4%BD%90%E9%85%B8%E7%94%9C%E5%95%A4%E9%85%92%E9%86%AC%E8%88%87%E7%94%B0%E5%9C%92%E8%94%AC%E8%8F%9C/</loc>
     <lastmod>2025-09-18T00:00:00+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/categories/</loc>
-    <lastmod>2025-09-18T00:00:00+08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/</loc>
-    <lastmod>2025-09-18T00:00:00+08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/blog/%E9%98%BF%E7%88%BE%E9%9A%86%E5%BC%8F%E8%B1%AC%E8%8F%B2%E5%8A%9B%E4%BD%90%E9%85%B8%E7%94%9C%E5%95%A4%E9%85%92%E9%86%AC%E8%88%87%E7%94%B0%E5%9C%92%E8%94%AC%E8%8F%9C/</loc>
-    <lastmod>2025-09-18T00:00:00+08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/categories/french-dessert/</loc>
+    <loc>https://tomisagoodguy.github.io/categories/french-cuisine/</loc>
     <lastmod>2025-09-11T22:01:14+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/blog/%E7%84%97%E7%83%A4%E6%B3%95%E5%BC%8F%E9%9B%9E%E8%82%89%E9%87%8E%E8%8F%87%E8%8F%A0%E8%8F%9C%E8%96%84%E9%A4%85%E6%8D%B2/</loc>
+    <loc>https://tomisagoodguy.github.io/blog/%E7%84%97%E7%83%A4%E6%B3%95%E5%BC%8F%E9%9B%9E%E8%82%89%E9%87%8E%E8%8F%87%E8%8F%A0%E8%8F%9C%E8%96%84%E9%A4%85%E6%8D%B2/</loc>
     <lastmod>2025-09-11T22:01:14+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/blog/%E6%B3%95%E5%BC%8F%E9%BA%B5%E7%B3%8A%E6%B2%B9%E7%82%B8%E8%98%8B%E6%9E%9C%E9%99%84%E6%9D%8F%E6%A1%83%E6%9E%9C%E9%86%AC/</loc>
+    <loc>https://tomisagoodguy.github.io/blog/stock-review-sep/</loc>
+    <lastmod>2025-09-10T00:00:00+08:00</lastmod>
+  </url><url>
+    <loc>https://tomisagoodguy.github.io/categories/stock/</loc>
+    <lastmod>2025-09-10T00:00:00+08:00</lastmod>
+  </url><url>
+    <loc>https://tomisagoodguy.github.io/blog/%E6%B3%95%E5%BC%8F%E9%BA%B5%E7%B3%8A%E6%B2%B9%E7%82%B8%E8%98%8B%E6%9E%9C%E9%99%84%E6%9D%8F%E6%A1%83%E6%9E%9C%E9%86%AC/</loc>
     <lastmod>2025-09-06T00:00:00+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/blog/stock-review-july/</loc>
+    <loc>https://tomisagoodguy.github.io/blog/stock-review-july/</loc>
     <lastmod>2025-07-27T00:00:00+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/blog/stock-review-sep/</loc>
-    <lastmod>2025-07-27T00:00:00+08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/categories/stock/</loc>
-    <lastmod>2025-07-27T00:00:00+08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/categories/%E5%9C%9F%E5%9C%B0%E7%A8%85%E6%B3%95%E8%A6%8F/</loc>
+    <loc>https://tomisagoodguy.github.io/exam-notes/landlaw2/</loc>
     <lastmod>2024-12-20T10:07:47+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/exam-notes/landlaw2/</loc>
-    <lastmod>2024-12-20T10:07:47+08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/links/</loc>
+    <loc>https://tomisagoodguy.github.io/links/</loc>
     <lastmod>2024-07-15T10:00:00+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/exam-notes/</loc>
+    <loc>https://tomisagoodguy.github.io/exam-notes/</loc>
     <lastmod>2024-07-13T00:00:00+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/practice-sharing/</loc>
+    <loc>https://tomisagoodguy.github.io/practice-sharing/</loc>
     <lastmod>2024-07-13T00:00:00+08:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/contact/</loc>
+    <loc>https://tomisagoodguy.github.io/contact/</loc>
     <lastmod>2019-10-29T13:49:23+06:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/search/</loc>
+    <loc>https://tomisagoodguy.github.io/search/</loc>
     <lastmod>2019-10-29T13:49:23+06:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/about/</loc>
+    <loc>https://tomisagoodguy.github.io/about/</loc>
     <lastmod>2019-10-29T13:49:23+06:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/authors/</loc>
+    <loc>https://tomisagoodguy.github.io/authors/</loc>
   </url>
 </urlset>

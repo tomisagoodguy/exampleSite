@@ -32,19 +32,8 @@
               {{ .Name }}
             </a>
             <div class="dropdown-menu">
-              {{ if eq .Name "所有文章" }}
-                {{ range .Site.Menus.articles }}
+              {{ range .Children }}
                 <a class="dropdown-item" href="{{ .URL | absURL }}">{{ .Name }}</a>
-                {{ end }}
-              {{ else if eq .Name "考試筆記" }}
-                {{ range .Site.Menus.exam_notes }}
-                <a class="dropdown-item" href="{{ .URL | absURL }}">{{ .Name }}</a>
-                {{ end }}
-              {{ else if eq .Name "實務分享" }}
-                {{ range .Site.Menus.practice_sharing }}
-                <a class="dropdown-item" href="{{ .URL | absURL }}">{{ .Name }}</a>
-                {{ end }}
-              
               {{ end }}
             </div>
           </li>

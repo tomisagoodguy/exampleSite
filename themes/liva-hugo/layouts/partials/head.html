@@ -47,6 +47,9 @@
   {{ $styles := resources.Get "scss/style.scss" | toCSS | minify }}
   <link rel="stylesheet" href="{{ $styles.Permalink }}" media="screen">
 
+  {{ "<!-- Custom Stylesheet -->" | safeHTML }}
+  <link rel="stylesheet" href="{{ `css/custom.css` | absURL }}" media="screen">
+
   {{ "<!-- Font Awesome CSS -->" | safeHTML }}
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
@@ -110,7 +113,7 @@
   {{ end }}
 
   {{ "<!-- Google Analytics -->" | safeHTML }}
-  {{ if not .Site.IsServer }}
+  {{ if not hugo.IsServer }}
   <script>
     // 設置不追蹤功能，直到獲得用戶同意
     window['ga-disable-G-ZZ3XT9EZKH'] = true;

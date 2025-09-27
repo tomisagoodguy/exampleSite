@@ -9,7 +9,7 @@
                     <img src="{{ .Params.Image | absURL }}" alt="{{ .Title }}" class="img-fluid w-100 rounded-lg shadow-sm">
                     {{ end }}
                     <h4 class="mt-4">{{ .Title | markdownify }}</h4>
-                    <p>熱愛學習新知、運動、程式</p>
+                    <p>熱愛學習新知、運動、程式、INTJ</p>
 
                     <!-- Social Links -->
                     <ul class="list-inline social-links mt-3">
@@ -82,7 +82,16 @@
                     <div class="skills mb-5">
                         <h3 class="mb-4">專業技能</h3>
                         <div class="skill-category">
-                            <h5>辦公室應用 & 專業能力</h5>
+                            <h5 class="skill-title"><i class="fas fa-building"></i>不動產專業</h5>
+                            <ul class="skill-tags">
+                                <li>繼承</li>
+                                <li>贈與</li>
+                                <li>買賣</li>
+                                <li>稅務規劃</li>
+                            </ul>
+                        </div>
+                        <div class="skill-category">
+                            <h5 class="skill-title"><i class="fas fa-briefcase"></i>辦公室應用 & 專業能力</h5>
                             <ul class="skill-tags">
                                 <li>Excel</li>
                                 <li>PowerPoint</li>
@@ -94,7 +103,7 @@
                             </ul>
                         </div>
                         <div class="skill-category">
-                            <h5>程式開發</h5>
+                            <h5 class="skill-title"><i class="fas fa-code"></i>程式開發</h5>
                             <ul class="skill-tags">
                                 <li>Python</li>
                                 <li>SQL</li>

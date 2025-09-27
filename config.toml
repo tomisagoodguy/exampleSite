@@ -28,9 +28,7 @@ URL = "plugins/slick/slick.css"
 URL = "plugins/themify-icons/themify-icons.css"
 [[params.plugins.css]]
 URL = "plugins/venobox/venobox.css"
-# 添加自定義 CSS
-[[params.plugins.css]]
-URL = "css/custom.css"
+
 
 # JS Plugins
 [[params.plugins.js]]
@@ -71,6 +69,8 @@ weight = 6
 name = "相關連結"
 URL = "links/"
 weight = 7
+
+
 
 
 
@@ -149,6 +149,10 @@ link = "https://github.com/tomisagoodguy?tab=repositories"
 
 
 [markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+      hardWraps = true
   [markup.tableOfContents]
     endLevel = 4
     ordered = false

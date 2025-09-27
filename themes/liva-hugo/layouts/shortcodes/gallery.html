@@ -1,0 +1,9 @@
+<div class="recipe-gallery">
+{{- range .Page.Resources.ByType "image" -}}
+    <figure class="recipe-gallery-item">
+        <img src="{{ .RelPermalink }}" alt="{{ .Name | replaceRE "\\..*$" "" | humanize }}">
+        <figcaption>{{ .Name | replaceRE "\\..*$" "" | humanize }}</figcaption>
+    </figure>
+{{- end -}}
+</div>
+
