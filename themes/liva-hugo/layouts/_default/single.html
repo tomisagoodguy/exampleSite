@@ -84,7 +84,12 @@
               <!-- 相關文章選項卡 -->
               <div class="tab-pane fade show active" id="related" role="tabpanel">
                 <div class="row mt-4">
-                  {{ $related := (where site.RegularPages "Type" "in" site.Params.mainSections) | intersect (where site.RegularPages "Params.categories" "intersect" .Params.categories) | complement (slice .) }}
+                  {{ $related := "" }}
+                  {{ if .Params.tags }}
+                    {{ $related = (where site.RegularPages "Type" "in" site.Params.mainSections) | intersect (where site.RegularPages "Params.tags" "intersect" .Params.tags) | complement (slice .) }}
+                  {{ else }}
+                    {{ $related = (where site.RegularPages "Type" "in" site.Params.mainSections) | intersect (where site.RegularPages "Params.categories" "intersect" .Params.categories) | complement (slice .) }}
+                  {{ end }}
                   {{ if $related }}
                     {{ range first 6 $related }}
                     <div class="col-md-6 mb-3">

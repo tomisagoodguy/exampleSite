@@ -4,7 +4,7 @@ languageCode = "zh-tw"
 title = "land-knowledege"
 theme = "liva-hugo"
 summaryLength = "10"
-paginate = 6
+paginate = 8
 disqusShortname = "tomisagoodguy"
 defaultContentLanguage = "zh-tw"
 
@@ -108,7 +108,7 @@ weight = 3
 logo = "images/law.png"
 home = "首頁"
 # 指定主要內容區塊
-mainSections = ["exam-notes"]
+mainSections = ["exam-notes", "blog"]
 
 # Meta data
 description = "定康的地政筆記"

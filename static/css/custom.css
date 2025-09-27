@@ -248,3 +248,15 @@ table, th, td {
   margin-right: 10px; /* Space between icon and text */
   color: #007bff; /* Icon color */
 }
+
+/* Dropdown on hover */
+.navbar-nav .dropdown:hover .dropdown-menu {
+    display: block;
+    margin-top: 0; /* remove the gap so it doesn't close */
+}
+
+/* Navigation link hover effect */
+.navbar-nav .nav-item .nav-link:hover {
+    background-color: rgba(79, 70, 229, 0.1) !important; /* A light version of the primary color */
+    border-radius: 5px !important;
+}

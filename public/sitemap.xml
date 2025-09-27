@@ -2,6 +2,9 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>http://localhost:1313/blog/%E8%8F%B2%E5%BC%8F%E6%80%9D%E8%80%83/</loc>
+    <lastmod>2025-09-27T00:00:00+08:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/blog/</loc>
     <lastmod>2025-09-27T00:00:00+08:00</lastmod>
   </url><url>
@@ -14,6 +17,9 @@
     <loc>http://localhost:1313/</loc>
     <lastmod>2025-09-27T00:00:00+08:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/categories/stock-research/</loc>
+    <lastmod>2025-09-27T00:00:00+08:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/blog/%E6%B3%95%E5%BC%8F%E7%B3%96%E5%A1%94/</loc>
     <lastmod>2025-09-27T00:00:00+08:00</lastmod>
   </url><url>
@@ -22,9 +28,6 @@
   </url><url>
     <loc>http://localhost:1313/exam-notes/real-estate-tax-comparison/</loc>
     <lastmod>2025-09-21T10:07:47+08:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/categories/stock-research/</loc>
-    <lastmod>2025-09-21T00:00:00+08:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/blog/revenue-announcement-as-investment-reference/</loc>
     <lastmod>2025-09-21T00:00:00+08:00</lastmod>
