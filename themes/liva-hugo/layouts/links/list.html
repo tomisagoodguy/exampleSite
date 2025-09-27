@@ -10,33 +10,38 @@
 
         <div class="row">
           {{ range .Site.Data.links }}
-          <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-              <div class="card-body text-center">
-                <a href="{{ .url | safeURL }}" target="_blank" rel="noopener">
-                  {{ $currentImagePath := "" }}
-                  {{ $defaultImageName := printf "%s.png" .title }}
-                  {{ $defaultImagePath := printf "/images/%s" $defaultImageName }}
+          <div class="col-12">
+            <h3 id="{{ .category | urlize }}" class="mb-4">{{ .category }}</h3>
+          </div>
+            {{ range .links }}
+            <div class="col-lg-6 mb-4">
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <a href="{{ .url | safeURL }}" target="_blank" rel="noopener">
+                    {{ $currentImagePath := "" }}
+                    {{ $defaultImageName := printf "%s.png" .title }}
+                    {{ $defaultImagePath := printf "/images/%s" $defaultImageName }}
 
-                  {{ if fileExists (printf "static%s" $defaultImagePath) }}
-                    {{ $currentImagePath = $defaultImagePath }}
-                  {{ else if eq .title "財政部稅務入口網" }}
-                    {{ $alternativeImagePath := "/images/財政部稅務入口網土地增值稅試算.png" }}
-                    {{ if fileExists (printf "static%s" $alternativeImagePath) }}
-                      {{ $currentImagePath = $alternativeImagePath }}
+                    {{ if fileExists (printf "static%s" $defaultImagePath) }}
+                      {{ $currentImagePath = $defaultImagePath }}
+                    {{ else if eq .title "財政部稅務入口網" }}
+                      {{ $alternativeImagePath := "/images/財政部稅務入口網土地增值稅試算.png" }}
+                      {{ if fileExists (printf "static%s" $alternativeImagePath) }}
+                        {{ $currentImagePath = $alternativeImagePath }}
+                      {{ end }}
                     {{ end }}
-                  {{ end }}
 
-                  {{ if $currentImagePath }}
-                    <img src="{{ $currentImagePath | absURL }}" alt="{{ .title }}" class="img-fluid mb-3 link-icon">
-                  {{ end }}
-                  <h4 class="card-title">{{ .title }}</h4>
-                </a>
-                <p class="card-text">{{ .description }}</p>
-                <a href="{{ .url | safeURL }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">前往連結</a>
+                    {{ if $currentImagePath }}
+                      <img src="{{ $currentImagePath | absURL }}" alt="{{ .title }}" class="img-fluid mb-3 link-icon">
+                    {{ end }}
+                    <h4 class="card-title">{{ .title }}</h4>
+                  </a>
+                  <p class="card-text">{{ .description }}</p>
+                  <a href="{{ .url | safeURL }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">前往連結</a>
+                </div>
               </div>
             </div>
-          </div>
+            {{ end }}
           {{ end }}
         </div>
       </div>

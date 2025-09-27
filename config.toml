@@ -69,6 +69,19 @@ weight = 6
 name = "相關連結"
 URL = "links/"
 weight = 7
+hasChildren = true
+
+[[menu.main]]
+name = "地政相關網站"
+URL = "links/#地政相關網站"
+parent = "相關連結"
+weight = 1
+
+[[menu.main]]
+name = "理財相關網站"
+URL = "links/#理財相關網站"
+parent = "相關連結"
+weight = 2
 
 
 
