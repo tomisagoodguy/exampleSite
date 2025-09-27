@@ -10,6 +10,9 @@ type: "post"
 ---
 ### **一、如何判斷適用新制或舊制？**
 
+<!-- more -->
+
+
 [財政部 - 房地合一稅2.0](https://www.mof.gov.tw/houseandland/multiplehtml/b059144336e54b11baba75a3468828ac)
 
 房地交易適用制度，由「取得時間」與「出售時間」共同決定。
