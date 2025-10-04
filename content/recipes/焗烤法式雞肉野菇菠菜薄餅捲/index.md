@@ -6,13 +6,16 @@ type: "post"
 image: "成品demo.jpg"
 categories:
   - "French Cuisine"
+  - "食譜"
 tags:
   - "法式"
   - "雞肉"
   - "薄餅"
 ---
-焗烤法式雞肉野菇菠菜薄餅捲
-French crepes with chicken, mushroom and spinach
+
+焗烤法式雞肉野菇菠菜薄餅捲 (French crepes with chicken, mushroom and spinach) 是一道美味的法式家常料理，將鮮嫩的雞肉、野菇和菠菜包裹在柔軟的法式薄餅中，再淋上濃郁的白醬焗烤而成。
+
+{{< img "成品demo.jpg" >}}
 
 ### 材料 (Ingredients)
 
@@ -39,8 +42,6 @@ French crepes with chicken, mushroom and spinach
 |                      | 鹽、胡椒 (Salt, Pepper)      | 適量            |
 | 其他 (Other)         | 焗烤用起司 (Grating Cheese)  | 適量            |
 |                      | 鮮奶油 (Heavy Cream)         | 少許            |
-
-{{< img "材料.jpg" >}}
 
 ---
 
@@ -115,9 +116,8 @@ French crepes with chicken, mushroom and spinach
 3. 淋上白醬，灑上起司。
    {{< img "捲餅抹上白醬後灑上起士及鮮奶油.jpg" >}}
 4. 烤箱預熱200°C，烤10-15分鐘至金黃即可。
-   {{< img "成品demo.jpg" >}}
-   {{< img "成品demo2.jpg" >}}
-   {{< img "成品demo (2).jpg" >}}
+
+{{< img "成品demo.jpg" >}}
 
 ---
 

@@ -4,10 +4,12 @@ date: 2025-09-06T00:00:00+08:00
 draft: false
 categories:
   - "French dessert"
+  - "食譜"
 ---
 
-法式麵糊油炸蘋果附杏桃果醬
-Apple fritters with apricot sauce
+法式麵糊油炸蘋果附杏桃果醬 (Apple fritters with apricot sauce) 是一道經典的法式甜點，將新鮮蘋果裹上輕盈的麵糊炸至金黃，再搭配香甜的杏桃醬，口感外酥內軟，果香四溢。
+
+{{< img "成品.jpg" >}}
 
 ### 材料 (Ingredients)
 

@@ -1,5 +1,5 @@
 ---
-title: "「菲式思考」：15個專業選股策略的完整條件清單"
+title: "「菲式思考」：15個選股策略的條件清單"
 date: 2025-09-27T00:00:00+08:00
 description: ""
 type: "post"
@@ -176,14 +176,12 @@ tags:
 
 #### 新聞媒體
 
-
 * [經濟日報](https://money.udn.com/)
 * [工商時報](https://www.ctee.com.tw/)
 * [電子時報](https://www.digitimes.com/)
 * [環球生技](https://www.gbimonthly.com/)
 
 #### 網站
-
 
 * [散戶鬥嘴鼓](https://poorstock.com/)
 

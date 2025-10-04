@@ -6,7 +6,12 @@ type: "post"
 image: "法式糖塔.jpg"
 categories:
   - "French dessert"
+  - "食譜"
 ---
+
+法式糖塔 (Tarte au Sucre) 是一款經典的法國北方甜點，以其香甜的焦糖奶油內餡和柔軟的酵母塔皮而聞名。
+
+{{< img "法式糖塔.jpg" >}}
 
 ### 食材 (Ingredients)
 

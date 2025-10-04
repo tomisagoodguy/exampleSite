@@ -56,6 +56,11 @@ URL = "/"
 weight = 1
 
 [[menu.main]]
+name = "食譜筆記"
+URL = "recipes/"
+weight = 2
+
+[[menu.main]]
 name = "考試筆記"
 URL = "exam-notes/"
 weight = 3
@@ -107,9 +112,6 @@ weight = 3
 # 放主題圖片
 logo = "images/law.png"
 home = "首頁"
-# 指定主要內容區塊
-mainSections = ["exam-notes", "blog"]
-
 # Meta data
 description = "定康的地政筆記"
 author = "定康"

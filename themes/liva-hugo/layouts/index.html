@@ -11,7 +11,7 @@
       <!-- /sidebar -->
       <div class="col-lg-8 mb-5 mb-lg-0">
         <div class="row">
-          {{ $paginator := .Paginate (where .Site.RegularPages "Section" "blog") }}
+          {{ $paginator := .Paginate .Site.RegularPages }}
           {{ range $paginator.Pages }}
           <div class="col-md-6 mb-4">
             <article class="card">
