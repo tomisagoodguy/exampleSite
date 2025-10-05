@@ -88,6 +88,11 @@ URL = "links/#理財相關網站"
 parent = "相關連結"
 weight = 2
 
+[[menu.main]]
+name = "財經筆記"
+URL = "finance/"
+weight = 4
+
 
 
 
@@ -98,14 +103,34 @@ weight = 2
 
 # footer menu
 [[menu.footer]]
-name = "關於"
-URL = "about/"
+name = "首頁"
+URL = "/"
 weight = 1
+
+[[menu.footer]]
+name = "食譜筆記"
+URL = "recipes/"
+weight = 2
 
 [[menu.footer]]
 name = "考試筆記"
 URL = "exam-notes/"
 weight = 3
+
+[[menu.footer]]
+name = "財經筆記"
+URL = "finance/"
+weight = 4
+
+[[menu.footer]]
+name = "關於"
+URL = "about/"
+weight = 6
+
+[[menu.footer]]
+name = "相關連結"
+URL = "links/"
+weight = 7
 
 #################### default parameters ################################
 [params]

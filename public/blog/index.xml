@@ -6,35 +6,7 @@
     <description>Recent content in Blogs on land-knowledege</description>
     <generator>Hugo</generator>
     <language>zh-tw</language>
-    <lastBuildDate>Sat, 27 Sep 2025 00:00:00 +0800</lastBuildDate>
+    <lastBuildDate></lastBuildDate>
     <atom:link href="http://localhost:1313/blog/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>「菲式思考」：15個選股策略的條件清單</title>
-      <link>http://localhost:1313/blog/%E8%8F%B2%E5%BC%8F%E6%80%9D%E8%80%83/</link>
-      <pubDate>Sat, 27 Sep 2025 00:00:00 +0800</pubDate>
-      <guid>http://localhost:1313/blog/%E8%8F%B2%E5%BC%8F%E6%80%9D%E8%80%83/</guid>
-      <description>前言 在複雜多變的股票市場中，建立一套清晰且有邏輯的投資策略至關重要。「菲式思考」提供了一系列基於基本面、技術面與籌碼面的綜合選股框架，幫助投資人從不同維度篩選出具備潛力的投資標的。&#xA;本文旨在系統性地整理並解析「菲式思考」中所提及的15種選股策略，將其核心條件一一條列，讓您能夠更清晰地理解每種策略背後的思考邏輯與篩選標準。&#xA;15大選股策略條件詳解 以下我們將逐一介紹文件中所列出的策略及其具體條件。&#xA;1. 融券回補事件 此策略旨在捕捉市場上因融券強制回補，可能引發軋空行情的潛力股。&#xA;1.融券回補日介於7至14天之間。&#xA;2.券資比大於 20%。</description>
-    </item>
-    <item>
-      <title>營收公布能為投資參考依據？</title>
-      <link>http://localhost:1313/blog/revenue-announcement-as-investment-reference/</link>
-      <pubDate>Sun, 21 Sep 2025 00:00:00 +0800</pubDate>
-      <guid>http://localhost:1313/blog/revenue-announcement-as-investment-reference/</guid>
-      <description>本文的詳細研究與數據分析已整理成論文格式，歡迎參考。&#xA;相關論文下載：&#xA;營收公布能為投資參考依據？以台股為例 (PDF) 台股營收動能策略之風險模型驗證 (PDF) 因子 (Factors)&#xA;市場因子 (Market Factor)：這是最基礎的因子，代表整體市場的風險溢酬。 規模因子 (Size Factor / SMB)：指小型市值公司的股票報酬與大型市值公司股票報酬的差異。這個因子捕捉了公司規模對報酬的影響。 價值因子 (Value Factor / HML)：指高帳面市值比 (B/M ratio) 公司的股票報酬與低帳面市值比公司股票報酬的差異。這代表了價值型股票相對於成長型股票的超額報酬。 獲利因子 (Profitability Factor / ROE / RMW)：這個因子是解釋動能策略超額報酬的關鍵。來源中提到了兩種建構方式： Q因子模型：使用最新一季公布的股東權益報酬率 (ROE) 來決定，其風險報酬是高 ROE 公司與低 ROE 公司股票報酬的差額。 5因子模型：使用上一年度的營收減去銷貨成本、利息及管銷費用，再除以上一年度的淨值來建構。其風險溢酬同樣是高獲利公司與低獲利公司股票報酬的差額。 投資因子 (Investment Factor / I/A / CMA)：這個因子捕捉了企業投資行為所帶來的風險溢酬。同樣有兩種建構方式： Q因子模型：使用最新一季公布的總資產除以去年同季度的總資產價值 (I/A) 來決定，資產增長率越高的公司，預期未來報酬越低。 5因子模型：使用去年同一季的資產減去前年同一季度的資產，再除以前年同一季度的資產價值來決定。 策略 (Strategies) 來源資料主要圍繞「營收動能」與利用「月營收公布」資訊這兩大核心，發展出可執行的投資策略。</description>
-    </item>
-    <item>
-      <title>9月月營收股票進場檢討</title>
-      <link>http://localhost:1313/blog/stock-review-sep/</link>
-      <pubDate>Wed, 10 Sep 2025 00:00:00 +0800</pubDate>
-      <guid>http://localhost:1313/blog/stock-review-sep/</guid>
-      <description>記憶體 、 碳化矽族群&#xA;觀察營收創新高、虧轉盈&#xA;成交金額市場PR90的個股&#xA;2344 華邦電 2408 南亞科 5443 均豪 5483 中美晶 6488 環球晶 8299 群聯 </description>
-    </item>
-    <item>
-      <title>7月月營收股票進場檢討</title>
-      <link>http://localhost:1313/blog/stock-review-july/</link>
-      <pubDate>Sun, 27 Jul 2025 00:00:00 +0800</pubDate>
-      <guid>http://localhost:1313/blog/stock-review-july/</guid>
-      <description>7月份策略強勢股觀察&#xA;2059 川湖 2404 漢唐 2449 京元電子 3032 偉訓 3037 欣興 3167 大量 3543 未知 4721 美琪瑪 4931 新盛力 6191 精成科 8358 金居 </description>
-    </item>
   </channel>
 </rss>
