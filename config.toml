@@ -93,6 +93,11 @@ name = "財經筆記"
 URL = "finance/"
 weight = 4
 
+[[menu.main]]
+name = "不務正業"
+URL = "hobbies/"
+weight = 5
+
 
 
 
@@ -121,6 +126,11 @@ weight = 3
 name = "財經筆記"
 URL = "finance/"
 weight = 4
+
+[[menu.footer]]
+name = "不務正業"
+URL = "hobbies/"
+weight = 5
 
 [[menu.footer]]
 name = "關於"
