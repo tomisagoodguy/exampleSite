@@ -11,7 +11,7 @@
       <!-- /sidebar -->
       <div class="col-lg-8 mb-5 mb-lg-0">
         <div class="row">
-          {{ $paginator := .Paginate .Site.RegularPages }}
+          {{ $paginator := .Paginate (.Site.RegularPages.ByDate.Reverse) }}
           {{ range $paginator.Pages }}
           <div class="col-md-6 mb-4">
             <article class="card">
