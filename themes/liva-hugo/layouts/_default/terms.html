@@ -1,0 +1,21 @@
+{{ define "main" }}
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <h1 class="mb-4">{{ .Title }}</h1>
+        <ul class="list-unstyled">
+          {{ range .Data.Terms.ByCount }}
+          <li class="mb-2">
+            <a href="{{ .Page.Permalink }}" class="h5">
+              {{ .Page.Title }}
+              <span class="badge badge-light ml-2">{{ .Count }}</span>
+            </a>
+          </li>
+          {{ end }}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+{{ end }}

@@ -2,157 +2,157 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>考試筆記 on land-knowledege</title>
-    <link>https://tomisagoodguy.github.io/exam-notes/</link>
+    <link>http://localhost:1313/exam-notes/</link>
     <description>Recent content in 考試筆記 on land-knowledege</description>
     <generator>Hugo</generator>
     <language>zh-tw</language>
     <lastBuildDate>Sun, 05 Oct 2025 12:16:15 +0800</lastBuildDate>
-    <atom:link href="https://tomisagoodguy.github.io/exam-notes/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/exam-notes/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>土地法(一)</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/landlaw1/</link>
+      <link>http://localhost:1313/exam-notes/landlaw1/</link>
       <pubDate>Sun, 05 Oct 2025 12:15:01 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/landlaw1/</guid>
+      <guid>http://localhost:1313/exam-notes/landlaw1/</guid>
       <description>編號 內容 1 土地法 §1&#xA;本法所稱土地，謂水陸及天然富源。 2 土地法 §2</description>
     </item>
     <item>
       <title>土地法(二)</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/landlaw2/</link>
+      <link>http://localhost:1313/exam-notes/landlaw2/</link>
       <pubDate>Sun, 05 Oct 2025 12:15:02 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/landlaw2/</guid>
+      <guid>http://localhost:1313/exam-notes/landlaw2/</guid>
       <description>編號 內容 1 土地法 §10&#xA;中華民國領域內之土地，屬於中華民國人民全體，其經人民依法取得所有權者，為私有土地。&#xA;私有土地之所有權消滅者，為國有土地。 2 土地法 §11</description>
     </item>
     <item>
       <title>土地法(三)</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/landlaw3/</link>
+      <link>http://localhost:1313/exam-notes/landlaw3/</link>
       <pubDate>Sun, 05 Oct 2025 12:15:03 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/landlaw3/</guid>
+      <guid>http://localhost:1313/exam-notes/landlaw3/</guid>
       <description>編號 內容 1 土地法 §18&#xA;外國人在中華民國取得或設定土地權利，以依條約或其本國法律，中華民國人民得在該國享受同樣權利者為限。 2 土地法 §19</description>
     </item>
     <item>
       <title>土地法(四)</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/landlaw4/</link>
+      <link>http://localhost:1313/exam-notes/landlaw4/</link>
       <pubDate>Sun, 05 Oct 2025 12:15:04 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/landlaw4/</guid>
+      <guid>http://localhost:1313/exam-notes/landlaw4/</guid>
       <description>編號 內容 1 土地法 §30&#xA;（刪除） 2 土地法 §31</description>
     </item>
     <item>
       <title>民法概要與信託法概要</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E6%B0%91%E6%B3%95%E6%A6%82%E8%A6%81%E8%88%87%E4%BF%A1%E8%A8%97%E6%B3%95%E6%A6%82%E8%A6%81/</link>
+      <link>http://localhost:1313/exam-notes/%E6%B0%91%E6%B3%95%E6%A6%82%E8%A6%81%E8%88%87%E4%BF%A1%E8%A8%97%E6%B3%95%E6%A6%82%E8%A6%81/</link>
       <pubDate>Sun, 05 Oct 2025 12:16:01 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E6%B0%91%E6%B3%95%E6%A6%82%E8%A6%81%E8%88%87%E4%BF%A1%E8%A8%97%E6%B3%95%E6%A6%82%E8%A6%81/</guid>
+      <guid>http://localhost:1313/exam-notes/%E6%B0%91%E6%B3%95%E6%A6%82%E8%A6%81%E8%88%87%E4%BF%A1%E8%A8%97%E6%B3%95%E6%A6%82%E8%A6%81/</guid>
       <description>主題 內容 無權處分 民法 §118、§115、§801、§948、§759-1、§767 不動產役權 民法 §851: 通緝(緝犯)採(踩)眺(跳)電其(?)</description>
     </item>
     <item>
       <title>土地法</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E5%9C%9F%E5%9C%B0%E6%B3%95/</link>
+      <link>http://localhost:1313/exam-notes/%E5%9C%9F%E5%9C%B0%E6%B3%95/</link>
       <pubDate>Sun, 05 Oct 2025 12:16:02 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E5%9C%9F%E5%9C%B0%E6%B3%95/</guid>
+      <guid>http://localhost:1313/exam-notes/%E5%9C%9F%E5%9C%B0%E6%B3%95/</guid>
       <description>主題/法條 內容 名詞定義 基本國策: 平等互惠(§18)&#xA;標的限制: 種類(§17)、用途(§19)、面積及所在地(§19)&#xA;程序: 一般(§20)、特別(§20)</description>
     </item>
     <item>
       <title>區域計畫法系</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E5%8D%80%E5%9F%9F%E8%A8%88%E7%95%AB%E6%B3%95%E7%B3%BB/</link>
+      <link>http://localhost:1313/exam-notes/%E5%8D%80%E5%9F%9F%E8%A8%88%E7%95%AB%E6%B3%95%E7%B3%BB/</link>
       <pubDate>Sun, 05 Oct 2025 12:16:03 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E5%8D%80%E5%9F%9F%E8%A8%88%E7%95%AB%E6%B3%95%E7%B3%BB/</guid>
+      <guid>http://localhost:1313/exam-notes/%E5%8D%80%E5%9F%9F%E8%A8%88%E7%95%AB%E6%B3%95%E7%B3%BB/</guid>
       <description>主題 內容 區域計畫之效力 與都市計畫之關係: 區域計畫公告實施後，應擬定或變更相關之市鎮、鄉街、特定區計畫(§11)。&#xA;與事業計畫之關係: 區域內之開發或建設事業計畫，應與區域計畫密切配合(§12)。&#xA;非都市土地管制: 應按照非都市土地分區使用計畫，製定使用分區圖，並編定各種使用地，實施管制(§15)。 主管機關 中央: 內政部</description>
     </item>
     <item>
       <title>都市計畫法系</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E9%83%BD%E5%B8%82%E8%A8%88%E7%95%AB%E6%B3%95%E7%B3%BB/</link>
+      <link>http://localhost:1313/exam-notes/%E9%83%BD%E5%B8%82%E8%A8%88%E7%95%AB%E6%B3%95%E7%B3%BB/</link>
       <pubDate>Sun, 05 Oct 2025 12:16:04 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E9%83%BD%E5%B8%82%E8%A8%88%E7%95%AB%E6%B3%95%E7%B3%BB/</guid>
+      <guid>http://localhost:1313/exam-notes/%E9%83%BD%E5%B8%82%E8%A8%88%E7%95%AB%E6%B3%95%E7%B3%BB/</guid>
       <description>主題 內容 名詞定義 都市計畫事業: 指依本法舉辦之公共設施、新市區建設、舊市區更新等事業。&#xA;優先發展區: 預計在十年內必須優先規劃建設發展之地區。&#xA;舊市區更新: 指舊有建築物密集、畸零破舊，有礙觀瞻，影響公共安全，必須拆除重建、整建或維護之地區。</description>
     </item>
     <item>
       <title>平均地權條例</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E5%B9%B3%E5%9D%87%E5%9C%B0%E6%AC%8A%E6%A2%9D%E4%BE%8B/</link>
+      <link>http://localhost:1313/exam-notes/%E5%B9%B3%E5%9D%87%E5%9C%B0%E6%AC%8A%E6%A2%9D%E4%BE%8B/</link>
       <pubDate>Sun, 05 Oct 2025 12:16:05 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E5%B9%B3%E5%9D%87%E5%9C%B0%E6%AC%8A%E6%A2%9D%E4%BE%8B/</guid>
+      <guid>http://localhost:1313/exam-notes/%E5%B9%B3%E5%9D%87%E5%9C%B0%E6%AC%8A%E6%A2%9D%E4%BE%8B/</guid>
       <description>法條 主題 內容 平權 §16 申報地價 未申報者，以公告地價80%為申報地價。&#xA;申報超過公告地價120%者，以120%為準。&#xA;申報未滿公告地價80%者，得照價收買或以80%為申報地價。 平權 §28 照價收買程序 1.</description>
     </item>
     <item>
       <title>土地徵收條例</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E5%9C%9F%E5%9C%B0%E5%BE%B5%E6%94%B6%E6%A2%9D%E4%BE%8B/</link>
+      <link>http://localhost:1313/exam-notes/%E5%9C%9F%E5%9C%B0%E5%BE%B5%E6%94%B6%E6%A2%9D%E4%BE%8B/</link>
       <pubDate>Sun, 05 Oct 2025 12:16:06 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E5%9C%9F%E5%9C%B0%E5%BE%B5%E6%94%B6%E6%A2%9D%E4%BE%8B/</guid>
+      <guid>http://localhost:1313/exam-notes/%E5%9C%9F%E5%9C%B0%E5%BE%B5%E6%94%B6%E6%A2%9D%E4%BE%8B/</guid>
       <description>法條/主題 內容 立法目的 (土徵 §1) 為規範土地徵收，確保土地合理利用，並保障私人財產，增進公共利益。 徵收原因 (土徵 §3) 國家因公益需要，興辦國防、交通、公用事業、水利、公共衛生、政府機關、教育、社會福利、國營事業等，得徵收私有土地。 徵收前置作業 公益性與必要性評估(§3-2): 應評估社會、經濟、文化、生態、永續發展等因素。</description>
     </item>
     <item>
       <title>土地稅法</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E5%9C%9F%E5%9C%B0%E7%A8%85%E6%B3%95/</link>
+      <link>http://localhost:1313/exam-notes/%E5%9C%9F%E5%9C%B0%E7%A8%85%E6%B3%95/</link>
       <pubDate>Sun, 05 Oct 2025 12:16:07 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E5%9C%9F%E5%9C%B0%E7%A8%85%E6%B3%95/</guid>
+      <guid>http://localhost:1313/exam-notes/%E5%9C%9F%E5%9C%B0%E7%A8%85%E6%B3%95/</guid>
       <description>主題/法條 內容 地價稅課徵範圍 (§14, §22) 已規定地價之土地，除依法課徵田賦者外，應課徵地價稅。 地價稅納稅義務人 (§3, §3-1, §4) 原則: 土地所有權人、典權人、承領人、耕作權人。</description>
     </item>
     <item>
       <title>土地稅法施行細則</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E5%9C%9F%E7%A8%85%E6%96%BD/</link>
+      <link>http://localhost:1313/exam-notes/%E5%9C%9F%E7%A8%85%E6%96%BD/</link>
       <pubDate>Sun, 05 Oct 2025 12:16:08 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E5%9C%9F%E7%A8%85%E6%96%BD/</guid>
+      <guid>http://localhost:1313/exam-notes/%E5%9C%9F%E7%A8%85%E6%96%BD/</guid>
       <description>法條 內容 土稅施 §3 免徵下限: - 地價稅每戶稅額在100元以下者免徵。&#xA;- 土地增值稅稅額在100元以下者免徵。 土稅施 §4 自用住宅用地建物所有權: 土地上之建築改良物須屬土地所有權人或其配偶、直系親屬所有。 土稅施 §20 地價稅納稅義務基準日: 以每年8月31日土地登記簿所載之所有權人或典權人為納稅義務人。 土稅施 §23 公共設施尚未完竣定義: 指道路、自來水、排水系統、電力等四項設施未完竣。</description>
     </item>
     <item>
       <title>房屋稅條例</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E6%88%BF%E5%B1%8B%E7%A8%85/</link>
+      <link>http://localhost:1313/exam-notes/%E6%88%BF%E5%B1%8B%E7%A8%85/</link>
       <pubDate>Sun, 05 Oct 2025 12:16:09 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E6%88%BF%E5%B1%8B%E7%A8%85/</guid>
+      <guid>http://localhost:1313/exam-notes/%E6%88%BF%E5%B1%8B%E7%A8%85/</guid>
       <description>法條 主題 內容 §4 納稅義務人 原則: 房屋所有權人。&#xA;設有典權: 典權人。</description>
     </item>
     <item>
       <title>契稅條例</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E5%A5%91%E7%A8%85/</link>
+      <link>http://localhost:1313/exam-notes/%E5%A5%91%E7%A8%85/</link>
       <pubDate>Sun, 05 Oct 2025 12:16:10 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E5%A5%91%E7%A8%85/</guid>
+      <guid>http://localhost:1313/exam-notes/%E5%A5%91%E7%A8%85/</guid>
       <description>法條 主題 內容 §2 課徵範圍 不動產之買賣、承典、交換、贈與、分割或因占有而取得所有權者，均應申報繳納契稅。&#xA;例外: 在開徵土地增值稅區域之土地，免徵契稅。 §3 稅率 - 買賣契稅: 6%</description>
     </item>
     <item>
       <title>公寓大廈管理條例</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E5%85%AC%E5%AF%93%E5%A4%A7%E5%BB%88%E7%AE%A1%E7%90%86%E6%A2%9D%E4%BE%8B/</link>
+      <link>http://localhost:1313/exam-notes/%E5%85%AC%E5%AF%93%E5%A4%A7%E5%BB%88%E7%AE%A1%E7%90%86%E6%A2%9D%E4%BE%8B/</link>
       <pubDate>Sun, 05 Oct 2025 12:16:11 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E5%85%AC%E5%AF%93%E5%A4%A7%E5%BB%88%E7%AE%A1%E7%90%86%E6%A2%9D%E4%BE%8B/</guid>
+      <guid>http://localhost:1313/exam-notes/%E5%85%AC%E5%AF%93%E5%A4%A7%E5%BB%88%E7%AE%A1%E7%90%86%E6%A2%9D%E4%BE%8B/</guid>
       <description>法條/主題 內容 §3 名詞定義 §25, §31 區分所有權人會議 §21, §22 費用催繳與強制執行 §18, §20 公共基金 §6 住戶之義務 §33 決議不生效力之情形 §13, §14 公寓大廈之重建 §56, §58 起造人之義務 主題/法條 重點摘要 注意 § 32 針對未通過議案的再次投票流程 1.</description>
     </item>
     <item>
       <title>消費者保護法</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E6%B6%88%E8%B2%BB%E8%80%85%E4%BF%9D%E8%AD%B7%E6%B3%95/</link>
+      <link>http://localhost:1313/exam-notes/%E6%B6%88%E8%B2%BB%E8%80%85%E4%BF%9D%E8%AD%B7%E6%B3%95/</link>
       <pubDate>Sun, 05 Oct 2025 12:16:12 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E6%B6%88%E8%B2%BB%E8%80%85%E4%BF%9D%E8%AD%B7%E6%B3%95/</guid>
+      <guid>http://localhost:1313/exam-notes/%E6%B6%88%E8%B2%BB%E8%80%85%E4%BF%9D%E8%AD%B7%E6%B3%95/</guid>
       <description> 法條/主題 內容 §2 名詞定義 §7, §51 企業經營者責任 §10 回收義務 §12, §17 定型化契約 §19, §19-2 通訊交易與訪問交易 §21 分期付款買賣 §25 保證書 §43, §44 消費爭議處理 §50 團體訴訟 §53 不作為訴訟 主題/法條 重點摘要 §12 定型化契約之無效 定型化契約中之條款違反誠信原則，對消費者顯失公平者，無效。 </description>
     </item>
     <item>
       <title>不動產經紀業管理條例</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E4%B8%8D%E5%8B%95%E7%94%A2%E7%B6%93%E7%B4%80%E6%A5%AD%E7%AE%A1%E7%90%86%E6%A2%9D%E4%BE%8B/</link>
+      <link>http://localhost:1313/exam-notes/%E4%B8%8D%E5%8B%95%E7%94%A2%E7%B6%93%E7%B4%80%E6%A5%AD%E7%AE%A1%E7%90%86%E6%A2%9D%E4%BE%8B/</link>
       <pubDate>Sun, 05 Oct 2025 12:16:13 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E4%B8%8D%E5%8B%95%E7%94%A2%E7%B6%93%E7%B4%80%E6%A5%AD%E7%AE%A1%E7%90%86%E6%A2%9D%E4%BE%8B/</guid>
+      <guid>http://localhost:1313/exam-notes/%E4%B8%8D%E5%8B%95%E7%94%A2%E7%B6%93%E7%B4%80%E6%A5%AD%E7%AE%A1%E7%90%86%E6%A2%9D%E4%BE%8B/</guid>
       <description>主題/法條 內容 名詞定義 (§4) - 不動產: 土地、土地定著物或房屋及其可移轉之權利。&#xA;- 經紀業: 經營仲介或代銷業務之公司或商號。</description>
     </item>
     <item>
       <title>公平交易法</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E5%85%AC%E5%B9%B3%E4%BA%A4%E6%98%93%E6%B3%95/</link>
+      <link>http://localhost:1313/exam-notes/%E5%85%AC%E5%B9%B3%E4%BA%A4%E6%98%93%E6%B3%95/</link>
       <pubDate>Sun, 05 Oct 2025 12:16:14 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E5%85%AC%E5%B9%B3%E4%BA%A4%E6%98%93%E6%B3%95/</guid>
+      <guid>http://localhost:1313/exam-notes/%E5%85%AC%E5%B9%B3%E4%BA%A4%E6%98%93%E6%B3%95/</guid>
       <description>法條/主題 內容 §2, §3 名詞定義 §7, §8, §9 獨占 §10, §11 結合 §14, §15 聯合行為 §20 限制競爭行為 §21 不實廣告 §23 不當贈品贈獎 §26, §27, §28 調查程序 §47-1 反托拉斯基金 主題/法條 重點摘要 注意 §7~§9 限制競爭之獨占行為 獨占認定: 市佔率達 1/2 (單一事業)、2/3 (兩事業)、3/4 (三事業)。</description>
     </item>
     <item>
       <title>不動產估價概要</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E4%B8%8D%E5%8B%95%E7%94%A2%E4%BC%B0%E5%83%B9%E6%A6%82%E8%A6%81/</link>
+      <link>http://localhost:1313/exam-notes/%E4%B8%8D%E5%8B%95%E7%94%A2%E4%BC%B0%E5%83%B9%E6%A6%82%E8%A6%81/</link>
       <pubDate>Sun, 05 Oct 2025 12:16:15 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E4%B8%8D%E5%8B%95%E7%94%A2%E4%BC%B0%E5%83%B9%E6%A6%82%E8%A6%81/</guid>
+      <guid>http://localhost:1313/exam-notes/%E4%B8%8D%E5%8B%95%E7%94%A2%E4%BC%B0%E5%83%B9%E6%A6%82%E8%A6%81/</guid>
       <description>主題 內容 估價原則 (13個) 口訣: 外公替貢均測動，效競機合分增減&#xA;包含：外部性、供需、替代、貢獻、均衡、預測、變動、最有效使用、競爭、機會成本、適合、收益分配、收益遞增遞減等原則。 重要估價原則詳解 替代原則: 三大估價法(成本法、比較法、收益法)之基礎。</description>
     </item>
     <item>
       <title>增購車位節省稅賦指南</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/%E5%A2%9E%E8%B3%BC%E8%BB%8A%E4%BD%8D%E7%AF%80%E7%9C%81%E7%A8%85%E8%B3%A6%E6%8C%87%E5%8D%97/</link>
+      <link>http://localhost:1313/exam-notes/%E5%A2%9E%E8%B3%BC%E8%BB%8A%E4%BD%8D%E7%AF%80%E7%9C%81%E7%A8%85%E8%B3%A6%E6%8C%87%E5%8D%97/</link>
       <pubDate>Sun, 28 Sep 2025 10:07:47 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/%E5%A2%9E%E8%B3%BC%E8%BB%8A%E4%BD%8D%E7%AF%80%E7%9C%81%E7%A8%85%E8%B3%A6%E6%8C%87%E5%8D%97/</guid>
+      <guid>http://localhost:1313/exam-notes/%E5%A2%9E%E8%B3%BC%E8%BB%8A%E4%BD%8D%E7%AF%80%E7%9C%81%E7%A8%85%E8%B3%A6%E6%8C%87%E5%8D%97/</guid>
       <description>聰明購車位，稅金省很大！你不可不知的節稅秘訣&#xA;隨著家庭成員增加或工作通勤需求，你是不是也考慮為家裡添購第二個車位呢？&#xA;買車位不僅是為了方便，買對了還能幫你省下一大筆稅金！&#xA;今天就來分享一個超實用的地產小知識：如何透過增購車位，讓你的地價稅和房屋稅都更優惠。&#xA;節稅重點速覽 項目 重點內容 備註 核心觀念 將增購的停車位，一併申請適用「自用住宅用地」的優惠稅率。 這是整個節稅操作的基礎。 適用條件 1.</description>
     </item>
     <item>
       <title>房地合一所得稅新舊制比較</title>
-      <link>https://tomisagoodguy.github.io/exam-notes/real-estate-tax-comparison/</link>
+      <link>http://localhost:1313/exam-notes/real-estate-tax-comparison/</link>
       <pubDate>Sun, 21 Sep 2025 10:07:47 +0800</pubDate>
-      <guid>https://tomisagoodguy.github.io/exam-notes/real-estate-tax-comparison/</guid>
+      <guid>http://localhost:1313/exam-notes/real-estate-tax-comparison/</guid>
       <description>一、如何判斷適用新制或舊制？ 財政部 - 房地合一稅2.0&#xA;房地交易適用制度，由「取得時間」與「出售時間」共同決定。&#xA;取得房地時間 出售房地時間 持有期間 適用制度 不限 104/12/31 (含) 以前 不限 舊制 105/01/01 (含) 以後 105/01/01 (含) 以後 不限 新制 (房地合一稅) 103/01/02 至 104/12/31 105/01/01 (含) 以後 2年 (含) 以內 新制 (房地合一稅) 103/01/02 以前 105/01/01 (含) 以後 超過 2 年 舊制 1、房地只要是在104年12月31日以前出售者，一律適用舊制。</description>
     </item>
   </channel>

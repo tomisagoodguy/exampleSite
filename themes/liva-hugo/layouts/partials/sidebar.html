@@ -13,19 +13,12 @@
       {{ end }}
     </div>
     <!-- category -->
-    {{- if isset .Site.Taxonomies "categories" }}
-    {{- if not (eq (len .Site.Taxonomies.categories) 0) }}
     <div class="widget">
       <h4 class="widget-title">Category</h4>
       <ul class="list-unstyled">
-        {{- range $name, $items := .Site.Taxonomies.categories }}
-        <li><a href="{{ `categories/` | relLangURL }}{{ $name | urlize | lower }}/">{{ $name | title | humanize }}</a>
-        </li>
-        {{- end }}
+        <li><a href="{{ `categories/` | relLangURL }}">查看所有分類</a></li>
       </ul>
     </div>
-    {{- end }}
-    {{- end }}
     
     <!-- social -->
     <div class="widget">
