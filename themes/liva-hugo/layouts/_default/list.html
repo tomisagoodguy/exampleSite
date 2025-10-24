@@ -18,9 +18,8 @@
                 </li>
               {{ end }}
             </ul>
-          {{ else }}
-            <!-- This is a regular list page -->
-            <ul class="list-group list-group-flush article-list">
+            {{ else }}
+            <!-- This is a regular list page -->            <ul class="list-group list-group-flush article-list">
               {{ $paginator := .Paginate .Pages }}
               {{ range $paginator.Pages }}
               <li class="list-group-item bg-transparent border-bottom py-3 px-2">

@@ -100,12 +100,6 @@ weight = 5
 
 
 
-
-
-
-
-
-
 # footer menu
 [[menu.footer]]
 name = "首頁"
