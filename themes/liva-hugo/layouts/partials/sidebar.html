@@ -1,4 +1,4 @@
-<div class="col-lg-4">
+<div class="col-lg-4 sidebar-sticky">
   <div class="widgets">
     <!-- about -->
     <div class="widget about-me-sidebar">
@@ -12,6 +12,28 @@
 <a href="{{ .Permalink }}" class="btn btn-outline-primary">Know More</a>
       {{ end }}
     </div>
+
+    <!-- recent post -->
+    <div class="widget">
+      <h4 class="widget-title">Recent Post</h4>
+      {{ range first 5 (where .Site.RegularPages.ByPublishDate.Reverse "Type" "in" (slice "blog" "exam-notes" "recipes" "practice-sharing" "finance")) }}
+      <article class="widget-card">
+        <div class="d-flex">
+          {{ if .Params.Image }}
+          <img class="card-img-sm" src="{{ .Params.Image | absURL }}">
+          {{ end }}
+          <div class="ml-3">
+            <h5><a class="post-title" href="{{ .Permalink }}">{{ .Title }}</a></h5>
+            <ul class="list-inline meta-info">
+              <li class="list-inline-item"><a href="{{ `about` | relURL }}">{{ .Site.Params.Author }}</a></li>
+              <li class="list-inline-item">{{ .PublishDate.Format "Jan 2, 2006" }}</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+      {{ end }}
+    </div>
+
     <!-- category -->
     <div class="widget">
       <h4 class="widget-title">Category</h4>

@@ -392,3 +392,45 @@ footer.footer-section a:hover {
   /* 圖示變為純白 */
   transform: translateY(-3px);
 }
+
+/* Lively Link Colors */
+.col-lg-6 .card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.col-lg-6 .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
+.col-lg-6:nth-child(6n+1) .card-body {
+  background-color: #ffadad;
+}
+
+.col-lg-6:nth-child(6n+2) .card-body {
+  background-color: #ffd6a5;
+}
+
+.col-lg-6:nth-child(6n+3) .card-body {
+  background-color: #caffbf;
+}
+
+.col-lg-6:nth-child(6n+4) .card-body {
+  background-color: #9bf6ff;
+}
+
+.col-lg-6:nth-child(6n+5) .card-body {
+  background-color: #a0c4ff;
+}
+
+.col-lg-6:nth-child(6n+6) .card-body {
+  background-color: #bdb2ff;
+}
+
+.sidebar-sticky {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 100px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
