@@ -206,3 +206,15 @@ link = "https://github.com/tomisagoodguy?tab=repositories"
 [taxonomies]
   category = "categories"
   author = "authors"
+
+[related]
+  threshold = 80
+  includeNewer = true
+  toLower = false
+
+  [[related.indices]]
+    name = "categories"
+    weight = 100
+  [[related.indices]]
+    name = "tags"
+    weight = 80

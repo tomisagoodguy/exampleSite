@@ -69,48 +69,59 @@
                 <a class="nav-link" id="latest-tab" data-toggle="tab" href="#latest" role="tab">最新文章</a>
               </li>
             </ul>
-            <div class="tab-content" id="navigationTabsContent">
-              <!-- 相關文章選項卡 -->
-              <div class="tab-pane fade show active" id="related" role="tabpanel">
-                <div class="row mt-4">
-                  {{ $related := "" }}
-                  {{ if .Params.tags }}
-                    {{ $related = (where site.RegularPages "Type" "in" site.Params.mainSections) | intersect (where site.RegularPages "Params.tags" "intersect" .Params.tags) | complement (slice .) }}
-                  {{ else }}
-                    {{ $related = (where site.RegularPages "Type" "in" site.Params.mainSections) | intersect (where site.RegularPages "Params.categories" "intersect" .Params.categories) | complement (slice .) }}
-                  {{ end }}
-                  {{ if $related }}
-                    {{ range first 6 $related }}
-                    <div class="col-md-6 mb-3">
-                      <div class="post-item">
-                        <a href="{{ .RelPermalink }}">{{ .Title }}</a>
-                        <small>{{ .PublishDate.Format "2006-01-02" }}</small>
-                      </div>
-                    </div>
-                    {{ end }}
-                  {{ else }}
-                    <div class="col-12">
-                      <p class="text-muted">目前沒有相關文章</p>
-                    </div>
-                  {{ end }}
-                </div>
-              </div>
-              
-              <!-- 最新文章選項卡 -->
-              <div class="tab-pane fade" id="latest" role="tabpanel">
-                <div class="row mt-4">
-                  {{ $latest := where site.RegularPages "Type" "in" site.Params.mainSections }}
-                  {{ range first 6 ($latest.ByDate.Reverse) }}
-                  <div class="col-md-6 mb-3">
-                    <div class="post-item">
-                      <a href="{{ .RelPermalink }}">{{ .Title }}</a>
-                      <small>{{ .PublishDate.Format "2006-01-02" }}</small>
-                    </div>
-                  </div>
-                  {{ end }}
-                </div>
+<div class="tab-content" id="navigationTabsContent">
+  
+  <div class="tab-pane fade show active" id="related" role="tabpanel">
+    <div class="row mt-4">
+      
+      {{ $related := .Site.RegularPages.Related . | first 6 }}
+      {{ with $related }}
+        {{ range . }}
+        <div class="col-12">
+          <article class="widget-card">
+            <div class="d-flex">
+              <div class="ml-3">
+                <h5><a class="post-title" href="{{ .RelPermalink }}">{{ .Title }}</a></h5>
+                <ul class="list-inline meta-info">
+                  <li class="list-inline-item"><a href="/about">{{ .Params.Author | default .Site.Params.Author }}</a></li>
+                  <li class="list-inline-item">{{ .PublishDate.Format "Jan 2, 2006" }}</li>
+                </ul>
               </div>
             </div>
+          </article>
+        </div>
+        {{ end }}
+      {{ else }}
+        <div class="col-12">
+          <p class="text-muted">目前沒有相關文章</p>
+        </div>
+      {{ end }}
+      </div>
+  </div>
+
+  <div class="tab-pane fade" id="latest" role="tabpanel">
+    <div class="row mt-4">
+      
+      {{ $recent := .Site.RegularPages.ByDate.Reverse | first 6 }}
+      {{ range $recent }}
+      <div class="col-12">
+        <article class="widget-card">
+          <div class="d-flex">
+            <div class="ml-3">
+              <h5><a class="post-title" href="{{ .RelPermalink }}">{{ .Title }}</a></h5>
+              <ul class="list-inline meta-info">
+                <li class="list-inline-item"><a href="/about">{{ .Params.Author | default .Site.Params.Author }}</a></li>
+                <li class="list-inline-item">{{ .PublishDate.Format "Jan 2, 2006" }}</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+      </div>
+      {{ end }}
+      </div>
+  </div>
+
+</div>
           </div>
         </div>
 
