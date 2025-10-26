@@ -32,7 +32,7 @@
                     {{ end }}
 
                     {{ if $currentImagePath }}
-                      <img src="{{ $currentImagePath | absURL }}" alt="{{ .title }}" class="img-fluid mb-3 link-icon">
+<img loading="lazy" src="{{ $currentImagePath | absURL }}" alt="{{ .title }}" class="img-fluid mb-3 link-icon">
                     {{ end }}
                     <h4 class="card-title">{{ .title }}</h4>
                   </a>

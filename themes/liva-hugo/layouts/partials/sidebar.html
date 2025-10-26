@@ -5,7 +5,7 @@
       {{ with .Site.GetPage "/about" }}
       <h4 class="widget-title">{{ .Title | markdownify }}</h4>
       {{ if .Params.Image }}
-      <img src="{{ .Params.Image | absURL }}" alt=""
+      <img loading="lazy" src="{{ .Params.Image | absURL }}" alt=""
         class="img-fluid author-thumb-sm d-block mx-auto rounded-circle mb-4">
       {{ end }}
       <p>我是定康，熱愛學習新知、運動、程式及料理，並樂於將所學應用於實際生活。</p>
@@ -20,7 +20,7 @@
       <article class="widget-card">
         <div class="d-flex">
           {{ if .Params.Image }}
-          <img class="card-img-sm" src="{{ .Params.Image | absURL }}">
+          <img loading="lazy" class="card-img-sm" src="{{ .Params.Image | absURL }}">
           {{ end }}
           <div class="ml-3">
             <h5><a class="post-title" href="{{ .Permalink }}">{{ .Title }}</a></h5>
