@@ -935,3 +935,26 @@ body.dark-mode .post-meta span {
 .pagination-default .page-item.active .page-link {
   color: #fff !important; 
 }
+
+/* --- 「回到頂部/底部」按鈕樣式 (修復深色模式) ---
+/*
+ * 您的 style.min.css 可能硬編碼(hard-coded)了按鈕顏色，
+ * 導致它們在切換主題時不會改變。
+ *
+ * 以下規則會覆寫它們，改用 CSS 變數，
+ * 讓按鈕背景/圖示顏色能隨主題自動反轉。
+ */
+#return-to-top,
+#go-to-bottom {
+  /*
+   * 按鈕背景色: 設為「標題顏色」
+   * (淺色模式 = 深色; 深色模式 = 淺色)
+   */
+  background-color: var(--heading-color) !important;
+  
+  /*
+   * 圖示(icon)顏色: 設為「頁面背景色」
+   * (淺色模式 = 淺色; 深色模式 = 深色)
+   */
+  color: var(--body-bg-color) !important;
+}
