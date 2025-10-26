@@ -434,3 +434,123 @@ footer.footer-section a:hover {
   max-height: calc(100vh - 120px);
   overflow-y: auto;
 }
+
+/* Theme Switch */
+.theme-switch-wrapper {
+  display: flex;
+  align-items: center;
+}
+.theme-switch {
+  display: inline-block;
+  height: 34px;
+  position: relative;
+  width: 60px;
+}
+
+.theme-switch input {
+  display:none;
+}
+
+.slider {
+  background-color: #ccc;
+  bottom: 0;
+  cursor: pointer;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: .4s;
+}
+
+.slider:before {
+  font-family: "themify";
+  content: "\e6dd"; /* sun icon */
+  line-height: 26px;
+  text-align: center;
+  color: #2196F3;
+  background-color: #fff;
+  bottom: 4px;
+  height: 26px;
+  left: 4px;
+  position: absolute;
+  transition: .4s;
+  width: 26px;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+  content: "\e6a1"; /* moon icon */
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+/* Dark Mode */
+body.dark-mode {
+  background-color: #1a1a1a;
+  color: #fff;
+}
+
+body.dark-mode .card {
+    background-color: #2a2a2a;
+    color: #fff;
+}
+
+body.dark-mode .card-title a {
+    color: #fff;
+}
+
+body.dark-mode .section {
+    background-color: #2a2a2a;
+}
+
+body.dark-mode .widget {
+    background-color: #2a2a2a;
+}
+
+body.dark-mode .skill-tags li {
+    background-color: #3a3a3a;
+    color: #fff;
+}
+
+body.dark-mode .github-project-card {
+    background-color: #2a2a2a;
+    border-left-color: #0366d6;
+}
+
+body.dark-mode .toc-container {
+    background-color: rgba(42, 42, 42, 0.95);
+    color: #fff;
+}
+
+body.dark-mode .toc-content nav>ul>li>a {
+    color: #ccc;
+}
+
+body.dark-mode .toc-content nav>ul>li>a:hover {
+    background-color: rgba(79, 70, 229, 0.2);
+    color: #fff;
+}
+
+body.dark-mode .toc-content nav>ul>li.active>a {
+    color: #fff;
+    background-color: rgba(79, 70, 229, 0.3);
+}
+
+body.dark-mode .recipe-gallery-item {
+    background-color: #2a2a2a;
+    border-color: #444;
+}
+
+body.dark-mode .recipe-gallery-item figcaption {
+    color: #ccc;
+}

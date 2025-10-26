@@ -49,6 +49,13 @@
           {{ end }}
         </ul>
 
+        <div class="theme-switch-wrapper pl-lg-4">
+          <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"></div>
+          </label>
+        </div>
+
         {{ if .Site.Params.search.enable }}
         {{ "<!-- search -->" | safeHTML }}
         <div class="search pl-lg-4">
