@@ -1,36 +1,4 @@
 /* ==========================================
-   統一色彩變量定義
-   ========================================== */
-:root {
-  --primary-color: #4f46e5;          /* 主色調：靛藍色 */
-  --primary-hover: #4338ca;          /* 主色調懸停 */
-  --secondary-color: #8b5cf6;        /* 次要色調：紫色 */
-  --secondary-hover: #7c3aed;        /* 次要色調懸停 */
-  --accent-color: #10b981;           /* 強調色：綠色 */
-  --accent-hover: #059669;           /* 強調色懸停 */
-  
-  --light-bg: #faf8f5;  /* 亮色背景 */
-  --dark-bg: rgba(15, 23, 42, 0.8);      /* 暗色背景 */
-  
-  --light-text: #1f2937;             /* 亮色模式文字 */
-  --light-text-muted: #6b7280;       /* 亮色模式次要文字 */
-  --dark-text: #f3f4f6;              /* 暗色模式文字 */
-  --dark-text-muted: #9ca3af;        /* 暗色模式次要文字 */
-  
-  --border-light: rgba(0, 0, 0, 0.1); /* 亮色模式邊框 */
-  --border-dark: rgba(255, 255, 255, 0.1); /* 暗色模式邊框 */
-  
-  --shadow-light: 0 8px 16px rgba(0, 0, 0, 0.1); /* 亮色模式陰影 */
-  --shadow-dark: 0 8px 16px rgba(0, 0, 0, 0.25); /* 暗色模式陰影 */
-  
-  /* 新增標籤背景色 */
-  --tag-bg-light: #f0f9ff;           /* 亮色模式標籤背景 */
-  --tag-bg-dark: #1e293b;            /* 暗色模式標籤背景 */
-  --tag-text-light: #0284c7;         /* 亮色模式標籤文字 */
-  --tag-text-dark: #7dd3fc;          /* 暗色模式標籤文字 */
-}
-
-/* ==========================================
    第一部分：文章卡片設計（統一顏色）
    ========================================== */
 /* 文章卡片 - 強化版（無描述，增加動畫感） */
@@ -39,7 +7,7 @@
   margin-bottom: 28px;
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease-in-out;
   border: none;
-  background: var(--light-bg);
+  background: var(--primary-bg-color, var(--light-bg));
   backdrop-filter: blur(12px);
   border-radius: 14px;
   overflow: hidden;
@@ -109,7 +77,7 @@
 .card-title a {
   font-size: 20px;
   font-weight: 700;
-  color: var(--light-text);
+  color: var(--primary-text-color, var(--light-text));
   text-decoration: none;
   transition: color 0.4s ease-in-out;
 }
@@ -125,7 +93,7 @@
   justify-content: center;
   align-items: center;
   font-size: 14px;
-  color: var(--light-text-muted);
+  color: var(--secondary-text-color, var(--light-text-muted));
   margin-top: 10px;
 }
 
@@ -140,23 +108,6 @@
 
 .card-meta img:hover {
   transform: scale(1.1) rotate(5deg);
-}
-
-/* 支援暗黑模式 */
-@media (prefers-color-scheme: dark) {
-  .article-card {
-    background: var(--dark-bg);
-    box-shadow: var(--shadow-dark);
-  }
-  .card-title a {
-    color: var(--dark-text);
-  }
-  .card-title a:hover {
-    color: var(--secondary-color);
-  }
-  .card-meta {
-    color: var(--dark-text-muted);
-  }
 }
 
 /* ==========================================
@@ -292,12 +243,12 @@ body article h6 {
 .post-navigation {
   margin: 3rem 0;
   padding-top: 2rem;
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--border-color, var(--border-light));
   
   span {
     display: block;
     font-size: 0.9rem;
-    color: var(--light-text-muted);
+    color: var(--secondary-text-color, var(--light-text-muted));
     margin-bottom: 0.5rem;
   }
   
@@ -335,7 +286,7 @@ body article h6 {
   
   .post-navigation {
     padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-color, var(--border-light));
     
     .prev-post, .next-post {
       padding: 1rem;
@@ -347,7 +298,7 @@ body article h6 {
       
       span {
         font-size: 0.85rem;
-        color: var(--light-text-muted);
+        color: var(--secondary-text-color, var(--light-text-muted));
         margin-bottom: 0.5rem;
         display: block;
       }
@@ -377,13 +328,13 @@ body article h6 {
   
   .navigation-tabs {
     .nav-tabs {
-      border-bottom: 2px solid var(--border-light);
+      border-bottom: 2px solid var(--border-color, var(--border-light));
       
       .nav-link {
         border: none;
         padding: 0.75rem 1.5rem;
         font-weight: 500;
-        color: var(--light-text-muted);
+        color: var(--secondary-text-color, var(--light-text-muted));
         
         &.active {
           color: var(--primary-color);
@@ -411,7 +362,7 @@ body article h6 {
       a {
         display: block;
         text-decoration: none;
-        color: var(--light-text);
+        color: var(--primary-text-color, var(--light-text));
         margin-bottom: 0.25rem;
         font-weight: 500;
         
@@ -421,7 +372,7 @@ body article h6 {
       }
       
       small {
-        color: var(--light-text-muted);
+        color: var(--secondary-text-color, var(--light-text-muted));
         font-size: 0.8rem;
       }
     }
@@ -435,7 +386,7 @@ body article h6 {
   .list-group-item {
     padding: 1rem 0;
     background: transparent;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-color, var(--border-light));
     transition: background-color 0.3s ease;
     
     &:hover {
@@ -448,7 +399,7 @@ body article h6 {
   }
   
   .article-link {
-    color: var(--light-text);
+    color: var(--primary-text-color, var(--light-text));
     text-decoration: none;
     transition: color 0.3s;
     
@@ -491,37 +442,7 @@ body article h6 {
   
   .text-muted {
     font-size: 0.9rem;
-    color: var(--light-text-muted) !important;
-  }
-  
-  /* 支援暗黑模式 */
-  @media (prefers-color-scheme: dark) {
-    .list-group-item {
-      border-bottom: 1px solid var(--border-dark);
-    }
-    
-    .article-link {
-      color: var(--dark-text);
-      
-      &:hover {
-        color: var(--secondary-color);
-      }
-    }
-    
-    .badge, .category-badge {
-      background-color: var(--secondary-color);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
-    
-    .badge:hover, 
-    .category-badge:hover {
-      background-color: var(--secondary-hover);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-    }
-    
-    .text-muted {
-      color: var(--dark-text-muted) !important;
-    }
+    color: var(--secondary-text-color, var(--light-text-muted)) !important;
   }
 }
 
@@ -672,50 +593,6 @@ body article h6 {
     border-left: 2px solid rgba(16, 185, 129, 0.3);
     padding-left: 1rem;
   }
-  
-  /* 亮色模式 */
-  @media (prefers-color-scheme: light) {
-    .list-group-item {
-      background: var(--light-bg);
-      
-      &:hover {
-        background: rgba(249, 250, 251, 0.9);
-        box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
-      }
-    }
-    
-    .article-meta {
-      border-bottom-color: rgba(16, 185, 129, 0.2);
-    }
-    
-    .article-link {
-      color: var(--light-text);
-      
-      &:hover h4 {
-        color: var(--accent-hover);
-      }
-    }
-    
-    .badge, .category-badge {
-      background: var(--accent-color);
-      color: white !important;
-    }
-    
-    .badge:hover, 
-    .category-badge:hover {
-      background: var(--accent-hover);
-      color: white !important;
-    }
-    
-    .text-muted {
-      color: var(--light-text-muted) !important;
-    }
-    
-    .article-preview {
-      color: var(--light-text);
-      border-left-color: rgba(16, 185, 129, 0.2);
-    }
-  }
 }
 
 
@@ -724,7 +601,7 @@ body article h6 {
    ========================================== */
 .post-content-area {
   h1, h2, h3, h4, h5, h6 {
-    color: var(--light-text);
+    color: var(--primary-text-color, var(--light-text));
     margin-top: 2rem;
     margin-bottom: 1rem;
     font-weight: 700;
@@ -735,7 +612,7 @@ body article h6 {
   }
   
   p {
-    color: var(--light-text-muted);
+    color: var(--secondary-text-color, var(--light-text-muted));
     line-height: 1.8;
     margin-bottom: 1.5rem;
   }
@@ -756,7 +633,7 @@ body article h6 {
     margin-bottom: 1.5rem;
     
     li {
-      color: var(--light-text-muted);
+      color: var(--secondary-text-color, var(--light-text-muted));
       margin-bottom: 0.75rem;
       line-height: 1.8;
     }
@@ -772,7 +649,7 @@ body article h6 {
     p {
       margin: 0;
       font-style: italic;
-      color: var(--light-text);
+      color: var(--primary-text-color, var(--light-text));
     }
   }
   
@@ -803,15 +680,15 @@ body article h6 {
     th, td {
       padding: 1rem 1.25rem;
       text-align: left;
-      border-bottom: 2px solid #888;
+      border-bottom: 2px solid var(--border-color, #888);
     }
     
     thead {
-      background: #f8f9fa;
+      background: var(--secondary-bg-color, #f8f9fa);
       
       th {
         font-weight: 600;
-        color: var(--light-text);
+        color: var(--primary-text-color, var(--light-text));
         border-bottom-width: 3px;
       }
     }
@@ -839,57 +716,5 @@ body article h6 {
     border-radius: 8px;
     margin: 2rem 0;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* 支援暗黑模式 */
-  @media (prefers-color-scheme: dark) {
-    h1, h2, h3, h4, h5, h6 {
-      color: var(--dark-text);
-    }
-    
-    p, ul li, ol li {
-      color: var(--dark-text-muted);
-    }
-    
-    a {
-      color: var(--secondary-color);
-      
-      &:hover {
-        color: var(--secondary-hover);
-      }
-    }
-    
-    blockquote {
-      border-left-color: var(--secondary-color);
-      background: rgba(139, 92, 246, 0.1);
-      
-      p {
-        color: var(--dark-text);
-      }
-    }
-    
-    table {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      
-      th, td {
-        border-bottom: 1px solid var(--border-dark);
-      }
-      
-      thead {
-        background: #1e293b;
-        
-        th {
-          color: var(--dark-text);
-        }
-      }
-      
-      tbody tr:hover {
-        background-color: rgba(255, 255, 255, 0.05);
-      }
-    }
-    
-    img {
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    }
   }
 }

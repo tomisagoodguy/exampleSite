@@ -1,7 +1,7 @@
 // TOC 樣式
 .toc-container {
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
+  background-color: var(--secondary-bg-color, #f8f9fa);
+  border: 1px solid var(--border-color, #e9ecef);
   border-radius: 4px;
   padding: 15px;
   margin-bottom: 30px;
@@ -36,7 +36,7 @@
     &:after {
       content: " [-]";
       font-size: 0.8rem;
-      color: #6c757d;
+      color: var(--secondary-text-color, #6c757d);
     }
   }
   
@@ -61,17 +61,17 @@
           margin-bottom: 5px;
           
           a {
-            color: #495057;
+            color: var(--primary-text-color, #495057);
             text-decoration: none;
             font-size: 0.95rem;
             
             &:hover {
-              color: #007bff;
+              color: var(--primary-color, #007bff);
               text-decoration: underline;
             }
             
             &.active {
-              color: #007bff;
+              color: var(--primary-color, #007bff);
               font-weight: 600;
             }
           }
@@ -98,6 +98,3 @@
     height: 1px;
   }
 }
-
-
-

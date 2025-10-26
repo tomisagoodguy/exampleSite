@@ -496,40 +496,74 @@ input:checked + .slider:before {
 
 /* Dark Mode */
 body.dark-mode {
-  background-color: #1a1a1a;
-  color: #fff;
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+body.dark-mode a {
+    color: #bb86fc;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+    color: #fff;
+}
+
+body.dark-mode p {
+    color: #e0e0e0;
+}
+
+body.dark-mode .navigation .navbar {
+    background-color: #1E1E1E !important;
+    border-bottom: 1px solid #333 !important;
+}
+
+body.dark-mode .sub-navigation {
+    background-color: #1E1E1E;
+    border-bottom: 1px solid #333;
 }
 
 body.dark-mode .card {
-    background-color: #2a2a2a;
-    color: #fff;
+    background-color: #1E1E1E;
+    color: #e0e0e0;
+    border: 1px solid #333;
 }
 
 body.dark-mode .card-title a {
     color: #fff;
 }
 
+body.dark-mode .post-meta {
+    color: #aaa;
+}
+
 body.dark-mode .section {
-    background-color: #2a2a2a;
+    background-color: #121212;
 }
 
 body.dark-mode .widget {
-    background-color: #2a2a2a;
+    background-color: #1E1E1E;
+    border: 1px solid #333;
 }
 
 body.dark-mode .skill-tags li {
-    background-color: #3a3a3a;
-    color: #fff;
+    background-color: #333;
+    color: #e0e0e0;
 }
 
 body.dark-mode .github-project-card {
-    background-color: #2a2a2a;
-    border-left-color: #0366d6;
+    background-color: #1E1E1E;
+    border-left-color: #bb86fc;
 }
 
 body.dark-mode .toc-container {
-    background-color: rgba(42, 42, 42, 0.95);
-    color: #fff;
+    background-color: rgba(30, 30, 30, 0.95);
+    color: #e0e0e0;
+    border: 1px solid #333;
 }
 
 body.dark-mode .toc-content nav>ul>li>a {
@@ -537,20 +571,261 @@ body.dark-mode .toc-content nav>ul>li>a {
 }
 
 body.dark-mode .toc-content nav>ul>li>a:hover {
-    background-color: rgba(79, 70, 229, 0.2);
+    background-color: rgba(187, 134, 252, 0.2);
     color: #fff;
 }
 
 body.dark-mode .toc-content nav>ul>li.active>a {
     color: #fff;
-    background-color: rgba(79, 70, 229, 0.3);
+    background-color: rgba(187, 134, 252, 0.3);
 }
 
 body.dark-mode .recipe-gallery-item {
-    background-color: #2a2a2a;
-    border-color: #444;
+    background-color: #1E1E1E;
+    border-color: #333;
 }
 
 body.dark-mode .recipe-gallery-item figcaption {
-    color: #ccc;
+    color: #aaa;
+}
+
+body.dark-mode .pagination .page-link {
+    background-color: #1E1E1E;
+    color: #e0e0e0;
+    border-color: #333;
+}
+
+body.dark-mode .pagination .page-item.active .page-link {
+    background-color: #bb86fc;
+    border-color: #bb86fc;
+    color: #121212;
+}
+
+body.dark-mode .pagination .page-item.disabled .page-link {
+    background-color: #1E1E1E;
+    color: #6c757d;
+    border-color: #333;
+}
+
+body.dark-mode footer.footer-section {
+    background-color: #1E1E1E;
+    color: #e0e0e0;
+    border-top: 1px solid #333;
+}
+
+body.dark-mode .btn-outline-primary {
+    color: #bb86fc;
+    border-color: #bb86fc;
+}
+
+body.dark-mode .btn-outline-primary:hover {
+    background-color: #bb86fc;
+    color: #121212;
+}
+
+body.dark-mode blockquote {
+    border-left-color: #bb86fc;
+    background-color: #1E1E1E;
+    color: #e0e0e0;
+}
+
+body.dark-mode table,
+body.dark-mode th,
+body.dark-mode td {
+    border-color: #333 !important;
+}
+
+body.dark-mode .skills-container .skill-bar {
+    background: #2a2a2a;
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.1);
+}
+
+body.dark-mode .article-card,
+body.dark-mode .card,
+body.dark-mode .post-item,
+body.dark-mode .article-preview {
+    background: var(--dark-bg);
+    box-shadow: var(--shadow-dark);
+}
+
+body.dark-mode .card-title a {
+    color: var(--dark-text);
+}
+
+body.dark-mode .card-title a:hover {
+    color: var(--secondary-color);
+}
+
+body.dark-mode .card-meta {
+    color: var(--dark-text-muted);
+}
+
+body.dark-mode .post-navigation {
+    border-top: 1px solid var(--border-dark);
+}
+
+body.dark-mode .post-navigation span {
+    color: var(--dark-text-muted);
+}
+
+body.dark-mode .navigation-tabs .nav-tabs {
+    border-bottom: 2px solid var(--border-dark);
+}
+
+body.dark-mode .navigation-tabs .nav-link {
+    color: var(--dark-text-muted);
+}
+
+body.dark-mode .navigation-tabs .nav-link.active {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+body.dark-mode .navigation-tabs .nav-link:hover {
+    color: var(--primary-color);
+}
+
+body.dark-mode .navigation-tabs .post-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .navigation-tabs .post-item a {
+    color: var(--dark-text);
+}
+
+body.dark-mode .navigation-tabs .post-item a:hover {
+    color: var(--primary-color);
+}
+
+body.dark-mode .navigation-tabs .post-item small {
+    color: var(--dark-text-muted);
+}
+
+body.dark-mode .article-list .list-group-item {
+    border-bottom: 1px solid var(--border-dark);
+}
+
+body.dark-mode .article-list .list-group-item:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+body.dark-mode .article-list .article-link {
+    color: var(--dark-text);
+}
+
+body.dark-mode .article-list .article-link:hover {
+    color: var(--secondary-color);
+}
+
+body.dark-mode .article-list .badge,
+body.dark-mode .article-list .category-badge {
+    background-color: var(--secondary-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .article-list .badge:hover,
+body.dark-mode .article-list .category-badge:hover {
+    background-color: var(--secondary-hover);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .article-list .text-muted {
+    color: var(--dark-text-muted) !important;
+}
+
+body.dark-mode .article-list-scifi .list-group-item {
+    background: var(--dark-bg);
+}
+
+body.dark-mode .article-list-scifi .list-group-item:hover {
+    background: rgba(15, 23, 42, 0.9);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+body.dark-mode .article-list-scifi .article-meta {
+    border-bottom-color: rgba(16, 185, 129, 0.3);
+}
+
+body.dark-mode .article-list-scifi .article-link {
+    color: var(--dark-text);
+}
+
+body.dark-mode .article-list-scifi .article-link:hover h4 {
+    color: var(--accent-color);
+}
+
+body.dark-mode .article-list-scifi .badge,
+body.dark-mode .article-list-scifi .category-badge {
+    background: var(--accent-color);
+}
+
+body.dark-mode .article-list-scifi .badge:hover,
+body.dark-mode .article-list-scifi .category-badge:hover {
+    background: var(--accent-hover);
+}
+
+body.dark-mode .article-list-scifi .text-muted {
+    color: var(--dark-text-muted) !important;
+}
+
+body.dark-mode .article-list-scifi .article-preview {
+    color: #d4d4d8;
+    border-left-color: rgba(16, 185, 129, 0.3);
+}
+
+body.dark-mode .post-content-area h1,
+body.dark-mode .post-content-area h2,
+body.dark-mode .post-content-area h3,
+body.dark-mode .post-content-area h4,
+body.dark-mode .post-content-area h5,
+body.dark-mode .post-content-area h6 {
+    color: var(--dark-text);
+}
+
+body.dark-mode .post-content-area p,
+body.dark-mode .post-content-area ul li,
+body.dark-mode .post-content-area ol li {
+    color: var(--dark-text-muted);
+}
+
+body.dark-mode .post-content-area a {
+    color: var(--secondary-color);
+}
+
+body.dark-mode .post-content-area a:hover {
+    color: var(--secondary-hover);
+}
+
+body.dark-mode .post-content-area blockquote {
+    border-left-color: var(--secondary-color);
+    background: rgba(139, 92, 246, 0.1);
+}
+
+body.dark-mode .post-content-area blockquote p {
+    color: var(--dark-text);
+}
+
+body.dark-mode .post-content-area table {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .post-content-area th,
+body.dark--mode .post-content-area td {
+    border-bottom: 1px solid var(--border-dark);
+}
+
+body.dark-mode .post-content-area thead {
+    background: #1e293b;
+}
+
+body.dark-mode .post-content-area thead th {
+    color: var(--dark-text);
+}
+
+body.dark-mode .post-content-area tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .post-content-area img {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }

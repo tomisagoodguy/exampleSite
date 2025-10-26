@@ -34,3 +34,18 @@ VERSION:	Versoin Number
 
 // 正確的導入方式（不需要加下劃線）
 @import "posts";
+
+body.dark-mode {
+  --primary-bg-color: #1c1c1c;
+  --primary-text-color: #fdfdfd;
+  --secondary-text-color: #c9c9c9;
+  --widget-title-color: #fdfdfd;
+  --footer-bg-color: #222;
+  --footer-text-color: #c9c9c9;
+  --border-color: #333;
+  --secondary-bg-color: #222;
+  --dark-overlay: rgba(0, 0, 0, 0.8);
+  --primary-color-translucent: rgba(187, 134, 252, 0.8);
+  --primary-color-translucent-light: rgba(187, 134, 252, 0.1);
+  --primary-color: #bb86fc;
+}

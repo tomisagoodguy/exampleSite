@@ -6,7 +6,7 @@ body .navbar {
   top: 0;
   left: 0;
   width: 100%;
-  background-color: #f5f5f5 !important; // 淺灰色背景
+  background-color: var(--primary-bg-color, #f5f5f5) !important; // 淺灰色背景
   z-index: 1030;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
   transition: all 0.3s ease;
@@ -30,9 +30,9 @@ body {
 
 // 導覽連結顏色設置
 .navbar-white .navbar-nav .nav-link {
-  color: #333333 !important; // 深灰色（接近黑色）文字
+  color: var(--primary-text-color, #333333) !important; // 深灰色（接近黑色）文字
   &:hover{
-    color: #2c3e50 !important; // 懸停時顯示深灰藍色
+    color: var(--primary-color, #2c3e50) !important; // 懸停時顯示深灰藍色
   }
 }
 
@@ -60,9 +60,9 @@ body {
 .search-btn {
   border: 0;
   background: transparent;
-  border-right: 1px solid #dee2e6;
-  border-left: 1px solid #dee2e6;
-  color: #333333 !important; // 確保搜索按鈕文字顏色一致
+  border-right: 1px solid var(--border-color, #dee2e6);
+  border-left: 1px solid var(--border-color, #dee2e6);
+  color: var(--primary-text-color, #333333) !important; // 確保搜索按鈕文字顏色一致
 }
 
 /* 搜尋包裝器 */
@@ -88,7 +88,7 @@ body {
   height: 100%;
   width: 100%;
   border: 0;
-  background: #ffffff;
+  background: var(--primary-bg-color, #ffffff);
   font-size: 20px;
   padding: 0;
 
@@ -107,40 +107,40 @@ body {
   background: transparent;
   page-break-after: 10px;
   font-size: 20px;
-  color: #333333; // 確保關閉按鈕顏色一致
+  color: var(--primary-text-color, #333333); // 確保關閉按鈕顏色一致
 }
 
 // 統一導覽列樣式
 .navbar {
-  background-color: #f5f5f5 !important; // 淺灰色背景
+  background-color: var(--primary-bg-color, #f5f5f5) !important; // 淺灰色背景
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
   
   // 文字和圖標顏色調整
   .navbar-nav .nav-link, .navbar-brand, .search-btn {
-    color: #333333 !important; // 深灰色（接近黑色）文字
+    color: var(--primary-text-color, #333333) !important; // 深灰色（接近黑色）文字
   }
   
   // 懸停效果
   .navbar-nav .nav-link:hover {
-    color: #2c3e50 !important; // 懸停時顯示深灰藍色
+    color: var(--primary-color, #2c3e50) !important; // 懸停時顯示深灰藍色
   }
 }
 
 // 確保品牌圖標/文字顏色
 .navbar-brand {
-  color: #333333 !important;
+  color: var(--primary-text-color, #333333) !important;
 }
 
 // 漢堡選單顏色（移動裝置視圖）
 .navbar-toggler-icon {
-  background-color: #333333;
+  background-color: var(--primary-text-color, #333333);
 }
 
 // "About Me" 導覽列項目樣式
 .about-me-nav {
-  color: #ff0000 !important; /* 修改為您想要的顏色 */
+  color: var(--accent-color-1, #ff0000) !important; /* 修改為您想要的顏色 */
 
   &:hover {
-    color: #00ff00 !important; /* 修改為您想要的滑鼠懸停顏色 */
+    color: var(--accent-color-2, #00ff00) !important; /* 修改為您想要的滑鼠懸停顏色 */
   }
 }

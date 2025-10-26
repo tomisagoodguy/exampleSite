@@ -216,13 +216,19 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .footer-section {
-  background-color: #f8f9fa;
+  background-color: var(--footer-bg-color, #f8f9fa);
   padding-top: 3rem;
+  transition: background-color 0.3s;
+}
+
+.footer-section .text-dark {
+  color: var(--footer-text-color, #343a40);
+  transition: color 0.3s;
 }
 
 .social-item:hover, 
 .category-item:hover {
-  color: var(--primary) !important;
+  color: var(--primary-color, #007bff) !important;
   text-decoration: none;
 }
 

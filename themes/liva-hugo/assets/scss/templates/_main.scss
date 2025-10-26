@@ -43,7 +43,7 @@
             position: absolute;
             padding: 0;
             border: 0;
-            background: $border-color;
+            background: var(--border-color, $border-color);
             color: transparent;
             overflow: hidden;
             width: 1px;
@@ -53,7 +53,7 @@
 
           &.slick-active {
             button {
-              background: $primary-color;
+              background: var(--primary-color, $primary-color);
               width: 6px;
               left: -2px;
             }
@@ -83,7 +83,7 @@
             position: absolute;
             padding: 0;
             border: 0;
-            background: $border-color;
+            background: var(--border-color, $border-color);
             color: transparent;
             overflow: hidden;
             width: 100%;
@@ -92,7 +92,7 @@
 
           &.slick-active {
             button {
-              background: $primary-color;
+              background: var(--primary-color, $primary-color);
               top: -2px;
               height: 5px;
             }
@@ -105,7 +105,7 @@
 
 .post-meta {
   span {
-    color: #444;
+    color: var(--secondary-text-color, #444);
     font-weight: 500;
   }
 }
@@ -122,11 +122,11 @@
 
 .small-post-border {
   &:not(:last-child) {
-    border-right: 1px solid $border-color;
+    border-right: 1px solid var(--border-color, $border-color);
 
     @include desktop {
       border-right: 0;
-      border-bottom: 1px solid $border-color;
+      border-bottom: 1px solid var(--border-color, $border-color);
       margin-bottom: 20px;
       padding-bottom: 20px;
     }
@@ -136,7 +136,7 @@
 /* widget */
 .widgets {
   padding-left: 25px;
-  border-left: 1px solid #eee;
+  border-left: 1px solid var(--border-color, #eee);
   @include desktop {
     padding-left: 0;
     border-left: 0;
@@ -148,20 +148,22 @@
 
   &-title {
     display: inline-block;
-    border-top: .5px solid $primary-color;
-    border-bottom: .5px solid $primary-color;
+    border-top: .5px solid var(--primary-color, $primary-color);
+    border-bottom: .5px solid var(--primary-color, $primary-color);
     padding: 10px 0;
     margin-bottom: 20px;
+    color: var(--widget-title-color);
+    transition: color 0.3s;
   }
 
   li {
     margin-bottom: 10px;
 
     a {
-      color: $text-color;
+      color: var(--primary-text-color, $text-color);
 
       &:hover {
-        color: $primary-color;
+        color: var(--primary-color, $primary-color);
       }
     }
   }
@@ -172,13 +174,13 @@
     a {
       height: 35px;
       width: 35px;
-      background: $primary-color;
-      color: $white;
+      background: var(--primary-color, $primary-color);
+      color: var(--primary-bg-color, $white);
       display: block;
       line-height: 35px;
 
       &:hover {
-        color: $white;
+        color: var(--primary-bg-color, $white);
       }
     }
   }
@@ -195,13 +197,13 @@
       width: 40px;
       height: 40px;
       text-align: center;
-      color: $primary-color;
+      color: var(--primary-color, $primary-color);
       border-top: 0;
       border-bottom: 0;
 
       &:hover {
-        background: $primary-color;
-        color: $white;
+        background: var(--primary-color, $primary-color);
+        color: var(--primary-bg-color, $white);
       }
     }
 
@@ -214,9 +216,9 @@
 
     &.active {
       .page-link {
-        background: $white;
-        color: $text-color;
-        border: 1px solid $primary-color;
+        background: var(--primary-bg-color, $white);
+        color: var(--primary-text-color, $text-color);
+        border: 1px solid var(--primary-color, $primary-color);
       }
     }
   }
@@ -264,7 +266,7 @@
         font-size: 14px;
         left: 0;
         top: 1px;
-        color: $primary-color;
+        color: var(--primary-color, $primary-color);
         transition: .3s ease;
       }
     }
@@ -276,21 +278,21 @@
     max-width: 100%;
     margin-bottom: 1rem;
 
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--border-color, #dee2e6);
 
     th,
     td {
       padding: .75rem;
       vertical-align: top;
-      border: 1px solid #dee2e6
+      border: 1px solid var(--border-color, #dee2e6)
     }
 
     thead {
-      background: darken($color: $gray, $amount: 2);
+      background: var(--secondary-bg-color, darken($color: $gray, $amount: 2));
     }
 
     tbody {
-      background: $gray;
+      background: var(--secondary-bg-color, $gray);
 
       td {
         text-align: left !important;
@@ -301,12 +303,12 @@
 
   blockquote {
     padding: 20px;
-    background: $gray;
-    border-left: 3px solid $primary-color;
+    background: var(--secondary-bg-color, $gray);
+    border-left: 3px solid var(--primary-color, $primary-color);
 
     p {
       margin-bottom: 0;
-      color: $text-color-dark;
+      color: var(--primary-text-color, $text-color-dark);
       font-style: italic !important;
     }
   }
@@ -314,7 +316,7 @@
 
   pre {
     padding: 10px 20px;
-    background: $gray;
+    background: var(--secondary-bg-color, $gray);
 
     code {
       border: 0;
@@ -324,7 +326,7 @@
   }
 
   a {
-    color: $primary-color;
+    color: var(--primary-color, $primary-color);
 
     &:hover {
       text-decoration: underline;
@@ -333,10 +335,10 @@
 
   code {
     padding: 3px 5px;
-    background: $gray;
-    border: 1px solid $border-color;
+    background: var(--secondary-bg-color, $gray);
+    border: 1px solid var(--border-color, $border-color);
     border-radius: 3px;
-    color: $text-color-dark;
+    color: var(--primary-text-color, $text-color-dark);
   }
 
 }
@@ -344,7 +346,7 @@
 footer a {
   @extend .text-dark;
   &:hover {
-    color: $primary-color !important;
+    color: var(--primary-color, $primary-color) !important;
     text-decoration: underline;
   }
 }

@@ -78,3 +78,18 @@ $sidebar-level-4-bg: darken($sidebar-bg, 9%);     // 最深的背景
 // 標籤顏色變數
 $tag-bg: #333; // 標籤背景顏色
 $tag-text: #fff; // 標籤文字顏色
+
+:root {
+  --primary-bg-color: #fdfdfd;
+  --primary-text-color: #333;
+  --secondary-text-color: #666;
+  --widget-title-color: #333;
+  --footer-bg-color: #f8f9fa;
+  --footer-text-color: #343a40;
+  --border-color: #e9ecef;
+  --secondary-bg-color: #f8f9fa;
+  --dark-overlay: rgba(0, 0, 0, 0.5);
+  --primary-color-translucent: rgba(33, 150, 243, 0.8);
+  --primary-color-translucent-light: rgba(33, 150, 243, 0.05);
+  --primary-color: #2196F3;
+}

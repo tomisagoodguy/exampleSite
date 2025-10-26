@@ -20,30 +20,30 @@
 }
 
 .btn-primary {
-  background: $primary-color;
-  color: $white;
-  border-color: $primary-color;
+  background: var(--primary-color, $primary-color);
+  color: var(--primary-bg-color, $white);
+  border-color: var(--primary-color, $primary-color);
 
   &:active,
   &:hover,
   &.focus,
   &.active {
-    background: $primary-color !important;
-    border-color: $primary-color !important;
+    background: var(--primary-color, $primary-color) !important;
+    border-color: var(--primary-color, $primary-color) !important;
   }
 }
 
 .btn-outline-primary {
   background: transparent;
-  color: $text-color-dark;
-  border-color: $primary-color;
+  color: var(--primary-text-color, $text-color-dark);
+  border-color: var(--primary-color, $primary-color);
 
   &:active,
   &:hover,
   &.focus,
   &.active {
-    background: $primary-color !important;
-    border-color: $primary-color !important;
-    color: $white;
+    background: var(--primary-color, $primary-color) !important;
+    border-color: var(--primary-color, $primary-color) !important;
+    color: var(--primary-bg-color, $white);
   }
 }

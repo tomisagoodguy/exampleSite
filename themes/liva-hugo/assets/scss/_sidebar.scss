@@ -4,8 +4,8 @@
 @import "variables"; // 引入變數
 
 .sidebar-container {
-  background-color: $sidebar-bg;
-  color: $sidebar-text;
+  background-color: var(--secondary-bg-color, $sidebar-bg);
+  color: var(--primary-text-color, $sidebar-text);
   border-radius: 4px;
   padding: 15px;
   margin-bottom: 30px;
@@ -35,8 +35,8 @@
     font-size: 1.2rem;
     font-weight: 600;
     margin-bottom: 15px;
-    color: $sidebar-text;
-    border-bottom: 1px solid rgba($sidebar-text, 0.2);
+    color: var(--primary-text-color, $sidebar-text);
+    border-bottom: 1px solid var(--border-color, rgba($sidebar-text, 0.2));
     padding-bottom: 10px;
   }
 
@@ -53,20 +53,20 @@
         transition: all 0.3s ease;
 
         &:hover {
-          background-color: rgba(255, 255, 255, 0.05);
-          border-left-color: rgba($sidebar-hover, 0.5);
+          background-color: var(--primary-color-translucent-light, rgba(255, 255, 255, 0.05));
+          border-left-color: var(--primary-color-translucent, rgba($sidebar-hover, 0.5));
         }
 
         &.active {
-          background-color: rgba(255, 255, 255, 0.1);
-          border-left-color: $sidebar-active;
+          background-color: var(--primary-color-translucent-light, rgba(255, 255, 255, 0.1));
+          border-left-color: var(--accent-color-1, $sidebar-active);
         }
       }
     }
 
     // 目錄層級區分
     .nav-level-1 {
-      background-color: $sidebar-level-1-bg;
+      background-color: var(--secondary-bg-color, $sidebar-level-1-bg);
 
       a {
         padding: 8px 10px;
@@ -74,7 +74,7 @@
     }
 
     .nav-level-2 {
-      background-color: $sidebar-level-2-bg;
+      background-color: var(--secondary-bg-color, $sidebar-level-2-bg);
       padding-left: 15px;
 
       a {
@@ -83,7 +83,7 @@
     }
 
     .nav-level-3 {
-      background-color: $sidebar-level-3-bg;
+      background-color: var(--secondary-bg-color, $sidebar-level-3-bg);
       padding-left: 25px;
 
       a {
@@ -92,7 +92,7 @@
     }
 
     .nav-level-4 {
-      background-color: $sidebar-level-4-bg;
+      background-color: var(--secondary-bg-color, $sidebar-level-4-bg);
       padding-left: 35px;
 
       a {
@@ -103,17 +103,17 @@
 
     // 通用連結樣式
     a {
-      color: $sidebar-text;
+      color: var(--primary-text-color, $sidebar-text);
       text-decoration: none;
       display: block;
       font-size: 0.95rem;
 
       &:hover {
-        color: $sidebar-hover;
+        color: var(--primary-color, $sidebar-hover);
       }
 
       &.active {
-        color: $sidebar-active;
+        color: var(--accent-color-1, $sidebar-active);
         font-weight: 500;
       }
     }
@@ -131,9 +131,9 @@
         a {
           display: inline-block;
           padding: 5px 10px;
-          background-color: $tag-bg; /* 使用變數設定標籤背景顏色 */
+          background-color: var(--secondary-text-color, $tag-bg); /* 使用變數設定標籤背景顏色 */
           border-radius: 5px;
-          color: $tag-text; /* 使用變數設定標籤文字顏色 */
+          color: var(--primary-bg-color, $tag-text); /* 使用變數設定標籤文字顏色 */
         }
       }
     }
@@ -147,12 +147,12 @@
 // ===================================
 
 .toc-container {
-  background-color: #e9ecef; // 中等深度的灰色背景
-  color: #212529; // 更深的文字顏色
+  background-color: var(--secondary-bg-color, #e9ecef); // 中等深度的灰色背景
+  color: var(--primary-text-color, #212529); // 更深的文字顏色
   border-radius: 4px;
   padding: 15px;
   margin-bottom: 30px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-color, #dee2e6);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   // 使用與側邊欄相同的 sticky 行為
@@ -171,8 +171,8 @@
     font-size: 1.2rem;
     font-weight: 600;
     margin-bottom: 15px;
-    color: #343a40; // 更深的標題顏色
-    border-bottom: 1px solid #ced4da;
+    color: var(--primary-text-color, #343a40); // 更深的標題顏色
+    border-bottom: 1px solid var(--border-color, #ced4da);
     padding-bottom: 10px;
     cursor: pointer;
     display: flex;
@@ -184,7 +184,7 @@
       content: "▼";
       font-size: 0.8em;
       transition: transform 0.3s ease;
-      color: #495057;
+      color: var(--secondary-text-color, #495057);
     }
   }
 
@@ -221,8 +221,8 @@
         transition: all 0.3s ease;
 
         &:hover {
-          background-color: rgba(0, 0, 0, 0.05);
-          border-left-color: #6c757d;
+          background-color: var(--primary-color-translucent-light, rgba(0, 0, 0, 0.05));
+          border-left-color: var(--secondary-text-color, #6c757d);
         }
       }
     }
@@ -233,21 +233,21 @@
     }
 
     a {
-      color: #343a40;
+      color: var(--primary-text-color, #343a40);
       text-decoration: none;
       display: block;
       font-size: 0.95rem;
       padding: 6px 10px;
 
       &:hover {
-        color: #000;
+        color: var(--primary-text-color, #000);
       }
 
       &.active {
-        color: #0d6efd; // 保持藍色高亮
+        color: var(--primary-color, #0d6efd); // 保持藍色高亮
         font-weight: 500;
-        background-color: rgba(13, 110, 253, 0.08);
-        border-left: 3px solid #0d6efd;
+        background-color: var(--primary-color-translucent-light, rgba(13, 110, 253, 0.08));
+        border-left: 3px solid var(--primary-color, #0d6efd);
       }
     }
   }
