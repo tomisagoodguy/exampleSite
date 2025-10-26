@@ -931,38 +931,51 @@ body.dark-mode .post-meta span {
    */
   color: var(--heading-color) !important;
 }
-/* --- 分頁按鈕 (Pagination) 樣式覆寫 --- */
+/* --- 修復「分頁按鈕」在白天/黑夜模式的對比色 --- */
 
-/* * 解決「目前頁面」按鈕 (active) 文字與背景同色的問題。
- * * 您的主題 .page-item.active .page-link 可能預設了背景色 (background-color) 為主題色，
- * 但忘記將文字顏色 (color) 改為白色，導致文字與背景融為一體。
- * 這條規則會強制將啟用中(active)的頁碼文字設為白色。
- */
-.pagination-default .page-item.active .page-link {
-  color: #fff !important; 
+/* 1. 白天模式 (Light Mode) - 非啟用的按鈕 */
+/* 強制使用白色背景、主題色(藍色)文字 */
+.pagination-default .page-item:not(.active) .page-link {
+  background-color: #fff !important;
+  color: var(--primary-color) !important;
 }
 
-/* --- 「回到頂部/底部」按鈕樣式 (修復深色模式) ---
+/* 2. 黑夜模式 (Dark Mode) - 非啟用的按鈕 */
+/* 強制使用深色背景、淺色文字 */
+body.dark-mode .pagination-default .page-item:not(.active) .page-link {
+  background-color: var(--body-bg-color) !important;
+  color: var(--heading-color) !important;
+}
+
+/* 3. 啟用中 (Active) 的按鈕 (確保在兩種模式下都正確) */
+/* 強制使用主題色背景、白色文字 */
+.pagination-default .page-item.active .page-link {
+  background-color: var(--primary-color) !important;
+  color: #fff !important;
+}
+
+/* --- 修正「回到頂部/底部」按鈕的顏色邏輯 (v2) --- */
 /*
- * 您的 style.min.css 可能硬編碼(hard-coded)了按鈕顏色，
- * 導致它們在切換主題時不會改變。
- *
- * 以下規則會覆寫它們，改用 CSS 變數，
- * 讓按鈕背景/圖示顏色能隨主題自動反轉。
+ * 對調 v1 的 CSS 變數，使其符合白天/黑夜模式的直覺。
+ * 並新增一個邊框 (border)，使其在白天模式(淺色背景)下也能被看見。
  */
 #return-to-top,
 #go-to-bottom {
-  /*
-   * 按鈕背景色: 設為「標題顏色」
-   * (淺色模式 = 深色; 深色模式 = 淺色)
+  /* * 白天模式: 淺色背景 (var(--body-bg-color) -> #fff)
+   * 黑夜模式: 深色背景 (var(--body-bg-color) -> #222)
    */
-  background-color: var(--heading-color) !important;
-  
+  background-color: var(--body-bg-color) !important;
+
   /*
-   * 圖示(icon)顏色: 設為「頁面背景色」
-   * (淺色模式 = 淺色; 深色模式 = 深色)
+   * 白天模式: 深色圖示 (var(--heading-color) -> #333)
+   * 黑夜模式: 淺色圖示 (var(--heading-color) -> #fff)
    */
-  color: var(--body-bg-color) !important;
+  color: var(--heading-color) !important;
+
+  /* * 新增邊框：使其在白天模式 (淺底配淺鈕) 時也能被看見 
+   * var(--border-color) 是您主題的預設邊框色
+   */
+  border: 1px solid var(--border-color, #dee2e6);
 }
 /* --- 修復「所有」特定分類頁面的深色模式背景 --- */
 /*
