@@ -911,3 +911,17 @@ body.dark-mode .post-meta,
 body.dark-mode .post-meta span {
     color: #aaa !important;
 }
+
+/* --- 關於我頁面樣式覆寫 --- */
+
+/* 將「我的歷程」中的年份設定為預設的標題顏色 */
+.timeline-year {
+  color: var(--heading-color); 
+  /* 或是您也可以強制設為黑色: color: #000000; */
+}
+
+/* 將「專業技能」中的子標題設定為預設的標題顏色 */
+.skill-title {
+  color: var(--heading-color);
+  /* 或是您也可以強制設為黑色: color: #000000; */
+}
