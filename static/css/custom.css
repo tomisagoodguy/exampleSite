@@ -964,3 +964,19 @@ body.dark-mode .post-meta span {
    */
   color: var(--body-bg-color) !important;
 }
+/* --- 修復「所有」特定分類頁面的深色模式背景 --- */
+/*
+ * 問題：您的主題會為每個分類頁面 (例如 .category-french-cuisine) 
+ * 都設定一個硬編碼的淺色背景，這會蓋掉深色模式。
+ *
+ * 解決：這個 CSS 選擇器 [class*="category-"] 會選取所有
+ * class 名稱「包含」"category-" 的 <section> 元素。
+ *
+ * 當 body.dark-mode 啟用時，我們強制將這些
+ * 分類區塊的背景色設為 "transparent" (透明)，
+ * 這樣 body 的深色背景就能正確顯示出來。
+ * 文字顏色也會因為繼承而自動變為淺色。
+ */
+body.dark-mode section[class*="category-"] {
+  background-color: transparent !important;
+}
