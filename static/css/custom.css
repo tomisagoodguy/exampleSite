@@ -993,3 +993,18 @@ body.dark-mode .pagination-default .page-item:not(.active) .page-link {
 body.dark-mode section[class*="category-"] {
   background-color: transparent !important;
 }
+
+/* --- 修復「搜尋彈窗」的關閉按鈕 (X) 在深色模式下的顏色 --- */
+/*
+ * 問題: 您的 HTML 中 <i class="ti-close text-dark"></i>
+ * "text-dark" 這個 class 會強制圖示為黑色，導致在深色模式下看不見。
+ *
+ * 解決: 我們使用更高權重的選擇器，
+ * 並用 !important 來覆蓋 "text-dark" 的 !important。
+ */
+body.dark-mode .search-wrapper .search-close i {
+  /*
+   * var(--heading-color) 在深色模式下會是淺色 (例如 #fff)
+   */
+  color: var(--heading-color) !important;
+}
