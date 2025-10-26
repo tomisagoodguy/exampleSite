@@ -925,3 +925,13 @@ body.dark-mode .post-meta span {
   color: var(--heading-color);
   /* 或是您也可以強制設為黑色: color: #000000; */
 }
+/* --- 分頁按鈕 (Pagination) 樣式覆寫 --- */
+
+/* * 解決「目前頁面」按鈕 (active) 文字與背景同色的問題。
+ * * 您的主題 .page-item.active .page-link 可能預設了背景色 (background-color) 為主題色，
+ * 但忘記將文字顏色 (color) 改為白色，導致文字與背景融為一體。
+ * 這條規則會強制將啟用中(active)的頁碼文字設為白色。
+ */
+.pagination-default .page-item.active .page-link {
+  color: #fff !important; 
+}
