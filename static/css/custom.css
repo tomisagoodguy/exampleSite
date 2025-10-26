@@ -829,3 +829,85 @@ body.dark-mode .post-content-area tbody tr:hover {
 body.dark-mode .post-content-area img {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
+
+
+/* =================================================================
+    Dark Mode Hotfixes (2025-10-26)
+   ================================================================= */
+
+/*
+ * PROBLEM 1: Various text elements (links, timeline, etc.) remain black.
+ * FIX: Force a light color on common content elements and links.
+ * Using !important to ensure override of theme's default styles.
+ */
+body.dark-mode .post-content p,
+body.dark-mode .content p,
+body.dark-mode .about p,
+body.dark-mode .timeline-body p,
+body.dark-mode .section p,
+body.dark-mode li {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode a,
+body.dark-mode .post-content a,
+body.dark-mode .content a {
+    color: #bb86fc !important;
+}
+
+body.dark-mode a:hover {
+    color: #ffffff !important;
+}
+
+/* Specifically for timeline years */
+body.dark-mode .timeline-year {
+    color: #ffffff !important;
+}
+
+/* Specifically for skill titles */
+body.dark-mode .skill-title,
+body.dark-mode .skill-category h5 {
+    color: #ffffff !important;
+}
+
+/*
+ * PROBLEM 2: Social media and other buttons are invisible (text/bg same color).
+ * FIX: Provide explicit styles for buttons and social icons in dark mode.
+ * Assuming common classes like .btn, .social-icon, etc.
+ */
+body.dark-mode .social-links a,
+body.dark-mode .author-social a,
+body.dark-mode .btn-contact { /* Assuming a class for the "about" button */
+    background-color: transparent !important;
+    color: #bb86fc !important;
+    border: 1px solid #bb86fc !important;
+    padding: 8px 12px;
+    border-radius: 5px;
+}
+
+body.dark-mode .social-links a:hover,
+body.dark-mode .author-social a:hover,
+body.dark-mode .btn-contact:hover {
+    background-color: #bb86fc !important;
+    color: #121212 !important;
+}
+
+/*
+ * PROBLEM 3: Article content has a white background in dark mode.
+ * FIX: Force a dark background on the content containers.
+ */
+body.dark-mode .post-content,
+body.dark-mode .content,
+body.dark-mode .card-body {
+    background-color: #121212 !important; /* Match the body background */
+    color: #e0e0e0 !important;
+}
+
+/*
+ * PROBLEM 4: Post metadata (author, date) is unreadable.
+ * FIX: Force a light color on the .post-meta class.
+ */
+body.dark-mode .post-meta,
+body.dark-mode .post-meta span {
+    color: #aaa !important;
+}
