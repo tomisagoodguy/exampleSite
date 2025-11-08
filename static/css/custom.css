@@ -1008,3 +1008,7 @@ body.dark-mode .search-wrapper .search-close i {
    */
   color: var(--heading-color) !important;
 }
+#return-to-top i,
+#go-to-bottom i {
+    color: #007bff !important; /* Blue color */
+}

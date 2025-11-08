@@ -20,6 +20,9 @@
       description: "內政部不動產相關資訊整合平台"
 - category: "理財相關網站"
   links:
+    - title: "豐雲學堂"
+      url: "https://www.sinotrade.com.tw/richclub"
+      description: "永豐金證券的線上學習平台"
     - title: "豁達人生財經室"
       url: "https://huodalife.pixnet.net/blog"
       description: "豁達人生財經室"
@@ -92,6 +95,11 @@
     - title: "股乾爹 KuKanTieh"
       url: "https://www.youtube.com/@kukantieh"
       description: "股乾爹 KuKanTieh"
+- category: "求職相關網站"
+  links:
+    - title: "台灣就業通-在職訓練網"
+      url: "https://ojt.wda.gov.tw/ClassSearch"
+      description: "勞動部勞動力發展署的在職訓練課程查詢及報名網站"
 - category: "其他"
   links:
     - title: "張修修的不正常人生 Shosho's Abnormal Life"
@@ -121,7 +129,3 @@
     - title: "臺灣通識網General Education TW-開放式課程GET"
       url: "https://www.youtube.com/@generaleducationtw-get1274/playlists"
       description: "臺灣通識網General Education TW-開放式課程GET"
-
-
-
-      

@@ -138,6 +138,8 @@ weight = 7
 
 #################### default parameters ################################
 [params]
+# main sections
+mainSections = ["blog", "exam-notes", "finance", "practice-sharing", "recipes", "post"]
 # 放主題圖片
 logo = "images/law.png"
 home = "首頁"

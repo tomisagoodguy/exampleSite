@@ -6,8 +6,22 @@
     <description>Recent content in Categories on land-knowledege</description>
     <generator>Hugo</generator>
     <language>zh-tw</language>
-    <lastBuildDate>Sat, 25 Oct 2025 00:00:00 +0800</lastBuildDate>
+    <lastBuildDate>Fri, 07 Nov 2025 22:01:14 +0800</lastBuildDate>
     <atom:link href="https://tomisagoodguy.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>French Cuisine</title>
+      <link>https://tomisagoodguy.github.io/categories/french-cuisine/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://tomisagoodguy.github.io/categories/french-cuisine/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>食譜</title>
+      <link>https://tomisagoodguy.github.io/categories/%E9%A3%9F%E8%AD%9C/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://tomisagoodguy.github.io/categories/%E9%A3%9F%E8%AD%9C/</guid>
+      <description></description>
+    </item>
     <item>
       <title>Stock</title>
       <link>https://tomisagoodguy.github.io/categories/stock/</link>
@@ -20,20 +34,6 @@
       <link>https://tomisagoodguy.github.io/categories/italian-cuisine/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://tomisagoodguy.github.io/categories/italian-cuisine/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>食譜</title>
-      <link>https://tomisagoodguy.github.io/categories/%E9%A3%9F%E8%AD%9C/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://tomisagoodguy.github.io/categories/%E9%A3%9F%E8%AD%9C/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>French Cuisine</title>
-      <link>https://tomisagoodguy.github.io/categories/french-cuisine/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://tomisagoodguy.github.io/categories/french-cuisine/</guid>
       <description></description>
     </item>
     <item>
