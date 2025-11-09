@@ -1,17 +1,18 @@
 /**
- * @doc
- * 網站整體樣式表 (v5 - 最終整合版)
- * -----------------------------------------
- * 此檔案為我們所有討論的最終成果，整合了：
- * 1. 您原有的網站樣式 (GitHub項目, 技能, TOC 等)。
- * 2. 最終版本的「專業深色主題」(以石墨灰為基調)。
- * 3. 深色主題下的浮動按鈕樣式。
- *
- * 使用方式：直接複製全部內容，完整取代您現有的 CSS 檔案即可。
- * 最後更新時間：2025-09-27
- */
+ * @doc
+ * 網站整體樣式表 (v6 - 修正語法錯誤最終版)
+ * -----------------------------------------
+ * 修正項目：
+ * 1. 移除懸空的選擇器與多餘的結束括號。
+ * 2. 整合列表 (li) 對齊的最終修正 (V2)。
+ * 3. 統一回到頂部/底部按鈕圖示顏色。
+ *
+ * 最後更新時間：2025-11-09
+ */
 
-/* GitHub 項目卡片樣式 */
+/* =================================================================
+   GitHub 項目卡片樣式
+   ================================================================= */
 .github-projects {
   margin-bottom: 2rem;
 }
@@ -55,7 +56,9 @@
   color: #6c757d;
 }
 
-/* Skills */
+/* =================================================================
+   技能標籤 (Skills)
+   ================================================================= */
 .skill-category h5 {
   font-weight: 600;
   margin-top: 20px;
@@ -83,7 +86,27 @@
   color: #fff;
 }
 
-/* Section Background for Boundary Sense */
+.skill-title {
+  display: flex;
+  align-items: center;
+  font-size: 1.1rem;
+  color: #333;
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  border-left: 5px solid #007bff;
+  margin-top: 20px;
+  margin-bottom: 15px;
+}
+
+.skill-title i {
+  margin-right: 10px;
+  color: #007bff;
+}
+
+/* =================================================================
+   通用區塊樣式
+   ================================================================= */
 .section {
   background-color: #e9ecef;
   border-radius: 8px;
@@ -91,12 +114,13 @@
   padding: 40px 0;
 }
 
-/* Adjust padding for smaller sections if needed */
 .section-sm {
   padding: 30px 0;
 }
 
-/* Improved Table of Contents (TOC) Styles */
+/* =================================================================
+   文章目錄 (TOC) 樣式
+   ================================================================= */
 .toc-container {
   position: -webkit-sticky;
   position: sticky;
@@ -154,7 +178,6 @@
   font-weight: 600;
 }
 
-/* Sub-TOC Styles */
 .toc-content nav ul ul {
   padding-left: 25px;
   margin-top: 5px;
@@ -172,7 +195,7 @@
   font-weight: 500;
 }
 
-/* Scrollbar Beautification */
+/* TOC 卷軸美化 */
 .toc-container::-webkit-scrollbar {
   width: 8px;
 }
@@ -190,7 +213,9 @@
   background: rgba(79, 70, 229, 0.4);
 }
 
-/* Recipe Gallery Styles */
+/* =================================================================
+   食譜圖庫樣式
+   ================================================================= */
 .recipe-gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -219,7 +244,6 @@
   color: #555;
 }
 
-/* Arrow for image captions */
 .recipe-gallery-item figcaption::before {
   content: '↑' !important;
   display: block !important;
@@ -228,7 +252,9 @@
   margin-bottom: 4px !important;
 }
 
-/* Category-specific backgrounds */
+/* =================================================================
+   特定分類背景色
+   ================================================================= */
 section.category-french-dessert,
 section.category-belgian-cuisine,
 section.category-french-cuisine {
@@ -239,89 +265,71 @@ section.category-stock-research {
   background-color: #f8f8f8;
 }
 
-/* Table border style */
+/* =================================================================
+   通用元素修正
+   ================================================================= */
+/* 表格邊框 */
 table,
 th,
 td {
   border: 1px solid black !important;
 }
 
-.skill-title {
-  display: flex;
-  align-items: center;
-  font-size: 1.1rem;
-  color: #333;
-  padding: 10px 15px;
-  background-color: #f8f9fa;
-  border-radius: 5px;
-  border-left: 5px solid #007bff;
-  margin-top: 20px;
-  margin-bottom: 15px;
-}
-
-.skill-title i {
-  margin-right: 10px;
-  color: #007bff;
-}
-
-/* Dropdown on hover */
+/* 導覽列下拉選單 Hover */
 .navbar-nav .dropdown:hover .dropdown-menu {
   display: block;
   margin-top: 0;
 }
 
-/* =================================================================
-   Header and Footer Color Customization (專業深色主題)
-   ================================================================= */
+/* 側邊欄固定 */
+.sidebar-sticky {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 100px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
 
-/* 基礎設定：頁尾、Newsletter 區塊背景為深石墨灰 */
+/* =================================================================
+   頁首與頁尾深色主題客製化
+   ================================================================= */
 footer.footer-section,
 .newsletter-section {
   background-color: #212529;
-  /* 深石墨灰 */
 }
 
-/* 強制設定頁首在任何狀態下背景皆為深石墨灰 */
 header.navigation .navbar,
 header.navigation.nav-bg .navbar {
   background-color: #212529 !important;
 }
 
-/* 頁首：品牌 Logo 文字顏色改為柔和的亮灰色 */
 .navigation .navbar-brand {
   color: #f8f9fa;
-  /* 亮灰色 */
 }
 
-/* 強制設定導覽列連結文字、搜尋圖示在任何狀態下皆為柔和的亮灰色 */
 header.navigation .navbar-nav .nav-link,
 header.navigation .search .search-btn i {
   color: #f8f9fa !important;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* 頁首：導覽連結的 Hover 與 Active 效果，使用稍亮的灰色 */
 header.navigation .navbar-nav .nav-link:hover,
 header.navigation .navbar-nav .nav-item.active .nav-link {
   background-color: #343a40;
-  /* 稍亮的炭灰色 */
   color: #ffffff !important;
   border-radius: 5px;
 }
 
-/* 頁首：反轉 Logo 圖片顏色以適應深色背景 (如果您的Logo是圖片) */
 .navigation .navbar-brand img,
 .navigation.nav-bg .navbar-brand img {
   filter: invert(1) brightness(100);
 }
 
-/* 頁首：行動版漢堡選單圖示顏色 */
 .navigation .navbar-toggler i,
 .navigation.nav-bg .navbar-toggler i {
   color: #f8f9fa !important;
 }
 
-/* 下拉式選單樣式，使用與頁首一致的深色背景 */
 .navbar-nav .dropdown-menu {
   background-color: #212529;
   border: 1px solid #343a40;
@@ -337,7 +345,6 @@ header.navigation .navbar-nav .nav-item.active .nav-link {
   background-color: #343a40;
 }
 
-/* 頁尾：統一設定所有文字、段落、連結、圖示顏色為柔和的亮灰色 */
 footer.footer-section,
 footer.footer-section p,
 footer.footer-section li,
@@ -349,97 +356,35 @@ footer.footer-section i,
   color: #f8f9fa !important;
 }
 
-/* 覆寫主題對 icon 的主要顏色設定 */
 footer.footer-section .text-primary {
   color: #f8f9fa !important;
 }
 
-/* 頁尾：Copyright 文字使用更柔和的灰色，做出視覺區隔 */
 .footer-copyright,
 .footer-copyright p,
 .footer-copyright a {
   color: #adb5bd !important;
-  /* 中灰色 */
 }
 
-/* 頁尾：連結 hover 效果 */
 footer.footer-section a:hover {
   color: #ffffff !important;
   text-decoration: underline;
 }
 
+/* 強制移除頁尾圖示的右側間距 */
+.footer-section .contact-list i,
+.footer-section .social-list i {
+  margin-right: 5px !important;
+}
+
 /* =================================================================
-   Floating Action Buttons (Scroll Top/Bottom) Customization
-   ================================================================= */
-
-#return-to-top,
-#go-to-bottom {
-  background-color: #343a40;
-  /* 炭灰色背景 */
-  color: #f8f9fa;
-  /* 亮灰色圖示 */
-  border: 1px solid #495057;
-  /* 邊框顏色 */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-#return-to-top:hover,
-#go-to-bottom:hover {
-  background-color: #495057;
-  /* Hover 時背景變亮 */
-  color: #ffffff;
-  /* 圖示變為純白 */
-  transform: translateY(-3px);
-}
-
-/* Lively Link Colors */
-.col-lg-6 .card {
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.col-lg-6 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-}
-
-.col-lg-6:nth-child(6n+1) .card-body {
-  background-color: #ffadad;
-}
-
-.col-lg-6:nth-child(6n+2) .card-body {
-  background-color: #ffd6a5;
-}
-
-.col-lg-6:nth-child(6n+3) .card-body {
-  background-color: #caffbf;
-}
-
-.col-lg-6:nth-child(6n+4) .card-body {
-  background-color: #9bf6ff;
-}
-
-.col-lg-6:nth-child(6n+5) .card-body {
-  background-color: #a0c4ff;
-}
-
-.col-lg-6:nth-child(6n+6) .card-body {
-  background-color: #bdb2ff;
-}
-
-.sidebar-sticky {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 100px;
-  max-height: calc(100vh - 120px);
-  overflow-y: auto;
-}
-
-/* Theme Switch */
+   深色模式 (Dark Mode) 核心樣式
+   ================================================================= */
 .theme-switch-wrapper {
   display: flex;
   align-items: center;
 }
+
 .theme-switch {
   display: inline-block;
   height: 34px;
@@ -448,7 +393,7 @@ footer.footer-section a:hover {
 }
 
 .theme-switch input {
-  display:none;
+  display: none;
 }
 
 .slider {
@@ -464,7 +409,8 @@ footer.footer-section a:hover {
 
 .slider:before {
   font-family: "themify";
-  content: "\e6dd"; /* sun icon */
+  content: "\e6dd";
+  /* sun icon */
   line-height: 26px;
   text-align: center;
   color: #2196F3;
@@ -477,12 +423,13 @@ footer.footer-section a:hover {
   width: 26px;
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: #2196F3;
 }
 
-input:checked + .slider:before {
-  content: "\e6a1"; /* moon icon */
+input:checked+.slider:before {
+  content: "\e6a1";
+  /* moon icon */
   transform: translateX(26px);
 }
 
@@ -494,14 +441,14 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
-/* Dark Mode */
+/* 深色模式全域設定 */
 body.dark-mode {
   background-color: #121212;
   color: #e0e0e0;
 }
 
 body.dark-mode a {
-    color: #bb86fc;
+  color: #bb86fc;
 }
 
 body.dark-mode h1,
@@ -510,539 +457,250 @@ body.dark-mode h3,
 body.dark-mode h4,
 body.dark-mode h5,
 body.dark-mode h6 {
-    color: #fff;
+  color: #fff;
 }
 
 body.dark-mode p {
-    color: #e0e0e0;
+  color: #e0e0e0;
 }
 
 body.dark-mode .navigation .navbar {
-    background-color: #1E1E1E !important;
-    border-bottom: 1px solid #333 !important;
+  background-color: #1E1E1E !important;
+  border-bottom: 1px solid #333 !important;
 }
 
 body.dark-mode .sub-navigation {
-    background-color: #1E1E1E;
-    border-bottom: 1px solid #333;
+  background-color: #1E1E1E;
+  border-bottom: 1px solid #333;
 }
 
 body.dark-mode .card {
-    background-color: #1E1E1E;
-    color: #e0e0e0;
-    border: 1px solid #333;
+  background-color: #1E1E1E;
+  color: #e0e0e0;
+  border: 1px solid #333;
 }
 
 body.dark-mode .card-title a {
-    color: #fff;
+  color: #fff;
 }
 
 body.dark-mode .post-meta {
-    color: #aaa;
+  color: #aaa;
 }
 
 body.dark-mode .section {
-    background-color: #121212;
+  background-color: #121212;
 }
 
 body.dark-mode .widget {
-    background-color: #1E1E1E;
-    border: 1px solid #333;
+  background-color: #1E1E1E;
+  border: 1px solid #333;
 }
 
 body.dark-mode .skill-tags li {
-    background-color: #333;
-    color: #e0e0e0;
+  background-color: #333;
+  color: #e0e0e0;
 }
 
 body.dark-mode .github-project-card {
-    background-color: #1E1E1E;
-    border-left-color: #bb86fc;
+  background-color: #1E1E1E;
+  border-left-color: #bb86fc;
 }
 
 body.dark-mode .toc-container {
-    background-color: rgba(30, 30, 30, 0.95);
-    color: #e0e0e0;
-    border: 1px solid #333;
+  background-color: rgba(30, 30, 30, 0.95);
+  color: #e0e0e0;
+  border: 1px solid #333;
 }
 
 body.dark-mode .toc-content nav>ul>li>a {
-    color: #ccc;
+  color: #ccc;
 }
 
 body.dark-mode .toc-content nav>ul>li>a:hover {
-    background-color: rgba(187, 134, 252, 0.2);
-    color: #fff;
+  background-color: rgba(187, 134, 252, 0.2);
+  color: #fff;
 }
 
 body.dark-mode .toc-content nav>ul>li.active>a {
-    color: #fff;
-    background-color: rgba(187, 134, 252, 0.3);
+  color: #fff;
+  background-color: rgba(187, 134, 252, 0.3);
 }
 
 body.dark-mode .recipe-gallery-item {
-    background-color: #1E1E1E;
-    border-color: #333;
+  background-color: #1E1E1E;
+  border-color: #333;
 }
 
 body.dark-mode .recipe-gallery-item figcaption {
-    color: #aaa;
+  color: #aaa;
 }
 
 body.dark-mode .pagination .page-link {
-    background-color: #1E1E1E;
-    color: #e0e0e0;
-    border-color: #333;
+  background-color: #1E1E1E;
+  color: #e0e0e0;
+  border-color: #333;
 }
 
 body.dark-mode .pagination .page-item.active .page-link {
-    background-color: #bb86fc;
-    border-color: #bb86fc;
-    color: #121212;
+  background-color: #bb86fc;
+  border-color: #bb86fc;
+  color: #121212;
 }
 
 body.dark-mode .pagination .page-item.disabled .page-link {
-    background-color: #1E1E1E;
-    color: #6c757d;
-    border-color: #333;
+  background-color: #1E1E1E;
+  color: #6c757d;
+  border-color: #333;
 }
 
 body.dark-mode footer.footer-section {
-    background-color: #1E1E1E;
-    color: #e0e0e0;
-    border-top: 1px solid #333;
+  background-color: #1E1E1E;
+  color: #e0e0e0;
+  border-top: 1px solid #333;
 }
 
 body.dark-mode .btn-outline-primary {
-    color: #bb86fc;
-    border-color: #bb86fc;
+  color: #bb86fc;
+  border-color: #bb86fc;
 }
 
 body.dark-mode .btn-outline-primary:hover {
-    background-color: #bb86fc;
-    color: #121212;
+  background-color: #bb86fc;
+  color: #121212;
 }
 
 body.dark-mode blockquote {
-    border-left-color: #bb86fc;
-    background-color: #1E1E1E;
-    color: #e0e0e0;
+  border-left-color: #bb86fc;
+  background-color: #1E1E1E;
+  color: #e0e0e0;
 }
 
 body.dark-mode table,
 body.dark-mode th,
 body.dark-mode td {
-    border-color: #333 !important;
+  border-color: #333 !important;
 }
 
-body.dark-mode .skills-container .skill-bar {
-    background: #2a2a2a;
-    box-shadow: inset 0 1px 2px rgba(255,255,255,0.1);
-}
-
-body.dark-mode .article-card,
-body.dark-mode .card,
-body.dark-mode .post-item,
-body.dark-mode .article-preview {
-    background: var(--dark-bg);
-    box-shadow: var(--shadow-dark);
-}
-
-body.dark-mode .card-title a {
-    color: var(--dark-text);
-}
-
-body.dark-mode .card-title a:hover {
-    color: var(--secondary-color);
-}
-
-body.dark-mode .card-meta {
-    color: var(--dark-text-muted);
-}
-
-body.dark-mode .post-navigation {
-    border-top: 1px solid var(--border-dark);
-}
-
-body.dark-mode .post-navigation span {
-    color: var(--dark-text-muted);
-}
-
-body.dark-mode .navigation-tabs .nav-tabs {
-    border-bottom: 2px solid var(--border-dark);
-}
-
-body.dark-mode .navigation-tabs .nav-link {
-    color: var(--dark-text-muted);
-}
-
-body.dark-mode .navigation-tabs .nav-link.active {
-    color: var(--primary-color);
-    border-bottom: 2px solid var(--primary-color);
-}
-
-body.dark-mode .navigation-tabs .nav-link:hover {
-    color: var(--primary-color);
-}
-
-body.dark-mode .navigation-tabs .post-item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-body.dark-mode .navigation-tabs .post-item a {
-    color: var(--dark-text);
-}
-
-body.dark-mode .navigation-tabs .post-item a:hover {
-    color: var(--primary-color);
-}
-
-body.dark-mode .navigation-tabs .post-item small {
-    color: var(--dark-text-muted);
-}
-
-body.dark-mode .article-list .list-group-item {
-    border-bottom: 1px solid var(--border-dark);
-}
-
-body.dark-mode .article-list .list-group-item:hover {
-    background-color: rgba(255, 255, 255, 0.02);
-}
-
-body.dark-mode .article-list .article-link {
-    color: var(--dark-text);
-}
-
-body.dark-mode .article-list .article-link:hover {
-    color: var(--secondary-color);
-}
-
-body.dark-mode .article-list .badge,
-body.dark-mode .article-list .category-badge {
-    background-color: var(--secondary-color);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-body.dark-mode .article-list .badge:hover,
-body.dark-mode .article-list .category-badge:hover {
-    background-color: var(--secondary-hover);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-}
-
-body.dark-mode .article-list .text-muted {
-    color: var(--dark-text-muted) !important;
-}
-
-body.dark-mode .article-list-scifi .list-group-item {
-    background: var(--dark-bg);
-}
-
-body.dark-mode .article-list-scifi .list-group-item:hover {
-    background: rgba(15, 23, 42, 0.9);
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
-}
-
-body.dark-mode .article-list-scifi .article-meta {
-    border-bottom-color: rgba(16, 185, 129, 0.3);
-}
-
-body.dark-mode .article-list-scifi .article-link {
-    color: var(--dark-text);
-}
-
-body.dark-mode .article-list-scifi .article-link:hover h4 {
-    color: var(--accent-color);
-}
-
-body.dark-mode .article-list-scifi .badge,
-body.dark-mode .article-list-scifi .category-badge {
-    background: var(--accent-color);
-}
-
-body.dark-mode .article-list-scifi .badge:hover,
-body.dark-mode .article-list-scifi .category-badge:hover {
-    background: var(--accent-hover);
-}
-
-body.dark-mode .article-list-scifi .text-muted {
-    color: var(--dark-text-muted) !important;
-}
-
-body.dark-mode .article-list-scifi .article-preview {
-    color: #d4d4d8;
-    border-left-color: rgba(16, 185, 129, 0.3);
-}
-
-body.dark-mode .post-content-area h1,
-body.dark-mode .post-content-area h2,
-body.dark-mode .post-content-area h3,
-body.dark-mode .post-content-area h4,
-body.dark-mode .post-content-area h5,
-body.dark-mode .post-content-area h6 {
-    color: var(--dark-text);
-}
-
-body.dark-mode .post-content-area p,
-body.dark-mode .post-content-area ul li,
-body.dark-mode .post-content-area ol li {
-    color: var(--dark-text-muted);
-}
-
-body.dark-mode .post-content-area a {
-    color: var(--secondary-color);
-}
-
-body.dark-mode .post-content-area a:hover {
-    color: var(--secondary-hover);
-}
-
-body.dark-mode .post-content-area blockquote {
-    border-left-color: var(--secondary-color);
-    background: rgba(139, 92, 246, 0.1);
-}
-
-body.dark-mode .post-content-area blockquote p {
-    color: var(--dark-text);
-}
-
-body.dark-mode .post-content-area table {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-body.dark-mode .post-content-area th,
-body.dark--mode .post-content-area td {
-    border-bottom: 1px solid var(--border-dark);
-}
-
-body.dark-mode .post-content-area thead {
-    background: #1e293b;
-}
-
-body.dark-mode .post-content-area thead th {
-    color: var(--dark-text);
-}
-
-body.dark-mode .post-content-area tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-body.dark-mode .post-content-area img {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-
-/* =================================================================
-    Dark Mode Hotfixes (2025-10-26)
-   ================================================================= */
-
-/*
- * PROBLEM 1: Various text elements (links, timeline, etc.) remain black.
- * FIX: Force a light color on common content elements and links.
- * Using !important to ensure override of theme's default styles.
- */
+/* 深色模式補丁 Hotfixes */
 body.dark-mode .post-content p,
 body.dark-mode .content p,
 body.dark-mode .about p,
 body.dark-mode .timeline-body p,
 body.dark-mode .section p,
 body.dark-mode li {
-    color: #e0e0e0 !important;
+  color: #e0e0e0 !important;
 }
 
 body.dark-mode a,
 body.dark-mode .post-content a,
 body.dark-mode .content a {
-    color: #bb86fc !important;
+  color: #bb86fc !important;
 }
 
 body.dark-mode a:hover {
-    color: #ffffff !important;
+  color: #ffffff !important;
 }
 
-/* Specifically for timeline years */
-body.dark-mode .timeline-year {
-    color: #ffffff !important;
-}
-
-/* Specifically for skill titles */
+body.dark-mode .timeline-year,
 body.dark-mode .skill-title,
 body.dark-mode .skill-category h5 {
-    color: #ffffff !important;
+  color: #ffffff !important;
 }
 
-/*
- * PROBLEM 2: Social media and other buttons are invisible (text/bg same color).
- * FIX: Provide explicit styles for buttons and social icons in dark mode.
- * Assuming common classes like .btn, .social-icon, etc.
- */
 body.dark-mode .social-links a,
 body.dark-mode .author-social a,
-body.dark-mode .btn-contact { /* Assuming a class for the "about" button */
-    background-color: transparent !important;
-    color: #bb86fc !important;
-    border: 1px solid #bb86fc !important;
-    padding: 8px 12px;
-    border-radius: 5px;
+body.dark-mode .btn-contact {
+  background-color: transparent !important;
+  color: #bb86fc !important;
+  border: 1px solid #bb86fc !important;
 }
 
 body.dark-mode .social-links a:hover,
 body.dark-mode .author-social a:hover,
 body.dark-mode .btn-contact:hover {
-    background-color: #bb86fc !important;
-    color: #121212 !important;
+  background-color: #bb86fc !important;
+  color: #121212 !important;
 }
 
-/*
- * PROBLEM 3: Article content has a white background in dark mode.
- * FIX: Force a dark background on the content containers.
- */
 body.dark-mode .post-content,
 body.dark-mode .content,
 body.dark-mode .card-body {
-    background-color: #121212 !important; /* Match the body background */
-    color: #e0e0e0 !important;
+  background-color: #121212 !important;
+  color: #e0e0e0 !important;
 }
 
-/*
- * PROBLEM 4: Post metadata (author, date) is unreadable.
- * FIX: Force a light color on the .post-meta class.
- */
 body.dark-mode .post-meta,
 body.dark-mode .post-meta span {
-    color: #aaa !important;
+  color: #aaa !important;
 }
 
-/* --- 關於我頁面：修復標題顏色 (v2) --- */
-/*
- * 修正 .timeline-year (例如 2025) 
- * 和 .skill-title (例如 不動產專業) 的樣式問題。
- */
 .timeline-year,
 .skill-title {
-  
-  /* * 1. 強制將「背景」設為透明 (transparent)。
-   * 這會修復「白天模式下出現黑背景」和「黑夜模式下出現白背景」的問題。
-   */
   background-color: transparent !important;
-  
-  /* * 2. 強制將「文字顏色」設為 CSS 變數 (--heading-color)。
-   * 這會讓文字在「白天模式」顯示為黑色/深色。
-   * 並在「黑夜模式」自動切換為白色/淺色。
-   */
   color: var(--heading-color) !important;
 }
-/* --- 修復「分頁按鈕」在白天/黑夜模式的對比色 --- */
 
-/* 1. 白天模式 (Light Mode) - 非啟用的按鈕 */
-/* 強制使用白色背景、主題色(藍色)文字 */
-.pagination-default .page-item:not(.active) .page-link {
-  background-color: #fff !important;
-  color: var(--primary-color) !important;
-}
-
-/* 2. 黑夜模式 (Dark Mode) - 非啟用的按鈕 */
-/* 強制使用深色背景、淺色文字 */
+/* 深色模式分頁與搜尋修正 */
 body.dark-mode .pagination-default .page-item:not(.active) .page-link {
   background-color: var(--body-bg-color) !important;
   color: var(--heading-color) !important;
 }
 
-/* 3. 啟用中 (Active) 的按鈕 (確保在兩種模式下都正確) */
-/* 強制使用主題色背景、白色文字 */
 .pagination-default .page-item.active .page-link {
   background-color: var(--primary-color) !important;
   color: #fff !important;
 }
 
-/* --- 修正「回到頂部/底部」按鈕的顏色邏輯 (v2) --- */
-/*
- * 對調 v1 的 CSS 變數，使其符合白天/黑夜模式的直覺。
- * 並新增一個邊框 (border)，使其在白天模式(淺色背景)下也能被看見。
- */
-#return-to-top,
-#go-to-bottom {
-  /* * 白天模式: 淺色背景 (var(--body-bg-color) -> #fff)
-   * 黑夜模式: 深色背景 (var(--body-bg-color) -> #222)
-   */
-  background-color: var(--body-bg-color) !important;
-
-  /*
-   * 白天模式: 深色圖示 (var(--heading-color) -> #333)
-   * 黑夜模式: 淺色圖示 (var(--heading-color) -> #fff)
-   */
-  color: var(--heading-color) !important;
-
-  /* * 新增邊框：使其在白天模式 (淺底配淺鈕) 時也能被看見 
-   * var(--border-color) 是您主題的預設邊框色
-   */
-  border: 1px solid var(--border-color, #dee2e6);
-}
-/* --- 修復「所有」特定分類頁面的深色模式背景 --- */
-/*
- * 問題：您的主題會為每個分類頁面 (例如 .category-french-cuisine) 
- * 都設定一個硬編碼的淺色背景，這會蓋掉深色模式。
- *
- * 解決：這個 CSS 選擇器 [class*="category-"] 會選取所有
- * class 名稱「包含」"category-" 的 <section> 元素。
- *
- * 當 body.dark-mode 啟用時，我們強制將這些
- * 分類區塊的背景色設為 "transparent" (透明)，
- * 這樣 body 的深色背景就能正確顯示出來。
- * 文字顏色也會因為繼承而自動變為淺色。
- */
 body.dark-mode section[class*="category-"] {
   background-color: transparent !important;
 }
 
-/* --- 修復「搜尋彈窗」的關閉按鈕 (X) 在深色模式下的顏色 --- */
-/*
- * 問題: 您的 HTML 中 <i class="ti-close text-dark"></i>
- * "text-dark" 這個 class 會強制圖示為黑色，導致在深色模式下看不見。
- *
- * 解決: 我們使用更高權重的選擇器，
- * 並用 !important 來覆蓋 "text-dark" 的 !important。
- */
 body.dark-mode .search-wrapper .search-close i {
-  /*
-   * var(--heading-color) 在深色模式下會是淺色 (例如 #fff)
-   */
   color: var(--heading-color) !important;
 }
+
+/* =================================================================
+   浮動按鈕 (Floating Buttons)
+   ================================================================= */
+#return-to-top,
+#go-to-bottom {
+  background-color: var(--body-bg-color) !important;
+  color: var(--heading-color) !important;
+  border: 1px solid var(--border-color, #dee2e6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+#return-to-top:hover,
+#go-to-bottom:hover {
+  background-color: #495057;
+  color: #ffffff;
+  transform: translateY(-3px);
+}
+
 #return-to-top i,
-/* 強制將頁尾特定區塊內的圖示右側間距設為 0 */
-
-/* 針對聯絡資訊區塊 */
-.footer-section .contact-list i {
-    margin-right: 0 !important; /* !important 表示強制執行，忽略原本的 mr-3 設定 */
-}
-
-/* 針對社群連結區塊 */
-.footer-section .social-list i {
-    margin-right: 0 !important;
-}
-
-/* 強制文章內容中的列表文字靠左對齊 */
-.post-content ol li,
-.post-content ul li,
-.content ol li,
-.content ul li {
-    text-align: left !important;
-    justify-content: flex-start !important; /* 防止 Flexbox 造成的分散對齊 */
-    display: list-item !important; /* 防止被設定成 flex 或 block 導致的怪異行為 */
-}
-
 #go-to-bottom i {
-    color: #007bff !important; /* Blue color */
+  color: #007bff !important;
+  /* 統一設定按鈕內圖示為藍色 */
 }
 
-/* 強制修正文章內文列表的對齊問題 V2 */
+/* =================================================================
+   [最終修正] 文章內文列表對齊問題 (V2 - 強制覆寫版)
+   此區塊必須放在檔案最下方以確保最高優先權
+   ================================================================= */
 .content ol li,
 .content ul li,
 .post-content ol li,
 .post-content ul li {
-    display: list-item !important; /* 關鍵：強制取消可能存在的 flex 或 grid 設定，回歸預設列表型態 */
-    text-align: left !important;   /* 強制文字靠左 */
-    justify-content: flex-start !important; /* 預防萬一仍受 flex 影響時，強制靠前對齊 */
-    padding-left: 0 !important;    /* 移除可能過大的單側內距 */
-    margin-left: 1.5rem;           /* 確保有基本的縮排 (可依需求自行調整數值) */
+  display: list-item !important;
+  /* 關鍵：強制取消可能存在的 flex 或 grid 設定，回歸預設列表型態 */
+  text-align: left  !important;
+  /* 強制文字靠左 */
+  justify-content: flex-start 10px !important;
+  /* 預防萬一仍受 flex 影響時，強制靠前對齊 */
+  padding-left: 20px !important;
+  /* 移除可能過大的單側內距 */
+  margin-left: 1.5rem;
+  /* 確保有基本的縮排，可依需求自行調整數值 */
 }
