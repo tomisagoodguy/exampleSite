@@ -1009,6 +1009,32 @@ body.dark-mode .search-wrapper .search-close i {
   color: var(--heading-color) !important;
 }
 #return-to-top i,
-#go-to-bottom i {
-    color: #007bff !important; /* Blue color */
+/* 強制將頁尾特定區塊內的圖示右側間距設為 0 */
+
+/* 針對聯絡資訊區塊 */
+.footer-section .contact-list i {
+    margin-right: 0 !important; /* !important 表示強制執行，忽略原本的 mr-3 設定 */
+}
+
+/* 針對社群連結區塊 */
+.footer-section .social-list i {
+    margin-right: 0 !important;
+}
+
+/* 強制文章內容中的列表文字靠左對齊 */
+.post-content ol li,
+.post-content ul li,
+.content ol li,
+.content ul li {
+    text-align: left !important;
+    justify-content: flex-start !important; /* 防止 Flexbox 造成的分散對齊 */
+    display: list-item !important; /* 防止被設定成 flex 或 block 導致的怪異行為 */
+}
+
+/* 如果是表格造成的問題 (截圖中有格線)，請一併加入： */
+.post-content table td,
+.post-content table th,
+.content table td,
+.content table th {
+    text-align: left !important;
 }
