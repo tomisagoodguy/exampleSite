@@ -1031,10 +1031,18 @@ body.dark-mode .search-wrapper .search-close i {
     display: list-item !important; /* 防止被設定成 flex 或 block 導致的怪異行為 */
 }
 
-/* 如果是表格造成的問題 (截圖中有格線)，請一併加入： */
-.post-content table td,
-.post-content table th,
-.content table td,
-.content table th {
-    text-align: left !important;
+#go-to-bottom i {
+    color: #007bff !important; /* Blue color */
+}
+
+/* 強制修正文章內文列表的對齊問題 V2 */
+.content ol li,
+.content ul li,
+.post-content ol li,
+.post-content ul li {
+    display: list-item !important; /* 關鍵：強制取消可能存在的 flex 或 grid 設定，回歸預設列表型態 */
+    text-align: left !important;   /* 強制文字靠左 */
+    justify-content: flex-start !important; /* 預防萬一仍受 flex 影響時，強制靠前對齊 */
+    padding-left: 0 !important;    /* 移除可能過大的單側內距 */
+    margin-left: 1.5rem;           /* 確保有基本的縮排 (可依需求自行調整數值) */
 }
