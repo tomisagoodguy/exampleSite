@@ -1,0 +1,257 @@
+{{ if .Site.Params.newsletter.enable }}
+<section class="section-sm newsletter-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 mx-auto text-center">
+        <h2>{{ .Site.Params.newsletter.title | markdownify }}</h2>
+        <p class="text-light px-md-5 py-4 border-left border-right border-primary">
+          {{ .Site.Params.newsletter.content | markdownify }}</p>
+        <form action="{{ .Site.Params.newsletter.action }}" method="post" class="row justify-content-center newsletter-form" id="newsletter-form">
+          <div class="input-group col-md-8">
+            <input type="email" name="email" class="form-control" placeholder="您的電子郵件地址" required>
+            <div class="input-group-append">
+              <button type="submit" class="input-group-text btn btn-primary">訂閱</button>
+            </div>
+          </div>
+          <div class="col-12 newsletter-response mt-2" id="newsletter-response"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{{ end }}
+
+<footer class="text-capitalize footer-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 text-center mb-5">
+        <a href="{{ .Site.BaseURL }}" aria-label="{{ .Site.Title }}">
+<img loading="lazy" src="{{ .Site.Params.logo | absURL }}" alt="{{ .Site.Title }}" class="footer-logo">
+        </a>
+      </div>
+      {{ if or .Site.Params.mobile .Site.Params.location .Site.Params.email }}         
+      <div class="col-lg-3 col-sm-6 mb-5">
+        <h6 class="mb-4">聯絡我們</h6>
+        <ul class="list-unstyled contact-list">
+          {{ if .Site.Params.mobile }}
+          <li class="mb-3">
+            <a class="text-dark d-flex align-items-center" href="tel:{{ .Site.Params.mobile }}">
+              <i class="ti-mobile text-primary"></i>{{ .Site.Params.mobile }}
+            </a>
+          </li>
+          {{ end }}
+          {{ if .Site.Params.location }}           
+          <li class="mb-3 d-flex align-items-center">
+            <i class="ti-location-pin text-primary"></i>{{ .Site.Params.location }}
+          </li>
+          {{ end }}
+          {{ if .Site.Params.email }}           
+          <li class="mb-3">
+            <a class="text-dark d-flex align-items-center" href="mailto:{{ .Site.Params.email }}">
+              <i class="ti-email text-primary"></i>{{ .Site.Params.email }}
+            </a>
+          </li>
+          {{ end }}
+        </ul>
+      </div>
+      {{ end }}
+      <div class="col-lg-3 col-sm-6 mb-5">
+        <h6 class="mb-4">社群連結</h6>
+        <ul class="list-unstyled social-list">
+          {{ range .Site.Params.social }}
+          <li class="mb-3">
+            <a class="text-dark social-item" href="{{ .link | safeURL }}" {{ if .target }}target="{{ .target }}"{{ end }}>
+              {{ if .icon }}<i class="{{ .icon }}"></i>{{ end }}{{ .title }}
+            </a>
+          </li>
+          {{ end }}
+        </ul>
+      </div>
+      <div class="col-lg-3 col-sm-6 mb-5">
+        <h6 class="mb-4">文章分類</h6>
+        <ul class="list-unstyled category-list">
+          <li class="mb-3">
+            <a class="text-dark category-item" href="{{ `categories/` | relLangURL }}">
+              查看所有分類
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="col-lg-3 col-sm-6 mb-5">
+        <h6 class="mb-4">快速連結</h6>
+        <ul class="list-unstyled quick-links">
+          {{ range .Site.Menus.footer }}
+          <li class="mb-3">
+            <a class="text-dark" href="{{ .URL | absURL }}">
+              {{ if .Pre }}<i class="{{ .Pre }} mr-2"></i>{{ end }}{{ .Name }}
+            </a>
+          </li>
+          {{ end }}
+        </ul>
+      </div>
+      <div class="col-12 border-top py-4 text-center footer-copyright">
+        {{ .Site.Params.copyright | markdownify }}
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  var indexURL = {{ "index.json" | absURL }}
+</script>
+
+{{ "<!-- JS Plugins -->" | safeHTML }}
+{{ range .Site.Params.plugins.js}}
+<script src="{{ .URL | absURL }}" {{ if .async }}async{{ end }} {{ if .defer }}defer{{ end }}></script>
+{{ end }}
+{{ "<!-- Main Script -->" | safeHTML }}
+{{ $script := resources.Get "js/script.js" | minify}}
+<script src="{{ $script.Permalink }}"></script>
+<script src="{{ "js/theme-switch.js" | absURL }}"></script>
+
+<!-- Newsletter Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('newsletter-form');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const response = document.getElementById('newsletter-response');
+      const email = this.querySelector('input[name="email"]').value;
+      
+      // 這裡可以添加實際的表單提交邏輯
+      // 例如使用fetch API提交到指定端點
+      
+      response.innerHTML = '<p class="text-success">感謝您的訂閱！</p>';
+      this.reset();
+    });
+  }
+});
+</script>
+
+<!-- cookie -->
+{{ if site.Params.cookies.enable }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.1/js.cookie.min.js" defer></script>
+<div id="js-cookie-box" class="cookie-box cookie-box-hide">
+  <div class="container">
+    <div class="cookie-content">
+      <p>本網站使用Cookie來改善您的瀏覽體驗。繼續使用本網站，即表示您同意我們的Cookie使用政策。</p>
+      <div class="cookie-buttons">
+        <button id="js-cookie-button" class="btn btn-sm btn-primary">我接受</button>
+        <a href="{{ .Site.Params.cookies.policy_url }}" class="btn btn-sm btn-outline-secondary ml-2">了解更多</a>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+	(function () {
+		const cookieBox = document.getElementById('js-cookie-box');
+		const cookieButton = document.getElementById('js-cookie-button');
+		if (!Cookies.get('cookie-box')) {
+			cookieBox.classList.remove('cookie-box-hide');
+			cookieButton.onclick = function () {
+				Cookies.set('cookie-box', true, {
+					expires: {{ site.Params.cookies.expire_days }}
+				});
+				cookieBox.classList.add('cookie-box-hide');
+			};
+		}
+	})();
+</script>
+
+<!-- cookie style -->
+<style>
+.cookie-box {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  padding: 1rem 0;
+  background: rgba(51, 51, 51, 0.95);
+  transition: all .75s cubic-bezier(.19, 1, .22, 1);
+  color: #fdfdfd;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+.cookie-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.cookie-content p {
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+.cookie-buttons {
+  white-space: nowrap;
+  margin-left: 1rem;
+}
+
+.cookie-box-hide {
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .cookie-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .cookie-buttons {
+    margin-top: 1rem;
+    margin-left: 0;
+  }
+}
+
+/* 其他樣式優化 */
+.footer-logo {
+  max-height: 60px;
+  width: auto;
+}
+
+.footer-section {
+  background-color: var(--footer-bg-color, #f8f9fa);
+  padding-top: 3rem;
+  transition: background-color 0.3s;
+}
+
+.footer-section .text-dark {
+  color: var(--footer-text-color, #343a40);
+  transition: color 0.3s;
+}
+
+.social-item:hover, 
+.category-item:hover {
+  color: var(--primary-color, #007bff) !important;
+  text-decoration: none;
+}
+
+.category-count {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.newsletter-section {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.contact-list i,
+.social-list i,
+.quick-links i {
+  transition: transform 0.3s ease;
+}
+
+.contact-list a:hover i,
+.social-list a:hover i,
+.quick-links a:hover i {
+  transform: translateX(3px);
+}
+</style>
+{{ end }}
