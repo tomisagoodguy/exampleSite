@@ -198,7 +198,7 @@ link = "https://github.com/tomisagoodguy?tab=repositories"
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true
-      hardWraps = true
+      hardWraps = false
   [markup.tableOfContents]
     endLevel = 4
     ordered = false
