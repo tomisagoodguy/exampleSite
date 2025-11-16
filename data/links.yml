@@ -18,6 +18,9 @@
     - title: "內政部不動產資訊平台"
       url: "https://pip.moi.gov.tw/Publicize/Info/Index"
       description: "內政部不動產相關資訊整合平台"
+    - title: "司法院裁判書系統"
+      url: "https://judgment.judicial.gov.tw/FJUD/default.aspx"
+      description: "司法院裁判書查詢系統"
 - category: "理財相關網站"
   links:
     - title: "豐雲學堂"
@@ -95,6 +98,9 @@
     - title: "股乾爹 KuKanTieh"
       url: "https://www.youtube.com/@kukantieh"
       description: "股乾爹 KuKanTieh"
+    - title: "社工日常"
+      url: "https://socialworkerdaily.com/"
+      description: "他包含很多財經知識"
 - category: "求職相關網站"
   links:
     - title: "台灣就業通-在職訓練網"

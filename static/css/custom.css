@@ -654,10 +654,52 @@ body.dark-mode .pagination-default .page-item:not(.active) .page-link {
 
 body.dark-mode section[class*="category-"] {
   background-color: transparent !important;
+  color: #e0e0e0 !important; /* 確保夜間模式下分類文字為淺色 */
 }
 
 body.dark-mode .search-wrapper .search-close i {
   color: var(--heading-color) !important;
+}
+
+/* 深色模式下搜尋輸入框樣式 */
+body.dark-mode .search-wrapper .search-box {
+  background-color: #1E1E1E !important; /* 深色背景 */
+  color: #e0e0e0 !important; /* 淺色文字 */
+  border-color: #333 !important; /* 深色邊框 */
+}
+
+body.dark-mode .search-wrapper .search-box::placeholder {
+  color: #aaa !important; /* 提示文字顏色 */
+}
+
+/* =================================================================
+   分類與標籤 (Category & Tag) 樣式修正 (V5 - AGGRESSIVE OVERRIDE)
+   ================================================================= */
+
+/* --- Light Mode --- */
+/* Default State */
+.col-lg-9 > a.badge-primary {
+  background-color: #007bff !important;
+  color: #ffffff !important;
+}
+
+/* Hover State */
+.col-lg-9 > a.badge-primary:hover {
+  background-color: #0056b3 !important;
+  color: #ffffff !important;
+}
+
+/* --- Dark Mode --- */
+/* Default State */
+body.dark-mode .col-lg-9 > a.badge-primary {
+  background-color: #bb86fc !important;
+  color: #000000 !important;
+}
+
+/* Hover State */
+body.dark-mode .col-lg-9 > a.badge-primary:hover {
+  background-color: #a062e8 !important;
+  color: #000000 !important;
 }
 
 /* =================================================================

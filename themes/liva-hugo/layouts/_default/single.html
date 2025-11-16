@@ -26,7 +26,7 @@
       <!-- 右側文章內容（拓展至12-3=9列寬） -->
       <div class="col-lg-9">
         {{ range .Params.Categories }}
-        <a href="{{ `categories/` | relLangURL }}{{ . | urlize | lower }}" class="text-primary">{{ . | title | humanize }}</a>
+        <a href="{{ `categories/` | relLangURL }}{{ . | urlize | lower }}" class="badge badge-primary badge-sm">{{ . | title | humanize }}</a>
         {{ end }}
         <h2>{{ .Title | markdownify }}</h2>
         <div class="mb-3 post-meta">
