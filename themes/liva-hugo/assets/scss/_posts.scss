@@ -69,6 +69,8 @@
 
 .post-categories a:hover {
   background: var(--primary-hover);
+  /* 💡 修正一：解決白天滑過去變全白看不到的問題 */
+  color: var(--primary-text-color, #333) !important;
   transform: translateY(-4px) scale(1.1);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
@@ -436,6 +438,8 @@ body article h6 {
   .badge:hover, 
   .category-badge:hover {
     background-color: var(--primary-hover);
+    /* 💡 修正一：解決白天滑過去變全白看不到的問題 */
+    color: var(--primary-text-color, #333) !important;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
@@ -717,4 +721,30 @@ body article h6 {
     margin: 2rem 0;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   }
+}
+
+/* ==========================================
+   第七部分：Dark Mode 標籤可視性修正（新增）
+   ========================================== */
+/* 💡 修正二：解決黑夜模式下標籤對比度不足的問題（假設 Dark Mode 類別為 .dark-mode） */
+
+/* 針對文章卡片標籤 (未 Hover) */
+.dark-mode .post-categories a,
+/* 針對條列式列表標籤 (未 Hover) */
+.dark-mode .article-list .badge, 
+.dark-mode .article-list .category-badge {
+  /* 覆蓋掉在深色主題中對比不足的 primary-color，改用高對比的 accent-color */
+  background: var(--accent-color, #10b981) !important; 
+  color: white !important; 
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); 
+  border: 1px solid var(--accent-color, #10b981); 
+}
+
+/* 確保 Dark Mode Hover 效果依然清晰且保持動畫 */
+.dark-mode .post-categories a:hover,
+.dark-mode .article-list .badge:hover, 
+.dark-mode .article-list .category-badge:hover {
+  background: var(--accent-hover, #059669) !important; 
+  color: white !important;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.7);
 }
