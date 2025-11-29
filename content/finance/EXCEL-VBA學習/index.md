@@ -15,7 +15,7 @@ tags:
 ---
 *此為個人學習筆記，內容主要整理自相關課程與網路資源，僅供學習與參考之用。*
 
-11/7上到單元5抓取上市公司或成交價排行榜
+11/7上到第三章單元8抓取上市公司或成交價排行榜
 
 ## 學習資源
 
@@ -311,3 +311,32 @@ VBA 的強大之處在於能直接控制 Excel 的各個物件。
 
 * [爬蟲程式產生器V4.xlsm](爬蟲程式產生器V4.xlsm)
 * [Yahoo主力進出表.xlsm](Yahoo主力進出表.xlsm)
+
+
+
+
+Q: 字串與變數如何連接
+
+A:在字串與變數之間使用 & 來連接
+
+dim stock as string
+
+stock=2330
+
+網址 " & stock & "
+
+
+
+Q:ＧＥＴ　和ＰＯＳＴ方法差異
+
+Ａ：　ＧＥＴ：參數在網址即可看見
+
+　　　　ＰＯＳＴ：參數藏在ｆｏｒｍ　ｄａｔａ
+
+相關網址:
+
+https://blog.gtwang.org/programming/url-percent-encoding-and-decoding-using-java/
+
+https://www.convertstring.com/zh_TW/EncodeDecode/UrlEncode
+
+https://tools.jb51.net/table/useragent
