@@ -35,6 +35,10 @@ xcopy "%SOURCE_DIR%\public\*" "%DEST_DIR%\" /s /e /y
 :: --------------------------------------------
 echo [3/3] 正在對外發布...
 cd /d "%DEST_DIR%"
+
+:: ✨【新增這行】關閉換行符號的警告提示
+git config core.safecrlf false
+
 git add .
 git commit -m "Site Update: %date% %time%"
 git push origin HEAD
