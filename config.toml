@@ -4,7 +4,7 @@ languageCode = "zh-tw"
 title = "定康筆記 | Tom's Note"
 theme = "liva-hugo"
 summaryLength = "10"
-googleAnalytics = "G-NPL83YJTOE"
+googleAnalytics = "G-ZZ3XT9EZKH"
 paginate = 9
 disqusShortname = "tomisagoodguy"
 defaultContentLanguage = "zh-tw"
@@ -35,7 +35,7 @@ home = "首頁"
 description = "結合地政士專業、Python 量化分析與極致料理的跨界筆記。"
 author = "定康"
 # googleAnalytics moved to global
-google_analytics_id = "G-NPL83YJTOE"
+google_analytics_id = "G-ZZ3XT9EZKH"
 
 # Contact Information
 mobile = "0911445898"
