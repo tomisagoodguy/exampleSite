@@ -8,18 +8,19 @@
       <img loading="lazy" src="{{ .Params.Image | absURL }}" alt=""
         class="img-fluid author-thumb-sm d-block mx-auto rounded-circle mb-4">
       {{ end }}
-      <p>我是定康，熱愛學習新知、運動、程式及料理，並樂於將所學應用於實際生活。</p>
-<a href="{{ .Permalink }}" class="btn btn-outline-primary">Know More</a>
+      <p>我是定康，一位擅長數據分析的地政士。運用 Python 與 VBA 實踐 PropTech 於不動產領域，下班後則是一名熱愛建築、運動與歐陸料理的廚師。</p>
+      <a href="{{ .Permalink }}" class="btn btn-outline-primary">Know More</a>
       {{ end }}
     </div>
 
     <!-- recent post -->
     <div class="widget">
       <h4 class="widget-title">Recent Post</h4>
-      {{ range first 5 (where .Site.RegularPages.ByPublishDate.Reverse "Type" "in" (slice "blog" "exam-notes" "recipes" "practice-sharing" "finance" "post")) }}
+      {{ range first 5 (where .Site.RegularPages.ByPublishDate.Reverse "Type" "in" (slice "blog" "exam-notes" "recipes"
+      "practice-sharing" "finance" "post")) }}
       <article class="widget-card">
         <div class="d-flex">
-          
+
           <div class="ml-3">
             <h5><a class="post-title" href="{{ .Permalink }}">{{ .Title }}</a></h5>
             <ul class="list-inline meta-info">
@@ -35,11 +36,17 @@
     <!-- category -->
     <div class="widget">
       <h4 class="widget-title">Category</h4>
-      <ul class="list-unstyled">
-        <li><a href="{{ `categories/` | relLangURL }}">查看所有分類</a></li>
+      <ul class="list-inline">
+        {{ range .Site.Taxonomies.categories.ByCount }}
+        <li class="list-inline-item mb-2">
+          <a href="{{ .Page.Permalink }}" class="d-block p-2 bg-light rounded text-dark text-decoration-none">
+            {{ .Page.Title }} <span class="badge badge-primary ml-1">{{ .Count }}</span>
+          </a>
+        </li>
+        {{ end }}
       </ul>
     </div>
-    
+
     <!-- social -->
     <div class="widget">
       <h4 class="widget-title">Social</h4>

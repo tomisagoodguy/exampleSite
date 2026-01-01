@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="{{ with .Site.LanguageCode }}{{ . }}{{ else }}en-US{{ end }}">
-    {{- partial "head.html" . -}}
-    <body>
-        {{- partial "preloader.html" . -}}
-        {{- partial "header.html" . -}}
-        {{- block "main" . }}{{- end }}
-        {{- partial "footer.html" . -}}
-        <a href="#" id="return-to-top"><i class="fas fa-arrow-up"></i></a>
-        <a href="#" id="go-to-bottom"><i class="fas fa-arrow-down"></i></a>
-    </body>
+{{- partial "head.html" . -}}
+
+<body>
+    {{- partial "preloader.html" . -}}
+    {{- partial "header.html" . -}}
+    {{- block "main" . }}{{- end }}
+    {{- partial "footer.html" . -}}
+</body>
+
 </html>

@@ -1,13 +1,13 @@
 {{ define "main" }}
 {{- $cat_class := "" -}}
 {{- with .Params.categories -}}
-    {{- if reflect.IsSlice . -}}
-        {{- if gt (len .) 0 -}}
-            {{- $cat_class = printf "category-%s" ((index . 0) | urlize) -}}
-        {{- end -}}
-    {{- else if reflect.IsString . -}}
-        {{- $cat_class = printf "category-%s" (. | urlize) -}}
-    {{- end -}}
+{{- if reflect.IsSlice . -}}
+{{- if gt (len .) 0 -}}
+{{- $cat_class = printf "category-%s" ((index . 0) | urlize) -}}
+{{- end -}}
+{{- else if reflect.IsString . -}}
+{{- $cat_class = printf "category-%s" (. | urlize) -}}
+{{- end -}}
 {{- end -}}
 <section class="section-sm {{ $cat_class }}">
   <div class="container">
@@ -26,7 +26,8 @@
       <!-- 右側文章內容（拓展至12-3=9列寬） -->
       <div class="col-lg-9">
         {{ range .Params.Categories }}
-        <a href="{{ `categories/` | relLangURL }}{{ . | urlize | lower }}" class="badge badge-primary badge-sm">{{ . | title | humanize }}</a>
+        <a href="{{ `categories/` | relLangURL }}{{ . | urlize | lower }}" class="badge badge-primary badge-sm">{{ . |
+          title | humanize }}</a>
         {{ end }}
         <h2>{{ .Title | markdownify }}</h2>
         <div class="mb-3 post-meta">
@@ -35,8 +36,10 @@
           <span class="border-bottom border-primary px-2 mx-1"></span>
           <span>{{ .PublishDate.Format "02 January 2006" }}</span>
           {{ end }}
+          <span class="border-bottom border-primary px-2 mx-1"></span>
+          <span>{{ .ReadingTime }} min read</span>
         </div>
-        
+
 
         <div class="content mb-5 post-content">
           {{ .Content }}
@@ -49,27 +52,27 @@
             <div class="row">
               <div class="col-md-6">
                 {{ with .PrevInSection }}
-                  <div class="prev-post">
-                    <span>上一篇</span>
-                    <a href="{{ .RelPermalink }}">
-                      <h5>{{ .Title }}</h5>
-                    </a>
-                  </div>
+                <div class="prev-post">
+                  <span>上一篇</span>
+                  <a href="{{ .RelPermalink }}">
+                    <h5>{{ .Title }}</h5>
+                  </a>
+                </div>
                 {{ end }}
               </div>
               <div class="col-md-6 text-right">
                 {{ with .NextInSection }}
-                  <div class="next-post">
-                    <span>下一篇</span>
-                    <a href="{{ .RelPermalink }}">
-                      <h5>{{ .Title }}</h5>
-                    </a>
-                  </div>
+                <div class="next-post">
+                  <span>下一篇</span>
+                  <a href="{{ .RelPermalink }}">
+                    <h5>{{ .Title }}</h5>
+                  </a>
+                </div>
                 {{ end }}
               </div>
             </div>
           </div>
-          
+
           <!-- 導航選項卡（只保留相關文章和最新文章） -->
           <div class="navigation-tabs mt-5">
             <ul class="nav nav-tabs" id="navigationTabs" role="tablist">
@@ -86,27 +89,29 @@
                 <div class="row mt-4">
                   {{ $related := "" }}
                   {{ if .Params.tags }}
-                    {{ $related = (where site.RegularPages "Type" "in" site.Params.mainSections) | intersect (where site.RegularPages "Params.tags" "intersect" .Params.tags) | complement (slice .) }}
+                  {{ $related = (where site.RegularPages "Type" "in" site.Params.mainSections) | intersect (where
+                  site.RegularPages "Params.tags" "intersect" .Params.tags) | complement (slice .) }}
                   {{ else }}
-                    {{ $related = (where site.RegularPages "Type" "in" site.Params.mainSections) | intersect (where site.RegularPages "Params.categories" "intersect" .Params.categories) | complement (slice .) }}
+                  {{ $related = (where site.RegularPages "Type" "in" site.Params.mainSections) | intersect (where
+                  site.RegularPages "Params.categories" "intersect" .Params.categories) | complement (slice .) }}
                   {{ end }}
                   {{ if $related }}
-                    {{ range first 6 $related }}
-                    <div class="col-md-6 mb-3">
-                      <div class="post-item">
-                        <a href="{{ .RelPermalink }}">{{ .Title }}</a>
-                        <small>{{ .PublishDate.Format "2006-01-02" }}</small>
-                      </div>
+                  {{ range first 6 $related }}
+                  <div class="col-md-6 mb-3">
+                    <div class="post-item">
+                      <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+                      <small>{{ .PublishDate.Format "2006-01-02" }}</small>
                     </div>
-                    {{ end }}
+                  </div>
+                  {{ end }}
                   {{ else }}
-                    <div class="col-12">
-                      <p class="text-muted">目前沒有相關文章</p>
-                    </div>
+                  <div class="col-12">
+                    <p class="text-muted">目前沒有相關文章</p>
+                  </div>
                   {{ end }}
                 </div>
               </div>
-              
+
               <!-- 最新文章選項卡 -->
               <div class="tab-pane fade" id="latest" role="tabpanel">
                 <div class="row mt-4">

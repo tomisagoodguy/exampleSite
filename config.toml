@@ -1,12 +1,20 @@
 ######################## default configuration ####################
 baseURL = "https://tomisagoodguy.github.io"
 languageCode = "zh-tw"
-title = "land-knowledege"
+title = "定康筆記 | Tom's Note"
 theme = "liva-hugo"
 summaryLength = "10"
-paginate = 10
+googleAnalytics = "G-NPL83YJTOE"
+paginate = 9
 disqusShortname = "tomisagoodguy"
 defaultContentLanguage = "zh-tw"
+
+[sitemap]
+  changefreq = "weekly"
+  priority = 0.5
+  filename = "sitemap.xml"
+
+enableRobotsTXT = true
 
 [languages]
   [languages.zh-tw]
@@ -15,6 +23,26 @@ defaultContentLanguage = "zh-tw"
 
 [outputs]
 home = ["HTML", "RSS", "JSON"]
+
+#################### default parameters ################################
+[params]
+# main sections
+mainSections = ["blog", "exam-notes", "finance", "practice-sharing", "recipes", "post", "lifestyle"]
+# 放主題圖片
+# logo = "images/law.png"
+home = "首頁"
+# Meta data
+description = "結合地政士專業、Python 量化分析與極致料理的跨界筆記。"
+author = "定康"
+# googleAnalytics moved to global
+google_analytics_id = "G-NPL83YJTOE"
+
+# Contact Information
+mobile = "0911445898"
+email = "tom890108159@gmail.com"
+location = "Taiwan"
+# copyright
+copyright = "| copyright © 2025 定康筆記 | Tom's Note All Rights Reserved |"
 
 ############################# Plugins ##############################
 [params.plugins]
@@ -28,6 +56,8 @@ URL = "plugins/slick/slick.css"
 URL = "plugins/themify-icons/themify-icons.css"
 [[params.plugins.css]]
 URL = "plugins/venobox/venobox.css"
+[[params.plugins.css]]
+URL = "css/custom.css"
 
 
 # JS Plugins
@@ -44,7 +74,7 @@ URL = "plugins/search/fuse.min.js"
 [[params.plugins.js]]
 URL = "plugins/search/mark.js"
 [[params.plugins.js]]
-URL = "plugins/search/search.js"
+URL = "plugins/search/search-v2.js"
 
 ############################## navigation ###############################
 [menu]
@@ -56,14 +86,21 @@ URL = "/"
 weight = 1
 
 [[menu.main]]
-name = "食譜筆記"
-URL = "recipes/"
+name = "廚藝與生活"
+URL = "lifestyle/"
 weight = 2
 
 [[menu.main]]
-name = "考試筆記"
-URL = "exam-notes/"
+name = "代書修煉"
+URL = "real-estate/"
 weight = 3
+
+[[menu.main]]
+name = "考試筆記"
+URL = "real-estate/exam-notes/"
+weight = 1
+parent = "代書修煉"
+
 
 [[menu.main]]
 name = "關於"
@@ -72,32 +109,59 @@ weight = 6
 
 [[menu.main]]
 name = "相關連結"
+identifier = "links"
 URL = "links/"
 weight = 7
 hasChildren = true
 
 [[menu.main]]
+name = "實用工具"
+URL = "links/#實用工具"
+parent = "links"
+weight = 1
+
+[[menu.main]]
 name = "地政相關網站"
 URL = "links/#地政相關網站"
-parent = "相關連結"
-weight = 1
+parent = "links"
+weight = 2
 
 [[menu.main]]
 name = "理財相關網站"
 URL = "links/#理財相關網站"
-parent = "相關連結"
-weight = 2
+parent = "links"
+weight = 3
 
 [[menu.main]]
-name = "財經筆記"
-URL = "finance/"
+name = "求職相關網站"
+URL = "links/#求職相關網站"
+parent = "links"
 weight = 4
 
 [[menu.main]]
-name = "不務正業"
-URL = "hobbies/"
+name = "其他"
+URL = "links/#其他"
+parent = "links"
 weight = 5
 
+[[menu.main]]
+name = "自動化實驗室"
+identifier = "automation"
+URL = "automation/"
+weight = 5
+hasChildren = true
+
+[[menu.main]]
+name = "房地稅務試算"
+URL = "tools/property-tax.html"
+parent = "automation"
+weight = 2
+
+[[menu.main]]
+name = "所有文章"
+URL = "automation/"
+parent = "automation"
+weight = 1
 
 
 # footer menu
@@ -107,24 +171,19 @@ URL = "/"
 weight = 1
 
 [[menu.footer]]
-name = "食譜筆記"
-URL = "recipes/"
+name = "廚藝與生活"
+URL = "lifestyle/"
 weight = 2
 
 [[menu.footer]]
-name = "考試筆記"
-URL = "exam-notes/"
+name = "代書修煉"
+URL = "real-estate/"
 weight = 3
 
 [[menu.footer]]
-name = "財經筆記"
-URL = "finance/"
+name = "自動化實驗室"
+URL = "automation/"
 weight = 4
-
-[[menu.footer]]
-name = "不務正業"
-URL = "hobbies/"
-weight = 5
 
 [[menu.footer]]
 name = "關於"
@@ -135,24 +194,6 @@ weight = 6
 name = "相關連結"
 URL = "links/"
 weight = 7
-
-#################### default parameters ################################
-[params]
-# main sections
-mainSections = ["blog", "exam-notes", "finance", "practice-sharing", "recipes", "post"]
-# 放主題圖片
-logo = "images/law.png"
-home = "首頁"
-# Meta data
-description = "定康的地政筆記"
-author = "定康"
-
-# Contact Information
-mobile = "0911445898"
-email = "tom890108159@gmail.com"
-location = "Taiwan"
-# copyright
-copyright = "| copyright © 2025 定康的地政筆記 All Rights Reserved |"
 
 # Preloader
 [params.preloader]
@@ -220,3 +261,6 @@ link = "https://github.com/tomisagoodguy?tab=repositories"
   [[related.indices]]
     name = "tags"
     weight = 80
+
+[frontmatter]
+  lastmod = [":fileModTime", ":default"]

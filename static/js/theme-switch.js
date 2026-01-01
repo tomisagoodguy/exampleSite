@@ -8,12 +8,12 @@
  * 2. 如果有，使用 localStorage 中的設定 (使用者的選擇)。
  * 3. 如果沒有，才檢查系統偏好 (prefers-color-scheme)。
  */
-document.addEventListener('DOMContentLoaded', function() {
-  
+document.addEventListener('DOMContentLoaded', function () {
+
   const themeToggle = document.getElementById('checkbox');
   const body = document.body;
   const themeClass = 'dark-mode'; // ⚠️ 注意：請確認您的 CSS 是用這個 class 名稱
-  
+
   /**
    * 套用主題並同步開關狀態
    * @param {string} theme - 'dark' 或 'light'
@@ -43,8 +43,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle old value from previous script
     if (savedTheme === 'dark-mode') {
-        applyTheme('dark');
-        return;
+      applyTheme('dark');
+      return;
     }
 
     if (savedTheme) {
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 2. 監聽開關的點擊事件
   if (themeToggle) {
-    themeToggle.addEventListener('change', function(e) {
+    themeToggle.addEventListener('change', function (e) {
       if (e.target.checked) {
         applyTheme('dark');
       } else {
@@ -72,4 +72,37 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+});
+
+// === Code Block Copy Functionality ===
+document.addEventListener('DOMContentLoaded', function () {
+  // Select all code blocks (pre elements that usually contain code)
+  const codeBlocks = document.querySelectorAll('pre');
+
+  codeBlocks.forEach(function (pre) {
+    // Create copy button
+    const button = document.createElement('button');
+    button.className = 'copy-button';
+    button.innerText = 'Copy';
+
+    // Position button (handled by CSS, but we append it to the pre)
+    pre.appendChild(button);
+
+    button.addEventListener('click', function () {
+      // Find the code element inside
+      const code = pre.querySelector('code');
+      const textToCopy = code ? code.innerText : pre.innerText;
+
+      // Copy using Clipboard API
+      navigator.clipboard.writeText(textToCopy).then(function () {
+        button.innerText = 'Copied!';
+        setTimeout(function () {
+          button.innerText = 'Copy';
+        }, 2000);
+      }).catch(function (err) {
+        console.error('Failed to copy class: ', err);
+        button.innerText = 'Error';
+      });
+    });
+  });
 });

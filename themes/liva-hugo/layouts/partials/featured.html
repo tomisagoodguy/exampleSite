@@ -1,0 +1,33 @@
+{{ $featured_posts := where .Site.RegularPages "Params.featured" true }}
+{{ if gt (len $featured_posts) 0 }}
+<section class="section-sm pb-0">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="featured-post-slider">
+          {{ range $featured_posts }}
+          <div class="pb-4">
+            <div class="d-flex align-items-center card-style">
+              {{ if .Params.image }}
+              <div class="featured-post-thumb mr-3">
+                <img class="img-fluid rounded" src="{{ .Params.image | absURL }}" alt="{{ .Title }}">
+              </div>
+              {{ end }}
+              <div class="featured-post-content">
+                <ul class="list-inline mb-2">
+                  <li class="list-inline-item text-primary"><i class="ti-calendar mr-2"></i>{{ .PublishDate.Format "02 Jan, 2006" }}</li>
+                  <li class="list-inline-item text-primary"><i class="ti-time mr-2"></i>{{ .ReadingTime }} min read</li>
+                </ul>
+                <h3><a href="{{ .Permalink }}" class="text-dark">{{ .Title }}</a></h3>
+                <p>{{ .Summary | truncate 100 }}</p>
+                <a href="{{ .Permalink }}" class="btn btn-outline-primary btn-sm">Read More</a>
+              </div>
+            </div>
+          </div>
+          {{ end }}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{{ end }}

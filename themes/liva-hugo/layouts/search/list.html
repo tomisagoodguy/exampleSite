@@ -4,13 +4,31 @@
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-lg-10">
-        <div id="search-results"></div>
+        <div id="search-results" class="row"></div>
         <script id="search-result-template" type="text/x-js-template">
-          <div class="py-4 border-bottom" id="summary-${key}">
-            <h4><a href="${link}">${title}</a></h4>
-            <p>${snippet}</p>
-            ${ isset tags }<p>Tags: ${tags}</p>${ end }
-            ${ isset categories }<p>Categories: ${categories}</p>${ end }
+          <div class="col-md-4 mb-4 search-item-fade" id="summary-${key}">
+            <article class="card h-100 shadow-sm border-0 search-result-card">
+              <div class="card-img-wrapper">
+                <img src="${image}" class="card-img-top" alt="${title}" onerror="this.style.display='none'">
+              </div>
+              <div class="card-body">
+                <div class="post-meta mb-2">
+                  <span class="text-muted small"><i class="ti-calendar mr-1"></i>${date}</span>
+                  <span class="mx-2 text-muted">|</span>
+                  <span class="text-muted small"><i class="ti-timer mr-1"></i>${readingTime} min read</span>
+                </div>
+                <h4 class="card-title h5 mt-2">
+                  <a href="${link}" class="text-dark hover-blue">${title}</a>
+                </h4>
+                <p class="card-text text-muted small mt-3">
+                  ${snippet}
+                </p>
+                <div class="mt-3">
+                   <span class="badge badge-light text-primary mr-1">${categories}</span>
+                </div>
+                <a href="${link}" class="btn btn-link p-0 mt-3 text-primary font-weight-bold">Read More →</a>
+              </div>
+            </article>
           </div>
         </script>
       </div>

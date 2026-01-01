@@ -1,20 +1,23 @@
 {{ define "main" }}
 <section class="section">
   <div class="container">
-    <div class="row">
-      <div class="col-12">
+    <div class="row mb-5">
+      <div class="col-12 text-center">
         <h1 class="mb-4">{{ .Title }}</h1>
-        <ul class="list-unstyled">
-          {{ range .Data.Terms.ByCount }}
-          <li class="mb-2">
-            <a href="{{ .Page.Permalink }}" class="h5">
-              {{ .Page.Title }}
-              <span class="badge badge-light ml-2">{{ .Count }}</span>
-            </a>
-          </li>
-          {{ end }}
-        </ul>
+        <p class="text-muted">Browse articles by topic</p>
       </div>
+    </div>
+    <div class="row">
+      {{ range .Data.Terms.ByCount }}
+      <div class="col-lg-4 col-sm-6 mb-4">
+        <a href="{{ .Page.Permalink }}" class="category-card">
+          <div class="category-name">
+            {{ .Page.Title }}
+          </div>
+          <span class="category-count">{{ .Count }}</span>
+        </a>
+      </div>
+      {{ end }}
     </div>
   </div>
 </section>

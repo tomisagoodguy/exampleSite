@@ -137,11 +137,13 @@
 .widgets {
   padding-left: 25px;
   border-left: 1px solid var(--border-color, #eee);
+
   @include desktop {
     padding-left: 0;
     border-left: 0;
   }
 }
+
 .widget {
   text-align: center;
   margin-bottom: 50px;
@@ -233,7 +235,7 @@
 /* markdown style */
 .content {
   * {
-    font: Arial,Helvetical,'微軟正黑體',sans-serif;
+    font: Arial, Helvetical, '微軟正黑體', sans-serif;
     margin-bottom: 20px;
   }
 
@@ -344,7 +346,8 @@
 }
 
 footer a {
-  @extend .text-dark;
+  color: var(--primary-text-color) !important;
+
   &:hover {
     color: var(--primary-color, $primary-color) !important;
     text-decoration: underline;

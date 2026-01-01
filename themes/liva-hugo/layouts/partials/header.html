@@ -3,8 +3,13 @@
   <div class="container">
     <!-- navbar -->
     <nav class="navbar navbar-expand-lg navbar-white bg-transparent border-bottom pl-0">
-      <a class="navbar-brand mobile-view" href="{{ .Site.BaseURL }}"><img loading="lazy" class="img-fluid"
-          src="{{ .Site.Params.logo | absURL }}" alt="{{ .Site.Title }}"></a>
+      <a class="navbar-brand mobile-view" href="{{ .Site.BaseURL }}">
+        {{ if .Site.Params.logo }}
+        <img loading="lazy" class="img-fluid" src="{{ .Site.Params.logo | absURL }}" alt="{{ .Site.Title }}">
+        {{ else }}
+        <h3>{{ .Site.Title }}</h3>
+        {{ end }}
+      </a>
       <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#navigation">
         <i class="ti-menu"></i>
       </button>
@@ -20,20 +25,25 @@
           </ul>
         </div>
 
-        <a class="navbar-brand mx-auto desktop-view" href="{{ .Site.BaseURL }}"><img loading="lazy" class="img-fluid"
-            src="{{ .Site.Params.logo | absURL }}" alt="{{ .Site.Title }}"></a>
+        <a class="navbar-brand mx-auto desktop-view" href="{{ .Site.BaseURL }}">
+          {{ if .Site.Params.logo }}
+          <img loading="lazy" class="img-fluid" src="{{ .Site.Params.logo | absURL }}" alt="{{ .Site.Title }}">
+          {{ else }}
+          <h3>{{ .Site.Title }}</h3>
+          {{ end }}
+        </a>
 
         <ul class="navbar-nav">
           {{ range .Site.Menus.main }}
-          {{ if .Params.hasChildren }}
+          {{ if .HasChildren }}
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="{{ .URL | absURL }}" role="button" data-toggle="dropdown" aria-haspopup="true"
-              aria-expanded="false">
+            <a class="nav-link dropdown-toggle" href="{{ .URL | absURL }}" role="button" data-toggle="dropdown"
+              aria-haspopup="true" aria-expanded="false">
               {{ .Name }}
             </a>
             <div class="dropdown-menu">
               {{ range .Children }}
-                <a class="dropdown-item" href="{{ .URL | absURL }}">{{ .Name }}</a>
+              <a class="dropdown-item" href="{{ .URL | absURL }}">{{ .Name }}</a>
               {{ end }}
             </div>
           </li>
@@ -52,7 +62,10 @@
         <div class="theme-switch-wrapper pl-lg-4">
           <label class="theme-switch" for="checkbox">
             <input type="checkbox" id="checkbox" />
-            <div class="slider round"></div>
+            <div class="slider round">
+              <i class="fas fa-sun sun-icon"></i>
+              <i class="fas fa-moon moon-icon"></i>
+            </div>
           </label>
         </div>
 
@@ -80,32 +93,32 @@
 </header>
 
 {{ if .Site.Params.subnavigation.enable }}
-  {{ $currentSection := .Section }}
-  {{ if or 
-       (and .IsHome .Site.Params.subnavigation.showOnHome) 
-       (and .IsPage .Site.Params.subnavigation.showOnSingle) 
-       (and (or .IsSection .IsNode) .Site.Params.subnavigation.showOnList) }}
-    
-    {{ if eq $currentSection "articles" }}
-      {{ partial "all_articles_sub_nav.html" . }}
-    {{ else if eq $currentSection "exam-notes" }}
-      {{ partial "exam_notes_sub_nav.html" . }}
-    {{ else if eq $currentSection "practice-sharing" }}
-      {{ partial "practice_sharing_sub_nav.html" . }}
-    
-    {{ else }}
-      {{ with .Params.section }}
-        {{ if eq . "articles" }}
-          {{ partial "all_articles_sub_nav.html" $ }}
-        {{ else if eq . "exam-notes" }}
-          {{ partial "exam_notes_sub_nav.html" $ }}
-        {{ else if eq . "practice-sharing" }}
-          {{ partial "practice_sharing_sub_nav.html" $ }}
-        {{ else if eq . "other" }}
-          {{ partial "other_sub_nav.html" $ }}
-        {{ end }}
-      {{ end }}
-    {{ end }}
-    
-  {{ end }}
+{{ $currentSection := .Section }}
+{{ if or
+(and .IsHome .Site.Params.subnavigation.showOnHome)
+(and .IsPage .Site.Params.subnavigation.showOnSingle)
+(and (or .IsSection .IsNode) .Site.Params.subnavigation.showOnList) }}
+
+{{ if eq $currentSection "articles" }}
+{{ partial "all_articles_sub_nav.html" . }}
+{{ else if eq $currentSection "exam-notes" }}
+{{ partial "exam_notes_sub_nav.html" . }}
+{{ else if eq $currentSection "practice-sharing" }}
+{{ partial "practice_sharing_sub_nav.html" . }}
+
+{{ else }}
+{{ with .Params.section }}
+{{ if eq . "articles" }}
+{{ partial "all_articles_sub_nav.html" $ }}
+{{ else if eq . "exam-notes" }}
+{{ partial "exam_notes_sub_nav.html" $ }}
+{{ else if eq . "practice-sharing" }}
+{{ partial "practice_sharing_sub_nav.html" $ }}
+{{ else if eq . "other" }}
+{{ partial "other_sub_nav.html" $ }}
+{{ end }}
+{{ end }}
+{{ end }}
+
+{{ end }}
 {{ end }}

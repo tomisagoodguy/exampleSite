@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /search/
+{{ printf "Sitemap: %s" ("sitemap.xml" | absURL) | safeHTML }}

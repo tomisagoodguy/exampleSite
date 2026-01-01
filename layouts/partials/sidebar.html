@@ -1,0 +1,91 @@
+<div class="col-lg-4 sidebar-sticky">
+    <div class="widgets">
+        <!-- Profile Card (Replaces About & Social) -->
+        <div class="profile-card">
+            <div class="profile-avatar">
+                {{ with .Site.GetPage "/about" }}
+                {{ if .Params.Image }}
+                <img loading="lazy" src="{{ .Params.Image | absURL }}" alt="Profile Avatar">
+                {{ else }}
+                <img loading="lazy" src="https://via.placeholder.com/150" alt="Profile Avatar">
+                {{ end }}
+                {{ end }}
+            </div>
+            <h3 class="profile-name">{{ .Site.Params.Author }}</h3>
+            <p class="profile-bio">INTJ | 代書 (Land Agent) | Python Learner. 致力於用程式解決地政難題。</p>
+
+            <div class="profile-tags">
+                <span class="profile-tag">#RealEstate</span>
+                <span class="profile-tag">#Python</span>
+                <span class="profile-tag">#VBA</span>
+                <span class="profile-tag">#Cooking</span>
+                <span class="profile-tag">#Taipei</span>
+            </div>
+
+            <div class="profile-social">
+                {{ range .Site.Params.social }}
+                <a href="{{ .link | safeURL }}" class="profile-social-link" title="{{ .title }}">
+                    <i class="{{ .icon }}"></i>
+                </a>
+                {{ end }}
+                <!-- Manual Email Link if not in params -->
+                <a href="mailto:{{ .Site.Params.email }}" class="profile-social-link" title="Email">
+                    <i class="ti-email"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- recent post -->
+        <div class="widget">
+            <h4 class="widget-title">Recent Post</h4>
+            <div class="sidebar-post-slider">
+                {{ range (where .Site.RegularPages.ByLastmod.Reverse "Type" "in" .Site.Params.mainSections) }}
+                <div class="sidebar-post-item">
+                    <article class="widget-card m-0" style="padding: 10px 0; border-bottom: 1px solid #eee;">
+                        <!-- reduced padding and added separator -->
+                        <div class="d-flex justify-content-center align-items-center">
+                            <div class="text-center w-100">
+                                <h5><a class="post-title" href="{{ .Permalink }}"
+                                        style="display: block; width: 100%; white-space: normal; font-size: 14px;">{{
+                                        .Title }}</a></h5>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+                {{ end }}
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // Ensure jQuery is loaded before running this (Slick depends on jQuery)
+                var checkJQ = setInterval(function () {
+                    if (window.jQuery && window.jQuery.fn.slick) {
+                        clearInterval(checkJQ);
+                        jQuery('.sidebar-post-slider').slick({
+                            autoplay: true,
+                            autoplaySpeed: 2000,
+                            dots: false,
+                            arrows: false,
+                            infinite: true,
+                            speed: 500,
+                            slidesToShow: 5,
+                            slidesToScroll: 1,
+                            vertical: true,
+                            verticalSwiping: true
+                        });
+                    }
+                }, 100);
+            });
+        </script>
+
+        <!-- category -->
+        <div class="widget">
+            <h4 class="widget-title">Category</h4>
+            <ul class="list-unstyled">
+                <li><a href="{{ `categories/` | relLangURL }}">查看所有分類</a></li>
+            </ul>
+        </div>
+
+    </div>
+</div>

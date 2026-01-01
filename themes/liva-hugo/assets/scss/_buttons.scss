@@ -1,49 +1,58 @@
-/* Button style */
+/* Cozy Editorial Buttons */
+
 .btn {
-  font-size: 14px;
+  font-family: $secondary-font;
   font-weight: 500;
-  font-family: $primary-font;
-  text-transform: capitalize;
-  padding: 10px 15px;
-  border-radius: 0;
-  border: 1px solid;
-  position: relative;
-  z-index: 1;
-  transition: .2s ease;
+  padding: 10px 24px; // Not too big
+  border-radius: 6px; // Gentle curve
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 13px;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
 
-  &:hover,
-  &:active,
   &:focus {
-    outline: 0;
-    box-shadow: 0 !important;
+    box-shadow: none;
   }
 }
 
+// Primary - Sage Green
 .btn-primary {
-  background: var(--primary-color, $primary-color);
-  color: var(--primary-bg-color, $white);
-  border-color: var(--primary-color, $primary-color);
+  background-color: var(--primary-color); // Sage
+  color: #fff;
+  border-color: var(--primary-color);
 
-  &:active,
-  &:hover,
-  &.focus,
-  &.active {
-    background: var(--primary-color, $primary-color) !important;
-    border-color: var(--primary-color, $primary-color) !important;
+  &:hover {
+    background-color: darken(#6B9080, 5%); // Slightly darker sage
+    border-color: darken(#6B9080, 5%);
+    transform: translateY(-2px);
   }
 }
 
+// Outline - Terracotta Text
 .btn-outline-primary {
   background: transparent;
-  color: var(--primary-text-color, $text-color-dark);
-  border-color: var(--primary-color, $primary-color);
+  color: var(--secondary-color); // Terracotta
+  border-color: var(--secondary-color);
 
-  &:active,
-  &:hover,
-  &.focus,
-  &.active {
-    background: var(--primary-color, $primary-color) !important;
-    border-color: var(--primary-color, $primary-color) !important;
-    color: var(--primary-bg-color, $white);
+  &:hover {
+    background-color: var(--secondary-color);
+    color: #fff;
+  }
+}
+
+// Read More Button specifically
+.btn-read-more {
+  // Maybe just a text link with arrow?
+  background: transparent;
+  color: var(--primary-color);
+  padding: 0;
+  border: none;
+  font-weight: 700;
+
+  &:hover {
+    background: transparent;
+    color: var(--secondary-color);
+    text-decoration: underline;
   }
 }

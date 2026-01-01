@@ -1,0 +1,83 @@
+{{ define "main" }}
+<div class="links-page">
+  <section class="section-sm">
+    <div class="container">
+      <div class="row">
+        <!-- Sidebar Navigation -->
+        <div class="col-lg-3 d-none d-lg-block">
+          <div class="sticky-sidebar">
+            <h4 class="mb-4">快速導覽</h4>
+            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+              {{ range .Site.Data.links }}
+              <a class="nav-link font-weight-bold text-dark mb-2" href="#{{ .category | urlize }}">{{ .category }}</a>
+              <div class="pl-3 mb-3">
+                {{ range .links }}
+                <a class="nav-link py-1 text-muted small" href="{{ .url | safeURL }}" target="_blank" rel="noopener">{{
+                  .title }} <i class="fas fa-external-link-alt fa-xs text-black-50 ml-1"></i></a>
+                {{ end }}
+              </div>
+              {{ end }}
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9">
+          <div class="row">
+            <div class="col-lg-12">
+              <h2 class="section-title">{{ .Title }}</h2>
+              <div class="content mb-5">
+                {{ .Content }}
+              </div>
+
+              {{ $colors := slice "primary" "success" "warning" "danger" "info" }}
+              {{ range $index, $element := .Site.Data.links }}
+              {{ $color := index $colors (mod $index (len $colors)) }}
+
+              <div class="row mb-5" id="{{ .category | urlize }}">
+                <div class="col-12">
+                  <h3 class="mb-4 text-{{ $color }} border-bottom pb-2">{{ .category }}</h3>
+                </div>
+                {{ range .links }}
+                <div class="col-md-4 col-sm-6 mb-4" id="{{ .title | urlize }}">
+                  <div class="card h-100 border-{{ $color }} link-card" style="border-width: 2px;">
+                    <div class="card-body text-center d-flex flex-column">
+                      <a href="{{ .url | safeURL }}" target="_blank" rel="noopener"
+                        class="text-decoration-none stretched-link">
+                        {{ $currentImagePath := "" }}
+                        {{ $defaultImageName := printf "%s.png" .title }}
+                        {{ $defaultImagePath := printf "/images/%s" $defaultImageName }}
+
+                        {{ if fileExists (printf "static%s" $defaultImagePath) }}
+                        {{ $currentImagePath = $defaultImagePath }}
+                        {{ else if eq .title "財政部稅務入口網" }}
+                        {{ $alternativeImagePath := "/images/財政部稅務入口網土地增值稅試算.png" }}
+                        {{ if fileExists (printf "static%s" $alternativeImagePath) }}
+                        {{ $currentImagePath = $alternativeImagePath }}
+                        {{ end }}
+                        {{ end }}
+
+                        {{ if $currentImagePath }}
+                        <img loading="lazy" src="{{ $currentImagePath | absURL }}" alt="{{ .title }}"
+                          class="img-fluid mb-3 link-icon">
+                        {{ end }}
+                        <h4 class="card-title text-dark">{{ .title }}</h4>
+                      </a>
+                      <p class="card-text text-muted mb-4 small">{{ .description }}</p>
+                      <a href="{{ .url | safeURL }}" target="_blank" rel="noopener"
+                        class="btn btn-outline-{{ $color }} btn-sm mt-auto position-relative z-index-2">前往連結</a>
+                    </div>
+                  </div>
+                </div>
+                {{ end }}
+              </div>
+              {{ end }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{{ end }}

@@ -1,750 +1,106 @@
-/* ==========================================
-   第一部分：文章卡片設計（統一顏色）
-   ========================================== */
-/* 文章卡片 - 強化版（無描述，增加動畫感） */
-.article-card, .card, .post-item, .article-preview {
-  position: relative;
-  margin-bottom: 28px;
-  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease-in-out;
-  border: none;
-  background: var(--primary-bg-color, var(--light-bg));
-  backdrop-filter: blur(12px);
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: var(--shadow-light);
-}
+/* Cozy Editorial Post Styles */
 
-.article-card:hover {
-  transform: translateY(-12px) scale(1.05) rotateX(8deg) rotateY(3deg);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-}
-
-/* 卡片圖片 */
-.card-img-top, .post-thumb img {
-  height: 220px;
-  width: 100%;
-  object-fit: cover;
-  border-radius: 12px 12px 0 0;
-  filter: brightness(0.95);
-  transition: all 0.6s ease-in-out;
-}
-
-.article-card:hover .card-img-top,
-.article-card:hover .post-thumb img {
-  filter: brightness(1.1);
-  transform: scale(1.1) rotate(2deg);
-}
-
-/* 卡片內容 */
-.card-body, .post-content {
-  padding: 24px;
-  text-align: center;
-  transition: transform 0.3s ease-in-out;
-}
-
-.article-card:hover .card-body {
-  transform: translateY(-6px);
-}
-
-/* 隱藏描述文字 */
-.card-text, .post-description {
-  display: none;
-}
-
-/* 分類標籤 - 改進版本 */
-.post-categories a {
-  display: inline-block;
-  padding: 6px 12px;
-  background: var(--primary-color);  /* 純色背景，不用漸變 */
-  color: white !important;           /* 確保文字是白色 */
+// Cards look like stationery or clean paper
+.article-card,
+.card,
+.post-item,
+.article-preview {
+  background: var(--secondary-bg-color, #FFFFFF);
+  border: 1px solid var(--border-color); // Subtle border
   border-radius: 8px;
+  padding: 0;
+  margin-bottom: 40px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02); // Almost flat
+
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY(-4px); // Gentle lift
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+      border-color: var(--primary-color);
+    }
+  }
+}
+
+.card-img-top,
+.post-thumb img {
+  border-radius: 8px 8px 0 0;
+  // Sepia filter for "old photo" vibe? Maybe too much. Let's keep natural.
+  transition: filter 0.3s;
+}
+
+.card-body,
+.post-content {
+  padding: 30px; // Generous padding
+}
+
+// Categories - Tags look like labels
+.post-categories a,
+.badge,
+.category-badge {
+  background: var(--tag-bg);
+  color: var(--primary-text-color) !important;
+  font-family: $secondary-font;
   font-size: 12px;
-  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border-radius: 4px; // Small radius
   text-transform: uppercase;
-  text-decoration: none;
-  transition: all 0.3s ease-in-out;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* 增加陰影提高可見度 */
-  letter-spacing: 0.5px;             /* 增加字間距 */
+  font-weight: 500;
+
+  &:hover {
+    background: var(--primary-color);
+    color: #fff !important;
+  }
 }
 
-.post-categories a:hover {
-  background: var(--primary-hover);
-  /* 💡 修正一：解決白天滑過去變全白看不到的問題 */
-  color: var(--primary-text-color, #333) !important;
-  transform: translateY(-4px) scale(1.1);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* 標題 */
+// Titles - Elegant
 .card-title a {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--primary-text-color, var(--light-text));
-  text-decoration: none;
-  transition: color 0.4s ease-in-out;
+  font-family: $primary-font; // Serif
+  font-size: 24px;
+  color: var(--widget-title-color);
+  line-height: 1.4;
+
+  &:hover {
+    color: var(--secondary-color); // Terracotta on hover
+  }
 }
 
-.card-title a:hover {
-  color: var(--primary-color);
-  letter-spacing: 0.5px;
-}
-
-/* 元數據 */
+// Meta - Clean
 .card-meta {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 14px;
-  color: var(--secondary-text-color, var(--light-text-muted));
-  margin-top: 10px;
+  font-family: $secondary-font;
+  font-size: 13px;
+  color: var(--secondary-text-color);
+  margin-top: 15px;
+  border-top: 1px dashed var(--border-color);
+  padding-top: 15px;
 }
 
-.card-meta img {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  margin-right: 10px;
-  object-fit: cover;
-  transition: transform 0.3s ease-in-out;
-}
+// Article List (Sidebar/Mini)
+.article-list .list-group-item {
+  background: transparent;
+  border-bottom: 1px solid var(--border-color);
+  padding: 15px 0;
 
-.card-meta img:hover {
-  transform: scale(1.1) rotate(5deg);
-}
-
-/* ==========================================
-   第二部分：文章內容頁面靠左對齊（強化版）
-   ========================================== */
-/* 強化版文章靠左對齊 - 增加選擇器優先級 */
-body .single-post .entry-content,
-body .post-template .post-content,
-body .article-page .article-body,
-body .blog-post-content,
-body .wordpress-post-content,
-body .page-content,
-body.single article .entry-content,
-body .post-full-content,
-body .content-single,
-body main article .entry-content,
-body main .article-content,
-body .content-area article,
-body .site-main article,
-body .main-content article {
-  text-align: left !important;
-  display: block !important;
-  align-items: flex-start !important;
-  justify-content: flex-start !important;
-}
-
-/* 針對單獨元素強化靠左對齊 */
-body article p,
-body article ul,
-body article ol,
-body article li,
-body article h1,
-body article h2,
-body article h3,
-body article h4,
-body article h5,
-body article h6,
-body article figure,
-body article table,
-body article blockquote,
-body article pre,
-body article code,
-body .entry-content p, 
-body .post-content p,
-body .article-body p,
-body .blog-post-content p,
-body .entry-content ul, 
-body .entry-content ol,
-body .entry-content h1,
-body .entry-content h2,
-body .entry-content h3,
-body .entry-content h4,
-body .entry-content h5,
-body .entry-content h6,
-body .entry-content blockquote,
-body .entry-content pre,
-body .wp-block-paragraph {
-  text-align: left !important;
-}
-
-/* 修正可能的flex容器問題 */
-body article .entry-content,
-body .post-content,
-body .article-body,
-body .blog-post-content,
-body main article {
-  display: block !important;
-}
-
-/* 確保內容容器不會被外部強制置中 */
-body .content-wrapper,
-body .site-content,
-body .content-area,
-body .site-main,
-body main {
-  align-items: stretch !important;
-  text-align: left !important;
-}
-
-/* 確保引用、代碼塊等特殊元素也是左對齊 */
-body .entry-content blockquote,
-body .post-content blockquote,
-body .article-body blockquote,
-body .blog-post-content blockquote,
-body .entry-content pre,
-body .post-content pre,
-body .article-body pre,
-body .blog-post-content pre,
-body article blockquote,
-body article pre {
-  text-align: left !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-}
-
-/* 針對標題元素強化靠左對齊 */
-body .entry-content h1,
-body .post-content h1,
-body .article-body h1,
-body .blog-post-content h1,
-body .entry-content h2,
-body .post-content h2,
-body .article-body h2,
-body .blog-post-content h2,
-body .entry-content h3,
-body .post-content h3,
-body .article-body h3,
-body .blog-post-content h3,
-body .entry-content h4,
-body .post-content h4,
-body .article-body h4,
-body .blog-post-content h4,
-body .entry-content h5,
-body .post-content h5,
-body .article-body h5,
-body .blog-post-content h5,
-body .entry-content h6,
-body .post-content h6,
-body .article-body h6,
-body .blog-post-content h6,
-body article h1,
-body article h2,
-body article h3,
-body article h4,
-body article h5,
-body article h6 {
-  text-align: left !important;
-}
-
-/* ==========================================
-   第三部分：文章導航樣式（統一顏色）
-   ========================================== */
-.post-navigation {
-  margin: 3rem 0;
-  padding-top: 2rem;
-  border-top: 1px solid var(--border-color, var(--border-light));
-  
-  span {
-    display: block;
-    font-size: 0.9rem;
-    color: var(--secondary-text-color, var(--light-text-muted));
-    margin-bottom: 0.5rem;
+  &:last-child {
+    border-bottom: none;
   }
-  
-  h5 {
-    margin: 0;
-    transition: color 0.3s ease;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
-  a {
-    text-decoration: none;
-    
-    &:hover {
-      h5 {
-        color: var(--primary-color);
-      }
-    }
-  }
-  
-  .prev-post {
-    padding-right: 1rem;
-  }
-  
-  .next-post {
-    padding-left: 1rem;
-    text-align: right;
-  }
-}
 
-/* 綜合導航區 */
-.navigation-container {
-  margin: 3rem 0;
-  
-  .post-navigation {
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border-color, var(--border-light));
-    
-    .prev-post, .next-post {
-      padding: 1rem;
-      transition: transform 0.3s ease;
-      
-      &:hover {
-        transform: translateY(-3px);
-      }
-      
-      span {
-        font-size: 0.85rem;
-        color: var(--secondary-text-color, var(--light-text-muted));
-        margin-bottom: 0.5rem;
-        display: block;
-      }
-      
-      h5 {
-        font-weight: 600;
-        margin: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      
-      a {
-        text-decoration: none;
-        color: inherit;
-        
-        &:hover {
-          color: var(--primary-color);
-        }
-      }
-    }
-    
-    .next-post {
-      text-align: right;
-    }
-  }
-  
-  .navigation-tabs {
-    .nav-tabs {
-      border-bottom: 2px solid var(--border-color, var(--border-light));
-      
-      .nav-link {
-        border: none;
-        padding: 0.75rem 1.5rem;
-        font-weight: 500;
-        color: var(--secondary-text-color, var(--light-text-muted));
-        
-        &.active {
-          color: var(--primary-color);
-          background-color: transparent;
-          border-bottom: 2px solid var(--primary-color);
-          margin-bottom: -2px;
-        }
-        
-        &:hover {
-          color: var(--primary-color);
-          border-color: transparent;
-        }
-      }
-    }
-    
-    .post-item {
-      padding: 0.75rem;
-      border-radius: 4px;
-      transition: background-color 0.3s ease;
-      
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.03);
-      }
-      
-      a {
-        display: block;
-        text-decoration: none;
-        color: var(--primary-text-color, var(--light-text));
-        margin-bottom: 0.25rem;
-        font-weight: 500;
-        
-        &:hover {
-          color: var(--primary-color);
-        }
-      }
-      
-      small {
-        color: var(--secondary-text-color, var(--light-text-muted));
-        font-size: 0.8rem;
-      }
-    }
-  }
-}
-
-/* ==========================================
-   第四部分：條列式文章列表樣式（統一顏色）
-   ========================================== */
-.article-list {
-  .list-group-item {
-    padding: 1rem 0;
+  &:hover {
     background: transparent;
-    border-bottom: 1px solid var(--border-color, var(--border-light));
-    transition: background-color 0.3s ease;
-    
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.02);
-    }
-    
-    &:last-child {
-      border-bottom: none !important;
-    }
-  }
-  
-  .article-link {
-    color: var(--primary-text-color, var(--light-text));
-    text-decoration: none;
-    transition: color 0.3s;
-    
-    h4 {
-      margin-bottom: 0;
-      transition: transform 0.3s ease, color 0.3s ease;
-    }
-    
-    &:hover {
-      color: var(--primary-color);
-      
-      h4 {
-        transform: translateX(5px);
-      }
-    }
-  }
-  
-  /* 修正分類標籤樣式 */
-  .badge, .category-badge {
-    display: inline-block;
-    padding: 5px 10px;                 /* 增加內邊距 */
-    background-color: var(--primary-color);
-    color: white !important;           /* 確保文字是白色 */
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin-right: 5px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15); /* 增加陰影 */
-    letter-spacing: 0.5px;             /* 增加字間距 */
-    border: none;                      /* 移除邊框 */
-  }
 
-  .badge:hover, 
-  .category-badge:hover {
-    background-color: var(--primary-hover);
-    /* 💡 修正一：解決白天滑過去變全白看不到的問題 */
-    color: var(--primary-text-color, #333) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .text-muted {
-    font-size: 0.9rem;
-    color: var(--secondary-text-color, var(--light-text-muted)) !important;
+    // Highlight title instead
+    .article-link h4 {
+      color: var(--secondary-color);
+    }
   }
 }
 
-/* ==========================================
-   第五部分：科幻UI風格文章列表樣式（統一顏色）
-   ========================================== */
-.article-list-scifi {
-  .list-group-item {
-    padding: 1.5rem;
-    background: var(--dark-bg);
-    border: none;
-    border-radius: 0;
-    margin-bottom: 1rem;
-    transition: all 0.3s ease;
-    position: relative;
-    clip-path: polygon(
-      0 0,
-      calc(100% - 15px) 0,
-      100% 15px,
-      100% 100%,
-      15px 100%,
-      0 calc(100% - 15px)
-    );
-    
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 15px;
-      height: 15px;
-      background: var(--accent-color);
-      clip-path: polygon(0 0, 100% 0, 100% 100%);
-    }
-    
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 15px;
-      height: 15px;
-      background: var(--accent-color);
-      clip-path: polygon(0 0, 100% 100%, 0 100%);
-    }
-    
-    &:hover {
-      background: rgba(15, 23, 42, 0.9);
-      box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
-      transform: translateX(5px);
-      
-      &::before, &::after {
-        background: var(--accent-hover);
-      }
-    }
-  }
-  
-  .article-meta {
-    border-bottom: 1px solid rgba(16, 185, 129, 0.3);
-    padding-bottom: 0.75rem;
-    margin-bottom: 0.75rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .article-link {
-    color: var(--dark-text);
-    text-decoration: none;
-    display: block;
-    
-    h4 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 0;
-      font-family: 'Rajdhani', sans-serif;
-      letter-spacing: 0.5px;
-      transition: all 0.3s ease;
-      position: relative;
-      padding-left: 1rem;
-      
-      &::before {
-        content: '>';
-        position: absolute;
-        left: 0;
-        color: var(--accent-color);
-        opacity: 0;
-        transform: translateX(-5px);
-        transition: all 0.3s ease;
-      }
-    }
-    
-    &:hover h4 {
-      color: var(--accent-color);
-      padding-left: 1.5rem;
-      
-      &::before {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-  }
-  
-  .badge, .category-badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    background: var(--accent-color);   /* 使用純色背景 */
-    color: white !important;           /* 確保文字是白色 */
-    border: none;                      /* 移除邊框 */
-    border-radius: 0;
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin-right: 0.5rem;
-    font-family: 'Rajdhani', sans-serif;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    clip-path: polygon(
-      5px 0,
-      100% 0,
-      100% calc(100% - 5px),
-      calc(100% - 5px) 100%,
-      0 100%,
-      0 5px
-    );
-    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3); /* 增加發光效果 */
-    transition: all 0.3s ease;
-  }
-
-  .badge:hover, 
-  .category-badge:hover {
-    background: var(--accent-hover);
-    color: white !important;
-    box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
-    transform: translateY(-2px);
-  }
-  
-  .text-muted {
-    font-size: 0.85rem;
-    color: var(--dark-text-muted) !important;
-    font-family: 'Share Tech Mono', monospace;
-  }
-  
-  .article-preview {
-    color: #d4d4d8;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    font-family: 'Rajdhani', sans-serif;
-    border-left: 2px solid rgba(16, 185, 129, 0.3);
-    padding-left: 1rem;
-  }
-}
-
-
-/* ==========================================
-   第六部分：文章內容頁面樣式（統一顏色）
-   ========================================== */
-.post-content-area {
-  h1, h2, h3, h4, h5, h6 {
-    color: var(--primary-text-color, var(--light-text));
-    margin-top: 2rem;
-    margin-bottom: 1rem;
-    font-weight: 700;
-    
-    &:first-child {
-      margin-top: 0;
-    }
-  }
-  
+// Content Area
+.content-area {
   p {
-    color: var(--secondary-text-color, var(--light-text-muted));
-    line-height: 1.8;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.8rem;
   }
-  
-  a {
-    color: var(--primary-color);
-    text-decoration: none;
-    transition: all 0.3s ease;
-    
-    &:hover {
-      color: var(--primary-hover);
-      text-decoration: underline;
-    }
-  }
-  
-  ul, ol {
-    padding-left: 1.2rem;
-    margin-bottom: 1.5rem;
-    
-    li {
-      color: var(--secondary-text-color, var(--light-text-muted));
-      margin-bottom: 0.75rem;
-      line-height: 1.8;
-    }
-  }
-  
-  blockquote {
-    border-left: 4px solid var(--accent-color);
-    padding: 1rem 1.5rem;
-    margin: 2rem 0;
-    background: rgba(16, 185, 129, 0.05);
-    border-radius: 0 8px 8px 0;
-    
-    p {
-      margin: 0;
-      font-style: italic;
-      color: var(--primary-text-color, var(--light-text));
-    }
-  }
-  
-  pre {
-    background: #1e293b;
-    color: #e2e8f0;
-    padding: 1.5rem;
-    border-radius: 8px;
-    overflow-x: auto;
-    margin: 2rem 0;
-    
-    code {
-      font-family: 'Fira Code', 'Courier New', monospace;
-      background: transparent;
-      padding: 0;
-      color: inherit;
-    }
-  }
-  
-  table {
-    width: 100%;
-    margin: 2rem 0;
-    border-collapse: collapse;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    border-radius: 8px;
-    overflow: hidden;
-    
-    th, td {
-      padding: 1rem 1.25rem;
-      text-align: left;
-      border-bottom: 2px solid var(--border-color, #888);
-    }
-    
-    thead {
-      background: var(--secondary-bg-color, #f8f9fa);
-      
-      th {
-        font-weight: 600;
-        color: var(--primary-text-color, var(--light-text));
-        border-bottom-width: 3px;
-      }
-    }
-    
-    tbody {
-      tr {
-        transition: background-color 0.3s ease;
-        
-        &:hover {
-          background-color: rgba(0, 0, 0, 0.02);
-        }
-        
-        &:last-child {
-          td {
-            border-bottom: none;
-          }
-        }
-      }
-    }
-  }
-  
-  img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin: 2rem 0;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  }
-}
 
-/* ==========================================
-   第七部分：Dark Mode 標籤可視性修正（新增）
-   ========================================== */
-/* 💡 修正二：解決黑夜模式下標籤對比度不足的問題（假設 Dark Mode 類別為 .dark-mode） */
-
-/* 針對文章卡片標籤 (未 Hover) */
-.dark-mode .post-categories a,
-/* 針對條列式列表標籤 (未 Hover) */
-.dark-mode .article-list .badge, 
-.dark-mode .article-list .category-badge {
-  /* 覆蓋掉在深色主題中對比不足的 primary-color，改用高對比的 accent-color */
-  background: var(--accent-color, #10b981) !important; 
-  color: white !important; 
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); 
-  border: 1px solid var(--accent-color, #10b981); 
-}
-
-/* 確保 Dark Mode Hover 效果依然清晰且保持動畫 */
-.dark-mode .post-categories a:hover,
-.dark-mode .article-list .badge:hover, 
-.dark-mode .article-list .category-badge:hover {
-  background: var(--accent-hover, #059669) !important; 
-  color: white !important;
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.7);
+  // First letter big? (Drop cap) - Optional, maybe later.
 }

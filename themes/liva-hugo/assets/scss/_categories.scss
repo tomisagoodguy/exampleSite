@@ -1,0 +1,139 @@
+/* Category Cards Styling */
+.category-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--secondary-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    transition: all 0.3s ease;
+    height: 100%;
+    text-decoration: none !important;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.08);
+        border-color: var(--primary-color);
+
+        .category-name {
+            color: var(--primary-color);
+        }
+
+        .category-count {
+            background-color: var(--primary-color);
+            color: $white;
+        }
+    }
+
+    .category-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: var(--secondary-text-color);
+        transition: color 0.3s ease;
+    }
+
+    .category-name {
+        font-family: $primary-font;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--primary-text-color);
+        margin-bottom: 0.5rem;
+        text-align: center;
+        transition: color 0.3s ease;
+    }
+
+    .category-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--footer-bg-color);
+        color: var(--secondary-text-color);
+        border-radius: 20px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+
+        &::before {
+            content: "Total posts: ";
+            margin-right: 4px;
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+    }
+}
+
+/* Slick Slider Styles */
+.category-slider {
+    margin: 0 -10px;
+    /* Offset padding on slides */
+
+    .slick-list {
+        margin: 0;
+    }
+}
+
+.slick-prev,
+.slick-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    z-index: 10;
+    font-size: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+    &:hover {
+        background-color: darken(#6B9080, 10%);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    &::before {
+        font-family: "themify";
+        font-size: 18px;
+        color: white;
+        display: block;
+        line-height: 40px;
+        text-align: center;
+    }
+}
+
+.slick-prev {
+    left: -15px;
+
+    &::before {
+        content: "\e629";
+        /* ti-angle-left */
+    }
+}
+
+.slick-next {
+    right: -15px;
+
+    &::before {
+        content: "\e628";
+        /* ti-angle-right */
+    }
+}
+
+/* Adjust for mobile to prevent arrows overlapping content */
+@media (max-width: 768px) {
+    .slick-prev {
+        left: 0;
+    }
+
+    .slick-next {
+        right: 0;
+    }
+}

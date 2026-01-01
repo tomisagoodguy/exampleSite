@@ -1,12 +1,13 @@
 {{ define "main" }}
-<section class="section-sm">
+<section class="section-sm about-page-section">
     <div class="container">
-        <div class="row align-items-start">
+        <div class="row">
             <!-- Profile Sidebar -->
             <div class="col-lg-4 col-md-5 mb-4 mb-md-0">
                 <div class="profile-sidebar sticky-top">
                     {{ if .Params.Image }}
-<img loading="lazy" src="{{ .Params.Image | absURL }}" alt="{{ .Title }}" class="img-fluid w-100 rounded-lg shadow-sm">
+                    <img loading="lazy" src="{{ .Params.Image | absURL }}" alt="{{ .Title }}"
+                        class="img-fluid w-100 rounded-lg shadow-sm">
                     {{ end }}
                     <h4 class="mt-4">{{ .Title | markdownify }}</h4>
                     <p>熱愛學習新知、運動、程式、INTJ</p>
@@ -14,7 +15,8 @@
                     <!-- Social Links -->
                     <ul class="list-inline social-links mt-3">
                         {{ range .Site.Params.social }}
-                        <li class="list-inline-item"><a href="{{ .link | safeURL }}" target="_blank" rel="noopener noreferrer"><i class="{{ .icon }}"></i></a></li>
+                        <li class="list-inline-item"><a href="{{ .link | safeURL }}" target="_blank"
+                                rel="noopener noreferrer"><i class="{{ .icon }}"></i></a></li>
                         {{ end }}
                     </ul>
 
@@ -22,7 +24,8 @@
                     <div class="line-qr-code mt-4">
                         <h5 class="mb-3">Line</h5>
                         <a href="{{ `images/line.jpg` | absURL }}" class="venobox">
-<img loading="lazy" src="{{ `images/line.jpg` | absURL }}" alt="LINE QR Code - Click to view" class="img-fluid w-100 rounded-lg shadow-sm">
+                            <img loading="lazy" src="{{ `images/line.jpg` | absURL }}"
+                                alt="LINE QR Code - Click to view" class="img-fluid w-100 rounded-lg shadow-sm">
                         </a>
                     </div>
                 </div>
@@ -31,9 +34,71 @@
             <!-- Main Content -->
             <div class="col-lg-8 col-md-7">
                 <div class="main-content">
-                    <div class="content mb-5">
-                        <h3 class="mb-4">關於我</h3>
-                        {{ .Content }}
+                    <!-- Premium Identity Cards Section -->
+                    <div class="identity-cards-wrapper mb-5">
+                        <div class="premium-card-grid">
+                            <!-- Professional Card -->
+                            <div class="premium-card professional">
+                                <div class="card-icon-box">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div class="card-body-content">
+                                    <span class="card-tag">地政士 x 經紀人</span>
+                                    <h3 class="card-title">數據驅動的產權顧問</h3>
+                                    <p class="card-text">善用數據思維處理複雜稅務規劃，致力於 PropTech 實踐，讓專業更有視覺力。</p>
+                                </div>
+                                <div class="card-footer-glow"></div>
+                            </div>
+
+                            <!-- Tech Card -->
+                            <div class="premium-card tech">
+                                <div class="card-icon-box">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                                <div class="card-body-content">
+                                    <span class="card-tag">Python x VBA</span>
+                                    <h3 class="card-title">PropTech 實踐者</h3>
+                                    <p class="card-text">擅長自動化處理案件管理與稅務計算。將枯燥數據轉化為高效、直觀的決策工具。</p>
+                                </div>
+                                <div class="card-footer-glow"></div>
+                            </div>
+
+                            <!-- Lifestyle Card -->
+                            <div class="premium-card lifestyle">
+                                <div class="card-icon-box">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                <div class="card-body-content">
+                                    <span class="card-tag">歐陸料理實驗</span>
+                                    <h3 class="card-title">精準與感性的平衡</h3>
+                                    <p class="card-text">在廚房實驗食材組合，追求精準與美感的平衡。烹飪與開發一樣，都是邏輯與藝術的交織。</p>
+                                </div>
+                                <div class="card-footer-glow"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content about-content-minimal mb-5">
+                        <h4 class="section-subtitle">關於我</h4>
+                        <div class="section-divider-long"></div>
+
+                        <div class="about-main-card premium-card mb-4">
+                            <div class="intro-text">
+                                {{ .Content }}
+                            </div>
+                        </div>
+
+                        <div class="contact-card premium-card">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="card-icon-box mb-0">
+                                    <i class="fas fa-envelope-open-text"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">與我聯繫</h5>
+                                    <p class="mb-0 text-muted">如果你有不動產稅務問題，或想交流自動化技術，歡迎隨時聯絡！</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Experience -->
@@ -52,7 +117,8 @@
                                     <h5 class="timeline-year">2024</h5>
                                     <h6>專業認證與持續成長</h6>
                                     <ul class="list-unstyled mb-0">
-                                        <li><strong>台北市職能發展學院python應用實戰班</strong> &rarr; <strong>TQC人工智慧應用與技術</strong></li>
+                                        <li><strong>台北市職能發展學院python應用實戰班</strong> &rarr; <strong>TQC人工智慧應用與技術</strong>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
@@ -102,10 +168,19 @@
                                 <li>報告撰寫</li>
                                 <li>簡報技巧</li>
                             </ul>
-                            <p class="mt-3">實務工作中，我製作了『交屋稅費分算試算表』、『房地拆價試算表』與『履保結餘款分配明細表』，旨在自動化計算買賣雙方的各項稅費、合理分配房地價值與結餘款，藉此提升交易效率並簡化繁瑣的代書流程。</p>
-                            <a href="/uploads/交屋稅費計算機pro2025.xlsm" class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener noreferrer">下載『交屋稅費分算試算表』</a>
-                            <a href="/uploads/房地拆價試算表.xlsm" class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener noreferrer">下載『房地拆價試算表』</a>
-                            <a href="/uploads/履保結餘款(4~10人)分配明細表.xlsm" class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener noreferrer">下載『履保結餘款分配明細表』</a>
+                            <p class="mt-3">實務工作中，我製作了多款自動化計算工具，旨在提升交易效率並簡化繁瑣的代書流程。</p>
+
+                            <h6 class="mt-4 mb-3">常用地政工具下載</h6>
+                            <div class="d-flex flex-wrap" style="gap: 10px;">
+                                <a href="/uploads/土地持分相加擴分計算.xlsm" class="btn btn-outline-primary btn-sm"
+                                    target="_blank" rel="noopener noreferrer">下載『土地持分相加擴分計算』</a>
+                                <a href="/uploads/交屋稅費計算機pro2025.xlsm" class="btn btn-outline-primary btn-sm"
+                                    target="_blank" rel="noopener noreferrer">下載『交屋稅費計算機pro2025』</a>
+                                <a href="/uploads/履保結餘款(4~10人)分配明細表.xlsm" class="btn btn-outline-primary btn-sm"
+                                    target="_blank" rel="noopener noreferrer">下載『履保結餘款分配明細表』</a>
+                                <a href="/uploads/房地拆價試算表.xlsm" class="btn btn-outline-primary btn-sm" target="_blank"
+                                    rel="noopener noreferrer">下載『房地拆價試算表』</a>
+                            </div>
                         </div>
                         <div class="skill-category">
                             <h5 class="skill-title"><i class="fas fa-code"></i>程式開發</h5>
@@ -135,7 +210,8 @@
                     <div class="github-projects">
                         <h3 class="mb-4">Projects</h3>
                         <div class="github-project-card">
-                            <a href="https://github.com/tomisagoodguy/taiwan_essay_download?tab=readme-ov-file" target="_blank" class="github-link">
+                            <a href="https://github.com/tomisagoodguy/taiwan_essay_download?tab=readme-ov-file"
+                                target="_blank" class="github-link">
                                 <i class="fab fa-github"></i> 臺灣博碩士論文網自動下載器
                             </a>
                             <p class="project-description">

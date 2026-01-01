@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房地稅務全方位系統 </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        .font-header {
+            font-weight: bold;
+            color: #203764;
+        }
+
+        /* 模擬 Excel 樣式 */
+        .step-header {
+            background-color: #4472C4;
+            color: white;
+            font-weight: bold;
+            padding: 10px;
+            font-size: 1.1em;
+            border: 1px solid #333;
+        }
+
+        /* 輸入欄位 */
+        .input-label {
+            background-color: #FFF2CC;
+            border: 1px solid #BF9000;
+            font-weight: bold;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-field {
+            background-color: #FFFFE0;
+            border: 1px solid #BF9000;
+            color: blue;
+            font-weight: bold;
+            padding: 8px;
+            text-align: right;
+            width: 100%;
+            font-size: 1.1em;
+        }
+
+        .user-fill {
+            background-color: #FFFF99;
+            border: 2px solid #FF0000;
+            color: #FF0000;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* 結果欄位與標題 */
+        .row-header {
+            background-color: #E7E6E6;
+            color: #333;
+            font-weight: bold;
+            text-align: center;
+            border: 1px solid #999;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 綠色系 (一般個人) */
+        .res-green {
+            background-color: #E2EFDA;
+            border: 1px solid #548235;
+            color: #385723;
+            font-weight: bold;
+            text-align: right;
+            padding: 8px;
+        }
+
+        /* 藍色系 (公司法人) */
+        .res-blue {
+            background-color: #DDEBF7;
+            border: 1px solid #9BC2E6;
+            color: #1F4E78;
+            font-weight: bold;
+            text-align: right;
+            padding: 8px;
+        }
+
+        /* 算式顯示 */
+        .formula-display {
+            background-color: #F2F2F2;
+            color: #595959;
+            font-size: 0.9em;
+            text-align: right;
+            padding: 4px 8px;
+            border: 1px solid #D9D9D9;
+        }
+
+        /* 最終稅額 */
+        .tax-res {
+            background-color: #FCE4D6;
+            color: #C00000;
+            font-weight: bold;
+            font-size: 1.3em;
+            text-align: right;
+            padding: 10px;
+            border: 2px solid #C00000;
+        }
+
+        .unit {
+            color: gray;
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
+
+        /* 費用表 */
+        .exp-header {
+            background-color: #FFD966;
+            font-weight: bold;
+            text-align: center;
+            border: 1px solid #333;
+            padding: 5px;
+        }
+
+        .exp-item {
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto bg-white p-6 shadow-lg rounded-lg">
+        <h1 class="text-3xl font-header mb-6 border-b-2 border-blue-800 pb-2">房屋土地拆價及財產交易所得稅計算工具 </h1>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- 左側主要計算區 -->
+            <div class="lg:col-span-2 space-y-8">
+
+                <!-- Step 1 -->
+                <div class="section">
+                    <div class="step-header flex justify-between items-center">
+                        <span>步驟 1：基礎資料輸入</span>
+                        <button onclick="resetAll()"
+                            class="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1 rounded shadow">
+                            清除所有資料
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-12 gap-2 mt-4">
+                        <div class="col-span-4 input-label">土地公告現值 (L)</div>
+                        <div class="col-span-5"><input type="number" id="L" class="input-field" value="0"
+                                oninput="calculate()"></div>
+                        <div class="col-span-3 flex items-center unit">元</div>
+
+                        <div class="col-span-4 input-label">建物評定現值 (B)</div>
+                        <div class="col-span-5"><input type="number" id="B" class="input-field" value="0"
+                                oninput="calculate()"></div>
+                        <div class="col-span-3 flex items-center unit">元</div>
+
+                        <div class="col-span-4 input-label">成交總價 (T)</div>
+                        <div class="col-span-5"><input type="number" id="T" class="input-field" value="0"
+                                oninput="calculate()"></div>
+                        <div class="col-span-3 flex items-center unit">元</div>
+
+                        <div class="col-span-4 input-label">車位價格 (C)</div>
+                        <div class="col-span-5"><input type="number" id="C" class="input-field" value="0"
+                                oninput="calculate()"></div>
+                        <div class="col-span-3 flex items-center unit">元</div>
+
+                        <div class="col-span-4 row-header">★ 房地比 (精確值)</div>
+                        <div class="col-span-5 res-green text-center" id="Ratio_Display">0.00%</div>
+                        <div class="col-span-3 flex items-center unit">顯示2位，運算採完整精度</div>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="section">
+                    <div class="step-header">步驟 2：房地拆價 (完整算式)</div>
+                    <div class="grid grid-cols-12 gap-2 mt-4">
+                        <div class="col-span-3"></div>
+                        <div class="col-span-4 row-header">一般個人 (未稅)</div>
+                        <div class="col-span-5 row-header">法人/公司 (含稅)</div>
+
+                        <!-- 建物 -->
+                        <div class="col-span-3 input-label">建物價格</div>
+                        <div class="col-span-4 res-green" id="Res_B_Gen">0</div>
+                        <div class="col-span-5 res-blue" id="Res_B_Corp">0</div>
+
+                        <div class="col-span-3 text-right text-gray-500 text-sm py-1">算式展開：</div>
+                        <div class="col-span-4 formula-display" id="Formula_B_Gen"></div>
+                        <div class="col-span-5 formula-display" id="Formula_B_Corp"></div>
+
+                        <!-- 土地 -->
+                        <div class="col-span-3 input-label">土地價格</div>
+                        <div class="col-span-4 res-green" id="Res_L_Gen">0</div>
+                        <div class="col-span-5 res-blue" id="Res_L_Corp">0</div>
+
+                        <div class="col-span-3 text-right text-gray-500 text-sm py-1">算式展開：</div>
+                        <div class="col-span-4 formula-display" id="Formula_L_Gen"></div>
+                        <div class="col-span-5 formula-display" id="Formula_L_Corp"></div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="section">
+                    <div class="step-header">步驟 3：所得計算 (三選一)</div>
+
+                    <!-- A. 核實 -->
+                    <div class="mt-4 border border-blue-200 rounded overflow-hidden">
+                        <div class="bg-blue-100 p-2 font-bold border-b border-blue-200">A. 核實認定 (售價 - 成本 - 費用)</div>
+                        <div class="grid grid-cols-12 gap-2 p-2">
+                            <div class="col-span-4 input-label">原始取得成本</div>
+                            <div class="col-span-5"><input type="number" id="Cost_Orig" class="input-field" value="0"
+                                    oninput="calculate()"></div>
+                            <div class="col-span-3 flex items-center unit">費用自動扣除</div>
+
+                            <div class="col-span-4 row-header">★ 核實所得額</div>
+                            <div class="col-span-5 res-green" id="Income_A">0</div>
+                            <div class="col-span-3"></div>
+
+                            <div class="col-span-4 row-header">驗算算式</div>
+                            <div class="col-span-8 formula-display" id="Formula_Income_A"></div>
+                        </div>
+                    </div>
+
+                    <!-- B. 標準 -->
+                    <div class="mt-4 border border-blue-200 rounded overflow-hidden">
+                        <div class="bg-blue-100 p-2 font-bold border-b border-blue-200">B. 標準設算 (房屋現值 × 標準率)</div>
+                        <div class="grid grid-cols-12 gap-2 p-2">
+                            <div class="col-span-4 input-label">輸入標準率</div>
+                            <div class="col-span-5"><input type="number" id="Rate_Std" class="input-field user-fill"
+                                    placeholder="如 42" oninput="calculate()"></div>
+                            <div class="col-span-3 flex items-center unit">輸入 42 或 0.42 皆可</div>
+
+                            <div class="col-span-4 row-header">★ 標準設算所得</div>
+                            <div class="col-span-5 res-green" id="Income_B">0</div>
+                            <div class="col-span-3"></div>
+
+                            <div class="col-span-4 row-header">驗算算式</div>
+                            <div class="col-span-8 formula-display" id="Formula_Income_B"></div>
+                        </div>
+                    </div>
+
+                    <!-- C. 豪宅 -->
+                    <div class="mt-4 border border-blue-200 rounded overflow-hidden">
+                        <div class="bg-blue-100 p-2 font-bold border-b border-blue-200">C. 豪宅設算 (總價 × 房地比 × 歸屬率)</div>
+                        <div class="grid grid-cols-12 gap-2 p-2">
+                            <div class="col-span-4 input-label">豪宅歸屬率</div>
+                            <div class="col-span-5"><input type="number" id="Rate_Luxury" class="input-field" value="20"
+                                    oninput="calculate()"></div>
+                            <div class="col-span-3 flex items-center unit">% (法定 20%)</div>
+
+                            <div class="col-span-4 row-header">★ 豪宅設算所得</div>
+                            <div class="col-span-5 res-green" id="Income_C">0</div>
+                            <div class="col-span-3"></div>
+
+                            <div class="col-span-4 row-header">驗算算式</div>
+                            <div class="col-span-8 formula-display" id="Formula_Income_C"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="section">
+                    <div class="step-header">步驟 4：綜所稅額試算</div>
+                    <div class="grid grid-cols-12 gap-2 mt-4">
+                        <div class="col-span-4 input-label">申報所得額</div>
+                        <div class="col-span-5"><input type="number" id="Final_Income" class="input-field" value="0"
+                                oninput="calculateTax()"></div>
+                        <div class="col-span-3 flex items-center unit">← 填入上方結果</div>
+
+                        <div class="col-span-4 input-label">適用稅率</div>
+                        <div class="col-span-5"><input type="number" id="Tax_Rate" class="input-field" value="20"
+                                oninput="calculateTax()"></div>
+                        <div class="col-span-3 flex items-center unit">查右表填入 (如 20)</div>
+
+                        <div class="col-span-4 input-label">累進差額</div>
+                        <div class="col-span-5"><input type="number" id="Prog_Diff" class="input-field" value="147700"
+                                oninput="calculateTax()"></div>
+                        <div class="col-span-3"></div>
+
+                        <div class="col-span-4 row-header">預估應納稅額</div>
+                        <div class="col-span-5 tax-res" id="Final_Tax">NT$ 0</div>
+                        <div class="col-span-3"></div>
+
+                        <div class="col-span-4 row-header">驗算算式</div>
+                        <div class="col-span-8 formula-display" id="Formula_Tax"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側：費用表與說明 -->
+            <div class="space-y-6">
+                <!-- 成本費用明細表 -->
+                <div class="border border-gray-400">
+                    <div class="exp-header">【成本費用明細表】</div>
+                    <div id="expense-list">
+                        <!-- JS 生成費用項目 -->
+                    </div>
+                    <div class="grid grid-cols-2 bg-yellow-100 font-bold p-2 border-t border-gray-400">
+                        <div>費用總計</div>
+                        <div class="text-right text-blue-800" id="Exp_Total">0</div>
+                    </div>
+                </div>
+
+                <!-- 稅率級距表 -->
+                <div class="border border-gray-400 text-sm">
+                    <div class="exp-header">113年度稅率級距</div>
+                    <div class="grid grid-cols-3 gap-0 bg-white">
+                        <div class="p-1 border text-center font-bold">所得淨額</div>
+                        <div class="p-1 border text-center font-bold">稅率</div>
+                        <div class="p-1 border text-center font-bold">累進差額</div>
+
+                        <div class="p-1 border">0~59萬</div>
+                        <div class="p-1 border text-center">5%</div>
+                        <div class="p-1 border text-right">0</div>
+                        <div class="p-1 border">59~133萬</div>
+                        <div class="p-1 border text-center">12%</div>
+                        <div class="p-1 border text-right">41,300</div>
+                        <div class="p-1 border">133~266萬</div>
+                        <div class="p-1 border text-center">20%</div>
+                        <div class="p-1 border text-right">147,700</div>
+                        <div class="p-1 border">266~498萬</div>
+                        <div class="p-1 border text-center">30%</div>
+                        <div class="p-1 border text-right">413,700</div>
+                        <div class="p-1 border">498萬以上</div>
+                        <div class="p-1 border text-center">40%</div>
+                        <div class="p-1 border text-right">911,700</div>
+                    </div>
+                </div>
+                <div class="text-right mt-1">
+                    <a href="https://www.etax.nat.gov.tw/etwmain/tax-info/understanding/tax-q-and-a/national/individual-income-tax/taxation-scope/which-income/r8q3EDv"
+                        target="_blank" class="text-blue-600 hover:text-blue-800 text-xs underline">
+                        🔗 財政部-綜合所得稅率查詢
+                    </a>
+                </div>
+
+                <!-- 邏輯說明 -->
+                <div class="bg-green-700 text-white font-bold text-center p-2 rounded-t">系統使用指南與計算邏輯</div>
+                <div class="border border-green-700 p-4 bg-white text-sm text-gray-800 space-y-2 rounded-b">
+                    <p>【步驟1】填寫黃色欄位：房屋/土地現值、成交總價。</p>
+                    <p>【步驟2】系統自動拆價 (採倒扣法確保總和正確)。</p>
+                    <p>【步驟3】選擇模式：</p>
+                    <ul class="list-disc pl-5">
+                        <li>A.核實認定：需填成本與費用。</li>
+                        <li>B.標準設算：輸入當地標準率。</li>
+                        <li>C.豪宅設算：高總價專用。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 費用項目列表
+        const expensesList = [
+            "取得-契稅", "取得-印花稅", "取得-代書費",
+            "取得-仲介費", "取得-履保費", "出售-土增稅",
+            "出售-代書費", "出售-仲介費", "改良-裝潢費", "其他必要費用"
+        ];
+
+        // 初始化費用表
+        function initExpenses() {
+            const container = document.getElementById('expense-list');
+            expensesList.forEach((name, index) => {
+                const html = `
+                <div class="grid grid-cols-2 border-b border-gray-200">
+                    <div class="exp-item bg-white flex items-center pl-2">${name}</div>
+                    <input type="number" class="exp-input input-field text-right border-0" value="0" oninput="calculate()">
+                </div>
+            `;
+                container.innerHTML += html;
+            });
+        }
+
+        function fmtMoney(num) {
+            return num.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        }
+
+        function calculate() {
+            // 1. 取得輸入
+            const L = parseFloat(document.getElementById('L').value) || 0;
+            const B = parseFloat(document.getElementById('B').value) || 0;
+            const T = parseFloat(document.getElementById('T').value) || 0;
+            const C = parseFloat(document.getElementById('C').value) || 0;
+
+            // 費用總計
+            let expTotal = 0;
+            document.querySelectorAll('.exp-input').forEach(input => {
+                expTotal += parseFloat(input.value) || 0;
+            });
+            document.getElementById('Exp_Total').innerText = fmtMoney(expTotal);
+
+            // 2. 房地比 (Ratio)
+            let ratio = 0;
+            if ((L + B) > 0) {
+                ratio = B / (L + B);
+            }
+            document.getElementById('Ratio_Display').innerText = (ratio * 100).toFixed(2) + "%";
+
+            // 3. 房地拆價 (公司邏輯：B加權 1.05)
+            let ratioCorp = 0;
+            if ((L + B * 1.05) > 0) {
+                ratioCorp = (B * 1.05) / (L + B * 1.05);
+            }
+
+            const netPrice = T - C;
+            const netTxt = fmtMoney(netPrice);
+
+            // -- 一般個人 --
+            const bPriceGen = Math.round(netPrice * ratio);
+            const lPriceGen = netPrice - bPriceGen; // 倒扣法
+
+            document.getElementById('Res_B_Gen').innerText = fmtMoney(bPriceGen);
+            document.getElementById('Formula_B_Gen').innerText = `算式：${netTxt} × ${(ratio * 100).toFixed(2)}% (比例)`;
+
+            document.getElementById('Res_L_Gen').innerText = fmtMoney(lPriceGen);
+            document.getElementById('Formula_L_Gen').innerText = `算式：${netTxt} - ${fmtMoney(bPriceGen)} (建物)`;
+
+            // -- 公司法人 --
+            const bPriceCorp = Math.round(netPrice * ratioCorp);
+            const lPriceCorp = netPrice - bPriceCorp;
+
+            document.getElementById('Res_B_Corp').innerText = fmtMoney(bPriceCorp);
+            document.getElementById('Formula_B_Corp').innerText = `算式：${netTxt} × ${(ratioCorp * 100).toFixed(2)}% (比例)`;
+
+            document.getElementById('Res_L_Corp').innerText = fmtMoney(lPriceCorp);
+            document.getElementById('Formula_L_Corp').innerText = `算式：${netTxt} - ${fmtMoney(bPriceCorp)} (建物)`;
+
+            // 4. 所得計算
+            // A. 核實
+            const costOrig = parseFloat(document.getElementById('Cost_Orig').value) || 0;
+            const incomeARaw = (T - costOrig - expTotal) * ratio;
+            const incomeA = Math.max(0, Math.round(incomeARaw));
+
+            document.getElementById('Income_A').innerText = fmtMoney(incomeA);
+            document.getElementById('Formula_Income_A').innerText = `算式：( ${fmtMoney(T)} - ${fmtMoney(costOrig)} - ${fmtMoney(expTotal)} (費用) ) × ${(ratio * 100).toFixed(2)}%`;
+
+            // B. 標準
+            let rateStdInput = parseFloat(document.getElementById('Rate_Std').value) || 0;
+            let rateStd = (rateStdInput < 1 && rateStdInput > 0) ? rateStdInput : rateStdInput / 100;
+            const incomeB = Math.round(B * rateStd);
+
+            document.getElementById('Income_B').innerText = fmtMoney(incomeB);
+            document.getElementById('Formula_Income_B').innerText = `算式： ${fmtMoney(B)} (建物現值) × ${(rateStd * 100).toFixed(0)}%`;
+
+            // C. 豪宅
+            let rateLuxInput = parseFloat(document.getElementById('Rate_Luxury').value) || 20;
+            let rateLux = (rateLuxInput < 1 && rateLuxInput > 0) ? rateLuxInput : rateLuxInput / 100;
+            const incomeC = Math.round(T * ratio * rateLux);
+
+            document.getElementById('Income_C').innerText = fmtMoney(incomeC);
+            document.getElementById('Formula_Income_C').innerText = `算式： ${fmtMoney(T)} × ${(ratio * 100).toFixed(2)}% (比例) × ${(rateLux * 100).toFixed(0)}% (歸屬率)`;
+        }
+
+        function calculateTax() {
+            const finalIncome = parseFloat(document.getElementById('Final_Income').value) || 0;
+            let finalRateInput = parseFloat(document.getElementById('Tax_Rate').value) || 0;
+            let finalRate = (finalRateInput < 1 && finalRateInput > 0) ? finalRateInput : finalRateInput / 100;
+            const progDiff = parseFloat(document.getElementById('Prog_Diff').value) || 0;
+
+            const tax = Math.round(finalIncome * finalRate - progDiff);
+
+            document.getElementById('Final_Tax').innerText = "NT$ " + fmtMoney(tax);
+            document.getElementById('Formula_Tax').innerText = `算式： ${fmtMoney(finalIncome)} × ${(finalRate * 100).toFixed(0)}% - ${fmtMoney(progDiff)}`;
+        }
+
+        function resetAll() {
+            if (!confirm("確定要清除所有輸入的資料嗎？")) return;
+
+            // Reset Step 1 Inputs
+            ['L', 'B', 'T', 'C'].forEach(id => document.getElementById(id).value = 0);
+
+            // Reset Expenses
+            document.querySelectorAll('.exp-input').forEach(input => input.value = 0);
+
+            // Reset Step 3 Inputs
+            document.getElementById('Cost_Orig').value = 0;
+            document.getElementById('Rate_Std').value = '';
+            document.getElementById('Rate_Luxury').value = 20;
+
+            // Reset Step 4 Inputs
+            document.getElementById('Final_Income').value = 0;
+            // Keep Tax Rate defaults as they are usually constant-ish, or reset them? 
+            // Let's keep tax rate/diff defaults as users might want to keep them. 
+            // Actually, user wants "Clear Data", so commonly changed fields.
+
+            // Recalculate
+            calculate();
+            calculateTax();
+        }
+
+        initExpenses();
+        calculate();
+    </script>
+
+</body>
+
+</html>
+```

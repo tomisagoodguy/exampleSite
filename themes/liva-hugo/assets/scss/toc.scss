@@ -7,22 +7,18 @@
   margin-bottom: 30px;
   
   // 添加固定定位相關樣式
-  &.sticky {
-    position: fixed;
+  &.sticky-toc {
+    position: sticky;
     top: 80px; // 調整頂部距離，根據您的頁面頂部導航欄高度來設置
-    left: auto; // 自動計算左側距離
-    width: 22%; // 設置寬度大約與 col-lg-3 一致
     max-height: calc(100vh - 120px); // 設置最大高度，避免太長
     overflow-y: auto; // 如果內容太長，允許滾動
-    z-index: 100; // 確保在其他元素之上
     transition: all 0.3s ease; // 平滑過渡效果
   }
   
   // 當屏幕較小時的響應式樣式
   @media (max-width: 991px) {
-    &.sticky {
+    &.sticky-toc {
       position: static; // 在小屏幕上不固定
-      width: 100%;
       max-height: none;
     }
   }

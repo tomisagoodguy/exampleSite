@@ -4,10 +4,12 @@
 
   {{ "<!-- mobile responsive meta -->" | safeHTML }}
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
-  <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ with .Summary }}{{ . | plainify }}{{ else }}{{ with .Site.Params.description }}{{ . }}{{ end }}{{ end }}{{ end }}">
-  {{ with .Site.Params.author }}<meta name="author" content="{{ . }}">{{ end }}
-  <meta name="theme-color" content="{{ .Site.Params.themeColor | default "#fff" }}">
-  
+  <meta name="description"
+    content="{{ with .Description }}{{ . }}{{ else }}{{ with .Summary }}{{ . | plainify }}{{ else }}{{ with .Site.Params.description }}{{ . }}{{ end }}{{ end }}{{ end }}">
+  {{ with .Site.Params.author }}
+  <meta name="author" content="{{ . }}">{{ end }}
+  <meta name="theme-color" content="{{ .Site.Params.themeColor | default " #fff" }}">
+
   {{ "<!-- canonical link -->" | safeHTML }}
   <link rel="canonical" href="{{ .Permalink }}">
 
@@ -17,21 +19,34 @@
 
   {{ "<!-- Open Graph & Twitter Card -->" | safeHTML }}
   <meta property="og:title" content="{{ .Title }}{{ if not .IsHome }} | {{ .Site.Title }}{{ end }}">
-  <meta property="og:description" content="{{ with .Description }}{{ . }}{{ else }}{{ with .Summary }}{{ . | plainify }}{{ else }}{{ with .Site.Params.description }}{{ . }}{{ end }}{{ end }}{{ end }}">
+  <meta property="og:description"
+    content="{{ with .Description }}{{ . }}{{ else }}{{ with .Summary }}{{ . | plainify }}{{ else }}{{ with .Site.Params.description }}{{ . }}{{ end }}{{ end }}{{ end }}">
   <meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
   <meta property="og:url" content="{{ .Permalink }}">
-  {{ with .Params.image }}<meta property="og:image" content="{{ . | absURL }}">{{ else }}{{ with .Site.Params.image }}<meta property="og:image" content="{{ . | absURL }}">{{ end }}{{ end }}
-  
+  {{ with .Params.image }}
+  <meta property="og:image" content="{{ . | absURL }}">{{ else }}{{ with .Site.Params.image }}
+  <meta property="og:image" content="{{ . | absURL }}">{{ end }}{{ end }}
+
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ .Title }}{{ if not .IsHome }} | {{ .Site.Title }}{{ end }}">
-  <meta name="twitter:description" content="{{ with .Description }}{{ . }}{{ else }}{{ with .Summary }}{{ . | plainify }}{{ else }}{{ with .Site.Params.description }}{{ . }}{{ end }}{{ end }}{{ end }}">
-  {{ with .Site.Params.twitter }}<meta name="twitter:site" content="@{{ . }}">{{ end }}
-  {{ with .Params.image }}<meta name="twitter:image" content="{{ . | absURL }}">{{ else }}{{ with .Site.Params.image }}<meta name="twitter:image" content="{{ . | absURL }}">{{ end }}{{ end }}
+  <meta name="twitter:description"
+    content="{{ with .Description }}{{ . }}{{ else }}{{ with .Summary }}{{ . | plainify }}{{ else }}{{ with .Site.Params.description }}{{ . }}{{ end }}{{ end }}{{ end }}">
+  {{ with .Site.Params.twitter }}
+  <meta name="twitter:site" content="@{{ . }}">{{ end }}
+  {{ with .Params.image }}
+  <meta name="twitter:image" content="{{ . | absURL }}">{{ else }}{{ with .Site.Params.image }}
+  <meta name="twitter:image" content="{{ . | absURL }}">{{ end }}{{ end }}
 
   {{ "<!-- Resource Hints -->" | safeHTML }}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Slick Slider CSS -->
+  <link rel="stylesheet" type="text/css"
+    href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css" />
+  <link rel="stylesheet" type="text/css"
+    href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css" />
   {{ if .Site.Params.googleAnalytics }}
   <link rel="preconnect" href="https://www.googletagmanager.com">
   <link rel="preconnect" href="https://www.google-analytics.com">
@@ -39,8 +54,10 @@
 
   {{ "<!-- plugins -->" | safeHTML }}
   {{ range .Site.Params.plugins.css }}
-  <link rel="stylesheet" href="{{ .URL | absURL }}" {{ if .async }}media="print" onload="this.media='all'"{{ end }}>
-  {{ if .async }}<noscript><link rel="stylesheet" href="{{ .URL | absURL }}"></noscript>{{ end }}
+  <link rel="stylesheet" href="{{ .URL | absURL }}" {{ if .async }}media="print" onload="this.media='all'" {{ end }}>
+  {{ if .async }}<noscript>
+    <link rel="stylesheet" href="{{ .URL | absURL }}">
+  </noscript>{{ end }}
   {{ end }}
 
   {{ "<!-- Main Stylesheet -->" | safeHTML }}
@@ -51,15 +68,16 @@
   <link rel="stylesheet" href="{{ `css/custom.css` | absURL }}" media="screen">
 
   {{ "<!-- Font Awesome CSS -->" | safeHTML }}
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  </noscript>
 
   {{ "<!--Favicon-->" | safeHTML }}
-  <link rel="apple-touch-icon" sizes="180x180" href="{{ `images/apple-touch-icon.png` | absURL }}">
-  <link rel="icon" type="image/png" sizes="32x32" href="{{ `images/favicon-32x32.png` | absURL }}">
-  <link rel="icon" type="image/png" sizes="16x16" href="{{ `images/favicon-16x16.png` | absURL }}">
-  <link rel="shortcut icon" href="{{ `images/favicon.ico` | absURL }}" type="image/x-icon">
-  <link rel="manifest" href="{{ `images/site.webmanifest` | absURL }}">
+  <link rel="icon" type="image/png" href="{{ `images/favicon.png` | absURL }}">
+  <link rel="shortcut icon" type="image/png" href="{{ `images/favicon.png` | absURL }}">
 
   {{ "<!-- Structured Data -->" | safeHTML }}
   {{ if .IsHome }}
@@ -113,26 +131,15 @@
   {{ end }}
 
   {{ "<!-- Google Analytics -->" | safeHTML }}
-  {{ if not hugo.IsServer }}
-  <script>
-    // 設置不追蹤功能，直到獲得用戶同意
-    window['ga-disable-G-ZZ3XT9EZKH'] = true;
-    
-    // 檢查是否已獲得同意
-    if (localStorage.getItem('cookie-consent') === 'true') {
-      window['ga-disable-G-ZZ3XT9EZKH'] = false;
-    }
-  </script>
+  {{ $gaID := .Site.GoogleAnalytics | default .Site.Params.google_analytics_id }}
+  {{ if $gaID }}
   <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZZ3XT9EZKH"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaID }}"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
-    gtag('config', 'G-ZZ3XT9EZKH', {
-      'anonymize_ip': true,
-      'cookie_flags': 'SameSite=None;Secure'
-    });
+    gtag('config', '{{ $gaID }}');
   </script>
   {{ end }}
 </head>

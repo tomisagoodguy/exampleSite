@@ -6,7 +6,8 @@
         <h2>{{ .Site.Params.newsletter.title | markdownify }}</h2>
         <p class="text-light px-md-5 py-4 border-left border-right border-primary">
           {{ .Site.Params.newsletter.content | markdownify }}</p>
-        <form action="{{ .Site.Params.newsletter.action }}" method="post" class="row justify-content-center newsletter-form" id="newsletter-form">
+        <form action="{{ .Site.Params.newsletter.action }}" method="post"
+          class="row justify-content-center newsletter-form" id="newsletter-form">
           <div class="input-group col-md-8">
             <input type="email" name="email" class="form-control" placeholder="您的電子郵件地址" required>
             <div class="input-group-append">
@@ -26,10 +27,14 @@
     <div class="row justify-content-center">
       <div class="col-12 text-center mb-5">
         <a href="{{ .Site.BaseURL }}" aria-label="{{ .Site.Title }}">
-<img loading="lazy" src="{{ .Site.Params.logo | absURL }}" alt="{{ .Site.Title }}" class="footer-logo">
+          {{ if .Site.Params.logo }}
+          <img loading="lazy" src="{{ .Site.Params.logo | absURL }}" alt="{{ .Site.Title }}" class="footer-logo">
+          {{ else }}
+          <h3>{{ .Site.Title }}</h3>
+          {{ end }}
         </a>
       </div>
-      {{ if or .Site.Params.mobile .Site.Params.location .Site.Params.email }}         
+      {{ if or .Site.Params.mobile .Site.Params.location .Site.Params.email }}
       <div class="col-lg-3 col-sm-6 mb-5">
         <h6 class="mb-4">聯絡我們</h6>
         <ul class="list-unstyled contact-list">
@@ -40,12 +45,12 @@
             </a>
           </li>
           {{ end }}
-          {{ if .Site.Params.location }}           
+          {{ if .Site.Params.location }}
           <li class="mb-3 d-flex align-items-center">
             <i class="ti-location-pin text-primary"></i>{{ .Site.Params.location }}
           </li>
           {{ end }}
-          {{ if .Site.Params.email }}           
+          {{ if .Site.Params.email }}
           <li class="mb-3">
             <a class="text-dark d-flex align-items-center" href="mailto:{{ .Site.Params.email }}">
               <i class="ti-email text-primary"></i>{{ .Site.Params.email }}
@@ -60,7 +65,8 @@
         <ul class="list-unstyled social-list">
           {{ range .Site.Params.social }}
           <li class="mb-3">
-            <a class="text-dark social-item" href="{{ .link | safeURL }}" {{ if .target }}target="{{ .target }}"{{ end }}>
+            <a class="text-dark social-item" href="{{ .link | safeURL }}" {{ if .target }}target="{{ .target }}" {{ end
+              }}>
               {{ if .icon }}<i class="{{ .icon }}"></i>{{ end }}{{ .title }}
             </a>
           </li>
@@ -96,8 +102,11 @@
   </div>
 </footer>
 
+<a href="#" id="return-to-top"><i class="fas fa-arrow-up"></i></a>
+<a href="#" id="go-to-bottom"><i class="fas fa-arrow-down"></i></a>
+
 <script>
-  var indexURL = {{ "index.json" | absURL }}
+  var indexURL = "{{ "index.json" | absURL | safeJS }}";
 </script>
 
 {{ "<!-- JS Plugins -->" | safeHTML }}
@@ -107,31 +116,101 @@
 {{ "<!-- Main Script -->" | safeHTML }}
 {{ $script := resources.Get "js/script.js" | minify}}
 <script src="{{ $script.Permalink }}"></script>
-<script src="{{ "js/theme-switch.js" | absURL }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const themeToggle = document.getElementById('checkbox');
+    const body = document.body;
+    const themeClass = 'dark-mode';
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        body.classList.add(themeClass);
+        if (themeToggle) themeToggle.checked = true;
+        localStorage.setItem('theme', 'dark');
+      } else {
+        body.classList.remove(themeClass);
+        if (themeToggle) themeToggle.checked = false;
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    // Initial check
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (savedTheme === 'dark' || savedTheme === 'dark-mode') {
+      applyTheme('dark');
+    } else if (!savedTheme && prefersDark) {
+      applyTheme('dark');
+    } else {
+      applyTheme('light');
+    }
+
+    // Event listener
+    if (themeToggle) {
+      themeToggle.addEventListener('change', function (e) {
+        if (e.target.checked) {
+          applyTheme('dark');
+        } else {
+          applyTheme('light');
+        }
+      });
+    }
+
+    // === Code Block Copy Functionality ===
+    const codeBlocks = document.querySelectorAll('pre');
+    codeBlocks.forEach(function (pre) {
+      // Create copy button
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.innerText = 'Copy';
+
+      // Position button (handled by CSS, but we append it to the pre)
+      pre.appendChild(button);
+
+      button.addEventListener('click', function () {
+        // Find the code element inside
+        const code = pre.querySelector('code');
+        const textToCopy = code ? code.innerText : pre.innerText;
+
+        // Copy using Clipboard API
+        navigator.clipboard.writeText(textToCopy).then(function () {
+          button.innerText = 'Copied!';
+          setTimeout(function () {
+            button.innerText = 'Copy';
+          }, 2000);
+        }).catch(function (err) {
+          console.error('Failed to copy: ', err);
+          button.innerText = 'Error';
+        });
+      });
+    });
+  });
+</script>
 
 <!-- Newsletter Script -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const form = document.getElementById('newsletter-form');
-  if (form) {
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const response = document.getElementById('newsletter-response');
-      const email = this.querySelector('input[name="email"]').value;
-      
-      // 這裡可以添加實際的表單提交邏輯
-      // 例如使用fetch API提交到指定端點
-      
-      response.innerHTML = '<p class="text-success">感謝您的訂閱！</p>';
-      this.reset();
-    });
-  }
-});
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('newsletter-form');
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const response = document.getElementById('newsletter-response');
+        const email = this.querySelector('input[name="email"]').value;
+
+        // 這裡可以添加實際的表單提交邏輯
+        // 例如使用fetch API提交到指定端點
+
+        response.innerHTML = '<p class="text-success">感謝您的訂閱！</p>';
+        this.reset();
+      });
+    }
+  });
 </script>
 
 <!-- cookie -->
 {{ if site.Params.cookies.enable }}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.1/js.cookie.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.1/js.cookie.min.js"></script>
 <div id="js-cookie-box" class="cookie-box cookie-box-hide">
   <div class="container">
     <div class="cookie-content">
@@ -144,114 +223,28 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
 </div>
 <script>
-	(function () {
-		const cookieBox = document.getElementById('js-cookie-box');
-		const cookieButton = document.getElementById('js-cookie-button');
-		if (!Cookies.get('cookie-box')) {
-			cookieBox.classList.remove('cookie-box-hide');
-			cookieButton.onclick = function () {
-				Cookies.set('cookie-box', true, {
-					expires: {{ site.Params.cookies.expire_days }}
-				});
-				cookieBox.classList.add('cookie-box-hide');
-			};
-		}
-	})();
+  (function () {
+    const cookieBox = document.getElementById('js-cookie-box');
+    const cookieButton = document.getElementById('js-cookie-button');
+
+    function initCookieBox() {
+      if (typeof Cookies === 'undefined') {
+        setTimeout(initCookieBox, 1000);
+        return;
+      }
+
+      if (cookieBox && !Cookies.get('cookie-box')) {
+        cookieBox.classList.remove('cookie-box-hide');
+        cookieButton.onclick = function () {
+          Cookies.set('cookie-box', true, {
+            expires: {{ site.Params.cookies.expire_days | default 1 }}
+      });
+      localStorage.setItem('cookie-consent', 'true');
+      cookieBox.classList.add('cookie-box-hide');
+    };
+  }
+    }
+  initCookieBox();
+  }) ();
 </script>
-
-<!-- cookie style -->
-<style>
-.cookie-box {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 9999;
-  padding: 1rem 0;
-  background: rgba(51, 51, 51, 0.95);
-  transition: all .75s cubic-bezier(.19, 1, .22, 1);
-  color: #fdfdfd;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-}
-
-.cookie-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
-
-.cookie-content p {
-  margin: 0;
-  padding: 0.5rem 0;
-}
-
-.cookie-buttons {
-  white-space: nowrap;
-  margin-left: 1rem;
-}
-
-.cookie-box-hide {
-  transform: translateY(100%);
-  opacity: 0;
-  pointer-events: none;
-}
-
-@media (max-width: 768px) {
-  .cookie-content {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .cookie-buttons {
-    margin-top: 1rem;
-    margin-left: 0;
-  }
-}
-
-/* 其他樣式優化 */
-.footer-logo {
-  max-height: 60px;
-  width: auto;
-}
-
-.footer-section {
-  background-color: var(--footer-bg-color, #f8f9fa);
-  padding-top: 3rem;
-  transition: background-color 0.3s;
-}
-
-.footer-section .text-dark {
-  color: var(--footer-text-color, #343a40);
-  transition: color 0.3s;
-}
-
-.social-item:hover, 
-.category-item:hover {
-  color: var(--primary-color, #007bff) !important;
-  text-decoration: none;
-}
-
-.category-count {
-  font-size: 0.8rem;
-  color: #6c757d;
-}
-
-.newsletter-section {
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.contact-list i,
-.social-list i,
-.quick-links i {
-  transition: transform 0.3s ease;
-}
-
-.contact-list a:hover i,
-.social-list a:hover i,
-.quick-links a:hover i {
-  transform: translateX(3px);
-}
-</style>
 {{ end }}

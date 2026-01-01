@@ -1,6 +1,131 @@
 {{ define "main" }}
 
+<!-- Hero Section -->
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="hero-section">
+        <h1 class="hero-title" data-text="定康筆記 | Tom's Note">定康筆記 | Tom's Note</h1>
+        <p class="hero-subtitle">結合地政士專業、Python 量化分析與極致料理的跨界筆記。<br>Documenting my journey from novice to expert.</p>
+        <!-- <div class="hero-buttons">
+          <a href="{{ "practice-sharing/" | relLangURL }}" class="hero-btn hero-btn-primary">👨‍💼 代書實務</a>
+          <a href="{{ "tags/automation/" | relLangURL }}" class="hero-btn hero-btn-secondary">💻 自動化筆記</a>
+        </div> -->
+      </div>
+    </div>
+  </div>
+</div>
+<!-- /Hero Section -->
+
+<!-- Categories Section -->
+<section class="section pb-0">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 mb-4">
+        <h3 class="section-title text-primary mb-0">主題探索 (Topic Explorer)</h3>
+      </div>
+      <div class="col-12">
+        <div class="category-slider">
+          {{ range .Site.Taxonomies.categories.ByCount }}
+          <div class="p-2">
+            <a href="{{ .Page.Permalink }}" class="category-card" style="padding: 1.5rem 1rem;">
+              <div class="category-name" style="font-size: 1.1rem;">
+                {{ .Page.Title }}
+              </div>
+              <span class="category-count">{{ .Count }}</span>
+            </a>
+          </div>
+          {{ end }}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 {{ partial "exam_notes_sub_nav.html" . }}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    console.log("Initializing Sliders");
+
+    // Common settings for post sliders
+    const postSliderSettings = {
+      dots: true,
+      infinite: false,
+      speed: 300,
+      slidesToShow: 3,
+      slidesToScroll: 3,
+      arrows: true,
+      autoplay: true,
+      autoplaySpeed: 5000,
+      responsive: [
+        {
+          breakpoint: 992,
+          settings: {
+            slidesToShow: 2,
+            slidesToScroll: 2
+          }
+        },
+        {
+          breakpoint: 768,
+          settings: {
+            slidesToShow: 1,
+            slidesToScroll: 1
+          }
+        }
+      ]
+    };
+
+    $('.category-slider').slick({
+      dots: false,
+      infinite: true,
+      speed: 300,
+      slidesToShow: 6,
+      slidesToScroll: 1,
+      arrows: true,
+      autoplay: true,
+      autoplaySpeed: 5000,
+      responsive: [
+        {
+          breakpoint: 1200,
+          settings: {
+            slidesToShow: 5,
+            slidesToScroll: 1
+          }
+        },
+        {
+          breakpoint: 992,
+          settings: {
+            slidesToShow: 4,
+            slidesToScroll: 1
+          }
+        },
+        {
+          breakpoint: 768,
+          settings: {
+            slidesToShow: 3,
+            slidesToScroll: 1
+          }
+        },
+        {
+          breakpoint: 480,
+          settings: {
+            slidesToShow: 2,
+            slidesToScroll: 1
+          }
+        }
+      ]
+    });
+
+    // Initialize the new sliders
+    $('.real-estate-slider').slick(postSliderSettings);
+    $('.automation-slider').slick(postSliderSettings);
+    $('.lifestyle-slider').slick(postSliderSettings);
+  });
+</script>
+
+<!-- Featured Post -->
+{{ partial "featured.html" . }}
 
 <!-- blog post -->
 <section class="section pb-0">
@@ -11,38 +136,93 @@
       <!-- /sidebar -->
       <div class="col-lg-8 mb-5 mb-lg-0">
         <div class="row">
-          {{ $paginator := .Paginate (.Site.RegularPages.ByDate.Reverse) }}
-          {{ range $paginator.Pages }}
-          <div class="col-md-6 mb-4">
-            <article class="card">
-
-              <div class="card-body px-0">
-                {{ range .Params.Categories }}
-                <a href="{{ `categories/` | relLangURL }}{{ . | urlize | lower }}" class="text-primary">{{ . | title |
-                  humanize }}</a>
-                {{ end }}
-                <a href="{{ .Permalink }}" class="h5 d-block my-3">{{ .Title | markdownify }}</a>
-                <div class="mb-3 post-meta">
-                  <span>By {{ .Site.Params.Author }}</span>
-                  {{ if not .Params.HideDate }}
-                  <span class="border-bottom border-primary px-2 mx-1"></span>
-                  <span>{{ .Date.Format "2006-01-02" }}</span>
-                  {{ end }}
+          <!-- Section A: The Professional -->
+          <div class="col-12 mb-3 d-flex justify-content-between align-items-center">
+            <h3 class="section-title text-orange mb-0">代書修煉日記 (Real Estate Logs)</h3>
+            <a href="{{ (site.GetPage " section" "real-estate" ).RelPermalink }}"
+              class="btn btn-sm btn-outline-orange">查看更多</a>
+          </div>
+          {{ $real_estate_posts := where .Site.RegularPages "Section" "real-estate" | first 9 }}
+          <div class="real-estate-slider">
+            {{ range $real_estate_posts }}
+            <div class="px-2 mb-4">
+              <article class="card h-100">
+                <div class="card-body px-0">
+                  <a href="{{ .Permalink }}" class="h5 d-block my-3">{{ .Title | markdownify }}</a>
+                  <div class="mb-3 post-meta">
+                    <span>{{ .Date.Format "2006-01-02" }}</span>
+                    <span class="border-bottom border-primary px-2 mx-1"></span>
+                    <span>{{ .ReadingTime }} min read</span>
+                  </div>
+                  <p class="card-text">{{ .Summary | truncate 50 }}</p>
+                  <a href="{{ .Permalink }}" class="btn btn-outline-orange btn-sm mt-auto">read more</a>
                 </div>
-                <p class="card-text">{{ .Description }}</p>
-                <a href="{{ .Permalink }}" class="btn btn-outline-primary">read more</a>
-              </div>
-            </article>
+              </article>
+            </div>
+            {{ end }}
+          </div>
+
+          <!-- Section B: The Tech -->
+          <div class="col-12 mb-3 mt-4 d-flex justify-content-between align-items-center">
+            <h3 class="section-title text-success mb-0">Python & 自動化實驗 (Dev Lab)</h3>
+            <a href="{{ (site.GetPage " section" "automation" ).RelPermalink }}"
+              class="btn btn-sm btn-outline-success">查看更多</a>
+          </div>
+          {{ $automation_posts := where .Site.RegularPages "Section" "automation" | first 9 }}
+          {{ if not $automation_posts }}
+          <div class="col-12">
+            <p>No posts found for Automation.</p>
           </div>
           {{ end }}
+          <div class="automation-slider">
+            {{ range $automation_posts }}
+            <div class="px-2 mb-4">
+              <article class="card h-100">
+                <div class="card-body px-0">
+                  <a href="{{ .Permalink }}" class="h5 d-block my-3">{{ .Title | markdownify }}</a>
+                  <div class="mb-3 post-meta">
+                    <span>{{ .Date.Format "2006-01-02" }}</span>
+                    <span class="border-bottom border-primary px-2 mx-1"></span>
+                    <span>{{ .ReadingTime }} min read</span>
+                  </div>
+                  <p class="card-text">{{ .Summary | truncate 50 }}</p>
+                  <a href="{{ .Permalink }}" class="btn btn-outline-success btn-sm mt-auto">read more</a>
+                </div>
+              </article>
+            </div>
+            {{ end }}
+          </div>
+
+          <!-- Section C: The Lifestyle -->
+          <div class="col-12 mb-3 mt-4 d-flex justify-content-between align-items-center">
+            <h3 class="section-title text-danger mb-0">廚藝與生活 (Lifestyle)</h3>
+            <a href="{{ (site.GetPage " section" "lifestyle" ).RelPermalink }}"
+              class="btn btn-sm btn-outline-danger">查看更多</a>
+          </div>
+          {{ $lifestyle_posts := where .Site.RegularPages "Section" "lifestyle" | first 9 }}
+          <div class="lifestyle-slider">
+            {{ range $lifestyle_posts }}
+            <div class="px-2 mb-4">
+              <article class="card h-100">
+                <div class="card-body px-0">
+                  <a href="{{ .Permalink }}" class="h5 d-block my-3">{{ .Title | markdownify }}</a>
+                  <div class="mb-3 post-meta">
+                    <span>{{ .Date.Format "2006-01-02" }}</span>
+                    <span class="border-bottom border-primary px-2 mx-1"></span>
+                    <span>{{ .ReadingTime }} min read</span>
+                  </div>
+                  <p class="card-text">{{ .Summary | truncate 50 }}</p>
+                  <a href="{{ .Permalink }}" class="btn btn-outline-danger btn-sm mt-auto">read more</a>
+                </div>
+              </article>
+            </div>
+            {{ end }}
+          </div>
         </div>
       </div>
 
 
-      <!-- pagination -->
-      <div class="col-12 mt-5">
-        {{ template "_internal/pagination.html" . }}
-      </div>
+
     </div>
   </div>
 </section>
