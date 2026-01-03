@@ -195,6 +195,11 @@ name = "相關連結"
 URL = "links/"
 weight = 7
 
+[[menu.footer]]
+name = "網站安全報告"
+URL = "https://security.lucas-futures.com/"
+weight = 8
+
 # Preloader
 [params.preloader]
 enable = true

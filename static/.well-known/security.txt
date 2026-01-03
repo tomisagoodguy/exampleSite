@@ -1,0 +1,5 @@
+Contact: mailto:tom890108159@gmail.com
+Expires: 2027-01-01T00:00:00.000Z
+Preferred-Languages: zh-TW, en
+Canonical: https://tomisagoodguy.github.io/.well-known/security.txt
+Policy: https://tomisagoodguy.github.io/security/
