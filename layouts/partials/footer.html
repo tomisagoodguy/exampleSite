@@ -157,6 +157,28 @@
       });
     }
 
+    // === Navbar Scroll Logic ===
+    window.addEventListener('scroll', function () {
+      if (window.scrollY > 30) {
+        document.body.classList.add('scrolled');
+      } else {
+        document.body.classList.remove('scrolled');
+      }
+    });
+
+    // === Scroll Reveal Logic (Intersection Observer) ===
+    const revealElements = document.querySelectorAll('.reveal-on-scroll');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = "1";
+          entry.target.classList.add('reveal-active');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    revealElements.forEach(el => revealObserver.observe(el));
+
     // === Code Block Copy Functionality ===
     const codeBlocks = document.querySelectorAll('pre');
     codeBlocks.forEach(function (pre) {

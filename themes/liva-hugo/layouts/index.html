@@ -18,7 +18,7 @@
 <!-- /Hero Section -->
 
 <!-- Categories Section -->
-<section class="section pb-0">
+<section class="section pb-0 reveal-on-scroll">
   <div class="container">
     <div class="row">
       <div class="col-12 mb-4">
@@ -32,7 +32,7 @@
               <div class="category-name" style="font-size: 1.1rem;">
                 {{ .Page.Title }}
               </div>
-              <span class="category-count">{{ .Count }}</span>
+              <span class="badge badge-primary">{{ .Count }}</span>
             </a>
           </div>
           {{ end }}
@@ -125,7 +125,9 @@
 </script>
 
 <!-- Featured Post -->
-{{ partial "featured.html" . }}
+<div class="reveal-on-scroll">
+  {{ partial "featured.html" . }}
+</div>
 
 <!-- blog post -->
 <section class="section pb-0">
@@ -137,25 +139,33 @@
       <div class="col-lg-8 mb-5 mb-lg-0">
         <div class="row">
           <!-- Section A: The Professional -->
-          <div class="col-12 mb-3 d-flex justify-content-between align-items-center">
+          <div class="col-12 mb-4 d-flex justify-content-between align-items-center reveal-on-scroll">
             <h3 class="section-title text-orange mb-0">代書修煉日記 (Real Estate Logs)</h3>
             <a href="{{ (site.GetPage " section" "real-estate" ).RelPermalink }}"
               class="btn btn-sm btn-outline-orange">查看更多</a>
           </div>
           {{ $real_estate_posts := where .Site.RegularPages "Section" "real-estate" | first 9 }}
-          <div class="real-estate-slider">
+          <div class="real-estate-slider reveal-on-scroll">
             {{ range $real_estate_posts }}
             <div class="px-2 mb-4">
-              <article class="card h-100">
-                <div class="card-body px-0">
-                  <a href="{{ .Permalink }}" class="h5 d-block my-3">{{ .Title | markdownify }}</a>
-                  <div class="mb-3 post-meta">
-                    <span>{{ .Date.Format "2006-01-02" }}</span>
-                    <span class="border-bottom border-primary px-2 mx-1"></span>
-                    <span>{{ .ReadingTime }} min read</span>
+              <article class="card h-100 search-result-card">
+                <div class="card-body d-flex flex-column">
+                  <div class="post-meta mb-2">
+                    <span class="text-muted small"><i class="fas fa-calendar-alt mr-1"></i>{{ .Date.Format "2006-01-02"
+                      }}</span>
+                    <span class="mx-2 text-muted">|</span>
+                    <span class="text-muted small"><i class="fas fa-clock mr-1"></i>{{ .ReadingTime }} min</span>
                   </div>
-                  <p class="card-text">{{ .Summary | truncate 50 }}</p>
-                  <a href="{{ .Permalink }}" class="btn btn-outline-orange btn-sm mt-auto">read more</a>
+                  <h4 class="card-title h5 mb-3">
+                    <a href="{{ .Permalink }}" class="text-dark hover-blue"
+                      style="font-family: 'Outfit', sans-serif; font-weight: 700;">{{ .Title | markdownify }}</a>
+                  </h4>
+                  <p class="card-text text-muted small" style="line-height: 1.6;">{{ .Summary | truncate 80 }}</p>
+                  <div class="mt-auto pt-3 d-flex justify-content-between align-items-center">
+                    <span class="badge badge-primary">Real Estate</span>
+                    <a href="{{ .Permalink }}" class="btn btn-link p-0 text-primary font-weight-bold"
+                      style="font-size: 0.8rem;">READ MORE</a>
+                  </div>
                 </div>
               </article>
             </div>
@@ -163,30 +173,33 @@
           </div>
 
           <!-- Section B: The Tech -->
-          <div class="col-12 mb-3 mt-4 d-flex justify-content-between align-items-center">
+          <div class="col-12 mb-4 mt-5 d-flex justify-content-between align-items-center reveal-on-scroll">
             <h3 class="section-title text-success mb-0">Python & 自動化實驗 (Dev Lab)</h3>
             <a href="{{ (site.GetPage " section" "automation" ).RelPermalink }}"
               class="btn btn-sm btn-outline-success">查看更多</a>
           </div>
           {{ $automation_posts := where .Site.RegularPages "Section" "automation" | first 9 }}
-          {{ if not $automation_posts }}
-          <div class="col-12">
-            <p>No posts found for Automation.</p>
-          </div>
-          {{ end }}
-          <div class="automation-slider">
+          <div class="automation-slider reveal-on-scroll">
             {{ range $automation_posts }}
             <div class="px-2 mb-4">
-              <article class="card h-100">
-                <div class="card-body px-0">
-                  <a href="{{ .Permalink }}" class="h5 d-block my-3">{{ .Title | markdownify }}</a>
-                  <div class="mb-3 post-meta">
-                    <span>{{ .Date.Format "2006-01-02" }}</span>
-                    <span class="border-bottom border-primary px-2 mx-1"></span>
-                    <span>{{ .ReadingTime }} min read</span>
+              <article class="card h-100 search-result-card">
+                <div class="card-body d-flex flex-column">
+                  <div class="post-meta mb-2">
+                    <span class="text-muted small"><i class="fas fa-calendar-alt mr-1"></i>{{ .Date.Format "2006-01-02"
+                      }}</span>
+                    <span class="mx-2 text-muted">|</span>
+                    <span class="text-muted small"><i class="fas fa-clock mr-1"></i>{{ .ReadingTime }} min</span>
                   </div>
-                  <p class="card-text">{{ .Summary | truncate 50 }}</p>
-                  <a href="{{ .Permalink }}" class="btn btn-outline-success btn-sm mt-auto">read more</a>
+                  <h4 class="card-title h5 mb-3">
+                    <a href="{{ .Permalink }}" class="text-dark hover-blue"
+                      style="font-family: 'Outfit', sans-serif; font-weight: 700;">{{ .Title | markdownify }}</a>
+                  </h4>
+                  <p class="card-text text-muted small" style="line-height: 1.6;">{{ .Summary | truncate 80 }}</p>
+                  <div class="mt-auto pt-3 d-flex justify-content-between align-items-center">
+                    <span class="badge badge-primary">Dev Lab</span>
+                    <a href="{{ .Permalink }}" class="btn btn-link p-0 text-primary font-weight-bold"
+                      style="font-size: 0.8rem;">READ MORE</a>
+                  </div>
                 </div>
               </article>
             </div>
@@ -194,25 +207,33 @@
           </div>
 
           <!-- Section C: The Lifestyle -->
-          <div class="col-12 mb-3 mt-4 d-flex justify-content-between align-items-center">
+          <div class="col-12 mb-4 mt-5 d-flex justify-content-between align-items-center reveal-on-scroll">
             <h3 class="section-title text-danger mb-0">廚藝與生活 (Lifestyle)</h3>
             <a href="{{ (site.GetPage " section" "lifestyle" ).RelPermalink }}"
               class="btn btn-sm btn-outline-danger">查看更多</a>
           </div>
           {{ $lifestyle_posts := where .Site.RegularPages "Section" "lifestyle" | first 9 }}
-          <div class="lifestyle-slider">
+          <div class="lifestyle-slider reveal-on-scroll">
             {{ range $lifestyle_posts }}
             <div class="px-2 mb-4">
-              <article class="card h-100">
-                <div class="card-body px-0">
-                  <a href="{{ .Permalink }}" class="h5 d-block my-3">{{ .Title | markdownify }}</a>
-                  <div class="mb-3 post-meta">
-                    <span>{{ .Date.Format "2006-01-02" }}</span>
-                    <span class="border-bottom border-primary px-2 mx-1"></span>
-                    <span>{{ .ReadingTime }} min read</span>
+              <article class="card h-100 search-result-card">
+                <div class="card-body d-flex flex-column">
+                  <div class="post-meta mb-2">
+                    <span class="text-muted small"><i class="fas fa-calendar-alt mr-1"></i>{{ .Date.Format "2006-01-02"
+                      }}</span>
+                    <span class="mx-2 text-muted">|</span>
+                    <span class="text-muted small"><i class="fas fa-clock mr-1"></i>{{ .ReadingTime }} min</span>
                   </div>
-                  <p class="card-text">{{ .Summary | truncate 50 }}</p>
-                  <a href="{{ .Permalink }}" class="btn btn-outline-danger btn-sm mt-auto">read more</a>
+                  <h4 class="card-title h5 mb-3">
+                    <a href="{{ .Permalink }}" class="text-dark hover-blue"
+                      style="font-family: 'Outfit', sans-serif; font-weight: 700;">{{ .Title | markdownify }}</a>
+                  </h4>
+                  <p class="card-text text-muted small" style="line-height: 1.6;">{{ .Summary | truncate 80 }}</p>
+                  <div class="mt-auto pt-3 d-flex justify-content-between align-items-center">
+                    <span class="badge badge-primary">Lifestyle</span>
+                    <a href="{{ .Permalink }}" class="btn btn-link p-0 text-primary font-weight-bold"
+                      style="font-size: 0.8rem;">READ MORE</a>
+                  </div>
                 </div>
               </article>
             </div>

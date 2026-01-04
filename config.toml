@@ -121,28 +121,64 @@ parent = "links"
 weight = 1
 
 [[menu.main]]
-name = "地政相關網站"
-URL = "links/#地政相關網站"
+name = "地政實務"
+URL = "links/#地政實務"
 parent = "links"
 weight = 2
 
 [[menu.main]]
-name = "理財相關網站"
-URL = "links/#理財相關網站"
+name = "投資與理財"
+URL = "links/#投資與理財"
 parent = "links"
 weight = 3
 
 [[menu.main]]
-name = "求職相關網站"
-URL = "links/#求職相關網站"
+name = "線上學習平台"
+URL = "links/#線上學習平台"
 parent = "links"
 weight = 4
 
 [[menu.main]]
-name = "其他"
-URL = "links/#其他"
+name = "Web 開發學習"
+URL = "links/#web-開發學習"
 parent = "links"
 weight = 5
+
+[[menu.main]]
+name = "AI 與數據科學"
+URL = "links/#ai-與數據科學"
+parent = "links"
+weight = 6
+
+[[menu.main]]
+name = "程式開發資源"
+URL = "links/#程式開發資源"
+parent = "links"
+weight = 7
+
+[[menu.main]]
+name = "求職與培訓"
+URL = "links/#求職與培訓"
+parent = "links"
+weight = 8
+
+[[menu.main]]
+name = "科普與成長"
+URL = "links/#科普與成長"
+parent = "links"
+weight = 9
+
+[[menu.main]]
+name = "部落格與個人"
+URL = "links/#部落格與個人"
+parent = "links"
+weight = 10
+
+[[menu.main]]
+name = "資安防護"
+URL = "links/#資安防護"
+parent = "links"
+weight = 11
 
 [[menu.main]]
 name = "自動化實驗室"

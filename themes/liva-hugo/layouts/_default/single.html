@@ -43,6 +43,15 @@
 
         <div class="content mb-5 post-content">
           {{ .Content }}
+
+          {{ if .Params.tags }}
+          <div class="post-tags mt-5 pt-4 border-top">
+            <span class="d-inline-block mr-3 text-muted"><i class="fas fa-tags mr-2"></i>文章標籤:</span>
+            {{ range .Params.tags }}
+            <a href="{{ `tags/` | relLangURL }}{{ . | urlize | lower }}" class="post-tag-item">{{ . }}</a>
+            {{ end }}
+          </div>
+          {{ end }}
         </div>
 
         <!-- 綜合導航區 -->

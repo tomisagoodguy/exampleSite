@@ -27,23 +27,37 @@
           <div class="row">
             {{ $paginator := .Paginate .Pages }}
             {{ range $paginator.Pages }}
-            <div class="col-md-6 col-lg-4 mb-4">
-              <article class="card h-100">
-                <div class="card-body px-0">
-                  <a href="{{ .Permalink }}" class="h5 d-block my-3">{{ .Title }}</a>
-                  <div class="mb-3 post-meta">
-                    <time class="text-muted small" datetime="{{ .Date }}">{{ .Date.Format "January 2, 2006" }}</time>
-                    <span class="border-bottom border-primary px-2 mx-1"></span>
-                    <span class="text-muted small">{{ .ReadingTime }} min read</span>
+            <div class="col-md-6 mb-4">
+              <article class="card h-100 search-result-card">
+                {{ if .Params.Image }}
+                <div class="card-img-wrapper">
+                  <img src="{{ .Params.Image | absURL }}" class="card-img-top" alt="{{ .Title }}">
+                </div>
+                {{ end }}
+                <div class="card-body d-flex flex-column">
+                  <div class="post-meta mb-2">
+                    <span class="text-muted small"><i class="fas fa-calendar-alt mr-1"></i>{{ .Date.Format "January 2, 2006" }}</span>
+                    <span class="mx-2 text-muted">|</span>
+                    <span class="text-muted small"><i class="fas fa-clock mr-1"></i>{{ .ReadingTime }} min</span>
                   </div>
-                  <p class="card-text">
+                  <h4 class="card-title h5 mb-3">
+                    <a href="{{ .Permalink }}" class="text-dark hover-blue"
+                      style="font-family: 'Outfit', sans-serif; font-weight: 700;">{{ .Title }}</a>
+                  </h4>
+                  <p class="card-text text-muted small" style="line-height: 1.6;">
                     {{ if .Summary }}
-                    {{ truncate 80 .Summary }}
+                    {{ truncate 120 .Summary }}
                     {{ else }}
-                    {{ truncate 80 .Content }}
+                    {{ truncate 120 .Content }}
                     {{ end }}
                   </p>
-                  <a href="{{ .Permalink }}" class="btn btn-outline-primary btn-sm mt-auto">read more</a>
+                  <div class="mt-auto pt-3">
+                    {{ range .Params.Categories }}
+                    <span class="badge badge-primary mr-1">{{ . }}</span>
+                    {{ end }}
+                    <a href="{{ .Permalink }}" class="btn btn-link p-0 float-right text-primary font-weight-bold"
+                      style="font-size: 0.85rem;">READ MORE</a>
+                  </div>
                 </div>
               </article>
             </div>
