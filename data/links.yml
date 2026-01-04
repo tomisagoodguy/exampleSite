@@ -213,6 +213,9 @@
     - title: "Dean Lin"
       url: "https://dean-lin.medium.com/"
       description: "Dean Lin 的 Medium 部落格。"
+    - title: "Luka's Notes"
+      url: "https://luka.tw/about/"
+      description: "Starbrugs 星巴哥技術週刊創辦人，程式柴 YouTube 經營者，分享程式教學與技術見解。"
 - category: "資安防護"
   links:
     - title: "Lucas Futures Risk Scanner"
