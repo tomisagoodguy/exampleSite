@@ -73,8 +73,6 @@ URL = "plugins/venobox/venobox.min.js"
 URL = "plugins/search/fuse.min.js"
 [[params.plugins.js]]
 URL = "plugins/search/mark.js"
-[[params.plugins.js]]
-URL = "plugins/search/search-v2.js"
 
 ############################## navigation ###############################
 [menu]

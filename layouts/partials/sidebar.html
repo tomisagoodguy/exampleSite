@@ -56,28 +56,6 @@
             </div>
         </div>
 
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                // Ensure jQuery is loaded before running this (Slick depends on jQuery)
-                var checkJQ = setInterval(function () {
-                    if (window.jQuery && window.jQuery.fn.slick) {
-                        clearInterval(checkJQ);
-                        jQuery('.sidebar-post-slider').slick({
-                            autoplay: true,
-                            autoplaySpeed: 2000,
-                            dots: false,
-                            arrows: false,
-                            infinite: true,
-                            speed: 500,
-                            slidesToShow: 5,
-                            slidesToScroll: 1,
-                            vertical: true,
-                            verticalSwiping: true
-                        });
-                    }
-                }, 100);
-            });
-        </script>
 
         <!-- category -->
         <div class="widget">

@@ -1,9 +1,11 @@
+declare var jQuery: any;
+
 // Preloader js    
-$(window).on('load', function () {
-  $('.preloader').fadeOut(100);
+jQuery(window).on('load', function () {
+  jQuery('.preloader').fadeOut(100);
 });
 
-(function ($) {
+(function ($: any) {
   'use strict';
 
   // 在文檔準備好後執行
@@ -17,7 +19,7 @@ $(window).on('load', function () {
     });
 
     // featured post slider
-    const featuredPostSlider = $(".featured-post-slider");
+    const featuredPostSlider: any = $(".featured-post-slider");
     if (featuredPostSlider.length) {
       featuredPostSlider.slick({
         infinite: true,
@@ -36,7 +38,7 @@ $(window).on('load', function () {
         }]
       });
 
-      featuredPostSlider.on('wheel', (function (e) {
+      featuredPostSlider.on('wheel', (function (this: any, e: any) {
         e.preventDefault();
         if (e.originalEvent.deltaY > 0) {
           $(this).slick('slickNext');
@@ -47,8 +49,8 @@ $(window).on('load', function () {
     }
 
     // venobox initialize
-    if ($.fn.venobox) {
-      $('.venobox').venobox();
+    if (($.fn as any).venobox) {
+      ($('.venobox') as any).venobox();
     }
 
     // TOC 功能實現 (修改為使用 position: sticky)
@@ -58,9 +60,9 @@ $(window).on('load', function () {
       const tocLinks = $('.toc-container a');
 
       // 初始化 TOC 樣式，使用 position: sticky
-      function initToc() {
+      function initToc(): void {
         // 只在桌面版應用 sticky 定位
-        if ($(window).width() > 991) {
+        if ($(window).width() ?? 0 > 991) {
           tocContainer.addClass('sticky-toc');
 
           // 確保 TOC 容器有足夠的高度限制，避免超出視口
@@ -79,30 +81,32 @@ $(window).on('load', function () {
       }
 
       // 平滑滾動功能
-      tocLinks.on('click', function (e) {
+      tocLinks.on('click', function (this: any, e: any) {
         e.preventDefault();
-        const targetId = $(this).attr('href').substring(1);
+        const href = $(this).attr('href');
+        if (!href) return;
+        const targetId = href.substring(1);
         const targetElement = $('#' + targetId);
 
         if (targetElement.length) {
           $('html, body').animate({
-            scrollTop: targetElement.offset().top - 80 // 80px 的偏移量，可以根據您的頁面調整
+            scrollTop: (targetElement.offset()?.top ?? 0) - 80 // 80px 的偏移量，可以根據您的頁面調整
           }, 500);
 
           // 更新 URL 但不跳轉
-          history.pushState(null, null, `#${targetId}`);
+          history.pushState(null, '', `#${targetId}`);
         }
       });
 
       // 滾動時高亮當前章節
       $(window).on('scroll', function () {
         let currentHeading = '';
-        const scrollPosition = $(window).scrollTop();
+        const scrollPosition = $(window).scrollTop() ?? 0;
 
         // 找出當前可見的標題
-        headings.each(function () {
-          if ($(this).offset().top - 100 <= scrollPosition) {
-            currentHeading = $(this).attr('id');
+        headings.each(function (this: any) {
+          if ((($(this).offset()?.top ?? 0) - 100) <= scrollPosition) {
+            currentHeading = $(this).attr('id') ?? '';
           }
         });
 
@@ -134,31 +138,31 @@ $(window).on('load', function () {
     }
 
     // 確保返回頂部和快速向下按鈕初始時是隱藏的
-    $('#return-to-top, #go-to-bottom').hide();
+    ($('#return-to-top, #go-to-bottom') as any).hide();
 
     // 返回頂部和快速向下箭頭功能
-    $(window).scroll(function () {
+    $(window).on('scroll', function (this: any) {
       // 返回頂部按鈕顯示/隱藏邏輯
-      if ($(this).scrollTop() >= 50) {
-        $('#return-to-top').fadeIn(200);
+      if (($(this).scrollTop() ?? 0) >= 50) {
+        ($('#return-to-top') as any).fadeIn(200);
       } else {
-        $('#return-to-top').fadeOut(200);
+        ($('#return-to-top') as any).fadeOut(200);
       }
 
       // 快速向下按鈕顯示/隱藏邏輯
-      const pageHeight = $(document).height();
-      const windowHeight = $(window).height();
-      const scrollPosition = $(this).scrollTop();
+      const pageHeight = $(document).height() ?? 0;
+      const windowHeight = $(window).height() ?? 0;
+      const scrollPosition = $(this).scrollTop() ?? 0;
 
       if (scrollPosition < pageHeight - windowHeight - 200) {
-        $('#go-to-bottom').fadeIn(200);
+        ($('#go-to-bottom') as any).fadeIn(200);
       } else {
-        $('#go-to-bottom').fadeOut(200);
+        ($('#go-to-bottom') as any).fadeOut(200);
       }
     });
 
     // 返回頂部按鈕點擊事件
-    $('#return-to-top').on('click', function (e) {
+    $('#return-to-top').on('click', function (e: any) {
       e.preventDefault();
       $('html, body').animate({
         scrollTop: 0
@@ -166,12 +170,12 @@ $(window).on('load', function () {
     });
 
     // 快速向下按鈕點擊事件 - 使用更直接的方法
-    $('#go-to-bottom').on('click', function (e) {
+    $('#go-to-bottom').on('click', function (e: any) {
       e.preventDefault();
 
       // 計算文檔總高度和窗口高度
-      const docHeight = $(document).height();
-      const winHeight = $(window).height();
+      const docHeight = $(document).height() ?? 0;
+      const winHeight = $(window).height() ?? 0;
 
       // 滾動到文檔底部
       $('html, body').animate({
@@ -180,7 +184,7 @@ $(window).on('load', function () {
     });
 
     // 水平副導覽列下拉菜單功能 - 依據螢幕大小調整行為
-    function setupDropdowns() {
+    function setupDropdowns(): void {
       const dropdownItems = $('.sub-nav-list li.dropdown');
 
       // 移除可能存在的點擊事件處理程序
@@ -189,8 +193,8 @@ $(window).on('load', function () {
 
       // 桌面版本使用懸停效果 (已在 CSS 中實現)
       // 移動版本使用點擊效果
-      if ($(window).width() <= 768) {
-        dropdownItems.find('> a').on('click.dropdown', function (e) {
+      if (($(window).width() ?? 0) <= 768) {
+        dropdownItems.find('> a').on('click.dropdown', function (this: any, e: any) {
           e.preventDefault();
           const parent = $(this).parent();
 
@@ -202,7 +206,7 @@ $(window).on('load', function () {
         });
 
         // 點擊其他地方關閉下拉菜單
-        $(document).on('click.dropdown-close', function (e) {
+        $(document).on('click.dropdown-close', function (e: any) {
           if (!dropdownItems.is(e.target) && dropdownItems.has(e.target).length === 0) {
             dropdownItems.removeClass('show');
           }
@@ -219,8 +223,8 @@ $(window).on('load', function () {
     });
 
     // 確保移動設備上的下拉菜單可以正確關閉
-    $('.sub-nav-list li.dropdown .dropdown-menu a').on('click', function () {
-      if ($(window).width() <= 768) {
+    ($('.sub-nav-list li.dropdown .dropdown-menu a') as any).on('click', function (this: any) {
+      if (($(window).width() ?? 0) <= 768) {
         $(this).closest('.dropdown').removeClass('show');
       }
     });
@@ -234,7 +238,7 @@ $(window).on('load', function () {
     $(window).on('scroll', function () {
       const subNav = $('.sub-navigation');
       if (subNav.length) {
-        if ($(window).scrollTop() > 50) {
+        if (($(window).scrollTop() ?? 0) > 50) {
           subNav.addClass('scrolled');
         } else {
           subNav.removeClass('scrolled');

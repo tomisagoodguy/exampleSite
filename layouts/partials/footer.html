@@ -40,20 +40,36 @@
         <ul class="list-unstyled contact-list">
           {{ if .Site.Params.mobile }}
           <li class="mb-3">
-            <a class="text-dark d-flex align-items-center" href="tel:{{ .Site.Params.mobile }}">
-              <i class="ti-mobile text-primary"></i>{{ .Site.Params.mobile }}
+            <a class="text-dark d-flex align-items-center cursor-pointer" href="tel:{{ .Site.Params.mobile }}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="text-primary mr-2" style="width: 20px; height: 20px;">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+              </svg>
+              {{ .Site.Params.mobile }}
             </a>
           </li>
           {{ end }}
           {{ if .Site.Params.location }}
           <li class="mb-3 d-flex align-items-center">
-            <i class="ti-location-pin text-primary"></i>{{ .Site.Params.location }}
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" class="text-primary mr-2" style="width: 20px; height: 20px;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+            </svg>
+            {{ .Site.Params.location }}
           </li>
           {{ end }}
           {{ if .Site.Params.email }}
           <li class="mb-3">
-            <a class="text-dark d-flex align-items-center" href="mailto:{{ .Site.Params.email }}">
-              <i class="ti-email text-primary"></i>{{ .Site.Params.email }}
+            <a class="text-dark d-flex align-items-center cursor-pointer" href="mailto:{{ .Site.Params.email }}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="text-primary mr-2" style="width: 20px; height: 20px;">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+              </svg>
+              {{ .Site.Params.email }}
             </a>
           </li>
           {{ end }}
@@ -102,8 +118,18 @@
   </div>
 </footer>
 
-<a href="#" id="return-to-top"><i class="fas fa-arrow-up"></i></a>
-<a href="#" id="go-to-bottom"><i class="fas fa-arrow-down"></i></a>
+<a href="#" id="return-to-top" class="cursor-pointer">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+    style="width: 24px; height: 24px;">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+  </svg>
+</a>
+<a href="#" id="go-to-bottom" class="cursor-pointer">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+    style="width: 24px; height: 24px;">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+  </svg>
+</a>
 
 <script>
   var indexURL = "{{ "index.json" | absURL | safeJS }}";
@@ -113,128 +139,29 @@
 {{ range .Site.Params.plugins.js}}
 <script src="{{ .URL | absURL }}" {{ if .async }}async{{ end }} {{ if .defer }}defer{{ end }}></script>
 {{ end }}
-{{ "<!-- Main Script -->" | safeHTML }}
-{{ $script := resources.Get "js/script.js" | minify}}
+
+{{ "<!-- Main script with TypeScript support -->" | safeHTML }}
+{{ $script := resources.Get "js/script.ts" | js.Build (dict "minify" true) }}
 <script src="{{ $script.Permalink }}"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const themeToggle = document.getElementById('checkbox');
-    const body = document.body;
-    const themeClass = 'dark-mode';
 
-    function applyTheme(theme) {
-      if (theme === 'dark') {
-        body.classList.add(themeClass);
-        if (themeToggle) themeToggle.checked = true;
-        localStorage.setItem('theme', 'dark');
-      } else {
-        body.classList.remove(themeClass);
-        if (themeToggle) themeToggle.checked = false;
-        localStorage.setItem('theme', 'light');
-      }
-    }
+{{ "<!-- UI logic bundle with TypeScript -->" | safeHTML }}
+{{ $ui := resources.Get "js/index.ts" | js.Build (dict "minify" true) }}
+<script src="{{ $ui.Permalink }}"></script>
 
-    // Initial check
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+{{ if eq .Section "search" }}
+{{ "<!-- Search logic with TypeScript -->" | safeHTML }}
+{{ $search := resources.Get "js/search.ts" | js.Build (dict "minify" true) }}
+<script src="{{ $search.Permalink }}"></script>
+{{ end }}
 
-    if (savedTheme === 'dark' || savedTheme === 'dark-mode') {
-      applyTheme('dark');
-    } else if (!savedTheme && prefersDark) {
-      applyTheme('dark');
-    } else {
-      applyTheme('light');
-    }
-
-    // Event listener
-    if (themeToggle) {
-      themeToggle.addEventListener('change', function (e) {
-        if (e.target.checked) {
-          applyTheme('dark');
-        } else {
-          applyTheme('light');
-        }
-      });
-    }
-
-    // === Navbar Scroll Logic ===
-    window.addEventListener('scroll', function () {
-      if (window.scrollY > 30) {
-        document.body.classList.add('scrolled');
-      } else {
-        document.body.classList.remove('scrolled');
-      }
-    });
-
-    // === Scroll Reveal Logic (Intersection Observer) ===
-    const revealElements = document.querySelectorAll('.reveal-on-scroll');
-    const revealObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = "1";
-          entry.target.classList.add('reveal-active');
-        }
-      });
-    }, { threshold: 0.1 });
-
-    revealElements.forEach(el => revealObserver.observe(el));
-
-    // === Code Block Copy Functionality ===
-    const codeBlocks = document.querySelectorAll('pre');
-    codeBlocks.forEach(function (pre) {
-      // Create copy button
-      const button = document.createElement('button');
-      button.className = 'copy-button';
-      button.innerText = 'Copy';
-
-      // Position button (handled by CSS, but we append it to the pre)
-      pre.appendChild(button);
-
-      button.addEventListener('click', function () {
-        // Find the code element inside
-        const code = pre.querySelector('code');
-        const textToCopy = code ? code.innerText : pre.innerText;
-
-        // Copy using Clipboard API
-        navigator.clipboard.writeText(textToCopy).then(function () {
-          button.innerText = 'Copied!';
-          setTimeout(function () {
-            button.innerText = 'Copy';
-          }, 2000);
-        }).catch(function (err) {
-          console.error('Failed to copy: ', err);
-          button.innerText = 'Error';
-        });
-      });
-    });
-  });
-</script>
-
-<!-- Newsletter Script -->
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('newsletter-form');
-    if (form) {
-      form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        const response = document.getElementById('newsletter-response');
-        const email = this.querySelector('input[name="email"]').value;
-
-        // 這裡可以添加實際的表單提交邏輯
-        // 例如使用fetch API提交到指定端點
-
-        response.innerHTML = '<p class="text-success">感謝您的訂閱！</p>';
-        this.reset();
-      });
-    }
-  });
-</script>
+<!-- Newsletter Script placeholder (Logic moved to TypeScript) -->
 
 <!-- cookie -->
 {{ if site.Params.cookies.enable }}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.1/js.cookie.min.js"
   integrity="sha256-P8jY+MCe6X2cjNSmF4rQvZIanL5VwUUT4MBnOMncjRU=" crossorigin="anonymous"></script>
-<div id="js-cookie-box" class="cookie-box cookie-box-hide">
+<div id="js-cookie-box" class="cookie-box cookie-box-hide"
+  data-cookie-expire="{{ site.Params.cookies.expire_days | default 1 }}">
   <div class="container">
     <div class="cookie-content">
       <p>本網站使用Cookie來改善您的瀏覽體驗。繼續使用本網站，即表示您同意我們的Cookie使用政策。</p>
@@ -245,29 +172,4 @@
     </div>
   </div>
 </div>
-<script>
-  (function () {
-    const cookieBox = document.getElementById('js-cookie-box');
-    const cookieButton = document.getElementById('js-cookie-button');
-
-    function initCookieBox() {
-      if (typeof Cookies === 'undefined') {
-        setTimeout(initCookieBox, 1000);
-        return;
-      }
-
-      if (cookieBox && !Cookies.get('cookie-box')) {
-        cookieBox.classList.remove('cookie-box-hide');
-        cookieButton.onclick = function () {
-          Cookies.set('cookie-box', true, {
-            expires: {{ site.Params.cookies.expire_days | default 1 }}
-      });
-      localStorage.setItem('cookie-consent', 'true');
-      cookieBox.classList.add('cookie-box-hide');
-    };
-  }
-    }
-  initCookieBox();
-  }) ();
-</script>
 {{ end }}

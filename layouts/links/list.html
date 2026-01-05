@@ -13,13 +13,14 @@
               {{ range $index, $element := .Site.Data.links }}
               {{ $color := index $colors (mod $index (len $colors)) }}
               <div class="nav-item mb-2 category-group" data-color="{{ $color }}">
-                <a class="nav-link font-weight-bold text-dark category-link" href="#{{ .category | urlize }}">
-                  <span class="color-dot bg-{{ $color }}"></span>{{ .category }}
+                <a class="nav-link font-weight-bold text-dark category-link cursor-pointer d-flex align-items-center"
+                  href="#{{ .category | urlize }}">
+                  <span class="color-dot bg-{{ $color }} mr-2"></span>{{ .category }}
                 </a>
                 <div class="pl-3 sub-links">
                   {{ range .links }}
-                  <a class="nav-link py-1 text-muted small hover-{{ $color }}" href="{{ .url | safeURL }}"
-                    target="_blank" rel="noopener">{{
+                  <a class="nav-link py-1 text-muted small hover-{{ $color }} cursor-pointer"
+                    href="{{ .url | safeURL }}" target="_blank" rel="noopener">{{
                     .title }}</a>
                   {{ end }}
                 </div>
@@ -73,7 +74,7 @@
                       </a>
                       <p class="card-text text-muted mb-4 small">{{ .description }}</p>
                       <a href="{{ .url | safeURL }}" target="_blank" rel="noopener"
-                        class="btn btn-outline-{{ $color }} btn-sm mt-auto position-relative z-index-2">前往連結</a>
+                        class="btn btn-outline-{{ $color }} btn-sm mt-auto position-relative z-index-2 cursor-pointer transition-all">前往連結</a>
                     </div>
                   </div>
                 </div>

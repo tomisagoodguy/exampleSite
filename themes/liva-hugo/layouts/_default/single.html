@@ -40,6 +40,19 @@
           <span>{{ .ReadingTime }} min read</span>
         </div>
 
+        {{ if .Params.Image }}
+        <div class="mb-4">
+          {{ $image := .Resources.GetMatch .Params.Image }}
+          {{ if $image }}
+          <img src="{{ $image.RelPermalink }}" class="img-fluid rounded w-100" alt="{{ .Title }}"
+            style="max-height: 500px; object-fit: cover;">
+          {{ else }}
+          <img src="{{ .Params.Image | absURL }}" class="img-fluid rounded w-100" alt="{{ .Title }}"
+            style="max-height: 500px; object-fit: cover;">
+          {{ end }}
+        </div>
+        {{ end }}
+
 
         <div class="content mb-5 post-content">
           {{ .Content }}

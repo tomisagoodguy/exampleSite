@@ -1,9 +1,9 @@
 ﻿---
 title: "「菲式思考」：15個選股策略的條件清單"
 date: 2025-09-27T00:00:00+08:00
-description: ""
+description: "本文深入探討『菲式思考』背後的15種專業選股邏輯，從融券回補、營收動能到籌碼分析，完整條列各項策略的篩選條件，助您建立更嚴謹的投資決策框架。"
 type: "post"
-image: "本文深入探討『菲式思考』背後的15種專業選股邏輯，從融券回補、營收動能到籌碼分析，完整條列各項策略的篩選條件，助您建立更嚴謹的投資決策框架。"
+image: ""
 categories:
   - "【投資量化】"
 tags:
@@ -206,4 +206,3 @@ tags:
 * [Anue 鉅亨網](https://www.facebook.com/anuetw)
 * [股市小菜雞](https://www.facebook.com/GreenHornFans)
 * [無名的散戶](https://www.facebook.com/profile.php?id=100083491774919)
-

@@ -1,0 +1,12 @@
+{{- $image := .Page.Resources.GetMatch .Destination -}}
+{{- if $image -}}
+<figure class="recipe-gallery-item single-image">
+    <img loading="lazy" src="{{ $image.RelPermalink }}" {{ with $image.Width }}width="{{ . }}" {{ end }} {{ with
+        $image.Height }}height="{{ . }}" {{ end }} alt="{{ .Text | default $image.Name }}" title="{{ .Title }}">
+    {{- if .Text -}}
+    <figcaption>{{ .Text }}</figcaption>
+    {{- end -}}
+</figure>
+{{- else -}}
+<img src="{{ .Destination | safeURL }}" alt="{{ .Text }}" {{ with .Title }} title="{{ . }}" {{ end }}>
+{{- end -}}

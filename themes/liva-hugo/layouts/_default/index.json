@@ -1,5 +1,14 @@
 {{- $.Scratch.Add "index" slice -}}
 {{- range .Site.RegularPages -}}
-    {{- $.Scratch.Add "index" (dict "title" .Title "tags" .Params.tags "categories" .Params.categories "contents" .Plain "permalink" .Permalink "image" (.Params.image | absURL) "date" (.Date.Format "02 Jan, 2006") "readingTime" .ReadingTime "summary" .Summary) -}}
+    {{- $image := "" -}}
+    {{- if .Params.image -}}
+        {{- $imgResource := .Resources.GetMatch .Params.image -}}
+        {{- if $imgResource -}}
+            {{- $image = $imgResource.Permalink -}}
+        {{- else -}}
+            {{- $image = .Params.image | absURL -}}
+        {{- end -}}
+    {{- end -}}
+    {{- $.Scratch.Add "index" (dict "title" .Title "tags" .Params.tags "categories" .Params.categories "contents" .Plain "permalink" .Permalink "image" $image "date" (.Date.Format "02 Jan, 2006") "readingTime" .ReadingTime "summary" .Summary) -}}
 {{- end -}}
 {{- $.Scratch.Get "index" | jsonify -}}

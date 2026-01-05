@@ -1,1 +1,11 @@
-{{- $filename := .Get 0 -}}{{- with .Page.Resources.GetMatch $filename -}}<figure class="recipe-gallery-item single-image"><img loading="lazy" src="{{ .RelPermalink }}" width="{{ .Width }}" height="{{ .Height }}" alt="{{ .Name | replaceRE "\\..*$" "" | humanize }}"><figcaption>{{ .Name | replaceRE "\\..*$" "" | humanize }}</figcaption></figure>{{- else -}}<p style="color: red;">Image not found: {{ $filename }}</p>{{- end -}}
+{{- $filename := .Get 0 -}}
+{{- $img := .Page.Resources.GetMatch (printf "*%s*" $filename) -}}
+{{- with $img -}}
+<figure class="recipe-gallery-item single-image">
+    <img loading="lazy" src="{{ .RelPermalink }}" width="{{ .Width }}" height="{{ .Height }}"
+        alt="{{ .Name | replaceRE " \\..*$" "" | humanize }}">
+    <figcaption>{{ .Name | replaceRE "\\..*$" "" | humanize }}</figcaption>
+</figure>
+{{- else -}}
+<p style="color: red;">Image not found: {{ $filename }}</p>
+{{- end -}}

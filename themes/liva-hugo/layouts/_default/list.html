@@ -31,12 +31,20 @@
               <article class="card h-100 search-result-card">
                 {{ if .Params.Image }}
                 <div class="card-img-wrapper">
+                  {{ $image := .Resources.GetMatch .Params.Image }}
+                  {{ if $image }}
+                  <img src="{{ $image.RelPermalink }}" class="card-img-top" alt="{{ .Title }}">
+                  {{ else }}
                   <img src="{{ .Params.Image | absURL }}" class="card-img-top" alt="{{ .Title }}">
+                  {{ end }}
                 </div>
                 {{ end }}
                 <div class="card-body d-flex flex-column">
                   <div class="post-meta mb-2">
-                    <span class="text-muted small"><i class="fas fa-calendar-alt mr-1"></i>{{ .Date.Format "January 2, 2006" }}</span>
+                    <span class="text-muted small">
+                      <i class="fas fa-calendar-alt mr-1"></i>
+                      {{ .Date.Format "2006-01-02" }}
+                    </span>
                     <span class="mx-2 text-muted">|</span>
                     <span class="text-muted small"><i class="fas fa-clock mr-1"></i>{{ .ReadingTime }} min</span>
                   </div>
