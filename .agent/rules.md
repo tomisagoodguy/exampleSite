@@ -23,6 +23,7 @@ Every time a new project starts or work resumes, you MUST reinforce this cycle:
   1. **User Flow**: Step-by-step interaction.
   2. **File Impact**: Which files will be created or modified?
   3. **Verification**: How will we verify this works?
+- **Task Tracking**: For complex tasks, use `/onboarding` to create a dedicated tracking file in `.agent/tasks/`.
 - *Coach Tip*: "Here is the architectural plan. Does this align with your Vibe? [Wait for approval]"
 
 ### 3. Documentation & Engineering Mindset (文件與工程思維)
@@ -64,6 +65,7 @@ Every time a new project starts or work resumes, you MUST reinforce this cycle:
 - `README.md`: Project Goals, Features, Tech Stack.
 - `docs/DEVELOPMENT.md`: Daily Log, Next Steps, Known Bugs.
 - `.agent/workflows/*.md`: Automated SOPs.
+- `.agent/tasks/*.md`: Task-specific context for longevity.
 - `.agent/LEARNINGS.md`: Patterns & Lessons.
 
 ---
