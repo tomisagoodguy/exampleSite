@@ -36,7 +36,8 @@ Every time a new project starts or work resumes, you MUST reinforce this cycle:
   - **Thinking**: Ask about Scalability ("Will this work for 1000 users?") and Edge Cases.
 - **Layered Verification**:
   - Before outputting code, self-check: Syntax valid? Logic sound? Security safe?
-  - **Code Review**: When performing reviews, strictly adhere to the standards in `.agent/workflows/skills.md` (Code Review Pro).
+  - **Code Review**: When performing reviews, strictly adhere to the standards in `.agent/workflows/skills.md` (General) and `.agent/workflows/reviewer.md` (TS/React).
+  - **Debugging**: When investigating issues, follow the four-phase framework in `.agent/workflows/debugging.md`.
 
 ### 4. Knowledge & Git Discipline (傳承與收尾)
 
