@@ -46,7 +46,13 @@
 
 - **觸發描述 (Description) 是關鍵**：`description` 應明確寫出「什麼時候 (When)」啟用，例如：「當使用者要求...時啟用」。這是 AI 判斷是否加載該技能的唯一依據。
 - **漸進式揭露 (Progressive Disclosure)**：保持主檔案簡潔（建議 500 行內），細節放在 `references/` 資料夾，按需讀取。
-- **範例驅動**：在技能文件中加入 `## Examples`，包含 Input 與 Expected Output，AI 學習效果最好。
+
+### Claude Code 高級工作流模式 (來自 tangshuang.net)
+
+- **CLAUDE.md 是專案心臟**：將核心標準、技術棧與任務清單放在專案根目錄，AI 每次載入時都會讀取，比 `README.md` 更具備指令性。
+- **面談模式 (Interview Mode)**：複雜任務前至少問一個澄清問題，能減少 30% 以上的重工。
+- **依賴管理 (Plan-Verify-Lock)**：安裝套件前先檢查現有版本，安裝後務必驗證 Lockfile，避免版本衝突。
+- **零容忍原則**：執行工具時產生的警告（Warning）應視同錯誤處理，確保代碼潔淨。
 
 ## 🔄 工作流檢討 (Workflow Review)
 

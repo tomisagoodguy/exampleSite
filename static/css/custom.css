@@ -3129,3 +3129,64 @@ body.dark-mode .sub-links .nav-link {
 .category-group:hover .sub-links {
   max-height: 500px;
 }
+/* ----------------------------------------------------------- */
+/* Fix for Slick Slider Dots showing strange .1.2.3 numbers    */
+/* ----------------------------------------------------------- */
+.slick-dots li button {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  color: transparent !important;
+  display: block;
+  width: 20px;
+  height: 20px;
+  padding: 5px;
+  cursor: pointer;
+  border: 0;
+  outline: none;
+  background: transparent;
+}
+
+.slick-dots li button:focus, .slick-dots li button:hover {
+    outline: none;
+}
+
+.slick-dots li button:before {
+  font-family: 'slick';
+  font-size: 12px !important;
+  line-height: 20px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  content: '';
+  text-align: center;
+  opacity: 0.25;
+  color: black;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.slick-dots li.slick-active button:before {
+  opacity: 0.75;
+  color: var(--primary-color, black);
+}
+
+/* Dark mode support */
+body.dark-mode .slick-dots li button:before {
+  color: white;
+  opacity: 0.5;
+}
+
+body.dark-mode .slick-dots li.slick-active button:before {
+  color: white;
+  opacity: 1;
+}
+
+
+.slick-dots {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+

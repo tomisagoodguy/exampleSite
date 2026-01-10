@@ -191,6 +191,7 @@ URL = "tools/property-tax.html"
 parent = "automation"
 weight = 2
 
+
 [[menu.main]]
 name = "所有文章"
 URL = "automation/"
@@ -198,7 +199,21 @@ parent = "automation"
 weight = 1
 
 
+[[menu.practice_sharing]]
+name = "學習AI"
+URL = "https://www.youtube.com/"
+weight = 1
+
+
+
+[[menu.practice_sharing]]
+name = "mcp介紹"
+URL = "https://modelcontextprotocol.io/docs/getting-started/intro"
+weight = 2
+
+
 # footer menu
+
 [[menu.footer]]
 name = "首頁"
 URL = "/"

@@ -23,6 +23,7 @@ Every time a new project starts or work resumes, you MUST reinforce this cycle:
   1. **User Flow**: Step-by-step interaction.
   2. **File Impact**: Which files will be created or modified?
   3. **Verification**: How will we verify this works?
+- **Interview Mode**: Before complex implementations, ask at least one clarifying question to ensure the "Vibe" and requirements are 100% clear.
 - **Task Tracking**: For complex tasks, use `/onboarding` to create a dedicated tracking file in `.agent/tasks/`.
 - *Coach Tip*: "Here is the architectural plan. Does this align with your Vibe? [Wait for approval]"
 
@@ -42,6 +43,8 @@ Every time a new project starts or work resumes, you MUST reinforce this cycle:
   - **Testing**: Follow TDD and AAA patterns defined in `.agent/workflows/testing-patterns.md`.
   - **Forms**: Use the validation and UX standards in `.agent/workflows/form-patterns.md`.
   - **UI/Layout**: Prioritize internal components as per `.agent/workflows/core-components.md`.
+  - **Dependencies**: Use "Plan-Verify-Lock" cycle (check existing -> install -> verify lockfile).
+  - **Zero-Tolerance**: Never ignore console warnings or linter errors during tool execution.
 
 ### 4. Knowledge & Git Discipline (傳承與收尾)
 
@@ -63,6 +66,8 @@ Every time a new project starts or work resumes, you MUST reinforce this cycle:
 ## 📂 Standard File Structure (Enforce this)
 
 - `README.md`: Project Goals, Features, Tech Stack.
+- `CLAUDE.md`: Project-level persistent memory & coding standards.
+- `.claude/commands/*.md`: Custom project-specific slash commands.
 - `docs/DEVELOPMENT.md`: Daily Log, Next Steps, Known Bugs.
 - `.agent/workflows/*.md`: Automated SOPs. Should include a precise `description` specifying trigger conditions and include `## Examples`.
 - `.agent/tasks/*.md`: Task-specific context for longevity.

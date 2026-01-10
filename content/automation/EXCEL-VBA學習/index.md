@@ -89,6 +89,7 @@ tags:
       AddTwo = num + 2
   End Function
   ```
+
 * **命名規則**：必須以字母開頭，且不能包含空格或特殊符號 (`.`、`!`、`@`、`&`、`$`、`#`)，亦不可使用 VBA 的保留關鍵字。
 
 ### 模組化程式設計 (Call)
@@ -126,6 +127,7 @@ tags:
   * **溢位**：當數值超出範圍時，需轉換為更大範圍的類型 (如 `Integer` -> `Long`)。
   * **物件變數**：指派物件時必須使用 `Set` 關鍵字 (e.g., `Set mySheet = Sheets(1)`)。
 * **範例**：
+
   ```vba
   Sub VariableExample()
       Dim name As String
@@ -189,10 +191,13 @@ VBA 的強大之處在於能直接控制 Excel 的各個物件。
 這是一個強大的工具 (`Ctrl+G`)，主要有兩種用途：
 
 1. **執行簡短程式**：直接輸入程式碼並按 Enter 即可執行。
+
    ```
    MsgBox "Test"
    ```
+
 2. **查詢變數或屬性內容**：在程式中斷或執行時，用 `?` 開頭來查詢值，或使用 `Debug.Print` 將訊息輸出至此視窗。
+
    ```vba
    Sub PrintToImmediate()
        Dim myVar As String
@@ -221,6 +226,7 @@ VBA 的強大之處在於能直接控制 Excel 的各個物件。
       ' 以上皆不成立時執行
   End If
   ```
+
 * **範例**：檢查儲存格 A1 的內容是否符合以下條件：
 
   1. 必為 4 個字元 (`Len`)
@@ -487,12 +493,14 @@ VBA 的強大之處在於能直接控制 Excel 的各個物件。
   ```vba
   s = "<div class=""box"">" ' 超級容易看錯
   ```
+
 * **救星寫法：Chr(34)**：
   `Chr(34)` 是 ASCII code 中的第 34 號字元，也就是雙引號 `"`。使用變數連接的方式，程式碼會清晰非常多。
 
   ```vba
   s = "<div class=" & Chr(34) & "box" & Chr(34) & ">"
   ```
+
 * **與 Replace 搭配使用**：
   當我們要清理資料中的雙引號時 (例如 CSV 內容常見 `Result="Pass"` 這種格式)，`Chr(34)` 特別好用。
 
@@ -601,7 +609,7 @@ MsgBox url ' 輸出: https://tw.stock.yahoo.com/quote/2330.TW
       Dim strBody As String
 
       strURL = "https://example.com/api/login"
-      strBody = "username=tom&password=123" ' 模擬表單資料
+      strBody = "username=YOUR_USERNAME&password=YOUR_PASSWORD" ' ⚠️ 實測時請替換為真實帳號密碼，切勿將密碼 commit 到 GitHub
 
       Set objHTTP = CreateObject("MSXML2.XMLHTTP")
 
