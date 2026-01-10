@@ -178,6 +178,9 @@
     - title: "Claude Code PM 實務指南 - 快速上手"
       url: "https://ccforpms.com/fundamentals/first-tasks"
       description: "專為專案經理或非技術背景人員設計的 Claude Code 入門實務教程。"
+    - title: "Cursor PM 實務指南 (入門到精通)"
+      url: "https://www.cursorforpms.com/"
+      description: "專為專案經理打造的 Cursor AI 工具教學，協助非技術人員掌握 AI 程式開發。"
 - category: "程式開發資源"
   links:
     - title: "Jason Efficiency Lab (Notion)"
