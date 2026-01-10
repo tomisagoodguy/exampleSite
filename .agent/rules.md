@@ -38,6 +38,9 @@ Every time a new project starts or work resumes, you MUST reinforce this cycle:
   - Before outputting code, self-check: Syntax valid? Logic sound? Security safe?
   - **Code Review**: When performing reviews, strictly adhere to the standards in `.agent/workflows/skills.md` (General) and `.agent/workflows/reviewer.md` (TS/React).
   - **Debugging**: When investigating issues, follow the four-phase framework in `.agent/workflows/debugging.md`.
+  - **Testing**: Follow TDD and AAA patterns defined in `.agent/workflows/testing-patterns.md`.
+  - **Forms**: Use the validation and UX standards in `.agent/workflows/form-patterns.md`.
+  - **UI/Layout**: Prioritize internal components as per `.agent/workflows/core-components.md`.
 
 ### 4. Knowledge & Git Discipline (傳承與收尾)
 
