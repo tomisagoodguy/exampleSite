@@ -1,7 +1,7 @@
 ---
 name: core-components
-description: 專案 UI 元件庫使用指南。強制使用內部 Design System 元件，避免使用原生 HTML 標籤。
-version: 1.0.0
+description: 專案 UI 元件庫使用指南。強制使用內部 Design System 元件，避免使用原生 HTML 標籤。當使用者要求「新增組件」、「調整頁面」或「開發 UI」時參考此規範。
+version: 1.1.0
 ---
 
 # Design System 使用規範

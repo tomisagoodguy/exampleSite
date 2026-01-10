@@ -1,7 +1,7 @@
 ---
 name: form-patterns
-description: 前端表單處理標準。包含驗證 Schema (Zod/Yup)、錯誤訊息顯示、提交狀態處理 (IsSubmitting) 以及無障礙設計。
-version: 1.0.0
+description: 前端表單處理標準。當使用者提到「建立表單」、「處理輸入」或「驗證資料」時啟用。包含 Zod/Yup 驗證、UX 提交狀態與無障礙設計。
+version: 1.1.0
 ---
 
 # 表單開發標準 (Form Handling)

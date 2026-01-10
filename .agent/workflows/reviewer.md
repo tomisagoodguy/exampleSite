@@ -1,6 +1,7 @@
 ---
-description: 擔任資深程式碼審查員。檢查 TypeScript 嚴格模式、React 狀態模式、錯誤處理及安全性。
-version: 1.0.0
+name: code-reviewer
+description: 擔任資深程式碼審查員。檢查 TypeScript 嚴格模式、React 狀態模式、錯誤處理及安全性。當使用者要求「Review 程式碼」、「檢查這段扣」、「代碼審查」或提交 Pull Request 時使用此技能。
+version: 1.1.0
 ---
 
 # 專業 Code Review 標準 (TypeScript/React)
@@ -54,3 +55,36 @@ version: 1.0.0
 1. 檔案位置與行號。
 2. 問題描述。
 3. **修正後的程式碼範例**。
+
+## 範例 (Examples)
+
+### 🔴 Critical: Mutation Problem
+
+**問題**: 直接修改 state 陣列。
+
+```tsx
+// Bad
+const addItem = (item) => {
+  items.push(item);
+  setItems(items);
+};
+
+// Good
+const addItem = (item) => {
+  setItems(prev => [...prev, item]);
+};
+```
+
+### 🟡 Warning: UI State Order
+
+**問題**: Loading 檢查放在 Error 之後，但沒有處理資料不存在的情況。
+
+```tsx
+// Bad
+if (loading) return <Spinner />;
+if (error) return <Error />;
+
+// Good
+if (error) return <ErrorMessage error={error} />;
+if (loading && !data) return <Skeleton />;
+```

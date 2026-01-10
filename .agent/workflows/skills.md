@@ -3,9 +3,10 @@ description:
 ---
 
 ---
+
 name: code-review-pro
-description: 執行專業級的程式碼審查（Code Review）。包含安全性漏洞檢查、效能優化建議、程式碼風格一致性確認，以及潛在的邏輯錯誤分析。
-version: 1.0.0
+description: 執行專業級的程式碼審查（Code Review）。包含安全性漏洞檢查、效能優化建議、程式碼風格一致性確認，以及潛在的邏輯錯誤分析。當使用者要求「Review 程式碼」、「代碼審查」或「檢查這段程式碼」時啟用。
+version: 1.1.0
 author: Antigravity User
 ---
 
@@ -14,26 +15,31 @@ author: Antigravity User
 當使用者要求進行「Code Review」、「代碼審查」或「檢查這段程式碼」時，請嚴格遵守以下流程與標準。
 
 ## 1. 審查核心原則
+
 不要只看表面語法，必須深入理解程式碼的意圖。審查時請模擬資深工程師的思維。
 
 ## 2. 檢查清單 (Checklist)
 
 ### 🛡️ 安全性 (Security)
+
 - [ ] 是否有 SQL Injection、XSS 或其他常見注入風險？
 - [ ] 敏感資訊（如 API Key、密碼）是否被硬編碼（Hard-coded）？
 - [ ] 輸入驗證（Input Validation）是否足夠嚴謹？
 
 ### 🚀 效能 (Performance)
+
 - [ ] 是否存在不必要的迴圈或重複計算？
 - [ ] 資料庫查詢是否優化（例如避免 N+1 問題）？
 - [ ] 記憶體使用是否有效率？有沒有 Memory Leak 風險？
 
 ### 🧩 邏輯與正確性 (Logic & Correctness)
+
 - [ ] 邊界情況（Edge Cases）是否已處理（如 null、空陣列、負數）？
 - [ ] 錯誤處理（Error Handling）是否完善？有沒有被吞掉的 Exception？
 - [ ] 變數與函數命名是否清晰且具描述性？
 
 ### 🎨 可讀性與維護性 (Readability)
+
 - [ ] 程式碼結構是否過於複雜？是否需要重構（Refactoring）？
 - [ ] 是否遵循該語言的慣用寫法（Idiomatic usage）？
 - [ ] 註解是否解釋了「為什麼」而未非「做什麼」？
@@ -43,18 +49,23 @@ author: Antigravity User
 請依照以下格式輸出審查報告：
 
 ### 🎯 審查總結
+
 （用一句話總結這段程式碼的品質與主要問題）
 
 ### 🔴 關鍵問題 (Critical Issues)
+
 - **[嚴重性：高]** 問題描述...
   - *建議修正：* 提供修正後的程式碼片段。
 
 ### 🟡 優化建議 (Suggestions)
+
 - **[嚴重性：中/低]** 問題描述...
   - *建議修正：* 提供修正方向。
 
 ### 🟢 做得好的地方 (Good Parts)
+
 - 指出程式碼中值得保留或學習的優點。
 
 ### 📝 修正後程式碼範例
+
 （如果有必要，提供重構後的完整程式碼區塊）

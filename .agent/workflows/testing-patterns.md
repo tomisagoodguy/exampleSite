@@ -1,7 +1,7 @@
 ---
 name: testing-patterns
-description: 實時化測試策略。包含 TDD 流程、AAA 模式 (Arrange-Act-Assert)、Mocking 規範以及測試工廠 (Factories) 的使用。
-version: 1.0.0
+description: 實施標準化的測試策略。當使用者要求「寫測試」、「補測試」或進行 TDD 開發時啟用，引導使用 AAA 模式與 Factory Pattern。
+version: 1.1.0
 ---
 
 # 測試代碼撰寫標準

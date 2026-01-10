@@ -1,5 +1,7 @@
 ---
-description: Resume work on the project by reading context files
+name: resume-work
+description: Resume work on the project by reading context files. 當開啟新對話、輸入 `/resume-work` 或要求「繼續工作」時啟用。
+version: 1.1.0
 ---
 
 # 專案續作流程 (Resume Work)

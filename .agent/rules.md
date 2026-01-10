@@ -64,7 +64,7 @@ Every time a new project starts or work resumes, you MUST reinforce this cycle:
 
 - `README.md`: Project Goals, Features, Tech Stack.
 - `docs/DEVELOPMENT.md`: Daily Log, Next Steps, Known Bugs.
-- `.agent/workflows/*.md`: Automated SOPs.
+- `.agent/workflows/*.md`: Automated SOPs. Should include a precise `description` specifying trigger conditions and include `## Examples`.
 - `.agent/tasks/*.md`: Task-specific context for longevity.
 - `.agent/LEARNINGS.md`: Patterns & Lessons.
 

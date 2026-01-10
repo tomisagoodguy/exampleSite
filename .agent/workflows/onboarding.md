@@ -1,6 +1,7 @@
 ---
-description: 啟動新任務或任務重啟時的上下文初始化。建立任務追蹤文件以確保持續性。
-version: 1.0.1
+name: onboarding
+description: 啟動新任務或任務重啟時的上下文初始化。建立任務追蹤文件以確保持續性。當使用者提到「開始新任務」、「開發新功能」或輸入 `/onboarding` 時啟用。
+version: 1.1.0
 ---
 
 # 任務初始化與追蹤 (Task Onboarding)
