@@ -118,6 +118,12 @@
     - title: "社工日常"
       url: "https://socialworkerdaily.com/"
       description: "他包含很多財經知識"
+    - title: "股癌非官方Podcast逐字稿"
+      url: "https://whatmkreallysaid.com/"
+      description: "股癌Podcast非官方逐字稿，提供完整文字記錄，方便搜尋與閱讀。"
+    - title: "AI 智慧產業地圖"
+      url: "https://stock-map.pages.dev/"
+      description: "運用 AI 學習與分析數據，將複雜產業轉化為易懂「產業地圖」的成果紀錄。"
 - category: "線上學習平台"
   links:
     - title: "Hahow 好學校"
@@ -181,6 +187,9 @@
     - title: "Cursor PM 實務指南 (入門到精通)"
       url: "https://www.cursorforpms.com/"
       description: "專為專案經理打造的 Cursor AI 工具教學，協助非技術人員掌握 AI 程式開發。"
+    - title: "AILogora"
+      url: "https://ailogora.com/"
+      description: "AI 相關資訊平台"
 - category: "程式開發資源"
   links:
     - title: "Jason Efficiency Lab (Notion)"
@@ -198,6 +207,9 @@
     - title: "施育廷老師 Class World (國立臺中教育大學)"
       url: "https://www.youtube.com/@ytshihclassworld"
       description: "施育廷老師的教學頻道，涵蓋程式設計與科技新知。"
+    - title: "高見龍 (Eddie Kao)"
+      url: "https://kaochenlong.com/"
+      description: "知名技術講師高見龍的個人網站，分享程式開發與技術心得。"
 - category: "求職與培訓"
   links:
     - title: "台灣就業通-在職訓練網"

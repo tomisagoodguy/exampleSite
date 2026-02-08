@@ -243,10 +243,20 @@ body.dark-mode .btn-link {
   border-radius: 10px;
 }
 
+.btn-outline-success:hover {
+  background-color: var(--accent-success) !important;
+  color: #ffffff !important;
+}
+
 .btn-outline-danger {
   border: 2px solid var(--accent-danger) !important;
   color: var(--accent-danger) !important;
   border-radius: 10px;
+}
+
+.btn-outline-danger:hover {
+  background-color: var(--accent-danger) !important;
+  color: #ffffff !important;
 }
 
 
