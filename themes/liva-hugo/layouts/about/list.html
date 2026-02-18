@@ -189,6 +189,10 @@
                                     target="_blank" rel="noopener noreferrer">
                                     <i class="fas fa-rocket mr-1"></i>前往『全端代書控案系統』 (Case Master)
                                 </a>
+                                <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal"
+                                    data-target="#caseMasterModal">
+                                    <i class="fas fa-lightbulb mr-1"></i>開發幕後：從痛點到解決方案
+                                </button>
                             </div>
                         </div>
                         <div class="skill-category">
@@ -233,4 +237,232 @@
         </div>
     </div>
 </section>
+<!-- Project Case Study Modal -->
+<div class="modal fade" id="caseMasterModal" tabindex="-1" role="dialog" aria-labelledby="caseMasterModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document"
+        style="max-width: 94vw; margin: 1.5vh auto;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden; height: 94vh;">
+            <div class="modal-header"
+                style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 1.5rem;">
+                <h5 class="modal-title font-weight-bold" id="caseMasterModalLabel"
+                    style="color: #ffffff !important; font-size: 1.5rem;">
+                    <i class="fas fa-rocket mr-2"></i>全端代書控案系統 - 開發實錄
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                    style="opacity: 1; color: #ffffff !important; text-shadow: none; font-size: 1.8rem;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body bg-light" style="overflow-y: auto; max-height: calc(94vh - 130px);">
+                <div class="container-fluid">
+                    <div class="row">
+                        <!-- Left Panel: Problem Space -->
+                        <div class="col-lg-5 p-4 border-right" style="background-color: #f8fafc;">
+                            <h6 class="text-uppercase text-secondary font-weight-bold mb-4 pl-1"
+                                style="letter-spacing: 1px; font-size: 0.85rem; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px;">
+                                <i class="fas fa-search mr-2"></i>Phase 1: 需求探索 (Problem Discovery)
+                            </h6>
+
+                            <!-- 1. 現況 -->
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-body">
+                                    <h5 class="font-weight-bold" style="color: #64748b;"><i
+                                            class="fas fa-history mr-2"></i>1. 現況 (The Context)</h5>
+                                    <div class="pl-3 mt-2" style="border-left: 3px solid #64748b;">
+                                        <p class="text-muted mb-2">
+                                            Scrivener Flow 是一個專為地政士（代書）設計的現代化案件管理 SaaS 平台，解決傳統代書作業依賴紙本、Line 群組與 Excel
+                                            追蹤的碎片化問題。
+                                        </p>
+                                        <ul class="list-unstyled text-muted mb-0 small">
+                                            <li class="mb-1"><i
+                                                    class="fas fa-layer-group mr-1"></i><strong>系統架構：</strong> Next.js
+                                                14 (App Router) + Supabase (Auth, DB, Realtime)</li>
+                                            <li class="mb-1"><i
+                                                    class="fas fa-tachometer-alt mr-1"></i><strong>戰情儀表板：</strong>
+                                                整合「未來七日預告」與「稅單限繳監控」</li>
+                                            <li class="mb-1"><i
+                                                    class="fas fa-file-contract mr-1"></i><strong>智慧解析：</strong>
+                                                docx-parser 自動提取合約關鍵資訊</li>
+                                            <li class="mb-1"><i class="fas fa-tasks mr-1"></i><strong>自動化待辦：</strong>
+                                                基於里程碑自動推算任務</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. 痛點 -->
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-body">
+                                    <h5 class="font-weight-bold" style="color: #ef4444;"><i
+                                            class="fas fa-exclamation-triangle mr-2"></i>2. 痛點 (Pain Points)</h5>
+                                    <div class="pl-3 mt-2" style="border-left: 3px solid #ef4444;">
+                                        <ul class="list-unstyled text-muted mb-0">
+                                            <li class="mb-3">
+                                                <strong class="text-danger">巨型函式與維護困難 (Monolithic Function)：</strong>
+                                                <p class="mb-1 small">原有文件解析邏輯長達 370+ 行，混雜檔案讀取與業務邏輯，難以測試與維護。</p>
+                                            </li>
+                                            <li class="mb-3">
+                                                <strong class="text-danger">資料狀態不同步 (Zombie Tasks)：</strong>
+                                                <p class="mb-1 small">缺乏「軟刪除」與同步機制，導致已刪除任務在重新整理後「死而復生」，嚴重影響信任度。</p>
+                                            </li>
+                                            <li class="mb-0">
+                                                <strong class="text-danger">高耦合與缺乏型別安全：</strong>
+                                                <p class="mb-0 small">早期開發缺乏嚴格型別 (any)，導致 Runtime 錯誤頻發。</p>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. 期待 -->
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-body">
+                                    <h5 class="font-weight-bold" style="color: #f59e0b;"><i
+                                            class="far fa-lightbulb mr-2"></i>3. 期待 (Expectations)</h5>
+                                    <div class="pl-3 mt-2" style="border-left: 3px solid #f59e0b;">
+                                        <ul class="list-unstyled text-muted mb-0">
+                                            <li class="mb-2"><i class="fas fa-star text-warning mr-2"></i><strong>架構解耦
+                                                    (Decoupling)：</strong> 拆解複雜邏輯為純粹函式 (Pure Functions)。</li>
+                                            <li class="mb-2"><i class="fas fa-star text-warning mr-2"></i><strong>資料一致性
+                                                    (Consistency)：</strong> 確保前後端狀態即時同步 (Single Source of Truth)。</li>
+                                            <li class="mb-2"><i class="fas fa-star text-warning mr-2"></i><strong>開發者體驗
+                                                    (DX)：</strong> 引入 OpenSpec 標準化流程與 AI 協作。</li>
+                                            <li class="mb-0"><i
+                                                    class="fas fa-star text-warning mr-2"></i><strong>極致效能：</strong> 優化
+                                                Server Actions 與 Supabase 查詢 (Optimistic UI)。</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Solution Space -->
+                        <div class="col-lg-7 p-4 bg-white">
+                            <h6 class="text-uppercase text-secondary font-weight-bold mb-4 pl-1"
+                                style="letter-spacing: 1px; font-size: 0.85rem; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; color: #3b82f6 !important;">
+                                <i class="fas fa-cogs mr-2"></i>Phase 2: 工程解法 (Engineering Solution)
+                            </h6>
+
+                            <!-- 6. 架構重構特寫 (Moved to top of right column for emphasis) -->
+                            <div class="card border-0 shadow-sm mb-4"
+                                style="background: linear-gradient(to right bottom, #ffffff, #f0f9ff); border: 1px solid #e0f2fe !important;">
+                                <div class="card-body">
+                                    <h5 class="font-weight-bold" style="color: #6366f1;"><i
+                                            class="fas fa-sitemap mr-2"></i>6. 架構重構特寫 (Refactoring Journey)</h5>
+                                    <div class="pl-3 mt-2" style="border-left: 3px solid #6366f1;">
+
+                                        <!-- Technical Debt vs Solution -->
+                                        <div class="mb-4">
+                                            <h6 class="font-weight-bold text-dark mb-2">從「毛線球」到「生產線」</h6>
+                                            <p class="text-muted small mb-2">
+                                                早期的程式碼像一團糾纏的毛線（巨型函式），修改一個功能容易弄壞另一個。我們進行了大規模重構，將<strong>智慧合約解析</strong>變成一條標準化的工廠流水線：
+                                            </p>
+                                            <div class="bg-white p-3 rounded border text-center small mb-2 d-flex flex-wrap justify-content-center align-items-center shadow-sm"
+                                                style="gap: 8px;">
+                                                <span class="badge badge-secondary p-2">原檔 Docx</span>
+                                                <i class="fas fa-arrow-right text-muted"></i>
+                                                <span class="badge badge-info p-2">格式轉換</span>
+                                                <i class="fas fa-arrow-right text-muted"></i>
+                                                <span class="badge badge-success p-2">平行提取 (日期/人名/金額)</span>
+                                                <i class="fas fa-arrow-right text-muted"></i>
+                                                <span class="badge badge-primary p-2">整合驗證</span>
+                                            </div>
+                                            <p class="text-muted small mb-0">
+                                                <i class="fas fa-check text-success mr-1"></i><strong>效益：</strong>
+                                                新增合約格式的支援時間從 <strong>4小時 縮短至 30分鐘</strong>。
+                                            </p>
+                                        </div>
+
+                                        <!-- Zombie Task Solution -->
+                                        <div class="mb-0">
+                                            <h6 class="font-weight-bold text-dark mb-2">解決「殭屍任務」 (Zombie Tasks)</h6>
+                                            <p class="text-muted small mb-2">
+                                                我們引入了<strong>智慧同步機制</strong>來解決已刪除任務自動復活的問題：
+                                            </p>
+                                            <div class="d-flex align-items-start p-2 rounded bg-light">
+                                                <i class="fas fa-magic text-purple mt-1 mr-2"
+                                                    style="color: #8b5cf6;"></i>
+                                                <p class="mb-0 small text-muted">
+                                                    引入「軟刪除」與「版本比對」。系統會尊重您的刪除決定，只有在<strong>關鍵日期變更</strong>（如合約修改）時，才會「復活」重要任務提醒您。
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 4. 指定解法 -->
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-body">
+                                    <h5 class="font-weight-bold" style="color: #10b981;"><i
+                                            class="fas fa-code mr-2"></i>4. 指定解法 (Specified Solutions)</h5>
+                                    <div class="pl-3 mt-2" style="border-left: 3px solid #10b981;">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <h6 class="font-weight-bold text-success mb-1">A. 策略模式重構解析</h6>
+                                                <p class="text-muted small mb-0">將巨型函式拆解為 domain/case/types.ts 與多個獨立
+                                                    Extractors。建立 Raw Docx -> Structured Data 的清晰 Pipeline。</p>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <h6 class="font-weight-bold text-success mb-1">B. 狀態管理與同步</h6>
+                                                <p class="text-muted small mb-0">引入 Soft Delete (is_deleted)
+                                                    與智慧同步邏輯。前端採用 Optimistic UI，提升操作流暢度。</p>
+                                            </div>
+                                            <div class="col-12 mb-0">
+                                                <h6 class="font-weight-bold text-success mb-1">C. 導入工程化規範</h6>
+                                                <p class="text-muted small mb-0">OpenSpec (SDD) 規格驅動開發。嚴格執行 ESLint 與
+                                                    CI/CD 自動化部署。</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 5. 驗收清單 -->
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-body">
+                                    <h5 class="font-weight-bold" style="color: #3b82f6;"><i
+                                            class="fas fa-clipboard-check mr-2"></i>5. 驗收清單 (Acceptance Criteria)</h5>
+                                    <div class="pl-3 mt-2" style="border-left: 3px solid #3b82f6;">
+                                        <div class="row">
+                                            <div class="col-md-4 mb-2">
+                                                <div class="p-2 bg-light rounded text-center">
+                                                    <span class="badge badge-primary mb-2">功能</span>
+                                                    <p class="small mb-0 text-muted">複雜合約解析 < 2秒</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <div class="p-2 bg-light rounded text-center">
+                                                    <span class="badge badge-primary mb-2">品質</span>
+                                                    <p class="small mb-0 text-muted">無 any 型別<br>Zod 驗證 API</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <div class="p-2 bg-light rounded text-center">
+                                                    <span class="badge badge-primary mb-2">效能</span>
+                                                    <p class="small mb-0 text-muted">儀表板 LCP < 1.5秒<br>零 Critical Errors
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white border-top small">
+                <span class="text-muted mr-auto pl-2"><i
+                        class="fas fa-info-circle mr-1"></i>此專案展現了對「可維護性」、「資料一致性」與「用戶體驗」的極致追求。</span>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
+                <a href="https://www.case-master.com/login" target="_blank" class="btn btn-primary"
+                    style="background-color: #3b82f6; border-color: #3b82f6;">
+                    <i class="fas fa-external-link-alt mr-1"></i>親自體驗
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 {{ end }}
