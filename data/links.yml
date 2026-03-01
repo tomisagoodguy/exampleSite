@@ -1,5 +1,8 @@
 - category: "實用工具"
   links:
+    - title: "Kang Core 個人日常助理"
+      url: "https://kang-core.vercel.app/"
+      description: "整合 Google 日曆與待辦事項的 LINE Bot，自動化統整生活大小事。"
     - title: "房地稅務試算 (HTML)"
       url: "/tools/property-tax.html"
       description: "互動式房地稅務試算工具，包含房地拆價、所得試算與稅額估算。"
@@ -26,6 +29,9 @@
     - title: "司法院裁判書系統"
       url: "https://judgment.judicial.gov.tw/FJUD/default.aspx"
       description: "司法院裁判書查詢系統"
+    - title: "自動更新文章/自動分類主題 (地政筆記)"
+      url: "https://tomisagoodguy.github.io/landnote/"
+      description: "自動化爬取並整理高品質地政專業文章，提供主題分類與快速檢索功能。"
 - category: "投資與理財"
   links:
     - title: "豐雲學堂"
