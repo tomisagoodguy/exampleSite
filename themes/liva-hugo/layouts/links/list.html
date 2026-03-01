@@ -1,40 +1,82 @@
 {{ define "main" }}
-<div class="links-page">
+<div class="links-dashboard">
   <section class="section-sm">
-    <div class="container">
+    <div class="container-fluid px-lg-5">
       <div class="row">
-        <div class="col-lg-12">
-          <h2 class="section-title text-center mb-5">{{ .Title }}</h2>
-
-          <!-- Filter & Search Section -->
-          <div class="link-filter-wrapper reveal-on-scroll">
-            <div class="link-search-container">
-              <i class="fas fa-search link-search-icon"></i>
-              <input type="text" id="link-search" class="link-search-box" placeholder="搜尋連結標題或描述...">
+        <!-- Dashboard Sidebar (Sidebar Nav) -->
+        <div class="col-lg-3 col-xl-2 mb-4">
+          <div class="dashboard-sidebar">
+            <div class="sidebar-header mb-4 d-none d-lg-block">
+              <h5 class="fw-bold mb-0" style="color: var(--accent-blue);">快速導覽</h5>
+              <small class="text-muted">瀏覽與過濾分類</small>
             </div>
 
-            <div class="filter-btns-container">
-              <button class="filter-btn active" data-filter="all">全部</button>
-              {{ range .Site.Data.links }}
-              <button class="filter-btn" data-filter="{{ .category | urlize }}">{{ .category }}</button>
+            <div class="sidebar-nav-container">
+              <button class="nav-filter-btn active" data-filter="all">
+                <span><i class="fas fa-th-large me-2"></i> 全部連結</span>
+                <span class="badge-count" id="total-badge-count">0</span>
+              </button>
+
+              {{ range $index, $element := .Site.Data.links }}
+              {{ $colors := slice "primary" "success" "warning" "danger" "info" "secondary" "dark" }}
+              {{ $currentColor := index $colors (mod $index (len $colors)) }}
+
+              <div class="sidebar-category-wrapper mb-2">
+                <button class="nav-filter-btn" data-filter="{{ .category | urlize }}">
+                  <span><span class="color-dot bg-{{ $currentColor }}"></span> {{ .category }}</span>
+                  <span class="badge-count">{{ len .links }}</span>
+                </button>
+                <div class="sub-links-list pl-4 d-none d-lg-block">
+                  {{ range .links }}
+                  <a href="{{ .url }}" target="_blank" class="nav-link py-1 text-muted small text-truncate"
+                    style="max-width: 180px; display: block;">
+                    <i class="fas fa-chevron-right me-1" style="font-size: 0.6rem; opacity: 0.5;"></i> {{ .title }}
+                  </a>
+                  {{ end }}
+                </div>
+              </div>
               {{ end }}
             </div>
           </div>
+        </div>
 
-          <div class="content mb-5">
+        <!-- Dashboard Main Content -->
+        <div class="col-lg-9 col-xl-10">
+          <!-- Spotlight Search Bar -->
+          <div class="spotlight-search-wrapper mb-5 reveal-on-scroll">
+            <div class="search-input-group">
+              <div class="search-prefix">
+                <i class="fas fa-search"></i>
+              </div>
+              <input type="text" id="link-search" class="spotlight-search-input" placeholder="試試搜尋標題、類別或描述內容..."
+                autocomplete="off">
+              <div class="search-suffix">
+                <span class="search-kbd">ESC</span>
+              </div>
+            </div>
+            <div class="search-meta d-flex justify-content-between px-3 mt-2">
+              <small class="text-muted"><span id="result-count">0</span> 個結果</small>
+              <small class="text-muted">按下 ESC 可清除搜尋</small>
+            </div>
+          </div>
+
+          <div class="content mb-4 px-3 d-lg-block d-none">
             {{ .Content }}
           </div>
 
-          <div id="links-container" class="row">
+          <div id="links-container" class="links-display-area">
             {{ range .Site.Data.links }}
-            <div class="col-12 link-category-section" data-category="{{ .category | urlize }}">
-              <h3 id="{{ .category | urlize }}" class="mb-4 mt-2"
-                style="border-left: 5px solid var(--accent-blue); padding-left: 15px;">{{ .category }}</h3>
-              <div class="row">
+            <div class="link-category-block mb-5" data-category="{{ .category | urlize }}">
+              <div class="category-header d-flex align-items-center mb-4 px-2" style="gap: 15px;">
+                <h3 id="{{ .category | urlize }}" class="mb-0 fw-bold">{{ .category }}</h3>
+                <div class="category-line flex-grow-1" style="height: 1px; background: var(--glass-border);"></div>
+                <span class="category-tag">{{ len .links }} 項</span>
+              </div>
+
+              <div class="links-grid">
                 {{ range .links }}
-                <div class="col-lg-4 col-md-6 mb-4 link-item-container" data-title="{{ .title | lower }}"
-                  data-desc="{{ .description | lower }}">
-                  <div class="link-premium-card">
+                <div class="link-item-wrapper" data-title="{{ .title | lower }}" data-desc="{{ .description | lower }}">
+                  <div class="link-modern-card">
                     {{ $currentImagePath := "" }}
                     {{ $defaultImageName := printf "%s.png" .title }}
                     {{ $defaultImagePath := printf "/images/%s" $defaultImageName }}
@@ -48,22 +90,22 @@
                     {{ end }}
                     {{ end }}
 
-                    <div class="link-card-visual">
+                    <div class="card-visual-header">
                       {{ if $currentImagePath }}
-                      <img loading="lazy" src="{{ $currentImagePath | absURL }}" alt="{{ .title }}" class="link-img">
+                      <img loading="lazy" src="{{ $currentImagePath | absURL }}" alt="{{ .title }}" class="card-thumb">
                       {{ else }}
-                      <div class="link-img-placeholder">
+                      <div class="card-thumb-placeholder">
                         <i class="fas fa-link"></i>
                       </div>
                       {{ end }}
-                      <div class="link-overlay">
-                        <span class="visit-text">前往連結 <i class="fas fa-external-link-alt"></i></span>
+                      <div class="card-actions-overlay">
+                        <div class="action-btn-circle"><i class="fas fa-external-link-alt"></i></div>
                       </div>
                     </div>
 
-                    <div class="link-card-body">
-                      <h4 class="link-title">{{ .title }}</h4>
-                      <p class="link-desc">{{ .description }}</p>
+                    <div class="card-info">
+                      <h4 class="card-title text-truncate" title="{{ .title }}">{{ .title }}</h4>
+                      <p class="card-desc">{{ .description | truncate 55 }}</p>
                     </div>
                     <a href="{{ .url | safeURL }}" target="_blank" rel="noopener" class="stretched-link"></a>
                   </div>
@@ -72,8 +114,13 @@
               </div>
             </div>
             {{ end }}
-            <div class="col-12 no-results-msg" id="no-results">
-              <p class="lead">找不到符合關鍵字的連結。</p>
+
+            <div class="no-results-state py-5 text-center" id="no-results" style="display: none;">
+              <div class="empty-icon mb-3"><i class="fas fa-search-minus fa-4x text-muted opacity-30"></i></div>
+              <h4 class="text-muted">無符合條件的連結</h4>
+              <p class="text-muted">請嘗試其他關鍵字</p>
+              <button class="btn btn-outline-primary btn-sm px-4 mt-2"
+                onclick="document.getElementById('link-search').value = ''; document.getElementById('link-search').dispatchEvent(new Event('input'))">重置搜尋</button>
             </div>
           </div>
         </div>
@@ -85,61 +132,114 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('link-search');
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    const sections = document.querySelectorAll('.link-category-section');
-    const items = document.querySelectorAll('.link-item-container');
+    const filterBtns = document.querySelectorAll('.nav-filter-btn');
+    const itemWrappers = document.querySelectorAll('.link-item-wrapper');
+    const catBlocks = document.querySelectorAll('.link-category-block');
     const noResults = document.getElementById('no-results');
+    const resultCounter = document.getElementById('result-count');
+    const totalBadge = document.getElementById('total-badge-count');
 
-    function filterLinks() {
+    // 初始化計數
+    const fullCount = itemWrappers.length;
+    resultCounter.textContent = fullCount;
+    if (totalBadge) totalBadge.textContent = fullCount;
+
+    function performFilter() {
       const searchTerm = searchInput.value.toLowerCase().trim();
-      const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+      const activeFilter = document.querySelector('.nav-filter-btn.active').getAttribute('data-filter');
       let totalVisible = 0;
 
-      sections.forEach(section => {
-        const sectionCategory = section.getAttribute('data-category');
-        const sectionItems = section.querySelectorAll('.link-item-container');
-        let sectionVisibleCount = 0;
+      catBlocks.forEach(block => {
+        const blockCat = block.getAttribute('data-category');
+        const blockItems = block.querySelectorAll('.link-item-wrapper');
+        let visibleInBlock = 0;
 
-        sectionItems.forEach(item => {
+        blockItems.forEach(item => {
           const title = item.getAttribute('data-title');
           const desc = item.getAttribute('data-desc');
           const matchesSearch = title.includes(searchTerm) || desc.includes(searchTerm);
-          const matchesFilter = activeFilter === 'all' || sectionCategory === activeFilter;
+          const matchesFilter = activeFilter === 'all' || blockCat === activeFilter;
 
           if (matchesSearch && matchesFilter) {
-            item.classList.remove('hidden');
-            sectionVisibleCount++;
+            item.style.display = 'block';
+            visibleInBlock++;
             totalVisible++;
           } else {
-            item.classList.add('hidden');
+            item.style.display = 'none';
           }
         });
 
-        if (sectionVisibleCount > 0) {
-          section.classList.remove('hidden');
+        if (visibleInBlock > 0) {
+          block.style.display = 'block';
         } else {
-          section.classList.add('hidden');
+          block.style.display = 'none';
         }
       });
 
-      if (totalVisible === 0) {
-        noResults.style.display = 'block';
-      } else {
-        noResults.style.display = 'none';
-      }
+      resultCounter.textContent = totalVisible;
+      noResults.style.display = totalVisible === 0 ? 'block' : 'none';
     }
 
-    // Search input event
-    searchInput.addEventListener('input', filterLinks);
+    // 搜尋事件
+    searchInput.addEventListener('input', performFilter);
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        searchInput.value = '';
+        performFilter();
+      }
+    });
 
-    // Filter button event
+    // 分類點擊事件
     filterBtns.forEach(btn => {
       btn.addEventListener('click', function () {
         filterBtns.forEach(b => b.classList.remove('active'));
         this.classList.add('active');
-        filterLinks();
+        performFilter();
+
+        // 平滑捲動至主內容頂部 (僅限移動端)
+        if (window.innerWidth < 992) {
+          const topOffset = searchInput.getBoundingClientRect().top + window.pageYOffset - 80;
+          window.scrollTo({ top: topOffset, behavior: 'smooth' });
+        }
       });
+    });
+
+    // 交錯入場動畫
+    itemWrappers.forEach((item, index) => {
+      item.style.opacity = '0';
+      item.style.transform = 'translateY(15px)';
+      item.style.transition = 'all 0.5s ease';
+      item.style.transitionDelay = `${Math.min(index * 0.02, 1)}s`;
+
+      setTimeout(() => {
+        item.style.opacity = '1';
+        item.style.transform = 'translateY(0)';
+      }, 100);
     });
   });
 </script>
+
+<style>
+  /* 針對 Sub-links 的額外樣式 */
+  .sub-links-list {
+    border-left: 1px solid var(--glass-border);
+    margin-left: 20px;
+    padding-left: 10px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+
+  .sidebar-category-wrapper:hover .sub-links-list,
+  .nav-filter-btn.active+.sub-links-list {
+    max-height: 500px;
+    /* 足以容納列表的高度 */
+  }
+
+  .sub-links-list .nav-link:hover {
+    color: var(--accent-blue) !important;
+    transform: translateX(3px);
+    transition: all 0.2s ease;
+  }
+</style>
 {{ end }}
