@@ -89,9 +89,14 @@ URL = "lifestyle/"
 weight = 2
 
 [[menu.main]]
+name = "破關地圖"
+URL = "adventure-map/"
+weight = 3
+
+[[menu.main]]
 name = "代書修煉"
 URL = "real-estate/"
-weight = 3
+weight = 4
 
 [[menu.main]]
 name = "考試筆記"
@@ -99,6 +104,12 @@ URL = "real-estate/exam-notes/"
 weight = 1
 parent = "代書修煉"
 
+[[menu.main]]
+name = "自動化實驗室"
+identifier = "automation"
+URL = "automation/"
+weight = 5
+hasChildren = true
 
 [[menu.main]]
 name = "關於"
@@ -110,79 +121,6 @@ name = "相關連結"
 identifier = "links"
 URL = "links/"
 weight = 7
-hasChildren = true
-
-[[menu.main]]
-name = "實用工具"
-URL = "links/#實用工具"
-parent = "links"
-weight = 1
-
-[[menu.main]]
-name = "地政實務"
-URL = "links/#地政實務"
-parent = "links"
-weight = 2
-
-[[menu.main]]
-name = "投資與理財"
-URL = "links/#投資與理財"
-parent = "links"
-weight = 3
-
-[[menu.main]]
-name = "線上學習平台"
-URL = "links/#線上學習平台"
-parent = "links"
-weight = 4
-
-[[menu.main]]
-name = "Web 開發學習"
-URL = "links/#web-開發學習"
-parent = "links"
-weight = 5
-
-[[menu.main]]
-name = "AI 與數據科學"
-URL = "links/#ai-與數據科學"
-parent = "links"
-weight = 6
-
-[[menu.main]]
-name = "程式開發資源"
-URL = "links/#程式開發資源"
-parent = "links"
-weight = 7
-
-[[menu.main]]
-name = "求職與培訓"
-URL = "links/#求職與培訓"
-parent = "links"
-weight = 8
-
-[[menu.main]]
-name = "科普與成長"
-URL = "links/#科普與成長"
-parent = "links"
-weight = 9
-
-[[menu.main]]
-name = "部落格與個人"
-URL = "links/#部落格與個人"
-parent = "links"
-weight = 10
-
-[[menu.main]]
-name = "資安防護"
-URL = "links/#資安防護"
-parent = "links"
-weight = 11
-
-[[menu.main]]
-name = "自動化實驗室"
-identifier = "automation"
-URL = "automation/"
-weight = 5
 hasChildren = true
 
 [[menu.main]]
@@ -233,6 +171,11 @@ weight = 3
 name = "自動化實驗室"
 URL = "automation/"
 weight = 4
+
+[[menu.footer]]
+name = "破關地圖"
+URL = "adventure-map/"
+weight = 5
 
 [[menu.footer]]
 name = "關於"

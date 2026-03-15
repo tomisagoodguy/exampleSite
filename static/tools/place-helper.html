@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>破關地圖 — 新增地點工具</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --cream: #FAF7F2; --cream-d: #F0EBE1;
+  --brown: #5C3D2E; --brown-lt: #8C6A55;
+  --terra: #C47B5A; --sage: #81B29A;
+  --border: rgba(196,156,120,0.28);
+  --glass: rgba(255,250,243,0.96);
+  --sh: 0 4px 20px rgba(92,61,46,0.12);
+}
+body { font-family: 'Noto Sans TC', sans-serif; background: var(--cream); color: var(--brown); min-height: 100vh; font-size: 14px; }
+
+/* 頂部標題 */
+.hd { background: linear-gradient(135deg,#5C3D2E,#C47B5A); padding: 14px 24px; display:flex; align-items:center; justify-content:space-between; }
+.hd h1 { font-family:'Outfit',sans-serif; font-size:1.15rem; font-weight:800; color:#fff; }
+.hd p  { font-size:.72rem; color:rgba(255,255,255,.65); margin-top:2px; }
+.hd-badge { background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.22); border-radius:8px; padding:5px 13px; font-size:.72rem; color:rgba(255,255,255,.8); white-space:nowrap; }
+
+/* Tab 切換 */
+.mode-tabs { display:flex; gap:8px; }
+.mode-tab {
+  padding:6px 16px; border-radius:100px; border:1.5px solid rgba(255,255,255,.35);
+  background:transparent; color:rgba(255,255,255,.7); font-size:.78rem; font-weight:700;
+  cursor:pointer; font-family:'Outfit',sans-serif; transition:all .2s;
+}
+.mode-tab.active { background:rgba(255,255,255,.2); color:#fff; border-color:rgba(255,255,255,.6); }
+.mode-tab:hover:not(.active) { background:rgba(255,255,255,.1); color:#fff; }
+
+/* 主佈局 */
+.body { display:grid; grid-template-columns:1fr 400px; height:calc(100vh - 62px); }
+
+/* 地圖 */
+.map-wrap { position:relative; }
+#picker-map { width:100%; height:100%; }
+.map-tip {
+  position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+  background:var(--glass); backdrop-filter:blur(10px);
+  border:1px solid var(--border); border-radius:100px;
+  padding:7px 16px; font-size:.76rem; color:var(--brown-lt);
+  z-index:900; pointer-events:none; white-space:nowrap;
+  box-shadow:var(--sh); transition:opacity .4s;
+}
+.map-tip.hide { opacity:0; }
+.coord-pill {
+  position:absolute; bottom:14px; right:14px;
+  background:rgba(92,61,46,.82); color:#F0D9C8;
+  backdrop-filter:blur(8px); border-radius:8px;
+  padding:5px 13px; font-size:.73rem; font-family:'Outfit',monospace;
+  z-index:900; display:none; pointer-events:none;
+}
+
+/* 右側面板 */
+.panel { background:var(--glass); border-left:1px solid var(--border); overflow-y:auto; display:flex; flex-direction:column; }
+.panel::-webkit-scrollbar { width:4px; }
+.panel::-webkit-scrollbar-thumb { background:var(--border); border-radius:10px; }
+
+.sec { padding:16px 20px; border-bottom:1px solid var(--border); }
+.sec-t { font-size:.66rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--brown-lt); margin-bottom:11px; }
+
+/* 搜尋欄（在面板裡，不覆蓋地圖）*/
+.search-wrap { position:relative; }
+.search-row { display:flex; gap:0; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(92,61,46,.1); }
+.search-row input {
+  flex:1; padding:10px 13px;
+  border:1.5px solid var(--border); border-right:none; border-radius:10px 0 0 10px;
+  background:#fff; font-size:.86rem;
+  font-family:'Noto Sans TC',sans-serif; color:var(--brown); outline:none;
+  transition:border-color .2s;
+}
+.search-row input:focus { border-color:var(--terra); }
+.search-row input::placeholder { color:var(--brown-lt); }
+.search-row button {
+  padding:0 16px; border:none; border-radius:0 10px 10px 0;
+  background:var(--terra); color:#fff; font-weight:700;
+  font-size:.84rem; cursor:pointer; white-space:nowrap;
+  font-family:'Noto Sans TC',sans-serif; transition:background .2s;
+}
+.search-row button:hover { background:#B06848; }
+.search-row button:disabled { background:#ccc; cursor:not-allowed; }
+
+/* 搜尋狀態列 */
+.search-status { font-size:.74rem; color:var(--brown-lt); margin-top:7px; min-height:18px; padding-left:2px; }
+.search-status.loading { color:var(--terra); }
+.search-status.error   { color:#C0392B; }
+.search-status.ok      { color:var(--sage); }
+
+/* 搜尋結果 */
+.results { margin-top:6px; border:1.5px solid var(--border); border-radius:10px; overflow:hidden; display:none; }
+.results.show { display:block; }
+.result-item {
+  padding:10px 14px; cursor:pointer;
+  border-bottom:1px solid var(--border);
+  transition:background .15s;
+}
+.result-item:last-child { border-bottom:none; }
+.result-item:hover { background:rgba(196,123,90,.08); }
+.result-item strong { display:block; font-size:.85rem; color:var(--brown); font-weight:700; }
+.result-item span   { font-size:.72rem; color:var(--brown-lt); display:block; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* 表單欄位 */
+.row { margin-bottom:9px; }
+.row:last-child { margin-bottom:0; }
+label { display:block; font-size:.76rem; font-weight:600; color:var(--brown-lt); margin-bottom:4px; }
+.req::after { content:' *'; color:var(--terra); }
+input[type=text], input[type=number], textarea {
+  width:100%; padding:8px 11px;
+  border-radius:8px; border:1.5px solid var(--border);
+  background:rgba(255,250,243,.7); color:var(--brown);
+  font-size:.83rem; font-family:'Noto Sans TC',sans-serif;
+  outline:none; transition:border-color .2s, box-shadow .2s;
+}
+input:focus, textarea:focus { border-color:var(--terra); box-shadow:0 0 0 3px rgba(196,123,90,.1); background:#fff; }
+textarea { resize:vertical; min-height:110px; line-height:1.65; } /* 加高輸入框 */
+
+/* 座標（唯讀）*/
+.coord-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.coord-row input { background:var(--cream-d); color:var(--brown-lt); font-size:.78rem; cursor:default; }
+.coord-note { font-size:.7rem; color:var(--terra); margin-top:5px; text-align:center; }
+
+/* 類別按鈕 */
+.cat-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; } /* 改為三欄 */
+.cat-btn {
+  padding:7px 9px; border-radius:8px;
+  border:1.5px solid var(--border); background:transparent;
+  color:var(--brown-lt); font-size:.8rem; font-weight:600;
+  cursor:pointer; transition:all .18s;
+  font-family:'Noto Sans TC',sans-serif; display:flex; align-items:center; gap:5px;
+}
+.cat-btn:hover { border-color:var(--terra); color:var(--terra); }
+.cat-btn.on  { color:#fff; border-color:transparent; }
+.cat-btn[data-c=food].on    { background:#C47B5A; }
+.cat-btn[data-c=scenery].on { background:#81B29A; }
+.cat-btn[data-c=oldshop].on { background:#D4A853; }
+.cat-btn[data-c=walk].on    { background:#7B8CDE; }
+.cat-btn[data-c=cafe].on    { background:#A67B5B; }
+.cat-btn[data-c=shop].on    { background:#E07A5F; }
+.cat-btn[data-c=stay].on    { background:#3D5A80; }
+.cat-btn[data-c=quest].on   { background:#9B72AA; }
+
+/* 狀態 */
+.st-row { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.st-btn {
+  padding:8px; border-radius:8px;
+  border:1.5px solid var(--border); background:transparent;
+  font-size:.8rem; font-weight:600; cursor:pointer;
+  font-family:'Noto Sans TC',sans-serif; color:var(--brown-lt); transition:all .18s;
+}
+.st-btn[data-s=pending].on { background:rgba(140,106,85,.1); border-color:var(--brown-lt); color:var(--brown); }
+.st-btn[data-s=done].on    { background:rgba(129,178,154,.15); border-color:var(--sage); color:#4A8A72; }
+.done-extra { display:none; margin-top:10px; }
+.done-extra.show { display:block; }
+
+/* 輸出區 */
+.out-wrap { padding:16px 20px; flex:1; display:flex; flex-direction:column; gap:9px; }
+.btn-gen {
+  width:100%; padding:11px; border-radius:10px; border:none;
+  background:var(--terra); color:#fff; font-size:.9rem; font-weight:700;
+  cursor:pointer; font-family:'Outfit',sans-serif; letter-spacing:.02em; transition:all .2s;
+}
+.btn-gen:hover { background:#B06848; transform:translateY(-1px); box-shadow:0 6px 14px rgba(196,123,90,.35); }
+#json-out {
+  flex:1; min-height:150px;
+  background:#2D1F14; color:#F0D9C8; border:none; border-radius:10px;
+  padding:13px; font-family:'Courier New',monospace; font-size:.75rem; line-height:1.75;
+  resize:none; outline:none;
+}
+.btn-cp {
+  width:100%; padding:10px; border-radius:10px;
+  border:1.5px solid var(--border); background:transparent;
+  color:var(--brown-lt); font-size:.84rem; font-weight:600;
+  cursor:pointer; font-family:'Outfit',sans-serif;
+  display:flex; align-items:center; justify-content:center; gap:6px; transition:all .2s;
+}
+.btn-cp:hover { background:var(--brown); color:#fff; border-color:var(--brown); }
+.btn-cp.ok    { background:var(--sage); border-color:var(--sage); color:#fff; }
+
+/* 照片區 */
+.photo-dir-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.btn-add-photo {
+  width:100%; padding:8px; border-radius:8px;
+  border:1.5px dashed var(--border); background:transparent;
+  color:var(--brown-lt); font-size:.8rem; font-weight:600;
+  cursor:pointer; font-family:'Noto Sans TC',sans-serif;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  transition:all .18s; margin-bottom:8px;
+}
+.btn-add-photo:hover:not(:disabled) { border-color:var(--terra); color:var(--terra); background:rgba(196,123,90,.05); }
+.btn-add-photo:disabled { opacity:.4; cursor:not-allowed; }
+.photo-preview { display:flex; flex-wrap:wrap; gap:6px; margin-top:2px; }
+.pthumb {
+  position:relative; width:68px; height:52px;
+  border-radius:6px; overflow:hidden;
+  border:1.5px solid var(--border);
+  flex-shrink:0;
+}
+.pthumb img { width:100%; height:100%; object-fit:cover; display:block; }
+.pthumb-del {
+  position:absolute; top:2px; right:2px;
+  width:16px; height:16px; border-radius:50%;
+  background:rgba(30,10,0,.65); border:none;
+  color:#fff; font-size:.55rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  line-height:1;
+}
+
+/* 寫入區新增樣式 */
+.file-zone {
+  border:1.5px dashed var(--border); border-radius:10px;
+  padding:12px 14px; text-align:center;
+  transition:border-color .2s, background .2s;
+}
+.file-zone.connected {
+  border-color:var(--sage); border-style:solid; background:rgba(129,178,154,.07);
+}
+.btn-pick {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 16px; border-radius:8px; border:1.5px solid var(--border);
+  background:transparent; color:var(--brown-lt); font-size:.82rem; font-weight:600;
+  cursor:pointer; font-family:'Noto Sans TC',sans-serif; transition:all .2s;
+}
+.btn-pick:hover { border-color:var(--terra); color:var(--terra); }
+.file-status { font-size:.74rem; margin-top:6px; min-height:16px; }
+.file-status.ok    { color:#4A8A72; font-weight:600; }
+.file-status.err   { color:#C0392B; }
+.file-status.tip   { color:var(--brown-lt); }
+.btn-write {
+  width:100%; padding:11px; border-radius:10px; border:none;
+  background:linear-gradient(135deg,#4A8A72,#81B29A);
+  color:#fff; font-size:.9rem; font-weight:700;
+  cursor:pointer; font-family:'Outfit',sans-serif;
+  letter-spacing:.02em; transition:all .2s;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.btn-write:hover:not(:disabled) { filter:brightness(1.08); transform:translateY(-1px); box-shadow:0 6px 14px rgba(74,138,114,.35); }
+.btn-write:disabled { background:#ccc; cursor:not-allowed; transform:none; box-shadow:none; }
+.divider { display:flex; align-items:center; gap:8px; margin:2px 0; }
+.divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
+.divider span { font-size:.7rem; color:var(--brown-lt); white-space:nowrap; }
+
+/* 步驟說明 */
+.guide { padding:13px 20px 16px; border-top:1px solid var(--border); background:rgba(196,168,130,.05); }
+.guide h4 { font-size:.66rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--brown-lt); margin-bottom:9px; }
+.step { display:flex; gap:8px; margin-bottom:6px; align-items:flex-start; }
+.sn { width:18px; height:18px; border-radius:50%; background:var(--terra); color:#fff; font-size:.63rem; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+.step p { font-size:.75rem; color:var(--brown-lt); line-height:1.55; }
+code { background:rgba(196,123,90,.1); color:var(--terra); padding:1px 5px; border-radius:4px; font-size:.72rem; font-family:'Courier New',monospace; }
+
+/* Toast */
+.toast { position:fixed; bottom:22px; right:22px; background:var(--brown); color:#fff; padding:10px 18px; border-radius:10px; font-size:.83rem; font-weight:600; z-index:9999; pointer-events:none; transform:translateY(50px); opacity:0; transition:all .3s cubic-bezier(.4,0,.2,1); }
+.toast.show { transform:translateY(0); opacity:1; }
+
+/* 管理面板 */
+.mgmt-panel { display:none; background:var(--glass); border-left:1px solid var(--border); overflow-y:auto; flex-direction:column; }
+.mgmt-panel.active { display:flex; }
+.mgmt-panel::-webkit-scrollbar { width:4px; }
+.mgmt-panel::-webkit-scrollbar-thumb { background:var(--border); border-radius:10px; }
+.place-list { list-style:none; padding:0; margin:0; }
+.place-list-item {
+  display:flex; align-items:center; gap:8px;
+  padding:10px 16px; border-bottom:1px solid var(--border);
+  cursor:pointer; transition:background .15s;
+}
+.place-list-item:hover { background:rgba(196,123,90,.05); }
+.place-list-item.selected { background:rgba(196,123,90,.1); }
+.pli-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.pli-info { flex:1; overflow:hidden; }
+.pli-name { font-size:.85rem; font-weight:600; color:var(--brown); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pli-meta { font-size:.72rem; color:var(--brown-lt); }
+.pli-actions { display:flex; gap:4px; flex-shrink:0; }
+.btn-edit-pl {
+  padding:4px 11px; border-radius:6px; border:1.5px solid var(--border);
+  background:transparent; color:var(--brown-lt); font-size:.72rem; font-weight:600;
+  cursor:pointer; transition:all .15s; font-family:'Noto Sans TC',sans-serif;
+}
+.btn-edit-pl:hover { border-color:var(--terra); color:var(--terra); }
+.btn-del-pl {
+  padding:4px 10px; border-radius:6px; border:1.5px solid transparent;
+  background:transparent; color:#C0392B; font-size:.72rem; font-weight:600;
+  cursor:pointer; transition:all .15s; font-family:'Noto Sans TC',sans-serif;
+}
+.btn-del-pl:hover { background:#C0392B; color:#fff; }
+.mgmt-search-row { display:flex; gap:6px; margin-bottom:4px; }
+.mgmt-search-row input { flex:1; padding:8px 12px; border-radius:8px; border:1.5px solid var(--border); background:#fff; font-size:.83rem; font-family:'Noto Sans TC',sans-serif; color:var(--brown); outline:none; }
+.mgmt-search-row input:focus { border-color:var(--terra); }
+.mgmt-empty { text-align:center; padding:32px 16px; color:var(--brown-lt); font-size:.84rem; }
+
+@media (max-width:860px) {
+  .body { grid-template-columns:1fr; grid-template-rows:38vh 1fr; height:auto; }
+  .panel { max-height:62vh; }
+}
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <div>
+    <h1>🗺️ 破關地圖 — 地點管理工具</h1>
+    <p>搜尋地址 → 填寫內容 → 寫入 places.json</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="tab-add" onclick="switchMode('add')">+ 新增</button>
+      <button class="mode-tab" id="tab-mgmt" onclick="switchMode('mgmt')">&#9998; 管理</button>
+    </div>
+    <div class="hd-badge">本機工具 · 不上傳資料</div>
+  </div>
+</header>
+
+<div class="body">
+
+  <!-- 地圖（點擊微調位置）-->
+  <div class="map-wrap">
+    <div id="picker-map"></div>
+    <div class="map-tip" id="map-tip">搜尋地址後地圖自動定位，或直接點擊微調</div>
+    <div class="coord-pill" id="coord-pill"></div>
+  </div>
+
+  <!-- 管理面板（編輯/刪除） -->
+  <div class="mgmt-panel" id="mgmt-panel">
+    <div class="sec">
+      <div class="sec-t">管理地點</div>
+      <div class="mgmt-search-row">
+        <input type="text" id="mgmt-filter" placeholder="輸入名稱篩選…" oninput="renderMgmtList()">
+      </div>
+      <div class="file-zone" id="mgmt-file-zone">
+        <button class="btn-pick" onclick="loadPlacesForMgmt()">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          開啟 places.json，讀取地點清單
+        </button>
+        <div class="file-status tip" id="mgmt-status">選擇後顯示所有地點</div>
+      </div>
+    </div>
+    <ul class="place-list" id="place-list"></ul>
+  </div>
+
+  <!-- 表單面板 -->
+  <div class="panel" id="add-panel">
+
+
+    <!-- ① 地址搜尋（放在面板內，不疊加在地圖上）-->
+    <div class="sec">
+      <div class="sec-t">① 搜尋地址或地名</div>
+      <div class="search-wrap">
+        <div class="search-row">
+          <input type="text" id="s-input"
+            placeholder="例：台北市大安區師大路165號"
+            autocomplete="off">
+          <button id="s-btn" onclick="doSearch()">搜尋</button>
+        </div>
+        <div class="search-status" id="s-status">輸入地址或店名，按搜尋</div>
+        <div class="results" id="s-results"></div>
+      </div>
+    </div>
+
+    <!-- ② 座標（自動填入）-->
+    <div class="sec">
+      <div class="sec-t">② 座標（搜尋後自動填入）</div>
+      <div class="coord-row">
+        <div><label>緯度 (lat)</label><input type="number" id="f-lat" readonly placeholder="搜尋後自動填入"></div>
+        <div><label>經度 (lng)</label><input type="number" id="f-lng" readonly placeholder="搜尋後自動填入"></div>
+      </div>
+      <p class="coord-note">↑ 搜尋或點擊地圖自動帶入，不需手動填寫</p>
+    </div>
+
+    <!-- ③ 基本資訊 -->
+    <div class="sec">
+      <div class="sec-t">③ 基本資訊</div>
+      <div class="row">
+        <label class="req">地點名稱</label>
+        <input type="text" id="f-name" placeholder="例：師大巷弄老麵攤">
+      </div>
+      <div class="row">
+        <label class="req">類別</label>
+        <div class="cat-grid">
+          <button class="cat-btn on" data-c="food">🍜 美食</button>
+          <button class="cat-btn" data-c="scenery">🌿 風景</button>
+          <button class="cat-btn" data-c="oldshop">🏮 老店</button>
+          <button class="cat-btn" data-c="walk">🚶 散步</button>
+          <button class="cat-btn" data-c="cafe">☕ 咖啡</button>
+          <button class="cat-btn" data-c="shop">🛍️ 購物</button>
+          <button class="cat-btn" data-c="stay">🏨 住宿</button>
+          <button class="cat-btn" data-c="quest">⚡ 任務</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ④ 文字內容 -->
+    <div class="sec">
+      <div class="sec-t">④ 文字內容</div>
+      <div class="row">
+        <label>氛圍描述（一句話，有點感覺的）</label>
+        <textarea id="f-desc" placeholder="老闆不太說話，但每碗麵都在說話。（選填）"></textarea>
+      </div>
+      <div class="row">
+        <label>為什麼值得去</label>
+        <textarea id="f-why" placeholder="冬天去，點招牌牛肉麵，坐在小板凳上吃，剛剛好。（選填）"></textarea>
+      </div>
+      <div class="row">
+        <label>最佳時機</label>
+        <input type="text" id="f-time" placeholder="週間午後，不用等位">
+      </div>
+      <div class="row">
+        <label>收藏日期（年-月）</label>
+        <input type="text" id="f-added">
+      </div>
+    </div>
+
+    <!-- ⑤ 狀態 -->
+    <div class="sec">
+      <div class="sec-t">⑤ 狀態</div>
+      <div class="st-row">
+        <button class="st-btn on" data-s="pending">🔒 待解鎖</button>
+        <button class="st-btn" data-s="done">✓ 已破關</button>
+      </div>
+      <div class="done-extra" id="done-extra">
+        <div class="row" style="margin-top:10px">
+          <label>破關紀錄（一句話）</label>
+          <textarea id="f-dnote" placeholder="去了，真的沒在拍照。"></textarea>
+        </div>
+        <div class="row">
+          <label>破關日期（年-月）</label>
+          <input type="text" id="f-ddate" placeholder="2026-03">
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑥ 照片（選填）-->
+    <div class="sec">
+      <div class="sec-t">⑥ 照片（選填）</div>
+      <!-- 目錄選擇 -->
+      <div class="photo-dir-row" id="photo-dir-row">
+        <button class="btn-pick" onclick="pickImgDir()">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          選擇照片儲存資料夾
+        </button>
+        <div class="file-status tip" id="dir-status">static/images/places 資料夾（只選一次）</div>
+      </div>
+      <!-- 加入照片 -->
+      <button class="btn-add-photo" id="btn-add-photo" onclick="addPhotos()" disabled>
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        加入照片（可多選）
+      </button>
+      <!-- 縮圖預覽 -->
+      <div class="photo-preview" id="photo-preview"></div>
+    </div>
+
+    <!-- ⑦ 生成輸出 -->
+    <div class="out-wrap">
+
+      <!-- 直接寫入檔案（主要流程）-->
+      <div class="file-zone" id="file-zone">
+        <button class="btn-pick" onclick="pickFile()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          選擇 places.json 檔案
+        </button>
+        <div class="file-status tip" id="file-status">選擇後即可直接寫入，不需複製貼上</div>
+      </div>
+
+      <button class="btn-write" id="btn-write" onclick="generateAndWrite()" disabled>
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        生成並寫入 places.json
+      </button>
+
+      <div class="divider"><span>或者備用：手動複製</span></div>
+
+      <button class="btn-gen" onclick="generateOnly()">生成 JSON（手動複製用）</button>
+      <textarea id="json-out" readonly placeholder="不選檔案的話，按上方「生成 JSON」再複製..."></textarea>
+      <button class="btn-cp" id="btn-cp" onclick="copyJSON()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        複製 JSON
+      </button>
+    </div>
+
+    <!-- 步驟說明 -->
+    <div class="guide">
+      <h4>貼入步驟</h4>
+      <div class="step"><div class="sn">1</div><p>點「複製 JSON」</p></div>
+      <div class="step"><div class="sn">2</div><p>打開 <code>data/places.json</code>，在最後 <code>}</code> 後加逗號 <code>,</code> 再貼上</p></div>
+      <div class="step"><div class="sn">3</div><p><code>git add data/places.json</code><br><code>git commit -m "feat: 新增地點"</code><br><code>git push</code></p></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+'use strict';
+
+var selCat = 'food', selSt = 'pending';
+var clickMark = null;
+
+/* ── 地圖初始化 ── */
+var map = L.map('picker-map', { center:[25.05,121.55], zoom:12, zoomControl:true });
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution:'© OpenStreetMap contributors © CARTO', subdomains:'abcd', maxZoom:19
+}).addTo(map);
+
+/* 點擊地圖微調座標 */
+map.on('click', function(e){ setCoord(e.latlng.lat, e.latlng.lng, false); });
+
+function setCoord(lat, lng, flyTo) {
+  lat = +parseFloat(lat).toFixed(5);
+  lng = +parseFloat(lng).toFixed(5);
+  document.getElementById('f-lat').value = lat;
+  document.getElementById('f-lng').value = lng;
+  var pill = document.getElementById('coord-pill');
+  pill.textContent = lat + ', ' + lng;
+  pill.style.display = 'block';
+  document.getElementById('map-tip').classList.add('hide');
+  if (clickMark) map.removeLayer(clickMark);
+  clickMark = L.circleMarker([lat,lng],{radius:11,color:'#C47B5A',fillColor:'#C47B5A',fillOpacity:.75,weight:3}).addTo(map);
+  if (flyTo) map.flyTo([lat,lng], 16, {duration:1.2});
+}
+
+/* ── 搜尋 ── */
+var sInput   = document.getElementById('s-input');
+var sStatus  = document.getElementById('s-status');
+var sResults = document.getElementById('s-results');
+var sBtn     = document.getElementById('s-btn');
+
+sInput.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); doSearch(); } });
+
+function setStatus(msg, cls) {
+  sStatus.textContent = msg;
+  sStatus.className = 'search-status' + (cls ? ' '+cls : '');
+}
+
+/* ── 主搜尋（ArcGIS → Nominatim 兩層備援）── */
+function doSearch() {
+  var q = sInput.value.trim();
+  if (!q) { setStatus('請輸入地址或地名', 'error'); return; }
+  sBtn.disabled = true;
+  sBtn.textContent = '搜尋中…';
+  setStatus('搜尋中，請稍候…', 'loading');
+  sResults.innerHTML = '';
+  sResults.classList.remove('show');
+
+  searchArcGIS(q)
+    .then(function(items){
+      if (items && items.length > 0) return items;
+      /* ArcGIS 無結果 → 備援 Nominatim */
+      setStatus('ArcGIS 無結果，嘗試備援搜尋…', 'loading');
+      return searchNominatim(q);
+    })
+    .then(function(items){
+      sBtn.disabled = false; sBtn.textContent = '搜尋';
+      if (!items || items.length === 0) {
+        setStatus('找不到結果。提示：只輸入「縣市+區+路名」搜尋效果更好', 'error');
+        return;
+      }
+      setStatus('找到 ' + items.length + ' 個結果，點選一個', 'ok');
+      renderResults(items);
+    })
+    .catch(function(err){
+      sBtn.disabled = false; sBtn.textContent = '搜尋';
+      setStatus('搜尋失敗：' + err.message, 'error');
+    });
+}
+
+/* ArcGIS World Geocoder — 台灣門牌覆蓋完整，免費免 Key */
+function searchArcGIS(q) {
+  var url = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates'
+    + '?f=json'
+    + '&SingleLine=' + encodeURIComponent(q)
+    + '&countryCode=TWN'
+    + '&maxLocations=6'
+    + '&outFields=Match_addr,Addr_type,Place_addr'
+    + '&langCode=zht';
+
+  return fetch(url)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if (!data.candidates || data.candidates.length === 0) return [];
+      /* 過濾低信心結果（score < 60）*/
+      return data.candidates
+        .filter(function(c){ return c.score >= 60; })
+        .map(function(c){
+          return {
+            name:    c.address,
+            address: c.attributes.Match_addr || c.address,
+            lat:     c.location.y,   /* ArcGIS: y = lat */
+            lng:     c.location.x,   /* ArcGIS: x = lng */
+            score:   c.score,
+            source:  'arcgis'
+          };
+        });
+    });
+}
+
+/* Nominatim 備援（地名/景點效果好）*/
+function searchNominatim(q) {
+  var base = 'https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&accept-language=zh-TW,zh,en';
+  return fetch(base + '&countrycodes=tw&q=' + encodeURIComponent(q))
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if (!data || data.length === 0) return [];
+      return data.map(function(item){
+        var name = item.name || item.display_name.split(',')[0];
+        return {
+          name:    name,
+          address: item.display_name,
+          lat:     parseFloat(item.lat),
+          lng:     parseFloat(item.lon),
+          source:  'nominatim'
+        };
+      });
+    });
+}
+
+/* 統一渲染結果 */
+function renderResults(items) {
+  var frag = document.createDocumentFragment();
+  items.forEach(function(item){
+    var div = document.createElement('div');
+    div.className = 'result-item';
+    div.innerHTML = '<strong>' + esc(item.name) + '</strong><span>' + esc(item.address) + '</span>';
+    div.addEventListener('click', function(){
+      setCoord(item.lat, item.lng, true);
+      if (!document.getElementById('f-name').value) {
+        document.getElementById('f-name').value = item.name;
+      }
+      setStatus('已選取：' + item.name, 'ok');
+      sResults.classList.remove('show');
+      sInput.value = item.name;
+    });
+    frag.appendChild(div);
+  });
+  sResults.innerHTML = '';
+  sResults.appendChild(frag);
+  sResults.classList.add('show');
+}
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ── 類別 ── */
+document.querySelectorAll('.cat-btn').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('.cat-btn').forEach(function(x){ x.classList.remove('on'); });
+    b.classList.add('on'); selCat = b.getAttribute('data-c');
+  });
+});
+
+/* ── 狀態 ── */
+document.querySelectorAll('.st-btn').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('.st-btn').forEach(function(x){ x.classList.remove('on'); });
+    b.classList.add('on'); selSt = b.getAttribute('data-s');
+    document.getElementById('done-extra').classList.toggle('show', selSt==='done');
+  });
+});
+
+/* ── 預設日期 ── */
+(function(){
+  var d=new Date(); var m=String(d.getMonth()+1).padStart(2,'0');
+  document.getElementById('f-added').value = d.getFullYear()+'-'+m;
+})();
+
+/* ── 選擇檔案 ── */
+var fileHandle = null;
+
+async function pickFile() {
+  if (!window.showOpenFilePicker) {
+    toast('你的瀏覽器不支援此功能，請改用 Chrome 或 Edge');
+    return;
+  }
+  try {
+    var handles = await window.showOpenFilePicker({
+      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
+      multiple: false
+    });
+    fileHandle = handles[0];
+    var f = await fileHandle.getFile();
+    var zone = document.getElementById('file-zone');
+    zone.classList.add('connected');
+    var st = document.getElementById('file-status');
+    st.textContent = '✓ 已連接：' + f.name + '（' + (f.size/1024).toFixed(1) + ' KB）';
+    st.className = 'file-status ok';
+    document.getElementById('btn-write').disabled = false;
+  } catch(e) {
+    if (e.name !== 'AbortError') {
+      toast('開啟失敗：' + e.message);
+    }
+  }
+}
+
+/* ── 照片管理 ── */
+var imgDirHandle = null;
+var selectedPhotos = []; // [{ handle, file, previewUrl }]
+
+async function pickImgDir() {
+  if (!window.showDirectoryPicker) {
+    toast('瀏覽器不支援此功能，請用 Chrome/Edge');
+    return;
+  }
+  try {
+    imgDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    var st = document.getElementById('dir-status');
+    st.textContent = '✓ 已連接：' + imgDirHandle.name;
+    st.className = 'file-status ok';
+    document.getElementById('btn-add-photo').disabled = false;
+  } catch(e) {
+    if (e.name !== 'AbortError') toast('無法開啟資料夾：' + e.message);
+  }
+}
+
+async function addPhotos() {
+  try {
+    var handles = await window.showOpenFilePicker({
+      multiple: true,
+      types: [{ description: '圖片', accept: { 'image/*': ['.jpg','.jpeg','.png','.webp','.gif','.heic'] } }]
+    });
+    for (var i = 0; i < handles.length; i++) {
+      var file = await handles[i].getFile();
+      var url  = URL.createObjectURL(file);
+      selectedPhotos.push({ handle: handles[i], file: file, previewUrl: url });
+    }
+    renderPreviews();
+  } catch(e) {
+    if (e.name !== 'AbortError') toast('選取失敗：' + e.message);
+  }
+}
+
+function renderPreviews() {
+  var c = document.getElementById('photo-preview');
+  c.innerHTML = '';
+  selectedPhotos.forEach(function(item, i) {
+    var div = document.createElement('div');
+    div.className = 'pthumb';
+    div.innerHTML = '<img src="' + item.previewUrl + '">'
+      + '<button class="pthumb-del" onclick="removePhoto(' + i + ')" title="移除">×</button>';
+    c.appendChild(div);
+  });
+}
+
+function removePhoto(i) {
+  URL.revokeObjectURL(selectedPhotos[i].previewUrl);
+  selectedPhotos.splice(i, 1);
+  renderPreviews();
+}
+
+/* ── 建立地點物件 ── */
+function buildEntry() {
+  var name  = document.getElementById('f-name').value.trim();
+  var lat   = parseFloat(document.getElementById('f-lat').value);
+  var lng   = parseFloat(document.getElementById('f-lng').value);
+  var desc  = document.getElementById('f-desc').value.trim();
+  var why   = document.getElementById('f-why').value.trim();
+  var time  = document.getElementById('f-time').value.trim();
+  var added = document.getElementById('f-added').value.trim();
+
+  if (!name)                    { toast('請填寫地點名稱'); return null; }
+  if (isNaN(lat) || isNaN(lng)) { toast('請先搜尋地址，或點擊地圖選取位置'); return null; }
+
+  var obj = { id: Date.now(), name: name, category: selCat, lat: lat, lng: lng };
+  if (desc)  obj.description = desc;
+  if (why)   obj.why = why;
+  if (time)  obj.best_time = time;
+  obj.status = selSt;
+  if (added) obj.added = added;
+
+  if (selSt==='done') {
+    var dn=document.getElementById('f-dnote').value.trim();
+    var dd=document.getElementById('f-ddate').value.trim();
+    if (dn) obj.done_note = dn;
+    if (dd) obj.done_date = dd;
+  }
+  return obj;
+}
+
+/* 生成並直接寫入 places.json */
+var editingId = null; // 編輯模式下儲存的 id
+
+async function generateAndWrite() {
+  var entry = buildEntry();
+  if (!entry) return;
+  if (!fileHandle) { toast('請先選擇 places.json 檔案'); return; }
+
+  var btn = document.getElementById('btn-write');
+  btn.disabled = true;
+  btn.textContent = '寫入中…';
+
+  try {
+    /* 複製照片到 static/images/places */
+    if (imgDirHandle && selectedPhotos.length > 0) {
+      var photoPaths = [];
+      for (var i = 0; i < selectedPhotos.length; i++) {
+        var item  = selectedPhotos[i];
+        var ext   = item.file.name.split('.').pop().toLowerCase();
+        var fname = Date.now() + '-' + Math.random().toString(36).substr(2,5) + '.' + ext;
+        var fh    = await imgDirHandle.getFileHandle(fname, { create: true });
+        var wr    = await fh.createWritable();
+        await wr.write(await item.file.arrayBuffer());
+        await wr.close();
+        photoPaths.push('images/places/' + fname);
+      }
+      if (photoPaths.length > 0) entry.photos = photoPaths;
+    }
+
+    /* 讀取現有 places.json 內容 */
+    var file = await fileHandle.getFile();
+    var text = await file.text();
+    var arr  = JSON.parse(text);
+    if (!Array.isArray(arr)) throw new Error('places.json 格式錯誤，應為陣列');
+
+    if (editingId !== null) {
+      /* 編輯模式：更新現有項目 */
+      entry.id = editingId;
+      var idx = arr.findIndex(function(p){ return p.id === editingId; });
+      if (idx === -1) throw new Error('找不到 ID=' + editingId + ' 的地點');
+      // 保留旧照片（如果此次沒有新選照片）
+      if (!entry.photos && arr[idx].photos) entry.photos = arr[idx].photos;
+      arr[idx] = entry;
+      toast('✓ 已更新！（' + entry.name + '）');
+    } else {
+      /* 新增模式 */
+      arr.push(entry);
+      var photoMsg = entry.photos ? '，已複製 ' + entry.photos.length + ' 張照片' : '';
+      toast('✓ 已成功寫入！共 ' + arr.length + ' 個地點' + photoMsg);
+    }
+
+    var writable = await fileHandle.createWritable();
+    await writable.write(JSON.stringify(arr, null, 2));
+    await writable.close();
+
+    btn.innerHTML = '✓ 寫入成功';
+
+    /* 清空照片選取 */
+    selectedPhotos.forEach(function(p){ URL.revokeObjectURL(p.previewUrl); });
+    selectedPhotos = [];
+    renderPreviews();
+
+    /* 如果是編輯模式，回到管理面板 */
+    if (editingId !== null) {
+      editingId = null;
+      cachedPlaces = arr;
+      setTimeout(function(){
+        renderMgmtList();
+        switchMode('mgmt');
+      }, 1200);
+    } else {
+      setTimeout(function(){
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 生成並寫入 places.json';
+      }, 2500);
+    }
+  } catch(e) {
+    toast('寫入失敗：' + e.message);
+    btn.disabled = false;
+    btn.textContent = '生成並寫入 places.json';
+  }
+}
+
+/* ── 管理模式 ── */
+var cachedPlaces = [];
+var mgmtHandle  = null;
+
+function switchMode(mode) {
+  var addPanel  = document.getElementById('add-panel');
+  var mgmtPanel = document.getElementById('mgmt-panel');
+  var tabAdd    = document.getElementById('tab-add');
+  var tabMgmt   = document.getElementById('tab-mgmt');
+  if (mode === 'add') {
+    addPanel.style.display  = '';
+    mgmtPanel.classList.remove('active');
+    tabAdd.classList.add('active');
+    tabMgmt.classList.remove('active');
+    // 重置編輯狀態
+    if (editingId !== null) {
+      editingId = null;
+      document.getElementById('btn-write').innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 生成並寫入 places.json';
+    }
+  } else {
+    addPanel.style.display  = 'none';
+    mgmtPanel.classList.add('active');
+    tabAdd.classList.remove('active');
+    tabMgmt.classList.add('active');
+  }
+}
+
+async function loadPlacesForMgmt() {
+  try {
+    var handles = await window.showOpenFilePicker({
+      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
+      multiple: false
+    });
+    mgmtHandle = handles[0];
+    // 共用同一個 handle
+    fileHandle = mgmtHandle;
+    var f    = await mgmtHandle.getFile();
+    var text = await f.text();
+    cachedPlaces = JSON.parse(text);
+
+    var st = document.getElementById('mgmt-status');
+    st.textContent = '✓ 已讀取：' + cachedPlaces.length + ' 個地點';
+    st.className = 'file-status ok';
+    document.getElementById('mgmt-file-zone').classList.add('connected');
+
+    // 同步更新新增面板的 places.json 狀態
+    var addSt = document.getElementById('file-status');
+    addSt.textContent = '✓ 已連接：' + f.name;
+    addSt.className = 'file-status ok';
+    document.getElementById('file-zone').classList.add('connected');
+    document.getElementById('btn-write').disabled = false;
+
+    renderMgmtList();
+  } catch(e) {
+    if (e.name !== 'AbortError') toast('開啟失敗：' + e.message);
+  }
+}
+
+var CAT_COLORS = { food:'#C47B5A', scenery:'#81B29A', oldshop:'#D4A853', walk:'#7B8CDE', cafe:'#A67B5B', shop:'#E07A5F', stay:'#3D5A80', quest:'#9B72AA' };
+var CAT_LABELS = { food:'美食', scenery:'風景', oldshop:'老店', walk:'散步', cafe:'咖啡廳', shop:'購物', stay:'住宿', quest:'破關任務' };
+
+function renderMgmtList() {
+  var kw  = (document.getElementById('mgmt-filter').value || '').toLowerCase();
+  var ul  = document.getElementById('place-list');
+  var filtered = cachedPlaces.filter(function(p){ return p.name.toLowerCase().includes(kw); });
+  if (!filtered.length) {
+    ul.innerHTML = '<li class="mgmt-empty">' + (cachedPlaces.length ? '無符合的地點' : '尚未讀取資料，請先開啟檔案') + '</li>';
+    return;
+  }
+  ul.innerHTML = filtered.map(function(p) {
+    var color = CAT_COLORS[p.category] || '#8C6A55';
+    var label = CAT_LABELS[p.category] || p.category;
+    var done  = p.status === 'done' ? ' ✓' : '';
+    return '<li class="place-list-item">'
+      + '<span class="pli-dot" style="background:' + color + '"></span>'
+      + '<div class="pli-info">'
+      + '<div class="pli-name">' + p.name + done + '</div>'
+      + '<div class="pli-meta">' + label + (p.added ? ' · ' + p.added : '') + '</div>'
+      + '</div>'
+      + '<div class="pli-actions">'
+      + '<button class="btn-edit-pl" onclick="loadForEdit(' + p.id + ')">編輯</button>'
+      + '<button class="btn-del-pl" onclick="deletePlace(' + p.id + ')">刪除</button>'
+      + '</div></li>';
+  }).join('');
+}
+
+function loadForEdit(id) {
+  var p = cachedPlaces.find(function(x){ return x.id === id; });
+  if (!p) { toast('找不到該地點'); return; }
+  editingId = id;
+
+  // 填充表單
+  document.getElementById('f-name').value  = p.name || '';
+  document.getElementById('f-lat').value   = p.lat  || '';
+  document.getElementById('f-lng').value   = p.lng  || '';
+  document.getElementById('f-desc').value  = p.description || '';
+  document.getElementById('f-why').value   = p.why  || '';
+  document.getElementById('f-time').value  = p.best_time || '';
+  document.getElementById('f-added').value = p.added || '';
+
+  // 類別
+  document.querySelectorAll('.cat-btn').forEach(function(b){
+    b.classList.toggle('on', b.getAttribute('data-c') === p.category);
+  });
+  selCat = p.category;
+
+  // 狀態
+  var isDone = p.status === 'done';
+  document.querySelectorAll('.st-btn').forEach(function(b){
+    b.classList.toggle('on', b.getAttribute('data-s') === p.status);
+  });
+  selSt = p.status;
+  document.getElementById('done-extra').style.display = isDone ? '' : 'none';
+  if (isDone) {
+    document.getElementById('f-dnote').value = p.done_note || '';
+    document.getElementById('f-ddate').value = p.done_date || '';
+  }
+
+  // 地圖定位
+  if (p.lat && p.lng) {
+    setCoord(p.lat, p.lng, true);
+  }
+
+  // 更改按鈕樣式
+  var btn = document.getElementById('btn-write');
+  btn.disabled = false;
+  btn.innerHTML = '✏️ 更新地點：' + p.name;
+
+  switchMode('add');
+  toast('已載入「' + p.name + '」，修改後按更新');
+}
+
+async function deletePlace(id) {
+  var p = cachedPlaces.find(function(x){ return x.id === id; });
+  if (!p) return;
+  if (!confirm('確定要刪除「' + p.name + '」？此操作不可復原。')) return;
+  if (!fileHandle) { toast('請先讀取 places.json'); return; }
+
+  try {
+    var file = await fileHandle.getFile();
+    var text = await file.text();
+    var arr  = JSON.parse(text);
+    arr = arr.filter(function(x){ return x.id !== id; });
+
+    var writable = await fileHandle.createWritable();
+    await writable.write(JSON.stringify(arr, null, 2));
+    await writable.close();
+
+    cachedPlaces = arr;
+    renderMgmtList();
+    toast('✓ 已刪除「' + p.name + '」');
+  } catch(e) {
+    toast('刪除失敗：' + e.message);
+  }
+}
+
+/* ── 備援── */
+function generateOnly() {
+  var entry = buildEntry();
+  if (!entry) return;
+  if (entry.status === 'done') {
+    var dn=document.getElementById('f-dnote').value.trim();
+    var dd=document.getElementById('f-ddate').value.trim();
+    if (dn) entry.done_note = dn;
+    if (dd) entry.done_date = dd;
+  }
+  document.getElementById('json-out').value = JSON.stringify(entry, null, 2);
+  toast('JSON 生成完成，按下方複製按鈕');
+}
+
+/* ── 複製 ── */
+function copyJSON(){
+  var txt = document.getElementById('json-out').value;
+  if (!txt||txt.length<5){ toast('請先按「生成 JSON」'); return; }
+  navigator.clipboard.writeText(txt).then(function(){
+    var btn = document.getElementById('btn-cp');
+    btn.classList.add('ok'); btn.textContent = '✓ 複製成功！';
+    setTimeout(function(){
+      btn.classList.remove('ok');
+      btn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> 複製 JSON';
+    }, 2500);
+    toast('複製成功！記得在上一筆後面加逗號再貼入');
+  }).catch(function(){
+    document.getElementById('json-out').select();
+    document.execCommand('copy');
+    toast('已複製');
+  });
+}
+
+/* ── Toast ── */
+function toast(msg){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t=setTimeout(function(){ el.classList.remove('show'); }, 3200);
+}
+</script>
+</body>
+</html>
