@@ -1,106 +1,5 @@
 [
   {
-    "id": 1,
-    "name": "師大夜市巷弄老麵攤",
-    "category": "food",
-    "lat": 25.0262,
-    "lng": 121.5292,
-    "description": "老闆不太說話，但每碗麵都在說話。",
-    "why": "冬天去，點招牌牛肉麵，坐在小板凳上吃，剛剛好。",
-    "best_time": "週間午後，不用等位",
-    "status": "pending",
-    "added": "2025-03"
-  },
-  {
-    "id": 2,
-    "name": "九份老街夜景",
-    "category": "scenery",
-    "lat": 25.1093,
-    "lng": 121.8442,
-    "description": "雨天的燈籠比晴天更適合看。",
-    "why": "傍晚上山，等燈全亮的那一刻。不急著拍照。",
-    "best_time": "秋冬傍晚，霧氣最有感",
-    "status": "done",
-    "done_note": "去了，真的沒在拍照。就站著看了很久，沒有說話。",
-    "done_date": "2024-11",
-    "added": "2024-10"
-  },
-  {
-    "id": 3,
-    "name": "迪化街百年布行",
-    "category": "oldshop",
-    "lat": 25.0566,
-    "lng": 121.5093,
-    "description": "老闆娘的嘴比布料更厲害。",
-    "why": "挑一塊布，讓她講古，聽一個下午就值得了。",
-    "best_time": "年節前後最熱鬧，平日最能聊",
-    "status": "pending",
-    "added": "2025-01"
-  },
-  {
-    "id": 4,
-    "name": "大稻埕碼頭",
-    "category": "walk",
-    "lat": 25.0583,
-    "lng": 121.5058,
-    "description": "河風很大，話不用說太多。",
-    "why": "黃昏散步，對岸的倉庫燈光比夜景更真實。",
-    "best_time": "傍晚五六點，陽光斜的時候",
-    "status": "pending",
-    "added": "2025-02"
-  },
-  {
-    "id": 5,
-    "name": "象山步道看日落",
-    "category": "quest",
-    "lat": 25.0271,
-    "lng": 121.5767,
-    "description": "上去的路比終點更值得。",
-    "why": "任務條件：不帶耳機，只帶水，在頂點等太陽下山。",
-    "best_time": "晴天傍晚，避開週末人潮",
-    "status": "pending",
-    "added": "2025-03"
-  },
-  {
-    "id": 6,
-    "name": "永康街隱密咖啡廳",
-    "category": "food",
-    "lat": 25.0311,
-    "lng": 121.5303,
-    "description": "連 Google 評論都很少的地方，反而值得信任。",
-    "why": "點手沖，帶一本書，不趕時間。老闆放的音樂很對。",
-    "best_time": "週一至週四，最安靜",
-    "status": "done",
-    "done_note": "咖啡很貴，但值得。坐了三個小時，老闆沒有催。",
-    "done_date": "2025-01",
-    "added": "2024-12"
-  },
-  {
-    "id": 7,
-    "name": "北投溫泉博物館",
-    "category": "oldshop",
-    "lat": 25.1372,
-    "lng": 121.5054,
-    "description": "日據時代的溫泉浴場，現在免費入場。",
-    "why": "看建築，踩木地板，試著感受那個時代的人如何放鬆。",
-    "best_time": "平日上午，幾乎沒人",
-    "status": "pending",
-    "added": "2025-02"
-  },
-  {
-    "id": 8,
-    "name": "淡水漁港端",
-    "category": "walk",
-    "lat": 25.1694,
-    "lng": 121.4382,
-    "description": "不是觀光的那段，是漁船的那段。",
-    "why": "錯過景點區，往漁港走，找一個沒人的地方坐著發呆。",
-    "best_time": "清晨或傍晚都行",
-    "status": "pending",
-    "added": "2025-03"
-  },
-
-  {
     "id": 1773555752698,
     "name": "老虎麵",
     "category": "food",
@@ -110,4 +9,5 @@
     "status": "done",
     "added": "2026-03"
   }
+
 ]

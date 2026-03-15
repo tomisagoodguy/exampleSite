@@ -1,81 +1,279 @@
 
-/* ─── Sidebar List View ─── */
+/* ─── UI Pro Max: Sidebar List Layout ─── */
 .adv-list-container {
   display: flex;
   flex-direction: column;
   height: 100%;
+  background: transparent;
 }
 
 .adv-list-header {
-  padding: 24px 24px 16px;
+  padding: 32px 28px 20px;
   font-family: 'Outfit', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 800;
   color: var(--adv-brown);
-  border-bottom: 1px solid var(--adv-glass-border);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.15em;
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .adv-list-body {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 0;
+  padding: 0 24px 32px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+  align-content: start;
 }
 
+/* 捲軸美化 */
+.adv-list-body::-webkit-scrollbar { width: 4px; }
+.adv-list-body::-webkit-scrollbar-track { background: transparent; }
+.adv-list-body::-webkit-scrollbar-thumb { 
+  background: var(--adv-glass-border); 
+  border-radius: 10px;
+}
+
+/* ─── Premium Card Design ─── */
 .adv-list-item {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 24px;
+  flex-direction: column;
+  background: var(--adv-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  padding: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-bottom: 1px solid rgba(140, 106, 85, 0.05);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 
+    0 10px 20px rgba(92, 61, 46, 0.05),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.adv-list-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255,255,255,0.4) 0%, transparent 60%);
+  pointer-events: none;
 }
 
 .adv-list-item:hover {
-  background: rgba(196, 123, 90, 0.08);
+  transform: translateY(-8px) scale(1.02);
+  background: #fff;
+  border-color: var(--cat-color, var(--adv-terracotta));
+  box-shadow: 
+    0 20px 40px rgba(92, 61, 46, 0.12),
+    0 0 20px var(--cat-color-fade, rgba(196, 123, 90, 0.2));
 }
 
-.adv-list-item:active {
-  background: rgba(196, 123, 90, 0.12);
+/* 圖像容器 */
+.adv-list-img-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/10;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: var(--adv-cream-dark);
 }
 
-.adv-list-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8), 0 2px 4px rgba(0,0,0,0.1);
+.adv-list-img {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.6s cubic-bezier(0.2, 0, 0.2, 1);
 }
 
+.adv-list-item:hover .adv-list-img {
+  transform: scale(1.1);
+}
+
+.adv-list-img-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--cat-color-fade), transparent);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  color: #fff;
+  font-size: 2.2rem;
+  font-weight: 900;
+  text-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.adv-list-img-placeholder {
+  display: none; /* 已被 overlay 取代 */
+}
+
+/* 內容區塊 */
 .adv-list-content {
-  flex: 1;
+  padding: 4px 8px 8px;
+}
+
+.adv-list-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .adv-list-name {
-  font-family: 'Outfit', sans-serif;
-  font-size: 0.92rem;
+  font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--adv-brown);
-  margin-bottom: 2px;
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.adv-list-stars {
+  color: var(--adv-gold);
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 2px rgba(212, 168, 83, 0.3));
 }
 
 .adv-list-meta {
-  font-size: 0.72rem;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(140, 106, 85, 0.1);
+  padding-top: 10px;
+  margin-top: 4px;
 }
 
-.adv-list-meta .done { color: var(--adv-sage); }
-.adv-list-meta .pending { color: var(--adv-brown-light); }
+.adv-list-status {
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 
-/* 暗色模式調整 */
+.adv-list-status.done { color: var(--adv-sage); }
+.adv-list-status.pending { color: var(--adv-brown-light); }
+
+/* 暗色模式極致黑 */
 body.dark-mode .adv-list-item {
-  border-bottom-color: rgba(255, 255, 255, 0.05);
+  background: rgba(45, 35, 28, 0.8);
+  border-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 body.dark-mode .adv-list-item:hover {
-  background: rgba(196, 123, 90, 0.15);
+  background: rgba(60, 48, 40, 0.95);
+  border-color: var(--cat-color);
 }
-body.dark-mode .adv-list-dot {
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0,0,0,0.2);
+
+/* ─── Detail Photo Hero ─── */
+.sdl-photo-hero {
+  width: 100%;
+  height: 240px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  border-radius: 0 0 24px 24px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.sdl-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+}
+
+.sdl-photo-hero .sdl-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.sdl-photo-hero .sdl-close-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: rotate(90deg);
+}
+
+.sdl-header {
+  padding: 24px 24px 10px;
+}
+
+.sdl-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--adv-brown-light);
+  margin-bottom: 10px;
+  opacity: 0.7;
+}
+
+.sdl-description {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--adv-brown);
+}
+
+.sdl-trivia-box {
+  background: linear-gradient(135deg, rgba(212, 168, 83, 0.08), rgba(255, 255, 255, 0.5));
+  border: 1px solid rgba(212, 168, 83, 0.2);
+  border-radius: 16px;
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(212, 168, 83, 0.05);
+}
+
+.sdl-trivia-box::before {
+  content: '💡';
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 2rem;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.sdl-trivia-text {
+  font-size: 0.88rem;
+  line-height: 1.8;
+  color: var(--adv-brown);
+  font-weight: 500;
+  font-style: italic;
+  margin: 0;
 }

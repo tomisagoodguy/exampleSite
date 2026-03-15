@@ -12,6 +12,34 @@
   var PLACES_DATA = {{ .Site.Data.places | jsonify | safeJS }};
 </script>
 
+<style>
+  /* 兩邊各一半 50:50 */
+  .adv-layout {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important; 
+    height: 650px !important;
+    margin: 0 20px !important;
+    gap: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--adv-glass);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  }
+  
+  .adv-map-wrap {
+    border-right: 1px solid var(--adv-glass-border);
+  }
+
+  /* 確保在小螢幕也能正確顯示 */
+  @media (max-width: 900px) {
+    .adv-layout {
+      grid-template-columns: 1fr !important;
+      grid-template-rows: 300px 1fr !important;
+      height: auto !important;
+    }
+  }
+</style>
+
 <section class="adv-page">
 
   {{/* ─── Hero Banner ─── */}}
@@ -19,7 +47,7 @@
     <div class="adv-hero__inner">
       <div class="adv-hero__text">
         <h1 class="adv-hero__title">破關地圖</h1>
-        <p class="adv-hero__subtitle">這些地方，一個人去有點可惜。</p>
+        <p class="adv-hero__subtitle">喔，你也在這裡嗎?</p>
       </div>
       <div class="adv-hero__stats">
         <div class="adv-stat">
@@ -67,7 +95,7 @@
 
   {{/* ─── 主體：地圖 + 側欄 ─── */}}
   <div class="adv-layout">
-
+    
     {{/* 地圖 */}}
     <div class="adv-map-wrap">
       <div id="adventure-map"></div>
