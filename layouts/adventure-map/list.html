@@ -1,10 +1,11 @@
 {{ define "main" }}
 
 {{/* ─── 注入 Leaflet + 頁面專屬 CSS ─── */}}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="">
 <link rel="stylesheet" href="{{ "css/adventure-map.css" | absURL }}">
+<link rel="stylesheet" href="{{ "css/adventure-map-list.css" | absURL }}">
 
 {{/* ─── 把 Hugo data 注入全域 JS 變數 ─── */}}
 <script>
@@ -45,38 +46,23 @@
       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
       全部
     </button>
-    <button class="adv-filter-btn" data-cat="food" id="filter-food">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-      美食
-    </button>
-    <button class="adv-filter-btn" data-cat="scenery" id="filter-scenery">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-      風景
-    </button>
-    <button class="adv-filter-btn" data-cat="oldshop" id="filter-oldshop">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      老店
-    </button>
-    <button class="adv-filter-btn" data-cat="walk" id="filter-walk">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><path d="M9 20l.68-5.5L12 17l2.32-2.5L15 20"/><path d="M6.5 11.5L9 8l3 3 3-4 2.5 2.5"/></svg>
-      散步
-    </button>
-    <button class="adv-filter-btn" data-cat="cafe" id="filter-cafe">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>
-      咖啡
-    </button>
-    <button class="adv-filter-btn" data-cat="shop" id="filter-shop">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-      購物
-    </button>
-    <button class="adv-filter-btn" data-cat="stay" id="filter-stay">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14"/><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/></svg>
-      住宿
-    </button>
-    <button class="adv-filter-btn" data-cat="quest" id="filter-quest">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      破關任務
-    </button>
+    <button class="adv-filter-btn" data-cat="food" id="filter-food">美食</button>
+    <button class="adv-filter-btn" data-cat="scenery" id="filter-scenery">風景</button>
+    <button class="adv-filter-btn" data-cat="oldshop" id="filter-oldshop">老店</button>
+    <button class="adv-filter-btn" data-cat="walk" id="filter-walk">散步</button>
+    <button class="adv-filter-btn" data-cat="cafe" id="filter-cafe">咖啡</button>
+    <button class="adv-filter-btn" data-cat="shop" id="filter-shop">購物</button>
+    <button class="adv-filter-btn" data-cat="stay" id="filter-stay">住宿</button>
+    <button class="adv-filter-btn" data-cat="quest" id="filter-quest">破關任務</button>
+  </div>
+
+  <div class="adv-filter-bar adv-filter-bar--seasons" style="margin-top:-8px; padding-top:0;">
+    <span style="font-size:.7rem; color:var(--brown-lt); margin-right:8px; font-weight:600;">適合季節：</span>
+    <button class="adv-season-btn active" data-season="all">全部</button>
+    <button class="adv-season-btn" data-season="spring">🌸 春</button>
+    <button class="adv-season-btn" data-season="summer">☀️ 夏</button>
+    <button class="adv-season-btn" data-season="autumn">🍂 秋</button>
+    <button class="adv-season-btn" data-season="winter">❄️ 冬</button>
   </div>
 
   {{/* ─── 主體：地圖 + 側欄 ─── */}}
@@ -116,7 +102,7 @@
 </section>
 
 {{/* ─── 載入 Leaflet + 地圖邏輯 ─── */}}
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WPeE=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
 <script src="{{ "js/adventure-map.js" | absURL }}"></script>
 

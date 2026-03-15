@@ -794,3 +794,79 @@ body.dark-mode .sdl-info-text {
 body.dark-mode .adv-sidebar__default-title { color: #E8D5C0; }
 body.dark-mode .adv-sidebar__default-desc  { color: #C4A882; }
 body.dark-mode .adv-hero__title            { color: #fff !important; }
+
+/* ─── Season Filters ─── */
+.adv-season-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--adv-glass-border);
+  background: var(--adv-glass);
+  color: var(--adv-brown-light);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-right: 4px;
+}
+.adv-season-btn:hover {
+  background: var(--adv-cream-dark);
+  border-color: var(--adv-brown-light);
+}
+.adv-season-btn.active {
+  background: var(--adv-brown);
+  color: #fff;
+  border-color: var(--adv-brown);
+}
+
+/* ─── Details Enhancement ─── */
+.sdl-rating {
+  font-size: 1.2rem;
+  color: var(--adv-gold);
+  margin-bottom: 12px;
+  letter-spacing: 2px;
+}
+
+.sdl-seasons {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.sdl-season-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(140, 106, 85, 0.1);
+  color: var(--adv-brown-light);
+  border: 1px solid rgba(140, 106, 85, 0.15);
+}
+
+.sdl-visit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+.sdl-visit-item {
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px dashed var(--adv-glass-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+body.dark-mode .sdl-visit-item {
+  background: rgba(255, 255, 255, 0.03);
+}
+.sdl-visit-date {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--adv-terracotta);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.sdl-visit-note {
+  font-size: 0.82rem;
+  color: var(--adv-brown);
+  line-height: 1.5;
+  margin: 0;
+}

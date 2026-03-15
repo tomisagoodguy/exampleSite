@@ -149,15 +149,37 @@ textarea { resize:vertical; min-height:110px; line-height:1.65; } /* 加高輸�
 /* 狀態 */
 .st-row { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
 .st-btn {
-  padding:8px; border-radius:8px;
-  border:1.5px solid var(--border); background:transparent;
-  font-size:.8rem; font-weight:600; cursor:pointer;
-  font-family:'Noto Sans TC',sans-serif; color:var(--brown-lt); transition:all .18s;
+  padding:10px; border-radius:10px; border:1.5px solid var(--border);
+  background:rgba(255,255,255,.6); cursor:pointer; font-weight:600;
+  color:var(--brown-lt); font-family:'Noto Sans TC',sans-serif;
+  transition:all .2s;
 }
-.st-btn[data-s=pending].on { background:rgba(140,106,85,.1); border-color:var(--brown-lt); color:var(--brown); }
-.st-btn[data-s=done].on    { background:rgba(129,178,154,.15); border-color:var(--sage); color:#4A8A72; }
-.done-extra { display:none; margin-top:10px; }
-.done-extra.show { display:block; }
+.st-btn[data-s=pending].on { background:#8C6A55; color:#fff; border-color:transparent; }
+.st-btn[data-s=done].on    { background:var(--sage); color:#fff; border-color:transparent; }
+
+/* 評分與季節樣式 */
+.rating-row { display:flex; gap:8px; margin-top:5px; }
+.rate-btn {
+  width:36px; height:36px; border-radius:8px; border:1.5px solid var(--border);
+  background:#fff; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center;
+  transition:all .2s;
+}
+.rate-btn.on { background:#FFD700; border-color:#E6C200; color:#5C3D2E; }
+
+.season-grid { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; }
+.season-btn {
+  padding:6px; border-radius:8px; border:1.5px solid var(--border);
+  background:#fff; cursor:pointer; font-size:.78rem; font-weight:600; text-align:center;
+  color:var(--brown-lt); transition:all .2s;
+}
+.season-btn.on { background:var(--brown); color:#fff; border-color:transparent; }
+
+/* 訪客紀錄樣式 */
+.visit-item { background:rgba(196,123,90,.05); padding:8px 10px; border-radius:8px; margin-bottom:6px; font-size:.78rem; position:relative; }
+.visit-item .v-date { font-weight:700; color:var(--terra); margin-bottom:2px; }
+.visit-item .v-note { color:var(--brown); line-height:1.4; }
+.visit-item .v-del  { position:absolute; top:8px; right:8px; color:var(--brown-lt); cursor:pointer; padding:2px 5px; }
+.visit-item .v-del:hover { color:#C0392B; }
 
 /* 輸出區 */
 .out-wrap { padding:16px 20px; flex:1; display:flex; flex-direction:column; gap:9px; }
@@ -350,14 +372,19 @@ code { background:rgba(196,123,90,.1); color:var(--terra); padding:1px 5px; bord
     <div class="sec">
       <div class="sec-t">① 搜尋地址或地名</div>
       <div class="search-wrap">
-        <div class="search-row">
-          <input type="text" id="s-input"
-            placeholder="例：台北市大安區師大路165號"
-            autocomplete="off">
+        <div class="search-box">
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+          <input type="text" id="s-input" placeholder="輸入地址、地名，或點擊右側定位" style="flex:1">
+          <button class="btn-geo" onclick="locateMe()" title="抓取目前 GPS 位置">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            定位
+          </button>
+        </div>
+        <div class="search-actions">
           <button id="s-btn" onclick="doSearch()">搜尋</button>
         </div>
-        <div class="search-status" id="s-status">輸入地址或店名，按搜尋</div>
-        <div class="results" id="s-results"></div>
+        <div id="s-status" class="search-status"></div>
+        <div id="s-results" class="search-results"></div>
       </div>
     </div>
 
@@ -379,6 +406,10 @@ code { background:rgba(196,123,90,.1); color:var(--terra); padding:1px 5px; bord
         <input type="text" id="f-name" placeholder="例：師大巷弄老麵攤">
       </div>
       <div class="row">
+        <label>地址</label>
+        <input type="text" id="f-addr" placeholder="搜尋後自動填入或手動輸入">
+      </div>
+      <div class="row">
         <label class="req">類別</label>
         <div class="cat-grid">
           <button class="cat-btn on" data-c="food">🍜 美食</button>
@@ -389,6 +420,25 @@ code { background:rgba(196,123,90,.1); color:var(--terra); padding:1px 5px; bord
           <button class="cat-btn" data-c="shop">🛍️ 購物</button>
           <button class="cat-btn" data-c="stay">🏨 住宿</button>
           <button class="cat-btn" data-c="quest">⚡ 任務</button>
+        </div>
+      </div>
+      <div class="row">
+        <label>推薦季節 (可多選)</label>
+        <div class="season-grid" id="f-seasons">
+          <button class="season-btn" data-v="spring">🌸 春</button>
+          <button class="season-btn" data-v="summer">☀️ 夏</button>
+          <button class="season-btn" data-v="autumn">🍂 秋</button>
+          <button class="season-btn" data-v="winter">❄️ 冬</button>
+        </div>
+      </div>
+      <div class="row">
+        <label>評分 (Rating)</label>
+        <div class="rating-row" id="f-rating">
+          <button class="rate-btn" data-v="1">⭐</button>
+          <button class="rate-btn" data-v="2">⭐</button>
+          <button class="rate-btn" data-v="3">⭐</button>
+          <button class="rate-btn" data-v="4">⭐</button>
+          <button class="rate-btn" data-v="5">⭐</button>
         </div>
       </div>
     </div>
@@ -422,13 +472,15 @@ code { background:rgba(196,123,90,.1); color:var(--terra); padding:1px 5px; bord
         <button class="st-btn" data-s="done">✓ 已破關</button>
       </div>
       <div class="done-extra" id="done-extra">
-        <div class="row" style="margin-top:10px">
-          <label>破關紀錄（一句話）</label>
-          <textarea id="f-dnote" placeholder="去了，真的沒在拍照。"></textarea>
-        </div>
-        <div class="row">
-          <label>破關日期（年-月）</label>
-          <input type="text" id="f-ddate" placeholder="2026-03">
+        <div style="margin-top:12px; border-top:1px dashed var(--border); padding-top:12px;">
+          <label>訪客紀錄 (可多次存檔)</label>
+          <div id="visit-list"></div>
+          <div class="row" style="background:#fff; border:1px solid var(--border); padding:10px; border-radius:10px; margin-top:10px;">
+            <label style="font-size:.68rem;">新增破關紀錄</label>
+            <input type="text" id="v-date" placeholder="日期 (例: 2026-03)" style="margin-bottom:6px;">
+            <textarea id="v-note" placeholder="寫點當時的心情..." style="min-height:80px;"></textarea>
+            <button onclick="addVisitToCurrent()" style="width:100%; margin-top:8px; padding:6px; background:var(--terra); color:#fff; border:none; border-radius:6px; cursor:pointer;">加入紀錄</button>
+          </div>
         </div>
       </div>
     </div>
@@ -440,14 +492,14 @@ code { background:rgba(196,123,90,.1); color:var(--terra); padding:1px 5px; bord
       <div class="photo-dir-row" id="photo-dir-row">
         <button class="btn-pick" onclick="pickImgDir()">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          選擇照片儲存資料夾
+          (選填) 連結照片資料夾
         </button>
-        <div class="file-status tip" id="dir-status">static/images/places 資料夾（只選一次）</div>
+        <div class="file-status tip" id="dir-status">若連結 <code>static/images/places</code>，系統會自動幫你備份照片</div>
       </div>
       <!-- 加入照片 -->
-      <button class="btn-add-photo" id="btn-add-photo" onclick="addPhotos()" disabled>
+      <button class="btn-add-photo" id="btn-add-photo" onclick="addPhotos()">
         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        加入照片（可多選）
+        選取照片（可多選）
       </button>
       <!-- 縮圖預覽 -->
       <div class="photo-preview" id="photo-preview"></div>
@@ -465,7 +517,7 @@ code { background:rgba(196,123,90,.1); color:var(--terra); padding:1px 5px; bord
         <div class="file-status tip" id="file-status">選擇後即可直接寫入，不需複製貼上</div>
       </div>
 
-      <button class="btn-write" id="btn-write" onclick="generateAndWrite()" disabled>
+      <button class="btn-write" id="btn-write" onclick="generateAndWrite()">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         生成並寫入 places.json
       </button>
@@ -497,8 +549,68 @@ code { background:rgba(196,123,90,.1); color:var(--terra); padding:1px 5px; bord
 <script>
 'use strict';
 
-var selCat = 'food', selSt = 'pending';
+var selCat = 'food', selSt = 'pending', selRate = 0;
+var selSeasons = [];
+var currentVisits = [];
 var clickMark = null;
+
+/* ── 評分/季節/狀態 事件綁定 ── */
+document.addEventListener('DOMContentLoaded', function() {
+  // 評分
+  document.querySelectorAll('.rate-btn').forEach(function(btn) {
+    btn.onclick = function() {
+      selRate = parseInt(this.getAttribute('data-v'));
+      updateRateUI();
+    };
+  });
+  // 季節
+  document.querySelectorAll('.season-btn').forEach(function(btn) {
+    btn.onclick = function() {
+      var s = this.getAttribute('data-v');
+      var idx = selSeasons.indexOf(s);
+      if (idx > -1) selSeasons.splice(idx, 1);
+      else selSeasons.push(s);
+      this.classList.toggle('on');
+    };
+  });
+});
+
+function updateRateUI() {
+  document.querySelectorAll('.rate-btn').forEach(function(b) {
+    var v = parseInt(b.getAttribute('data-v'));
+    b.classList.toggle('on', v <= selRate);
+  });
+}
+
+function addVisitToCurrent() {
+  var d = document.getElementById('v-date').value.trim();
+  var n = document.getElementById('v-note').value.trim();
+  if (!d || !n) { toast('日期與紀錄不可為空'); return; }
+  currentVisits.push({ date: d, note: n });
+  document.getElementById('v-date').value = '';
+  document.getElementById('v-note').value = '';
+  renderVisitList();
+}
+
+function renderVisitList() {
+  var container = document.getElementById('visit-list');
+  if (!currentVisits.length) {
+    container.innerHTML = '<p style="font-size:.7rem; color:var(--brown-lt);">尚無紀錄</p>';
+    return;
+  }
+  container.innerHTML = currentVisits.map(function(v, i) {
+    return '<div class="visit-item">'
+      + '<div class="v-date">' + v.date + '</div>'
+      + '<div class="v-note">' + v.note + '</div>'
+      + '<div class="v-del" onclick="delVisit(' + i + ')">✕</div>'
+      + '</div>';
+  }).reverse().join('');
+}
+
+function delVisit(i) {
+  currentVisits.splice(i, 1);
+  renderVisitList();
+}
 
 /* ── 地圖初始化 ── */
 var map = L.map('picker-map', { center:[25.05,121.55], zoom:12, zoomControl:true });
@@ -598,6 +710,52 @@ function searchArcGIS(q) {
     });
 }
 
+/* ── GPS 定位功能 ── */
+function locateMe() {
+  if (!navigator.geolocation) {
+    setStatus('瀏覽器不支援定位功能', 'error');
+    return;
+  }
+  
+  setStatus('正在獲取 GPS 座標...', 'loading');
+  
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    var lat = pos.coords.latitude;
+    var lng = pos.coords.longitude;
+    setCoord(lat, lng, true);
+    setStatus('GPS 定位成功！正在抓取地址...', 'ok');
+    
+    // 定位後，自動反向搜尋地址
+    reverseGeocode(lat, lng);
+  }, function(err) {
+    var msg = '定位失敗：' + err.message;
+    if(err.code === 1) msg = '請允許瀏覽器定位權限';
+    setStatus(msg, 'error');
+  }, { enableHighAccuracy: true, timeout: 5000 });
+}
+
+/* 反向地理編碼：從座標反查地址 */
+async function reverseGeocode(lat, lng) {
+  var url = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode'
+    + '?f=json&location=' + lng + ',' + lat + '&langCode=zht';
+    
+  try {
+    var res = await fetch(url);
+    var data = await res.json();
+    if (data && data.address) {
+      var addr = data.address.Match_addr || data.address.LongLabel || '';
+      document.getElementById('f-addr').value = addr;
+      // 如果名稱還空著，放個提示或暫用地址
+      if(!document.getElementById('f-name').value) {
+        document.getElementById('f-name').value = data.address.Address || '';
+      }
+      setStatus('定位成功：' + addr, 'ok');
+    }
+  } catch(e) {
+    console.error('反向地址查詢失敗', e);
+  }
+}
+
 /* Nominatim 備援（地名/景點效果好）*/
 function searchNominatim(q) {
   var base = 'https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&accept-language=zh-TW,zh,en';
@@ -631,6 +789,7 @@ function renderResults(items) {
         document.getElementById('f-name').value = item.name;
       }
       setStatus('已選取：' + item.name, 'ok');
+      document.getElementById('f-addr').value = item.address;
       sResults.classList.remove('show');
       sInput.value = item.name;
     });
@@ -706,9 +865,9 @@ async function pickImgDir() {
   try {
     imgDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
     var st = document.getElementById('dir-status');
-    st.textContent = '✓ 已連接：' + imgDirHandle.name;
+    st.textContent = '✓ 已連結錄入目錄：' + imgDirHandle.name;
     st.className = 'file-status ok';
-    document.getElementById('btn-add-photo').disabled = false;
+    toast('已啟用照片自動複製功能');
   } catch(e) {
     if (e.name !== 'AbortError') toast('無法開啟資料夾：' + e.message);
   }
@@ -758,23 +917,40 @@ function buildEntry() {
   var why   = document.getElementById('f-why').value.trim();
   var time  = document.getElementById('f-time').value.trim();
   var added = document.getElementById('f-added').value.trim();
+  var addr  = document.getElementById('f-addr').value.trim();
 
   if (!name)                    { toast('請填寫地點名稱'); return null; }
   if (isNaN(lat) || isNaN(lng)) { toast('請先搜尋地址，或點擊地圖選取位置'); return null; }
 
   var obj = { id: Date.now(), name: name, category: selCat, lat: lat, lng: lng };
   if (desc)  obj.description = desc;
+  if (addr)  obj.address = addr;
   if (why)   obj.why = why;
   if (time)  obj.best_time = time;
   obj.status = selSt;
   if (added) obj.added = added;
+  if (selRate > 0) obj.rating = selRate;
+  if (selSeasons.length > 0) obj.seasons = selSeasons;
 
-  if (selSt==='done') {
-    var dn=document.getElementById('f-dnote').value.trim();
-    var dd=document.getElementById('f-ddate').value.trim();
-    if (dn) obj.done_note = dn;
-    if (dd) obj.done_date = dd;
+  if (selSt==='done' && currentVisits.length > 0) {
+    obj.visits = currentVisits;
+    var last = currentVisits[currentVisits.length - 1];
+    obj.done_note = last.note;
+    obj.done_date = last.date;
   }
+
+  // 處理照片路徑
+  if (selectedPhotos.length > 0) {
+    obj.photos = selectedPhotos.map(function(p){
+      // 如果還沒真正寫入，先預覽檔名
+      if (p.savedName) return 'images/places/' + p.savedName;
+      // 這裡先暫定一個檔名，實際寫入時會更新
+      var ext = p.file.name.split('.').pop().toLowerCase();
+      var dummyName = 'temp-' + p.file.name;
+      return 'images/places/' + dummyName;
+    });
+  }
+
   return obj;
 }
 
@@ -784,7 +960,11 @@ var editingId = null; // 編輯模式下儲存的 id
 async function generateAndWrite() {
   var entry = buildEntry();
   if (!entry) return;
-  if (!fileHandle) { toast('請先選擇 places.json 檔案'); return; }
+  if (!fileHandle) {
+    toast('尚未連接檔案，請先點擊「選擇 places.json 檔案」');
+    pickFile(); // 嘗試主動開啟
+    return;
+  }
 
   var btn = document.getElementById('btn-write');
   btn.disabled = true;
@@ -792,17 +972,23 @@ async function generateAndWrite() {
 
   try {
     /* 複製照片到 static/images/places */
-    if (imgDirHandle && selectedPhotos.length > 0) {
+    if (selectedPhotos.length > 0) {
       var photoPaths = [];
-      for (var i = 0; i < selectedPhotos.length; i++) {
-        var item  = selectedPhotos[i];
-        var ext   = item.file.name.split('.').pop().toLowerCase();
-        var fname = Date.now() + '-' + Math.random().toString(36).substr(2,5) + '.' + ext;
-        var fh    = await imgDirHandle.getFileHandle(fname, { create: true });
-        var wr    = await fh.createWritable();
-        await wr.write(await item.file.arrayBuffer());
-        await wr.close();
-        photoPaths.push('images/places/' + fname);
+      if (!imgDirHandle) {
+        toast('警告：未連結照片資料夾，請手動將照片放入 static/images/places', 'error');
+        // 依然保留檔名路徑，但無法複製檔案
+        photoPaths = selectedPhotos.map(function(p){ return 'images/places/' + p.file.name; });
+      } else {
+        for (var i = 0; i < selectedPhotos.length; i++) {
+          var item  = selectedPhotos[i];
+          var ext   = item.file.name.split('.').pop().toLowerCase();
+          var fname = Date.now() + '-' + Math.random().toString(36).substr(2,5) + '.' + ext;
+          var fh    = await imgDirHandle.getFileHandle(fname, { create: true });
+          var wr    = await fh.createWritable();
+          await wr.write(await item.file.arrayBuffer());
+          await wr.close();
+          photoPaths.push('images/places/' + fname);
+        }
       }
       if (photoPaths.length > 0) entry.photos = photoPaths;
     }
@@ -810,8 +996,14 @@ async function generateAndWrite() {
     /* 讀取現有 places.json 內容 */
     var file = await fileHandle.getFile();
     var text = await file.text();
-    var arr  = JSON.parse(text);
-    if (!Array.isArray(arr)) throw new Error('places.json 格式錯誤，應為陣列');
+    var arr  = [];
+    try {
+      arr = text.trim() ? JSON.parse(text) : [];
+      if (!Array.isArray(arr)) arr = [];
+    } catch(err) {
+      console.error('JSON 解析失敗', err);
+      throw new Error('places.json 格式錯誤（非標準 JSON 陣列）');
+    }
 
     if (editingId !== null) {
       /* 編輯模式：更新現有項目 */
@@ -960,24 +1152,34 @@ function loadForEdit(id) {
   document.getElementById('f-why').value   = p.why  || '';
   document.getElementById('f-time').value  = p.best_time || '';
   document.getElementById('f-added').value = p.added || '';
+  document.getElementById('f-addr').value  = p.address || '';
 
   // 類別
-  document.querySelectorAll('.cat-btn').forEach(function(b){
-    b.classList.toggle('on', b.getAttribute('data-c') === p.category);
-  });
   selCat = p.category;
-
-  // 狀態
-  var isDone = p.status === 'done';
-  document.querySelectorAll('.st-btn').forEach(function(b){
-    b.classList.toggle('on', b.getAttribute('data-s') === p.status);
+  document.querySelectorAll('.cat-btn').forEach(function(b){
+    b.classList.toggle('on', b.getAttribute('data-c') === selCat);
   });
-  selSt = p.status;
-  document.getElementById('done-extra').style.display = isDone ? '' : 'none';
-  if (isDone) {
-    document.getElementById('f-dnote').value = p.done_note || '';
-    document.getElementById('f-ddate').value = p.done_date || '';
+  // 評分
+  selRate = p.rating || 0;
+  updateRateUI();
+  // 季節
+  selSeasons = p.seasons || [];
+  document.querySelectorAll('.season-btn').forEach(function(b){
+    b.classList.toggle('on', selSeasons.includes(b.getAttribute('data-v')));
+  });
+  // 狀態
+  selSt = p.status || 'pending';
+  document.querySelectorAll('.st-btn').forEach(function(b){
+    b.classList.toggle('on', b.getAttribute('data-s') === selSt);
+  });
+  document.getElementById('done-extra').classList.toggle('show', selSt==='done');
+
+  // 訪客紀錄 (轉換舊格式或讀取新格式)
+  currentVisits = p.visits || [];
+  if (currentVisits.length === 0 && p.done_date && p.done_note) {
+    currentVisits = [{ date: p.done_date, note: p.done_note }];
   }
+  renderVisitList();
 
   // 地圖定位
   if (p.lat && p.lng) {
@@ -987,7 +1189,7 @@ function loadForEdit(id) {
   // 更改按鈕樣式
   var btn = document.getElementById('btn-write');
   btn.disabled = false;
-  btn.innerHTML = '✏️ 更新地點：' + p.name;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 更新地點：' + p.name;
 
   switchMode('add');
   toast('已載入「' + p.name + '」，修改後按更新');
@@ -1021,12 +1223,6 @@ async function deletePlace(id) {
 function generateOnly() {
   var entry = buildEntry();
   if (!entry) return;
-  if (entry.status === 'done') {
-    var dn=document.getElementById('f-dnote').value.trim();
-    var dd=document.getElementById('f-ddate').value.trim();
-    if (dn) entry.done_note = dn;
-    if (dd) entry.done_date = dd;
-  }
   document.getElementById('json-out').value = JSON.stringify(entry, null, 2);
   toast('JSON 生成完成，按下方複製按鈕');
 }
