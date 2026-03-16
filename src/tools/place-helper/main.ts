@@ -1,4 +1,4 @@
-import { PlaceEntry, Visit, SearchResult } from './types';
+import { PlaceEntry, Visit, SearchResult } from '../../shared/types';
 import { initMap, setMarker } from './map';
 import { searchArcGIS, searchNominatim, reverseGeocode } from './geocoder';
 import { toast, esc, updateRateUI, setStatus } from './ui';

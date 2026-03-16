@@ -1,4 +1,4 @@
-import { SearchResult } from './types';
+import { SearchResult } from '../../shared/types';
 
 export async function searchArcGIS(q: string): Promise<SearchResult[]> {
   const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&SingleLine=${encodeURIComponent(q)}&countryCode=TWN&maxLocations=6&outFields=Match_addr,Addr_type,Place_addr&langCode=zht`;
