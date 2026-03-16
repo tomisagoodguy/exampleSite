@@ -157,10 +157,12 @@ function showSidebarDetail(place) {
       </div>
 
       <div class="sdl-body">
+        ${place.description ? `
         <div class="sdl-section">
           <div class="sdl-label">關於這裡</div>
-          <p class="sdl-description">${place.description || '這是一個充滿驚喜的地方，值得你親自來探索。'}</p>
+          <p class="sdl-description">${place.description}</p>
         </div>
+        ` : ''}
 
         ${place.trivia ? `
         <div class="sdl-section sdl-trivia-box">
