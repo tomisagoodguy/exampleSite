@@ -133,6 +133,9 @@
     - title: "財經部落格00981A"
       url: "https://www.facebook.com/profile.php?id=100075984323886"
       description: "00981A。"
+    - title: "Alpha Insight"
+      url: "https://alpha-insight-amber.vercel.app/"
+      description: "專業財經數據分析平台，提供深度市場洞察與視覺化工具。"
 - category: "線上學習平台"
   links:
     - title: "Hahow 好學校"
