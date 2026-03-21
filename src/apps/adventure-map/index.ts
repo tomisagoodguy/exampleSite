@@ -1,10 +1,9 @@
 import './styles/map.css';
 import './styles/list.css';
 import { MapEngine } from './engine';
-import { 
-  getPlacesData, 
-  filterPlaces, 
-  CATEGORY_CONFIG 
+import {
+  getPlacesData,
+  filterPlaces,
 } from './data';
 import { 
   updateStatsUI, 
@@ -79,9 +78,7 @@ class AdventureMapApp {
   }
 }
 
-// Start the app
-document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('adventure-map')) {
-    new AdventureMapApp();
-  }
-});
+// Start the app (module scripts are already deferred, DOM is ready)
+if (document.getElementById('adventure-map')) {
+  new AdventureMapApp();
+}

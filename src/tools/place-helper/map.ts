@@ -19,6 +19,22 @@ export function initMap(elementId: string, onClick: (lat: number, lng: number) =
   return map;
 }
 
+export function setCoord(lat: number, lng: number, flyTo: boolean): void {
+  const latVal = +parseFloat(lat.toString()).toFixed(5);
+  const lngVal = +parseFloat(lng.toString()).toFixed(5);
+
+  (document.getElementById('f-lat') as HTMLInputElement).value = latVal.toString();
+  (document.getElementById('f-lng') as HTMLInputElement).value = lngVal.toString();
+
+  const pill = document.getElementById('coord-pill');
+  if (pill) {
+    pill.textContent = `${latVal}, ${lngVal}`;
+    pill.style.display = 'block';
+  }
+  document.getElementById('map-tip')?.classList.add('hide');
+  setMarker(latVal, lngVal, flyTo);
+}
+
 export function setMarker(lat: number, lng: number, flyTo: boolean = false) {
   if (clickMark) map.removeLayer(clickMark);
   

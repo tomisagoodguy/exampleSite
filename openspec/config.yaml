@@ -1,0 +1,10 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Hugo SSG, TypeScript, Vanilla CSS/SCSS
+  Deployment: Netlify
+  Naming conventions: PascalCase components, camelCase functions/variables, kebab-case CSS classes
+  Reusable partials in layouts/partials/
+  Conventional commits
+  No `any` in TypeScript
+  Domain: personal website/portfolio with sections for AI, Dev Lab, and Lifestyle

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s \"http://localhost:1313/adventure-map/\")",
+      "Bash(openspec instructions:*)",
+      "Bash(openspec status:*)",
+      "Bash(npx vite:*)",
+      "Bash(python -c \":*)",
+      "Bash(where hugo:*)",
+      "Read(//usr/local/bin/**)",
+      "Bash(git -C c:/Users/user/Documents/GitHub/exampleSite status)",
+      "Bash(git -C c:/Users/user/Documents/GitHub/exampleSite diff --stat)"
+    ]
+  }
+}

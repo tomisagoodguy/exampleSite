@@ -7,6 +7,7 @@ export default defineConfig({
     outDir: resolve(__dirname, 'static/dist'),
     emptyOutDir: false, // Handle this in shell to avoid EBUSY
     rollupOptions: {
+      external: ['leaflet', 'leaflet.markercluster'],
       input: {
         'place-helper': resolve(__dirname, 'src/tools/place-helper/place-helper.html'),
         'adventure-map': resolve(__dirname, 'src/apps/adventure-map/index.html'),
@@ -17,6 +18,10 @@ export default defineConfig({
             return 'js/[name].bundle.js';
           }
           return 'assets/[name]-[hash].js';
+        },
+        globals: {
+          leaflet: 'L',
+          'leaflet.markercluster': 'L',
         },
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
