@@ -61,7 +61,7 @@ export class MapEngine {
 
   fitBounds(places: PlaceEntry[]) {
     if (places.length === 0) return;
-    const latlngs = places.map(p => [p.lat, p.lng] as L.LatLngExpression);
-    this.map.fitBounds(latlngs, { padding: [50, 50], maxZoom: 13 });
+    const latlngs = places.map(p => [p.lat, p.lng] as L.LatLngTuple);
+    this.map.fitBounds(L.latLngBounds(latlngs), { padding: [50, 50], maxZoom: 13 });
   }
 }

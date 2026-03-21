@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
-  base: './',
+  base: '/',
   build: {
     outDir: resolve(__dirname, 'static/dist'),
     emptyOutDir: false, // Handle this in shell to avoid EBUSY

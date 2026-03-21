@@ -4,14 +4,11 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="">
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="">
 <link rel="stylesheet" href="{{ "css/adventure-map.bundle.css" | absURL }}">
 
 {{/* ─── 把 Hugo data 注入全域 JS 變數 ─── */}}
-<script>
-  var PLACES_DATA = {{ .Site.Data.places | jsonify | safeJS }};
+<script id="adventure-map-data" data-places="{{ .Site.Data.places | jsonify }}">
+  window.PLACES_DATA = JSON.parse(document.currentScript.dataset.places);
 </script>
 
 <style>
@@ -132,6 +129,6 @@
 </section>
 
 {{/* ─── 載入 Leaflet + 地圖邏輯 ─── */}}
-<script src="{{ "js/adventure-map.bundle.js" | absURL }}"></script>
+<script type="module" src="{{ "js/adventure-map.bundle.js" | absURL }}"></script>
 
 {{ end }}
