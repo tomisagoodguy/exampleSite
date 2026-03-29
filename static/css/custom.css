@@ -3493,3 +3493,95 @@ body.dark-mode .dashboard-sidebar::-webkit-scrollbar-thumb {
     display: none;
   }
 }
+
+/* ============================================================
+   UI 改善 2026-03-29
+   ============================================================ */
+
+/* Phase 1: 移除全頁格線背景（亮色模式） */
+body {
+  background-image: none !important;
+}
+
+/* Phase 2: 繼續閱讀按鈕（現代填色圓角） */
+.btn-read-more {
+  display: inline-block;
+  padding: 4px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 20px;
+  text-decoration: none !important;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  border: none;
+}
+
+.btn-read-more:hover {
+  transform: translateY(-1px);
+  text-decoration: none !important;
+}
+
+.btn-read-more-orange {
+  background-color: #fd7e14;
+  color: #fff !important;
+}
+.btn-read-more-orange:hover {
+  background-color: #e96c04;
+  color: #fff !important;
+}
+
+.btn-read-more-green {
+  background-color: #28a745;
+  color: #fff !important;
+}
+.btn-read-more-green:hover {
+  background-color: #1e7e34;
+  color: #fff !important;
+}
+
+.btn-read-more-red {
+  background-color: #dc3545;
+  color: #fff !important;
+}
+.btn-read-more-red:hover {
+  background-color: #c82333;
+  color: #fff !important;
+}
+
+body.dark-mode .btn-read-more-orange { background-color: #e96c04; }
+body.dark-mode .btn-read-more-green  { background-color: #1e7e34; }
+body.dark-mode .btn-read-more-red    { background-color: #c82333; }
+
+/* Phase 3: Section 標題中英文拆分（手機版修正） */
+.section-title-main {
+  display: block;
+  line-height: 1.2;
+}
+
+.section-title-sub {
+  display: block;
+  font-size: 0.58em;
+  font-weight: 600;
+  letter-spacing: 2px;
+  opacity: 0.7;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+@media (min-width: 576px) {
+  .section-title-main {
+    display: inline;
+  }
+  .section-title-sub {
+    display: inline;
+    font-size: 0.52em;
+    margin-left: 0.4em;
+  }
+}
+
+@media (max-width: 575px) {
+  h3.section-title {
+    font-size: 1.4rem !important;
+  }
+}
