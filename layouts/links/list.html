@@ -3,89 +3,240 @@
   <section class="section-sm">
     <div class="container">
       <div class="row">
-        <!-- Sidebar Navigation -->
+
+        <!-- ── Sidebar ── -->
         <div class="col-lg-3 d-none d-lg-block">
           <div class="sticky-sidebar">
-            <h4 class="mb-4">快速導覽</h4>
-            <div class="nav flex-column nav-pills sidebar-nav" id="v-pills-tab" role="tablist"
-              aria-orientation="vertical">
-              {{ $colors := slice "primary" "success" "warning" "danger" "info" "secondary" "dark" }}
+            <p class="sidebar-label mb-2">搜尋</p>
+            <input type="text" id="linkSearch" class="form-control form-control-sm mb-4"
+              placeholder="🔍 搜尋連結...">
+
+            <p class="sidebar-label mb-2">分類導覽</p>
+            <nav class="links-sidenav">
+              {{ $colors := slice "primary" "success" "warning" "danger" "info" "secondary" "dark" "primary" "success" "warning" }}
               {{ range $index, $element := .Site.Data.links }}
               {{ $color := index $colors (mod $index (len $colors)) }}
-              <div class="nav-item mb-2 category-group" data-color="{{ $color }}">
-                <a class="nav-link font-weight-bold text-dark category-link cursor-pointer d-flex align-items-center"
-                  href="#{{ .category | urlize }}">
-                  <span class="color-dot bg-{{ $color }} mr-2"></span>{{ .category }}
-                </a>
-                <div class="pl-3 sub-links">
-                  {{ range .links }}
-                  <a class="nav-link py-1 text-muted small hover-{{ $color }} cursor-pointer"
-                    href="{{ .url | safeURL }}" target="_blank" rel="noopener">{{
-                    .title }}</a>
-                  {{ end }}
-                </div>
-              </div>
+              <button class="sidenav-btn" data-target="{{ .category }}" data-color="{{ $color }}">
+                <span class="sidenav-dot bg-{{ $color }}"></span>
+                <span class="sidenav-label">{{ .category }}</span>
+                <span class="sidenav-count">{{ len .links }}</span>
+              </button>
               {{ end }}
-            </div>
+            </nav>
           </div>
         </div>
 
-        <!-- Main Content -->
+        <!-- ── Main Content ── -->
         <div class="col-lg-9">
-          <div class="row">
-            <div class="col-lg-12">
-              <h2 class="section-title">{{ .Title }}</h2>
-              <div class="content mb-5">
-                {{ .Content }}
+          <div class="col-lg-12 px-0">
+
+            <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap">
+              <h2 class="section-title mb-0">{{ .Title }}</h2>
+              <!-- 行動版搜尋 -->
+              <div class="d-lg-none w-100 mt-2">
+                <input type="text" id="linkSearchMobile" class="form-control form-control-sm"
+                  placeholder="🔍 搜尋連結...">
+              </div>
+            </div>
+
+            <!-- 搜尋狀態 -->
+            <div id="searchStatus" class="mb-3" style="display:none;"></div>
+
+            <div class="content mb-4">{{ .Content }}</div>
+
+            {{ $colors := slice "primary" "success" "warning" "danger" "info" "secondary" "dark" "primary" "success" "warning" }}
+            {{ range $index, $element := .Site.Data.links }}
+            {{ $color := index $colors (mod $index (len $colors)) }}
+            {{ $linkCount := len .links }}
+
+            <div class="category-section mb-4" data-category="{{ .category }}">
+
+              <!-- 分類標題 -->
+              <div class="lk-cat-header" data-color="{{ $color }}">
+                <span class="lk-cat-bar bg-{{ $color }}"></span>
+                <span class="lk-cat-name text-{{ $color }}">{{ .category }}</span>
+                <span class="lk-cat-count">{{ $linkCount }}</span>
+                <span class="lk-cat-toggle ml-auto">▾</span>
               </div>
 
-              {{ $colors := slice "primary" "success" "warning" "danger" "info" "secondary" "dark" }}
-              {{ range $index, $element := .Site.Data.links }}
-              {{ $color := index $colors (mod $index (len $colors)) }}
+              <div class="category-body">
 
-              <div class="row mb-5" id="{{ .category | urlize }}">
-                <div class="col-12">
-                  <h3 class="mb-4 text-{{ $color }} border-bottom pb-2">{{ .category }}</h3>
-                </div>
+                {{/* ── 有圖片的連結：Cards ── */}}
+                {{ $hasImageLinks := false }}
                 {{ range .links }}
-                <div class="col-md-4 col-sm-6 mb-4" id="{{ .title | urlize }}">
-                  <div class="card h-100 border-{{ $color }} link-card" style="border-width: 2px;">
-                    <div class="card-body text-center d-flex flex-column">
-                      <a href="{{ .url | safeURL }}" target="_blank" rel="noopener"
-                        class="text-decoration-none stretched-link">
-                        {{ $currentImagePath := "" }}
-                        {{ $defaultImageName := printf "%s.png" .title }}
-                        {{ $defaultImagePath := printf "/images/%s" $defaultImageName }}
+                  {{ $imgPath := printf "static/images/%s.png" .title }}
+                  {{ $altPath := "" }}
+                  {{ if eq .title "財政部稅務入口網" }}{{ $altPath = "static/images/財政部稅務入口網土地增值稅試算.png" }}{{ end }}
+                  {{ if or (fileExists $imgPath) (and $altPath (fileExists $altPath)) }}
+                    {{ $hasImageLinks = true }}
+                  {{ end }}
+                {{ end }}
 
-                        {{ if fileExists (printf "static%s" $defaultImagePath) }}
-                        {{ $currentImagePath = $defaultImagePath }}
-                        {{ else if eq .title "財政部稅務入口網" }}
-                        {{ $alternativeImagePath := "/images/財政部稅務入口網土地增值稅試算.png" }}
-                        {{ if fileExists (printf "static%s" $alternativeImagePath) }}
-                        {{ $currentImagePath = $alternativeImagePath }}
-                        {{ end }}
-                        {{ end }}
-
-                        {{ if $currentImagePath }}
-                        <img loading="lazy" src="{{ $currentImagePath | absURL }}" alt="{{ .title }}"
-                          class="img-fluid mb-3 link-icon">
-                        {{ end }}
-                        <h4 class="card-title text-dark">{{ .title }}</h4>
-                      </a>
-                      <p class="card-text text-muted mb-4 small">{{ .description }}</p>
-                      <a href="{{ .url | safeURL }}" target="_blank" rel="noopener"
-                        class="btn btn-outline-{{ $color }} btn-sm mt-auto position-relative z-index-2 cursor-pointer transition-all">前往連結</a>
+                {{ if $hasImageLinks }}
+                <div class="row mb-2">
+                  {{ range .links }}
+                  {{ $imgPath     := printf "static/images/%s.png" .title }}
+                  {{ $altPath     := "" }}
+                  {{ if eq .title "財政部稅務入口網" }}{{ $altPath = "static/images/財政部稅務入口網土地增值稅試算.png" }}{{ end }}
+                  {{ $currentImg  := "" }}
+                  {{ if fileExists $imgPath }}{{ $currentImg = printf "/images/%s.png" .title }}
+                  {{ else if and $altPath (fileExists $altPath) }}{{ $currentImg = "/images/財政部稅務入口網土地增值稅試算.png" }}
+                  {{ end }}
+                  {{ if $currentImg }}
+                  <div class="col-md-4 col-sm-6 mb-4 link-item"
+                    data-title="{{ .title }}" data-desc="{{ .description }}">
+                    <div class="card h-100 border-{{ $color }} link-card" style="border-width:2px;">
+                      <div class="card-body text-center d-flex flex-column">
+                        <a href="{{ .url | safeURL }}" target="_blank" rel="noopener"
+                          class="text-decoration-none stretched-link">
+                          <img loading="lazy" src="{{ $currentImg | absURL }}" alt="{{ .title }}"
+                            class="img-fluid mb-3 link-icon">
+                          <h4 class="card-title text-dark">{{ .title }}</h4>
+                        </a>
+                        <p class="card-text text-muted mb-4 small">{{ .description }}</p>
+                        <a href="{{ .url | safeURL }}" target="_blank" rel="noopener"
+                          class="btn btn-outline-{{ $color }} btn-sm mt-auto position-relative z-index-2">前往連結</a>
+                      </div>
                     </div>
                   </div>
+                  {{ end }}
+                  {{ end }}
                 </div>
                 {{ end }}
+
+                {{/* ── 無圖片的連結：Rows ── */}}
+                <div class="lk-rows">
+                  {{ range .links }}
+                  {{ $imgPath    := printf "static/images/%s.png" .title }}
+                  {{ $altPath    := "" }}
+                  {{ if eq .title "財政部稅務入口網" }}{{ $altPath = "static/images/財政部稅務入口網土地增值稅試算.png" }}{{ end }}
+                  {{ $hasImg     := or (fileExists $imgPath) (and $altPath (fileExists $altPath)) }}
+                  {{ if not $hasImg }}
+                  <a href="{{ .url | safeURL }}" target="_blank" rel="noopener"
+                    class="lk-row link-item"
+                    data-title="{{ .title }}" data-desc="{{ .description }}">
+                    <span class="lk-row-bar bg-{{ $color }}"></span>
+                    <span class="lk-row-name">{{ .title }}</span>
+                    <span class="lk-row-desc">{{ .description }}</span>
+                    <span class="lk-row-arrow">↗</span>
+                  </a>
+                  {{ end }}
+                  {{ end }}
+                </div>
+
               </div>
-              {{ end }}
             </div>
+            {{ end }}
+
+            <div id="noResults" class="text-center py-5" style="display:none;">
+              <div style="font-size:2.5rem;">🔍</div>
+              <p class="text-muted mt-2">找不到符合的連結</p>
+            </div>
+
           </div>
         </div>
       </div>
     </div>
   </section>
 </div>
+
+<script>
+(function () {
+
+  // ── 側邊欄捲動 ────────────────────────────────────────
+  document.querySelectorAll('.sidenav-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const sec = document.querySelector(`.category-section[data-category="${this.getAttribute('data-target')}"]`);
+      if (!sec) return;
+      const body = sec.querySelector('.category-body');
+      const icon = sec.querySelector('.lk-cat-toggle');
+      if (body && body.classList.contains('d-none')) {
+        body.classList.remove('d-none');
+        if (icon) icon.textContent = '▾';
+      }
+      window.scrollTo({ top: sec.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
+    });
+  });
+
+  // ── 捲動高亮 ─────────────────────────────────────────
+  const sections = document.querySelectorAll('.category-section');
+  if ('IntersectionObserver' in window) {
+    sections.forEach(s =>
+      new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            const name = e.target.getAttribute('data-category');
+            document.querySelectorAll('.sidenav-btn').forEach(b =>
+              b.classList.toggle('active', b.getAttribute('data-target') === name));
+          }
+        });
+      }, { rootMargin: '-20% 0px -60% 0px' }).observe(s)
+    );
+  }
+
+  // ── 分類折疊 ─────────────────────────────────────────
+  document.querySelectorAll('.lk-cat-header').forEach(header => {
+    header.addEventListener('click', function () {
+      const body = this.closest('.category-section').querySelector('.category-body');
+      const icon = this.querySelector('.lk-cat-toggle');
+      const open = !body.classList.contains('d-none');
+      body.classList.toggle('d-none', open);
+      icon.textContent = open ? '▸' : '▾';
+    });
+  });
+
+  // ── 搜尋 ─────────────────────────────────────────────
+  function doSearch(q) {
+    q = q.trim().toLowerCase();
+    let total = 0;
+    const statusEl    = document.getElementById('searchStatus');
+    const noResultsEl = document.getElementById('noResults');
+
+    sections.forEach(sec => {
+      const items = sec.querySelectorAll('.link-item');
+      let cnt = 0;
+      items.forEach(item => {
+        const hit = !q
+          || (item.getAttribute('data-title') || '').toLowerCase().includes(q)
+          || (item.getAttribute('data-desc')  || '').toLowerCase().includes(q);
+        item.style.display = hit ? '' : 'none';
+        if (hit) cnt++;
+      });
+      total += cnt;
+
+      const body = sec.querySelector('.category-body');
+      const icon = sec.querySelector('.lk-cat-toggle');
+      if (q) {
+        sec.style.display = cnt ? '' : 'none';
+        if (cnt && body) { body.classList.remove('d-none'); if (icon) icon.textContent = '▾'; }
+      } else {
+        sec.style.display = '';
+        if (body) body.classList.remove('d-none');
+        if (icon) icon.textContent = '▾';
+      }
+    });
+
+    if (q) {
+      statusEl.innerHTML = `<span class="search-status-pill">找到 <strong>${total}</strong> 個符合「${q}」的連結</span>`;
+      statusEl.style.display = 'block';
+      noResultsEl.style.display = total === 0 ? 'block' : 'none';
+    } else {
+      statusEl.style.display = 'none';
+      noResultsEl.style.display = 'none';
+    }
+  }
+
+  [document.getElementById('linkSearch'), document.getElementById('linkSearchMobile')].forEach(inp => {
+    if (!inp) return;
+    inp.addEventListener('input', function () {
+      const other = this.id === 'linkSearch'
+        ? document.getElementById('linkSearchMobile')
+        : document.getElementById('linkSearch');
+      if (other) other.value = this.value;
+      doSearch(this.value);
+    });
+  });
+
+})();
+</script>
 {{ end }}
