@@ -9,7 +9,10 @@
       "Bash(where hugo:*)",
       "Read(//usr/local/bin/**)",
       "Bash(git -C c:/Users/user/Documents/GitHub/exampleSite status)",
-      "Bash(git -C c:/Users/user/Documents/GitHub/exampleSite diff --stat)"
+      "Bash(git -C c:/Users/user/Documents/GitHub/exampleSite diff --stat)",
+      "Bash(cmd /c \"deploy.bat\")",
+      "Bash(cmd /c \"chcp 65001 && echo test && if exist public\\\\index.html \\(echo found\\) else \\(echo NOT found\\)\")",
+      "Bash(cmd /c \"chcp 65001 & echo hello\")"
     ]
   }
 }
