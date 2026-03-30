@@ -75,7 +75,23 @@ yarn dev
 
 # 打包輸出
 yarn build
+
+# 打包並存 log（供 Claude 讀取）
+yarn build:log        # → logs/vite-build.log
 ```
+
+### Build Log（供 Claude 讀取）
+
+```bash
+# Hugo 建置 log
+yarn hugo:log         # → logs/hugo-build.log
+
+# Vite 建置 log
+yarn build:log        # → logs/vite-build.log
+```
+
+> `logs/` 目錄已被 `.gitignore` 排除（`*.log` 規則）。
+> 遇到 build 錯誤時，先執行對應指令產生 log，再讓 Claude 讀取 `logs/` 下的檔案。
 
 ---
 
@@ -149,5 +165,5 @@ pipe 左右必須有空格，separator 使用 `---`：
 
 ## Active Status
 
-- **最後更新**：2026-03-29
+- **最後更新**：2026-03-30
 - **已知問題**：無

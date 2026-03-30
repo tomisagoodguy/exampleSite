@@ -822,4 +822,630 @@ Claude Code 會**自動**在每次變更時建立 Checkpoint，讓你可以隨�
 企業強制政策  → /etc/claude-code/managed-settings.json（IT 部署）
 ```
 
+---
+
+## 十三、程式設計基礎：函數 (Function)
+
+> 函數是程式設計中最重要的積木單元。理解函數，就掌握了「讓程式可以重複使用、易於維護」的核心能力。
+
+---
+
+### 13.1 什麼是函數？
+
+**函數（Function）** 是一段有名字的程式碼區塊，專門負責完成某一件事。你只要呼叫它的名字，它就會執行那段程式碼，並且可以重複呼叫。
+
+**生活類比**：想像函數是一台咖啡機。
+
+* 你按下按鈕（呼叫函數）
+* 機器磨豆、加水、加熱（執行內部邏輯）
+* 吐出一杯咖啡（回傳結果）
+
+你不需要知道機器內部怎麼運作，只需要知道「按按鈕、拿咖啡」。
+
+---
+
+### 13.2 函數的四個核心元素
+
+| 元素 | 說明 | 範例 |
+| --- | --- | --- |
+| **函數名稱** | 函數的識別標籤，描述它做什麼 | `calculateTax` |
+| **參數 (Parameters)** | 函數運作時需要的輸入資料 | `(price, taxRate)` |
+| **函數本體** | 實際執行的邏輯程式碼 | `{ return price * taxRate }` |
+| **回傳值 (Return Value)** | 函數執行完後吐回來的結果 | `return result` |
+
+---
+
+### 13.3 JavaScript / TypeScript 函數寫法
+
+#### 基本函數
+
+```typescript
+// 定義函數
+function greet(name: string): string {
+  return `你好，${name}！`
+}
+
+// 呼叫函數
+const message = greet("Tom")
+console.log(message) // 輸出：你好，Tom！
+```
+
+#### 箭頭函數（Arrow Function）—— 現代 JS 常用寫法
+
+```typescript
+// 箭頭函數語法更簡潔
+const add = (a: number, b: number): number => {
+  return a + b
+}
+
+// 單行可省略 return 和大括號
+const multiply = (a: number, b: number): number => a * b
+
+console.log(add(3, 5))      // 8
+console.log(multiply(4, 6)) // 24
+```
+
+#### 沒有回傳值的函數（void）
+
+```typescript
+// 只執行動作，不回傳資料
+function logError(message: string): void {
+  console.error(`[ERROR] ${message}`)
+}
+
+logError("資料庫連線失敗")
+```
+
+---
+
+### 13.4 為什麼要用函數？
+
+#### ❌ 沒有函數：重複程式碼，難以維護
+
+```typescript
+// 計算台北的稅金
+const taipeiPrice = 1000
+const taipeiTax = taipeiPrice * 0.05
+console.log(`台北稅金：${taipeiTax}`)
+
+// 計算新竹的稅金（完全相同的邏輯，複製貼上）
+const hsinChuPrice = 2000
+const hsinChuTax = hsinChuPrice * 0.05
+console.log(`新竹稅金：${hsinChuTax}`)
+```
+
+#### ✅ 有函數：邏輯集中，一改全改
+
+```typescript
+// 把重複邏輯包成函數
+function calculateTax(price: number, taxRate: number = 0.05): number {
+  return price * taxRate
+}
+
+console.log(`台北稅金：${calculateTax(1000)}`)
+console.log(`新竹稅金：${calculateTax(2000)}`)
+// 若稅率調整，只需改函數內部一個地方
+```
+
+---
+
+### 13.5 函數的三種常見用途
+
+#### 1. 資料處理（轉換 / 計算）
+
+```typescript
+function formatCurrency(amount: number): string {
+  return `NT$ ${amount.toLocaleString()}`
+}
+
+console.log(formatCurrency(50000)) // NT$ 50,000
+```
+
+#### 2. 條件判斷（封裝複雜邏輯）
+
+```typescript
+function isEligibleForDiscount(age: number, isMember: boolean): boolean {
+  return age >= 65 || isMember
+}
+
+if (isEligibleForDiscount(70, false)) {
+  console.log("享有折扣")
+}
+```
+
+#### 3. 非同步操作（API 呼叫）
+
+```typescript
+// async/await 函數：處理需要等待的操作（如網路請求）
+async function fetchUserData(userId: string) {
+  const response = await fetch(`/api/users/${userId}`)
+  const data = await response.json()
+  return data
+}
+
+// 呼叫非同步函數
+const user = await fetchUserData("user-123")
+```
+
+---
+
+### 13.6 函數設計原則
+
+| 原則 | 說明 |
+| --- | --- |
+| **單一職責** | 一個函數只做一件事，不要塞太多邏輯 |
+| **長度控制在 100 行以內** | 超過 100 行通常代表函數做了太多事，應拆分成更小的函數 |
+| **命名清楚** | 函數名稱應描述它「做什麼」，如 `getUserById`、`sendEmail` |
+| **參數不超過 3 個** | 超過時考慮改傳物件 `{ id, name, role }` |
+| **純函數優先** | 相同輸入永遠得到相同輸出，沒有副作用，最易測試 |
+
+#### 函數命名慣例
+
+```typescript
+// ✅ 動詞開頭，描述行為
+function getUser() {}
+function createCase() {}
+function validateEmail() {}
+function isLoggedIn() {}   // 回傳 boolean 用 is/has/can 開頭
+
+// ❌ 名詞開頭或意義不明
+function user() {}
+function data() {}
+function doStuff() {}
+```
+
+---
+
+### 13.7 拆函數：何時該把一個函數切開？
+
+當函數出現以下訊號，就是該拆的時候：
+
+* **超過 100 行**：難以一眼看完整個邏輯
+* **函數名稱需要「和」字**：如 `fetchDataAndRenderTable`，代表在做兩件事
+* **巢狀縮排超過 3 層**：`if` 裡面包 `for` 再包 `if`，可讀性急速下降
+* **同一段邏輯出現超過兩次**：重複就是拆函數的訊號
+
+#### 拆函數前後對比
+
+```typescript
+// ❌ 拆之前：一個函數做太多事
+async function handleOrder(orderId: string) {
+  // 第一段：驗證訂單
+  const order = await db.orders.findById(orderId)
+  if (!order) throw new Error("訂單不存在")
+  if (order.status !== "pending") throw new Error("訂單狀態錯誤")
+
+  // 第二段：計算金額
+  const subtotal = order.items.reduce((sum, item) => sum + item.price * item.qty, 0)
+  const tax = subtotal * 0.05
+  const total = subtotal + tax
+
+  // 第三段：發送通知
+  await fetch("/api/notify", {
+    method: "POST",
+    body: JSON.stringify({ userId: order.userId, message: `訂單金額：${total}` })
+  })
+}
+
+// ✅ 拆之後：每個函數只做一件事
+async function validateOrder(orderId: string) {
+  const order = await db.orders.findById(orderId)
+  if (!order) throw new Error("訂單不存在")
+  if (order.status !== "pending") throw new Error("訂單狀態錯誤")
+  return order
+}
+
+function calculateTotal(items: OrderItem[]): number {
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0)
+  return subtotal * 1.05
+}
+
+async function notifyUser(userId: string, total: number) {
+  await fetch("/api/notify", {
+    method: "POST",
+    body: JSON.stringify({ userId, message: `訂單金額：${total}` })
+  })
+}
+
+// 主函數變得像一份清單，一眼看懂流程
+async function handleOrder(orderId: string) {
+  const order = await validateOrder(orderId)
+  const total = calculateTotal(order.items)
+  await notifyUser(order.userId, total)
+}
+```
+
+---
+
+### 13.8 拆檔案：何時該把一個檔案切開？
+
+函數是最小單位，**檔案**是組織函數的容器。當一個檔案太龐大，就要按「職責」把函數搬到不同檔案。
+
+#### 拆檔案的訊號
+
+* **檔案超過 300～500 行**：難以導航與維護
+* **檔案混雜了多種職責**：API 呼叫、資料轉換、UI 渲染全擠在一起
+* **多個地方都需要引用同一個函數**：該函數應移至共用模組
+
+#### 常見的檔案職責分層
+
+```text
+src/
+├── api/          # 所有對外 API 呼叫（fetch、axios）
+├── utils/        # 純函數工具（格式化、計算、驗證）
+├── hooks/        # React 自訂 Hook（狀態邏輯）
+├── components/   # UI 元件（只管畫面）
+├── services/     # 業務邏輯（組合 api + utils）
+└── types/        # TypeScript 型別定義
+```
+
+#### 拆檔案前後對比
+
+```typescript
+// ❌ 拆之前：所有東西擠在 orderPage.tsx（500+ 行）
+// - fetch 邏輯
+// - 金額計算
+// - 日期格式化
+// - JSX 渲染
+
+// ✅ 拆之後：各司其職
+// api/orderApi.ts      → 負責 fetch
+// utils/formatDate.ts  → 負責格式化
+// utils/calcOrder.ts   → 負責計算
+// components/OrderCard.tsx → 負責渲染
+// orderPage.tsx        → 只負責組裝以上模組（50 行以內）
+```
+
+> 💡 **判斷原則**：如果你需要滾動很多才能找到想改的地方，或者改一個功能要動好幾個地方——就是該拆檔案的時機。
+
+---
+
+---
+
+### 13.9 主函數與子函數
+
+拆函數之後，函數之間會自然形成「主從關係」：
+
+* **主函數（Main Function）**：描述整體流程的高層函數，負責「指揮」，不處理細節
+* **子函數（Helper / Sub Function）**：被主函數呼叫，專注處理單一細節的低層函數
+
+#### 關係示意
+
+```text
+主函數
+├── 子函數 A（處理步驟一）
+├── 子函數 B（處理步驟二）
+│   ├── 子子函數 B1
+│   └── 子子函數 B2
+└── 子函數 C（處理步驟三）
+```
+
+主函數讀起來像「目錄」，子函數才是真正執行的「內文」。
+
+#### 實際範例：結帳流程
+
+```typescript
+// ── 子函數：各自負責一個細節 ──────────────────────
+
+function getCartItems(userId: string): CartItem[] {
+  // 從資料庫取得購物車內容
+  return db.cart.findByUserId(userId)
+}
+
+function applyDiscount(subtotal: number, coupon: string): number {
+  const discountMap: Record<string, number> = { SAVE10: 0.9, SAVE20: 0.8 }
+  return subtotal * (discountMap[coupon] ?? 1)
+}
+
+function calcTax(amount: number): number {
+  return amount * 0.05
+}
+
+async function chargePayment(userId: string, total: number): Promise<boolean> {
+  const result = await paymentGateway.charge({ userId, amount: total })
+  return result.success
+}
+
+async function sendReceipt(userId: string, total: number): Promise<void> {
+  await emailService.send({ to: userId, subject: "訂單確認", body: `總金額：${total}` })
+}
+
+// ── 主函數：只描述流程，細節交給子函數 ───────────────
+
+async function checkout(userId: string, coupon: string) {
+  const items     = getCartItems(userId)
+  const subtotal  = items.reduce((sum, i) => sum + i.price * i.qty, 0)
+  const discounted = applyDiscount(subtotal, coupon)
+  const total     = discounted + calcTax(discounted)
+  const paid      = await chargePayment(userId, total)
+  if (paid) await sendReceipt(userId, total)
+}
+```
+
+光看 `checkout` 就能理解整個結帳流程，不需要看細節。
+
+#### 主函數 vs 子函數 比較
+
+| | 主函數 | 子函數 |
+| --- | --- | --- |
+| **職責** | 描述流程、協調步驟 | 執行單一具體任務 |
+| **長度** | 通常 10～30 行 | 通常 5～20 行 |
+| **可讀性** | 像流程圖，一眼看懂 | 像說明書，解釋細節 |
+| **被呼叫** | 由外部（路由、事件）呼叫 | 由主函數呼叫 |
+| **可重用性** | 低（針對特定情境） | 高（可跨場景共用） |
+
+> 💡 **設計心法**：先寫主函數的「骨架」（只有呼叫子函數的那幾行），確認流程對了，再逐一實作每個子函數。這樣思路不會被細節淹沒。
+
+---
+
+> 💡 **記住這個心法**：每當你發現自己「複製貼上同樣的程式碼超過兩次」，就是該把它包成函數的時機。函數是對抗重複的最佳武器。
 > 💡 **最佳實踐**：團隊在 `.claude/settings.json` 定義統一的 Lint 指令和權限規則，個人用 `.claude/settings.local.json` 覆蓋自己的模型偏好，兩者各司其職不互相干擾。
+
+---
+
+## 十四、標籤 (Tag)
+
+「Tag」在開發中至少出現在兩個完全不同的場景：**HTML 標籤** 與 **Git 標籤**。兩者概念相似但用途不同。
+
+---
+
+### 14.1 HTML 標籤
+
+HTML 標籤是網頁的骨架，告訴瀏覽器「這段內容是什麼」。
+
+#### 基本語法
+
+```html
+<標籤名稱 屬性="值">內容</標籤名稱>
+```
+
+大多數標籤有**開始標籤**與**結束標籤**，結束標籤多一個 `/`：
+
+```html
+<p>這是一段文字</p>
+<h1>這是標題</h1>
+<a href="https://example.com">點我連結</a>
+```
+
+少數標籤是**自閉合標籤**，沒有內容也沒有結束標籤：
+
+```html
+<img src="photo.jpg" alt="照片說明" />
+<input type="text" placeholder="請輸入文字" />
+<br />
+```
+
+#### 常用標籤速查
+
+| 標籤 | 用途 |
+| --- | --- |
+| `<h1>` ～ `<h6>` | 標題（數字越大字越小） |
+| `<p>` | 段落文字 |
+| `<a href="">` | 超連結 |
+| `<img src="" alt="">` | 圖片 |
+| `<div>` | 區塊容器（無語意） |
+| `<span>` | 行內容器（無語意） |
+| `<ul>` / `<ol>` / `<li>` | 無序清單 / 有序清單 / 清單項目 |
+| `<table>` / `<tr>` / `<td>` | 表格 / 列 / 儲存格 |
+| `<form>` / `<input>` / `<button>` | 表單 / 輸入框 / 按鈕 |
+| `<nav>` / `<header>` / `<footer>` | 導覽列 / 頁首 / 頁尾（語意標籤） |
+| `<main>` / `<section>` / `<article>` | 主內容 / 區塊 / 獨立文章（語意標籤） |
+
+#### 標籤的屬性 (Attribute)
+
+標籤可以附加屬性來提供額外資訊：
+
+```html
+<!-- class：套用 CSS 樣式 -->
+<div class="card highlight">內容</div>
+
+<!-- id：唯一識別，用於 JS 選取或錨點連結 -->
+<section id="about">關於我們</section>
+
+<!-- data-*：自訂資料屬性，傳給 JavaScript 使用 -->
+<button data-user-id="123" data-action="delete">刪除</button>
+```
+
+#### 語意標籤 vs 無語意標籤
+
+```html
+<!-- ❌ 全用 div，搜尋引擎看不懂結構 -->
+<div class="header">...</div>
+<div class="nav">...</div>
+<div class="content">...</div>
+
+<!-- ✅ 語意標籤，對 SEO 和無障礙設計友善 -->
+<header>...</header>
+<nav>...</nav>
+<main>...</main>
+```
+
+---
+
+### 14.2 Git 標籤（Git Tag）
+
+Git Tag 是版本控制中的「里程碑標記」，用來標記某個重要的 commit（通常是發布版本）。
+
+**類比**：Git commit 是書中每一頁的頁碼，Git Tag 則是「第一章開始」、「第二章開始」這樣的章節標籤貼紙。
+
+#### 兩種 Tag 類型
+
+| 類型 | 說明 | 何時用 |
+| --- | --- | --- |
+| **Lightweight Tag** | 只是一個指向 commit 的指標，沒有額外資訊 | 臨時標記、個人使用 |
+| **Annotated Tag** | 包含標記者、日期、描述訊息，有完整記錄 | 正式發布版本（推薦） |
+
+#### 常用指令
+
+```bash
+# 建立 Annotated Tag（推薦）
+git tag -a v1.0.0 -m "第一個正式發布版本"
+
+# 建立 Lightweight Tag
+git tag v1.0.0-beta
+
+# 查看所有 Tag
+git tag
+
+# 查看特定 Tag 的詳細資訊
+git show v1.0.0
+
+# 推送單一 Tag 到遠端
+git push origin v1.0.0
+
+# 推送所有本地 Tag 到遠端
+git push origin --tags
+
+# 刪除本地 Tag
+git tag -d v1.0.0
+
+# 刪除遠端 Tag
+git push origin --delete v1.0.0
+```
+
+#### 版本號命名規則（語意化版本 Semantic Versioning）
+
+```text
+v主版本.次版本.修補版本
+  MAJOR . MINOR . PATCH
+
+v1.0.0   → 首次正式發布
+v1.1.0   → 新增功能（向下相容）
+v1.1.1   → 修復 Bug（不影響功能）
+v2.0.0   → 不向下相容的重大改版
+```
+
+#### 實際工作流程
+
+```bash
+# 開發完成，準備發布 v1.2.0
+git checkout main
+git pull --rebase
+
+# 建立標籤並寫說明
+git tag -a v1.2.0 -m "新增優惠券折扣功能，修復結帳金額計算錯誤"
+
+# 推送程式碼與標籤
+git push origin main
+git push origin v1.2.0
+```
+
+> 💡 **HTML Tag vs Git Tag**：HTML Tag 標記「內容的性質」，Git Tag 標記「程式碼的版本位置」。兩者都是用「標籤」這個概念幫事物貼上有意義的名稱。
+
+---
+
+## 十五、沒有錯誤訊息時怎麼辦？
+
+程式設計中最難除錯的情況不是「有錯誤訊息」，而是**程式毫無反應、也什麼都沒報錯**。這種狀況讓人完全不知從何下手。
+
+---
+
+### 15.1 為什麼沒有錯誤訊息？
+
+常見原因：
+
+* **錯誤被靜默吞掉**：`try/catch` 裡面什麼都沒寫，錯誤發生了但沒人知道
+* **程式根本沒執行到那段**：觸發條件不符，函數從未被呼叫
+* **非同步問題**：`await` 漏寫，函數跑完了但資料還沒回來
+* **寫入位置錯誤**：程式執行成功，但結果寫到你沒在看的地方
+
+---
+
+### 15.2 萬用除錯句型（給 AI 或自己釐清問題）
+
+遇到「毫無反應也無報錯」的情況，用這個格式描述問題，能快速釐清方向：
+
+```text
+# 現況
+執行之後，程式毫無反應，也找不到任何錯誤訊息。
+
+# 期待
+執行之後，Google 試算表中「測試」工作表的 A 欄應該出現 XXX 資料。
+```
+
+**為什麼這個格式有效？**
+
+* **現況**：逼自己說清楚「現在發生什麼」，排除主觀猜測
+* **期待**：說清楚「正確結果長什麼樣」，給 AI 或同事一個具體的驗證目標
+
+沒有這兩個資訊，任何人（包含 AI）都只能亂猜。
+
+---
+
+### 15.3 自己動手排查的步驟
+
+#### 第一步：確認程式有沒有執行到
+
+在懷疑的地方加上 `console.log`，確認程式流程有沒有跑到那裡：
+
+```typescript
+async function writeToSheet() {
+  console.log("▶ writeToSheet 開始執行")   // ← 加這行
+
+  const data = await fetchData()
+  console.log("▶ fetchData 完成，data =", data)  // ← 加這行
+
+  await sheet.write(data)
+  console.log("▶ sheet.write 完成")  // ← 加這行
+}
+```
+
+哪一行沒印出來，問題就在那之前。
+
+#### 第二步：確認非同步沒有漏 `await`
+
+```typescript
+// ❌ 常見錯誤：忘記 await，函數直接結束，資料根本還沒寫入
+function saveData() {
+  fetchAndWrite()  // 沒有 await！
+  console.log("完成")  // 這行會在 fetchAndWrite 結束前就印出來
+}
+
+// ✅ 正確寫法
+async function saveData() {
+  await fetchAndWrite()
+  console.log("完成")
+}
+```
+
+#### 第三步：確認 `try/catch` 沒有吞掉錯誤
+
+```typescript
+// ❌ 靜默吞錯：發生錯誤也不會有任何提示
+try {
+  await writeToSheet()
+} catch (e) {
+  // 什麼都沒寫
+}
+
+// ✅ 至少要印出來
+try {
+  await writeToSheet()
+} catch (e) {
+  console.error("writeToSheet 失敗：", e)
+}
+```
+
+#### 第四步：確認寫入了「正確的地方」
+
+```typescript
+// 明確印出你以為在操作的目標
+console.log("試算表 ID：", spreadsheetId)
+console.log("工作表名稱：", sheetName)
+console.log("寫入範圍：", range)
+```
+
+有時候程式完全正確，只是寫到另一個試算表、另一個工作表去了。
+
+---
+
+### 15.4 除錯心法
+
+| 情況 | 第一個動作 |
+| --- | --- |
+| 程式毫無反應 | 加 `console.log` 確認函數有沒有被呼叫 |
+| 有執行但結果不對 | 印出中間值，找出哪一步資料變錯了 |
+| 偶爾正常偶爾不正常 | 懷疑非同步時序問題或外部 API 不穩定 |
+| 本機正常但部署後不正常 | 比對環境變數、Node.js 版本、套件版本 |
+
+> 💡 **核心原則**：除錯的本質是「縮小懷疑範圍」。從最外層開始確認，一層一層往內，直到找到第一個「不符合預期的地方」，那就是問題根源。

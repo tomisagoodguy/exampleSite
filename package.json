@@ -7,7 +7,9 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && pwsh -Command \"Remove-Item static/tools/place-helper.html -ErrorAction SilentlyContinue; Move-Item static/dist/src/tools/place-helper/place-helper.html static/tools/place-helper.html; Remove-Item -Recurse -Force static/assets -ErrorAction SilentlyContinue; Move-Item static/dist/assets static/assets; Copy-Item static/dist/js/adventure-map.bundle.js static/js/adventure-map.bundle.js; $css = Get-ChildItem static/assets/adventure-map-*.css | Select-Object -First 1; if ($css) { Copy-Item $css.FullName static/css/adventure-map.bundle.css }; Remove-Item -Recurse -Force static/dist -ErrorAction SilentlyContinue\""
+    "build": "vite build && pwsh -Command \"Remove-Item static/tools/place-helper.html -ErrorAction SilentlyContinue; Move-Item static/dist/src/tools/place-helper/place-helper.html static/tools/place-helper.html; Remove-Item -Recurse -Force static/assets -ErrorAction SilentlyContinue; Move-Item static/dist/assets static/assets; Copy-Item static/dist/js/adventure-map.bundle.js static/js/adventure-map.bundle.js; $css = Get-ChildItem static/assets/adventure-map-*.css | Select-Object -First 1; if ($css) { Copy-Item $css.FullName static/css/adventure-map.bundle.css }; Remove-Item -Recurse -Force static/dist -ErrorAction SilentlyContinue\"",
+    "build:log": "pwsh -Command \"New-Item -ItemType Directory -Force logs | Out-Null; vite build 2>&1 | Tee-Object logs/vite-build.log\"",
+    "hugo:log": "pwsh -Command \"New-Item -ItemType Directory -Force logs | Out-Null; ./hugo.exe --minify --gc 2>&1 | Tee-Object logs/hugo-build.log\""
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.21",

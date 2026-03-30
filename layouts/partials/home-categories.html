@@ -1,0 +1,23 @@
+<section class="section pb-0 reveal-on-scroll">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 mb-4">
+        <h3 class="section-title text-primary mb-0">主題探索 (Topic Explorer)</h3>
+      </div>
+      <div class="col-12">
+        <div class="category-slider">
+          {{ range .Site.Taxonomies.categories.ByCount }}
+          <div class="p-2">
+            <a href="{{ .Page.Permalink }}" class="category-card" style="padding: 1.5rem 1rem;">
+              <div class="category-name" style="font-size: 1.1rem;">
+                {{ .Page.Title }}
+              </div>
+              <span class="badge badge-primary">{{ .Count }}</span>
+            </a>
+          </div>
+          {{ end }}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,70 @@
+{{/*
+  Parameters (passed via dict):
+  - section       : Hugo section key, e.g. "real-estate"
+  - title         : 中文主標題
+  - subtitle      : 英文副標題
+  - sliderClass   : Slick slider CSS class, e.g. "real-estate-slider"
+  - badge         : Badge 文字
+  - titleColor    : 標題 text-* class, e.g. "text-orange"
+  - btnOutline    : 查看更多按鈕 class, e.g. "btn-outline-orange"
+  - btnReadMore   : 繼續閱讀按鈕 class, e.g. "btn-read-more-orange"
+  - topClass      : 標題列額外 class，第一個 section 傳空字串，其餘傳 "mt-5"
+*/}}
+
+{{ $section     := .section }}
+{{ $title       := .title }}
+{{ $subtitle    := .subtitle }}
+{{ $sliderClass := .sliderClass }}
+{{ $badge       := .badge }}
+{{ $titleColor  := .titleColor }}
+{{ $btnOutline  := .btnOutline }}
+{{ $btnReadMore := .btnReadMore }}
+{{ $topClass    := .topClass }}
+{{ $ctx         := .ctx }}
+
+{{ $posts := where $ctx.Site.RegularPages "Section" $section | first 9 }}
+
+<div class="col-12 mb-4 {{ $topClass }} d-flex justify-content-between align-items-center reveal-on-scroll">
+  <h3 class="section-title {{ $titleColor }} mb-0">
+    <span class="section-title-main">{{ $title }}</span>
+    <span class="section-title-sub">{{ $subtitle }}</span>
+  </h3>
+  <a href="{{ ($ctx.Site.GetPage "section" $section).RelPermalink }}"
+    class="btn btn-sm {{ $btnOutline }}">查看更多</a>
+</div>
+<div class="col-12">
+  <div class="{{ $sliderClass }} reveal-on-scroll">
+    {{ range $posts }}
+    <div class="px-2 mb-4">
+      <article class="card h-100 search-result-card">
+        {{ if .Params.Image }}
+        <div class="card-img-wrapper">
+          {{ $image := .Resources.GetMatch .Params.Image }}
+          {{ if $image }}
+          <img src="{{ $image.RelPermalink }}" class="card-img-top" alt="{{ .Title }}">
+          {{ else }}
+          <img src="{{ .Params.Image | absURL }}" class="card-img-top" alt="{{ .Title }}">
+          {{ end }}
+        </div>
+        {{ end }}
+        <div class="card-body d-flex flex-column">
+          <div class="post-meta mb-2">
+            <span class="text-muted small"><i class="fas fa-calendar-alt mr-1"></i>{{ .Date.Format "2006-01-02" }}</span>
+            <span class="mx-2 text-muted">|</span>
+            <span class="text-muted small"><i class="fas fa-clock mr-1"></i>{{ .ReadingTime }} min</span>
+          </div>
+          <h4 class="card-title h5 mb-3">
+            <a href="{{ .Permalink }}" class="text-dark hover-blue"
+              style="font-family: 'Outfit', sans-serif; font-weight: 700;">{{ .Title | markdownify }}</a>
+          </h4>
+          <p class="card-text text-muted small" style="line-height: 1.6;">{{ .Summary | truncate 80 }}</p>
+          <div class="mt-auto pt-3 d-flex justify-content-between align-items-center">
+            <span class="badge badge-primary">{{ $badge }}</span>
+            <a href="{{ .Permalink }}" class="btn-read-more {{ $btnReadMore }}">繼續閱讀 →</a>
+          </div>
+        </div>
+      </article>
+    </div>
+    {{ end }}
+  </div>
+</div>
