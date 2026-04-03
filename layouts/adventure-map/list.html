@@ -9,8 +9,9 @@
 <link rel="stylesheet" href="{{ "css/adventure-map.bundle.css" | absURL }}">
 
 {{/* ─── 把 Hugo data 注入全域 JS 變數 ─── */}}
+<script id="data-places" type="application/json">{{ .Site.Data.places | jsonify | safeJS }}</script>
 <script>
-  window.PLACES_DATA = {{ .Site.Data.places | jsonify | safeJS }};
+  window.PLACES_DATA = JSON.parse(document.getElementById('data-places').textContent);
 </script>
 
 <style>
