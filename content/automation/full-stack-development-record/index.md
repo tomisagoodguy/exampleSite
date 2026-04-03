@@ -172,6 +172,20 @@ chore: 升級套件版本
 
 ### 常用指令速查
 
+> [!IMPORTANT]
+> **🌟 特別標註：核心 Git 指令操作**
+>
+> | 指令 | 說明 |
+> | --- | --- |
+> | `git status` | 看狀態，找路徑複製 |
+> | `git add` | 暫存變更 |
+> | `git commit -m '<訊息>'` | 寫訊息 + 提交 |
+> | `git log` | 看目前有的提交（長版） |
+> | `git log --oneline` | 看目前有的提交（短版） |
+> | `git restore <檔案路徑>` | 捨棄變更，回到上個提交 |
+> | `git restore --source <提交識別碼> <檔案路徑>` | 捨棄變更，回到特定提交 |
+> | `git push` | 推送到雲端 |
+
 ```bash
 git checkout -b feature/xxx   # 建立新功能分支
 git add -p                    # 逐段暫存，避免誤提交

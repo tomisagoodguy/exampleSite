@@ -55,13 +55,14 @@ for /r "%SOURCE_DIR%\public" %%F in (index.html) do (
     set /a HTML_COUNT+=1
 )
 if !HTML_COUNT! LSS 20 (
-    echo   [FAIL] 頁面數量過少: !HTML_COUNT! 頁 (預期 20 頁以上)
+    echo   [FAIL] 頁面數量過少: !HTML_COUNT! 頁 - 預期至少 20 頁
     set FAIL=1
 ) else (
     echo   [PASS] 頁面數量: !HTML_COUNT! 頁
 )
 
-if %FAIL% neq 0 (
+echo   [DEBUG] FAIL=!FAIL!
+if !FAIL! neq 0 (
     echo.
     echo [FAIL] 測試未通過，部署中止
     pause
@@ -73,7 +74,7 @@ echo   所有測試通過
 :: 步驟 3: 同步檔案 (只同步差異)
 :: --------------------------------------------
 echo [3/4] 正在同步檔案...
-robocopy "%SOURCE_DIR%\public" "%DEST_DIR%" /mir /nfl /ndl /njh /njs
+robocopy "%SOURCE_DIR%\public" "%DEST_DIR%" /mir /xd .git /nfl /ndl /njh /njs
 
 if %errorlevel% GEQ 8 (
     echo.
