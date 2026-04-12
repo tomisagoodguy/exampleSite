@@ -12,7 +12,9 @@
       "Bash(git -C c:/Users/user/Documents/GitHub/exampleSite diff --stat)",
       "Bash(cmd /c \"deploy.bat\")",
       "Bash(cmd /c \"chcp 65001 && echo test && if exist public\\\\index.html \\(echo found\\) else \\(echo NOT found\\)\")",
-      "Bash(cmd /c \"chcp 65001 & echo hello\")"
+      "Bash(cmd /c \"chcp 65001 & echo hello\")",
+      "Bash(time ./hugo.exe --minify)",
+      "Bash(time ./hugo.exe --gc --minify)"
     ]
   }
 }

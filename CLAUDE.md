@@ -1,8 +1,10 @@
-# Project Memory (CLAUDE.md)
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## 專案本質
 
-**定康筆記（Tom's Note）** 是一個以 Hugo 靜態網站為基礎的個人知識庫，涵蓋法式料理筆記、不動產分析、股票研究、自動化開發記錄等多個主題。內容驅動為核心，技術服務於「快速發布、易於維護」的目標，部署於 Netlify。
+**定康筆記（Tom's Note）** 是以 Hugo 為核心的個人知識庫，涵蓋法式料理筆記、不動產分析、自動化開發記錄等主題，同時掛載 Leaflet 互動地圖（破關地圖）與純工具頁（房地稅務試算）。
 
 ---
 
@@ -13,42 +15,12 @@
 | **Hugo Extended** | `v0.127.0` | 靜態網站產生器（本地執行用 `./hugo.exe`） |
 | **Theme: liva-hugo** | — | 基礎佈局主題，覆寫於 `layouts/` |
 | **TypeScript** | — | 互動功能腳本，原始碼在 `src/` |
-| **Vite** | — | TypeScript 打包，設定於 `vite.config.ts` |
+| **Vite** | `^8` | TypeScript 打包，設定於 `vite.config.ts` |
 | **Yarn** | — | 套件管理（**禁止使用 npm install**） |
-| **Netlify** | HUGO `0.87.0` | 部署平台（注意：Netlify 環境 Hugo 版本不同） |
+| **Netlify** | Hugo `0.87.0` | 主部署平台 |
+| **GitHub Pages** | — | 備用部署（`deploy.bat` → `tomisagoodguy.github.io`） |
 
-> ⚠️ **本地 Hugo 版本（0.127.0）與 Netlify（0.87.0）不同**，避免使用 0.87.0 之後才加入的 Hugo 功能。
-
----
-
-## 目錄結構
-
-```text
-exampleSite/
-├── content/              # 文章內容（Markdown）
-│   ├── lifestyle/        # 法式料理筆記（每篇獨立資料夾，含圖片）
-│   ├── blog/             # 一般文章
-│   ├── automation/       # 自動化與開發記錄
-│   └── real-estate/      # 不動產相關
-├── layouts/              # Hugo 覆寫模板（優先於 theme）
-│   ├── partials/         # 可重用 HTML 片段
-│   ├── _default/         # 預設頁面模板
-│   └── adventure-map/    # 冒險地圖頁面
-├── static/               # 靜態資源（直接輸出，不經 Hugo 處理）
-│   ├── uploads/          # 上傳檔案（Excel、PDF 等）
-│   └── images/           # 全站圖片
-├── src/                  # TypeScript 原始碼
-│   ├── apps/             # 頁面級應用
-│   ├── shared/           # 共用模組
-│   └── tools/            # 工具腳本
-├── scripts/              # Python 維護腳本
-├── data/                 # Hugo data 檔案（JSON/YAML）
-├── themes/liva-hugo/     # 主題（不直接修改，用 layouts/ 覆寫）
-├── hugo.exe              # Hugo 執行檔（Windows 本地用）
-├── config.toml           # Hugo 主設定
-├── vite.config.ts        # Vite 打包設定
-└── netlify.toml          # Netlify 部署設定
-```
+> ⚠️ **本地 Hugo（0.127.0）vs Netlify（0.87.0）**：避免使用 0.87.0 之後才加入的 Hugo 功能。
 
 ---
 
@@ -57,59 +29,96 @@ exampleSite/
 ### 本地開發
 
 ```bash
-# 啟動本地預覽（含草稿）
-./hugo.exe server -D
-
-# 建置輸出至 public/
-./hugo.exe --minify --gc
+./hugo.exe server -D          # 啟動本地預覽（含草稿）
+./hugo.exe --minify --gc      # 建置輸出至 public/
 ```
 
 ### TypeScript 建置
 
 ```bash
-# 安裝套件
-yarn
-
-# 開發模式
-yarn dev
-
-# 打包輸出
-yarn build
-
-# 打包並存 log（供 Claude 讀取）
-yarn build:log        # → logs/vite-build.log
+yarn                          # 安裝套件
+yarn dev                      # Vite 開發模式
+yarn build                    # 打包（輸出至 static/，見下方說明）
+yarn build:log                # 打包並存 log → logs/vite-build.log
+yarn hugo:log                 # Hugo 建置 log → logs/hugo-build.log
 ```
 
-### Build Log（供 Claude 讀取）
+> `logs/` 已被 `.gitignore` 排除。遇到 build 錯誤時，先執行對應指令產生 log，再讓 Claude 讀取 `logs/` 下的檔案。
 
-```bash
-# Hugo 建置 log
-yarn hugo:log         # → logs/hugo-build.log
+### 發布至 GitHub Pages
 
-# Vite 建置 log
-yarn build:log        # → logs/vite-build.log
+```bat
+deploy.bat                    # Hugo build → robocopy → git push
 ```
 
-> `logs/` 目錄已被 `.gitignore` 排除（`*.log` 規則）。
-> 遇到 build 錯誤時，先執行對應指令產生 log，再讓 Claude 讀取 `logs/` 下的檔案。
+---
+
+## 架構概覽
+
+### Hugo ↔ TypeScript 的資料橋接（關鍵）
+
+破關地圖（`adventure-map`）的資料流：
+
+1. `data/places.json` — 地點資料，Hugo 在建置時讀入
+2. `layouts/adventure-map/list.html` — Hugo 將資料序列化成 `<script type="application/json">`，注入頁面
+3. `src/apps/adventure-map/` — TypeScript 讀取 `window.PLACES_DATA`，驅動 Leaflet 地圖
+
+新增地點只需修改 `data/places.json`，不需動 TypeScript。
+
+### Vite 打包輸出路徑（`yarn build` 後的結果）
+
+| 入口 | 輸出位置 |
+| --- | --- |
+| `src/apps/adventure-map/index.html` | `static/js/adventure-map.bundle.js` + `static/css/adventure-map.bundle.css` |
+| `src/tools/place-helper/place-helper.html` | `static/tools/place-helper.html` |
+| 共用 JS chunks | `static/assets/` |
+
+Leaflet / MarkerCluster 以 `external` 方式排除，頁面直接從 CDN 載入（見 `layouts/adventure-map/list.html`）。
+
+### layouts/ 覆寫規則
+
+`layouts/` 下的檔案優先於 `themes/liva-hugo/` 中的同名檔案，**永遠不要直接修改 `themes/`**。
+
+| 檔案 | 用途 |
+| --- | --- |
+| `layouts/partials/head.html` | 全站 `<head>`，注入自訂 CSS/JS |
+| `layouts/partials/home-*.html` | 首頁各區塊（hero、slider、categories） |
+| `layouts/partials/sidebar.html` | 側欄 |
+| `layouts/adventure-map/list.html` | 破關地圖完整頁面模板 |
+| `layouts/index.html` | 首頁主模板 |
+
+### data/ 資料檔
+
+| 檔案 | 用途 |
+| --- | --- |
+| `data/places.json` | 破關地圖地點（由 Hugo 注入頁面） |
+| `data/gallery.yml` | 圖庫資料 |
+| `data/links.yml` | 相關連結頁資料 |
+
+### src/ 模組說明
+
+```text
+src/
+├── apps/adventure-map/     # 破關地圖（Leaflet + MarkerCluster）
+│   ├── data.ts             # 分類設定（CATEGORY_CONFIG）
+│   ├── engine.ts           # MapEngine class（Leaflet 地圖核心）
+│   ├── ui.ts               # 面板 UI 邏輯
+│   └── index.ts            # 入口，組合各模組
+├── tools/place-helper/     # 地點新增輔助工具（獨立 HTML 頁）
+│   ├── geocoder.ts         # 地址轉座標
+│   ├── persist.ts          # IndexedDB 暫存
+│   └── main.ts             # 入口
+└── shared/
+    └── types.ts            # PlaceEntry 等共用型別
+```
 
 ---
 
 ## 內容撰寫規範
 
-### Lifestyle（料理筆記）文章結構
+### Lifestyle 文章結構
 
-每篇文章放在 `content/lifestyle/<文章名稱>/` 資料夾下，圖片與 `index.md` 同層：
-
-```text
-content/lifestyle/嫩煎鴨胸襯白蘿蔔佐紅酒葡萄醬/
-├── index.md
-├── 成品.jpg
-├── 切鴨肉中.jpg
-└── ...
-```
-
-**Front Matter 必填欄位：**
+每篇文章放在 `content/lifestyle/<文章名稱>/`，圖片與 `index.md` 同層：
 
 ```yaml
 ---
@@ -117,7 +126,7 @@ title: "文章標題"
 date: 2026-03-28T00:00:00+08:00
 description: "一句話摘要"
 type: "lifestyle"
-image: "成品.jpg"       # 封面圖，必須是同資料夾的圖片檔名
+image: "成品.jpg"       # 封面圖（同資料夾檔名）
 categories:
   - "法式料理"
 tags:
@@ -125,21 +134,14 @@ tags:
 ---
 ```
 
-### 圖片嵌入方式
-
-#### ✅ 正確：使用標準 Markdown 語法（相對路徑，與 index.md 同層）
+### 圖片嵌入
 
 ```markdown
-![圖片說明](檔案名稱.jpg)
+![圖片說明](檔案名稱.jpg)          # ✅ 正確：相對路徑
+{{< figure src="..." >}}           # ❌ 禁止：此主題不支援
 ```
 
-#### ❌ 禁止：使用 Hugo shortcode（此主題不支援 figure shortcode 顯示）
-
-```markdown
-{{< figure src="..." caption="..." >}}   ← 不會顯示
-```
-
-### 表格格式
+### Markdown 表格
 
 pipe 左右必須有空格，separator 使用 `---`：
 
@@ -151,19 +153,19 @@ pipe 左右必須有空格，separator 使用 `---`：
 
 ---
 
-## 開發原則
+## 開發限制
 
 | ❌ 禁止 | ✅ 正確 |
 | --- | --- |
-| 修改 `themes/liva-hugo/` 內的檔案 | 在 `layouts/` 建立同名檔案覆寫 |
-| 使用 `{{< figure >}}` shortcode | 使用 `![alt](filename.jpg)` |
+| 修改 `themes/liva-hugo/` | 在 `layouts/` 建立同名檔案覆寫 |
 | `npm install` | `yarn` |
-| 把圖片放到 `static/` 再引用 | 圖片與 `index.md` 放同一資料夾 |
+| 把圖片放 `static/` 再用相對路徑引用 | 圖片與 `index.md` 放同一資料夾 |
 | 建立備份檔（`_old.md`、`.bak`） | 直接修改原檔，版控用 git |
+| 使用 Hugo 0.88+ 新功能 | 確認 Netlify 上 0.87.0 相容 |
 
 ---
 
 ## Active Status
 
-- **最後更新**：2026-03-30
+- **最後更新**：2026-04-12
 - **已知問題**：無

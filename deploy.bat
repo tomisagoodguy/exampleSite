@@ -50,7 +50,7 @@ echo   驗證成功，準備進行同步...
 :: --------------------------------------------
 echo [3/4] 正在並行同步檔案 (核數: 16)...
 :: /MT:16 開啟多執行緒同步，處理 6000+ 個檔案時倍速提升
-robocopy "%SOURCE_DIR%\public" "%DEST_DIR%" /mir /xd .git /nfl /ndl /njh /njs /MT:16
+robocopy "%SOURCE_DIR%\public" "%DEST_DIR%" /mir /xd .git /nfl /ndl /njh /njs /MT:16 /fft /z
 
 if %errorlevel% GEQ 8 (
     echo.
@@ -67,6 +67,11 @@ cd /d "%DEST_DIR%"
 git config core.safecrlf false
 :: 使用 git status 檢查差異程度
 git add .
+git diff --cached --quiet
+if %errorlevel% equ 0 (
+    echo   [SKIP] 沒有變更，跳過 push
+    goto done
+)
 git commit -m "Site Update: %date% %time%"
 git push origin HEAD
 
@@ -77,6 +82,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
+:done
 echo ==========================================
 echo  完成！網站已更新
 echo ==========================================

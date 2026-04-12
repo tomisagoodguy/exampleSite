@@ -1463,3 +1463,123 @@ console.log("寫入範圍：", range)
 | 本機正常但部署後不正常 | 比對環境變數、Node.js 版本、套件版本 |
 
 > 💡 **核心原則**：除錯的本質是「縮小懷疑範圍」。從最外層開始確認，一層一層往內，直到找到第一個「不符合預期的地方」，那就是問題根源。
+
+---
+
+## 十六、網路爬蟲基礎
+
+### 16.1 靜態網站 vs 動態網站
+
+網路爬蟲的第一步，是判斷目標是「靜態」還是「動態」網站，因為抓取方式完全不同。
+
+| 類型 | 說明 | 判斷方式 |
+| --- | --- | --- |
+| **靜態網站** | 資料直接寫在 HTML 原始碼裡 | 在瀏覽器按右鍵 → 「檢視頁面原始碼」，能看到要抓的資料 |
+| **動態網站** | 資料由 JavaScript 非同步載入（AJAX / Fetch / XHR） | 在原始碼看**不到**資料，需要透過主控台 Network 分頁尋找 API 請求 |
+
+---
+
+### 16.2 靜態網站爬取方式
+
+資料已在 HTML 中，直接發 HTTP 請求取得頁面，再解析 DOM 即可。
+
+常用工具：Python（`requests` + `BeautifulSoup`）、Node.js（`axios` + `cheerio`）
+
+```python
+import requests
+from bs4 import BeautifulSoup
+
+res = requests.get("https://example.com")
+soup = BeautifulSoup(res.text, "html.parser")
+print(soup.select_one("h1").text)
+```
+
+---
+
+### 16.3 動態網站爬取方式
+
+資料不在原始碼裡，需要找到背後的 API 端點。
+
+#### 步驟一：打開瀏覽器主控台 Network 分頁
+
+1. `F12` 開啟開發者工具
+2. 切到 **Network** 分頁
+3. 重新載入頁面（或觸發資料載入的動作）
+4. 篩選 `Fetch/XHR`，找出實際回傳資料的請求
+
+#### 步驟二：複製為 cURL
+
+找到目標請求後，右鍵 → **Copy → Copy as cURL**
+
+```bash
+curl 'https://api.example.com/data?page=1' \
+  -H 'Authorization: Bearer xxx' \
+  -H 'Content-Type: application/json'
+```
+
+#### 步驟三：轉換成 Python / Node.js 程式碼
+
+取得 cURL 後，可以：
+
+* 用 [curlconverter.com](https://curlconverter.com) 自動轉成各語言程式碼
+* 或直接告訴 AI：「把這段 cURL 轉成 Python requests」
+
+```python
+import requests
+
+headers = {
+    "Authorization": "Bearer xxx",
+    "Content-Type": "application/json",
+}
+
+res = requests.get("https://api.example.com/data", params={"page": 1}, headers=headers)
+print(res.json())
+```
+
+---
+
+### 16.4 還是找不到 API？用無頭瀏覽器
+
+如果資料是由前端 JavaScript 動態渲染（例如 SPA 框架），Network 分頁也找不到明確的 API，就需要用**無頭瀏覽器**模擬真實使用者操作。
+
+| 工具 | 語言 | 說明 |
+| --- | --- | --- |
+| **Playwright** | Python / Node.js | 現代首選，支援 Chromium / Firefox / WebKit |
+| **Puppeteer** | Node.js | Google 官方，只支援 Chromium |
+| **Selenium** | Python / Java / 多語言 | 老牌工具，相容性廣 |
+
+```python
+from playwright.sync_api import sync_playwright
+
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    page = browser.new_page()
+    page.goto("https://example.com")
+    print(page.inner_text("h1"))
+    browser.close()
+```
+
+---
+
+### 16.5 判斷流程速查
+
+```text
+目標網站有資料要抓
+        │
+        ▼
+  檢視頁面原始碼（Ctrl+U）
+  能看到資料？
+   ┌──────┴──────┐
+  是              否
+   │              │
+靜態網站        動態網站
+requests +      開 Network 分頁
+BeautifulSoup   找 Fetch/XHR 請求
+                  │
+              找到 API？
+            ┌────┴────┐
+           是          否
+            │          │
+        直接呼叫      無頭瀏覽器
+        API 端點      (Playwright)
+```
