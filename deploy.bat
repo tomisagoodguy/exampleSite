@@ -61,24 +61,18 @@ if %errorlevel% GEQ 8 (
 :: --------------------------------------------
 :: 步驟 4: Git 發布
 :: --------------------------------------------
-echo [4/4] 正在發布至 GitHub...
+echo [4/4] 正在發布至 GitHub (Orphan Mode)...
 cd /d "%DEST_DIR%"
 git config core.safecrlf false
 
-:: 檢查變更數量
-git add .
-git diff --cached --stat --name-only | find /c /v "" > temp_count.txt
-set /p CHANGE_COUNT=<temp_count.txt
-del temp_count.txt
-
-if %CHANGE_COUNT% equ 0 (
-    echo   ✨ [SKIP] 沒有任何變更，跳過推送。
-    goto done
-)
-
-echo   📦 發現 %CHANGE_COUNT% 個檔案變更，準備 Commit...
+:: Orphan commit：每次重建單一 commit，避免 .git 無限膨脹
+git checkout --orphan _deploy_tmp
+git add -A
 git commit -m "Site Update: %date% %time%"
-git push origin HEAD
+
+:: 用暫存分支取代 main，保持 .git 精簡
+git branch -M _deploy_tmp main
+git push origin main --force
 
 if %errorlevel% neq 0 (
     echo.
