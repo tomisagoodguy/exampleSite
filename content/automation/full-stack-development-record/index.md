@@ -8,6 +8,15 @@ description: "新增筆記心得幫助我以後做專案可以用"
 ---
 這裡是未來專案開發時可以隨時參考的筆記心得與架構指南。
 
+> 📚 這篇是完整版長文。若想分主題閱讀，可先看系列分篇：
+>
+> * [01：SDLC 與架構評估](../full-stack-dev-series-01-sdlc-and-architecture/)
+> * [02：規格驅動與開發環境](../full-stack-dev-series-02-spec-and-env/)
+> * [03：資料庫、Git、API 與測試策略](../full-stack-dev-series-03-db-git-api-test/)
+> * [04：Claude Code 與開發核心觀念](../full-stack-dev-series-04-claude-code-and-fundamentals/)
+> * [05：除錯與爬蟲基礎](../full-stack-dev-series-05-debug-and-scraping/)
+> * [06：pytest 與安全檢查上線流程](../full-stack-dev-series-06-pytest-and-security/)
+
 ---
 
 ## 一、軟體開發生命周期 (SDLC)
@@ -1583,3 +1592,200 @@ BeautifulSoup   找 Fetch/XHR 請求
         直接呼叫      無頭瀏覽器
         API 端點      (Playwright)
 ```
+
+## 十七、測試框架與 pytest 實戰
+
+### 17.1 先選框架：不同語言對應
+
+| 語言 | 常見測試框架 |
+| --- | --- |
+| Python | `pytest` |
+| Node.js / JavaScript | `jest` |
+
+這份筆記後續以 **Python + pytest** 為主，因為語法直覺、擴充套件完整、失敗訊息清楚，適合快速建立可維護的測試習慣。
+
+---
+
+### 17.2 測試目錄建議結構
+
+```text
+project/
+├── app/
+│   ├── calculator.py
+│   └── service.py
+└── tests/
+    ├── test_calculator.py
+    └── test_service.py
+```
+
+命名慣例：
+
+* 檔名以 `test_` 開頭或結尾（例如 `test_service.py`）
+* 函式名以 `test_` 開頭（例如 `test_add_should_return_sum`）
+
+---
+
+### 17.3 pytest 安裝與基本設定
+
+```bash
+pip install pytest
+```
+
+可建立 `pytest.ini`（非必要，但推薦）：
+
+```ini
+[pytest]
+testpaths = tests
+python_files = test_*.py
+-q
+```
+
+---
+
+### 17.4 範例：帶註解的測試案例
+
+假設有一個 `app/calculator.py`：
+
+```python
+def add(a, b):
+    return a + b
+
+def divide(a, b):
+    if b == 0:
+        raise ValueError("b 不能為 0")
+    return a / b
+```
+
+對應測試 `tests/test_calculator.py`：
+
+```python
+import pytest
+from app.calculator import add, divide
+
+
+def test_add_with_positive_numbers():
+    # 測試目的：驗證兩個正整數相加是否正確
+    # 期望：2 + 3 應回傳 5
+    assert add(2, 3) == 5
+
+
+def test_add_with_negative_numbers():
+    # 測試目的：驗證負數運算是否正確
+    # 期望：-1 + -4 應回傳 -5
+    assert add(-1, -4) == -5
+
+
+def test_divide_normal_case():
+    # 測試目的：驗證一般除法情境
+    # 期望：10 / 2 應回傳 5
+    assert divide(10, 2) == 5
+
+
+def test_divide_by_zero_should_raise_error():
+    # 測試目的：驗證除以 0 時會拋出預期錯誤
+    # 期望：raise ValueError，避免靜默失敗
+    with pytest.raises(ValueError):
+        divide(10, 0)
+```
+
+---
+
+### 17.5 怎麼跑測試
+
+| 指令 | 用途 |
+| --- | --- |
+| `pytest` | 執行全部測試 |
+| `pytest -q` | 精簡輸出 |
+| `pytest -k "add"` | 只跑名稱包含 `add` 的測試 |
+| `pytest tests/test_calculator.py` | 只跑單一檔案 |
+| `pytest -x` | 遇到第一個錯誤就停止 |
+| `pytest --maxfail=3` | 最多失敗 3 個就停止 |
+
+建議日常流程：
+
+1. 寫一個功能
+2. 補對應測試（至少正常路徑 + 例外路徑）
+3. 跑 `pytest -q`
+4. 修正直到全綠，再進行下一個功能
+
+---
+
+## 十八、Code Review 與 Security Review 實務
+
+### 18.1 一般 Code Review 看什麼
+
+* 邏輯是否正確（有沒有明顯 bug）
+* 可讀性是否足夠（命名、函式切分、重複程式碼）
+* 測試是否覆蓋重要路徑（成功、失敗、邊界）
+
+---
+
+### 18.2 Security Code Review 核心檢查點
+
+#### 1) 機敏資訊外洩（API Key / Token）
+
+* 不把 key 寫死在程式碼
+* 使用環境變數與祕密管理服務
+* `.env` / 憑證檔案應加入 `.gitignore`
+
+#### 2) 權限管理（Authentication + Authorization）
+
+權限設計至少涵蓋三件事：
+
+* **身份識別**：你是誰（登入/Token 驗證）
+* **資料歸屬**：你能不能看這筆資料
+* **行為控制**：你可不可以做這個動作（管理員、一般使用者、訪客）
+
+特別要防範 **Broken Access Control**（有登入但不該存取卻存取得到）。
+
+#### 3) 注入攻擊（Injection）
+
+* SQL 一律使用參數化查詢（不要字串拼接）
+* 指令執行避免直接帶入未清理輸入
+* 所有外部輸入先驗證格式與長度
+
+#### 4) 不安全設定（Security Misconfiguration）
+
+* 關閉不必要的 debug 模式
+* 生產環境不暴露 stack trace
+* 正確設定 CORS、HTTP 安全標頭與權限預設值
+
+---
+
+### 18.3 固定化安全檢查流程（上線前必跑）
+
+每次上線前，至少完成以下項目：
+
+1. **AI Security Review**：用 AI 先做一輪風險掃描（權限、注入、祕密外洩）
+2. **Security Linter / SAST**：跑自動化檢查器
+3. **依賴套件弱點掃描**：檢查第三方套件 CVE
+4. **外部視角弱點掃描**：模擬攻擊者看可暴露面
+
+可把它變成 CI pipeline gate（沒通過就不能部署）。
+
+---
+
+### 18.4 安全紀錄與監控（事後可追查）
+
+如果沒有紀錄，事件發生後就很難調查。最少應保留：
+
+* 登入/登出與失敗次數
+* 權限拒絕事件（403）
+* 關鍵資料異動紀錄（誰、何時、改了什麼）
+* 例外與系統錯誤 log（含 request id）
+
+> 💡 目標不是「完全不被攻擊」，而是「被攻擊時可快速發現、快速止血、可完整追查」。
+
+---
+
+## 十九、結語：把自動化能力變成可複製流程
+
+從 API 串接、排程、除錯、爬蟲、測試到安全檢查，真正有價值的不是單次寫出可跑的程式，而是建立一套**可重複、可驗證、可維護**的流程。
+
+給未來自己的三個提醒：
+
+1. **先讓流程可觀察**：要有 log、要能追蹤、要知道哪裡失敗
+2. **先寫最小可用，再迭代**：避免過度設計
+3. **把品質檢查自動化**：測試與安全檢查變成固定上線門檻
+
+當你把這些步驟做成習慣，自動化就不只是「會寫腳本」，而是你可以穩定交付成果的工程能力。
