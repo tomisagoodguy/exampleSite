@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git -C \"c:/Users/user/Documents/GitHub/exampleSite\" show e466ca0 --stat)",
       "Bash(xargs du *)",
-      "Bash(git -C \"c:/Users/user/Documents/GitHub/tomisagoodguy.github.io\" config --list)"
+      "Bash(git -C \"c:/Users/user/Documents/GitHub/tomisagoodguy.github.io\" config --list)",
+      "Bash(git push *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\user\\Documents\\GitHub\\exampleSite\\layouts"
