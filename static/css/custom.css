@@ -33,16 +33,16 @@ body.dark-mode .btn-link {
 
 /* Hero Section Styles */
 .hero-section {
-  background: var(--primary-gradient) !important;
-  color: #ffffff !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f7f3ee 100%) !important;
+  color: #1e293b !important;
   padding: 100px 20px;
   text-align: center;
   margin-bottom: 50px;
   border-radius: 24px;
-  box-shadow: var(--card-shadow);
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.08);
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .hero-section::before {
@@ -52,19 +52,8 @@ body.dark-mode .btn-link {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
-  animation: pulse 10s infinite alternate;
+  background: radial-gradient(circle, rgba(235, 200, 170, 0.25) 0%, transparent 70%);
   pointer-events: none;
-}
-
-@keyframes pulse {
-  0% {
-    transform: translate(0, 0);
-  }
-
-  100% {
-    transform: translate(5%, 5%);
-  }
 }
 
 .hero-title {
@@ -73,13 +62,13 @@ body.dark-mode .btn-link {
   font-weight: 800;
   margin-bottom: 1.5rem;
   letter-spacing: -0.02em;
-  color: #ffffff !important;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  color: #1e293b !important;
+  text-shadow: none;
 }
 
 .hero-subtitle {
   font-size: 1.25rem;
-  color: rgba(255, 255, 255, 0.9) !important;
+  color: #64748b !important;
   margin-bottom: 2.5rem;
   max-width: 700px;
   margin-left: auto;
@@ -122,13 +111,13 @@ body.dark-mode .btn-link {
 
 .hero-btn-secondary {
   background-color: transparent;
-  border-color: rgba(255, 255, 255, 0.5);
-  color: #ffffff;
+  border-color: rgba(30, 41, 59, 0.3);
+  color: #1e293b;
 }
 
 .hero-btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: #ffffff;
+  background-color: rgba(30, 41, 59, 0.06);
+  border-color: #1e293b;
   transform: translateY(-3px);
   text-decoration: none;
 }
@@ -1123,83 +1112,48 @@ body.dark-mode .sticky-sidebar .nav-link:hover {
    Hero Section Animations (Tech / Cyberpunk)
    -------------------------- */
 
-/* 1. Tech Background Grid */
-.hero-section {
-  background:
-    linear-gradient(rgba(59, 113, 202, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 113, 202, 0.1) 1px, transparent 1px),
-    linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
-  background-size: 30px 30px, 30px 30px, 100% 100% !important;
-  border: 1px solid rgba(59, 113, 202, 0.3);
-  position: relative;
-  overflow: hidden;
-}
+/* 1. Hero Background — warm editorial (Option A) */
 
-/* 2. Holographic Shimmer Title (Cleaner Tech Effect) */
+/* 2. Editorial Title — clean dark text (Option A) */
 .hero-title {
   position: relative;
   display: inline-block;
-  color: #fff;
-  background: linear-gradient(to right, #fff 20%, #3b71ca 40%, #E07A5F 60%, #fff 80%);
-  background-size: 200% auto;
-  color: transparent;
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: shimmer 5s linear infinite;
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: initial;
+  color: #1e293b !important;
+  animation: none;
+  text-shadow: none !important;
 }
 
 .hero-title::before,
 .hero-title::after {
   display: none;
-  /* Remove chaotic glitch layers */
-}
-
-@keyframes shimmer {
-  to {
-    background-position: 200% center;
-  }
 }
 
 .hero-title:hover {
-  text-shadow: 0 0 15px rgba(59, 113, 202, 0.5);
-  transform: scale(1.05);
-  /* Smooth zoom */
+  transform: none;
 }
 
-/* 3. Realistic Typing Reveal - Multi-line compatible */
+/* 3. Editorial Subtitle — simple display (Option A) */
 .hero-subtitle {
   font-family: inherit;
-  color: #fff !important;
+  color: #64748b !important;
   line-height: 1.8;
   margin: 0 auto 2rem auto;
   max-width: 800px;
   position: relative;
-  display: inline-block;
-
-  /* The Reveal: Using clip-path for character-by-character feel */
-  clip-path: inset(0 100% 0 0);
-  animation: revealSteps 4s steps(100) forwards;
-  animation-delay: 0.8s;
-
-  /* Ensure it wraps nicely on all screens */
+  display: block;
+  clip-path: none;
+  animation: none;
   white-space: normal;
   overflow: visible;
 }
 
-/* The Cursor: Only appears after typing is done */
+/* Cursor removed for editorial style */
 .hero-subtitle::after {
-  content: '|';
-  color: #E07A5F;
-  font-weight: 900;
-  display: inline-block;
-  margin-left: 2px;
-  opacity: 0;
-  /* Hidden at start */
-  animation:
-    showCursor 0s forwards,
-    blink-caret 0.75s step-end infinite;
-  animation-delay: 4.8s;
-  /* Appears exactly when typing ends (0.8 + 4) */
+  display: none;
 }
 
 @keyframes revealSteps {
@@ -1226,22 +1180,7 @@ body.dark-mode .sticky-sidebar .nav-link:hover {
   }
 }
 
-/* 4. Holographic Title Glow - Enhanced */
-.hero-title {
-  position: relative;
-  background: linear-gradient(45deg,
-      #ffffff 20%,
-      #64b5f6 40%,
-      #ffffff 50%,
-      #64b5f6 60%,
-      #ffffff 80%);
-  background-size: 200% auto;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shine 4s linear infinite;
-  text-shadow: 0 0 25px rgba(100, 181, 246, 0.4) !important;
-}
+/* 4. Hero title — no holographic override needed for Option A */
 
 @keyframes shine {
   to {
@@ -1437,6 +1376,32 @@ body.dark-mode .sticky-sidebar .nav-link:hover {
 
 .cookie-box-hide {
   display: none !important;
+}
+
+/* Dark Mode Hero — warm dark editorial */
+body.dark-mode .hero-section {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+  border-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .hero-title {
+  color: #f1f5f9 !important;
+  -webkit-text-fill-color: initial;
+}
+
+body.dark-mode .hero-subtitle {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .hero-btn-secondary {
+  border-color: rgba(241, 245, 249, 0.3);
+  color: #f1f5f9;
+}
+
+body.dark-mode .hero-btn-secondary:hover {
+  background-color: rgba(241, 245, 249, 0.08);
+  border-color: #f1f5f9;
 }
 
 /* Dark Mode Overrides for Footer */
