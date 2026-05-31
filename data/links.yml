@@ -139,6 +139,12 @@
     - title: "Alpha Insight"
       url: "https://alpha-insight-amber.vercel.app/"
       description: "專業財經數據分析平台，提供深度市場洞察與視覺化工具。"
+    - title: "台股折溢價"
+      url: "https://twetf.com/"
+      description: "台灣 ETF 折溢價即時查詢，掌握 ETF 市價與淨值差距。"
+    - title: "理財 Podcast 逐字稿"
+      url: "https://isuclawchen.github.io/Daily-Trump/"
+      description: "理財相關 Podcast 完整逐字稿，方便搜尋與閱讀重點內容。"
 - category: "線上學習平台"
   links:
     - title: "Hahow 好學校"
