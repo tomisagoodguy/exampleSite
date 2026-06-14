@@ -1,5 +1,6 @@
 ---
 title: "全端開發實錄系列 05：除錯與爬蟲基礎"
+cardTitle: "全端開發實錄 05：除錯與爬蟲"
 date: 2026-04-26T13:34:00+08:00
 tags: ["Debug", "Web Scraping", "Playwright", "Troubleshooting"]
 categories: ["Coding", "Diary"]

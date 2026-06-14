@@ -1,5 +1,6 @@
 ---
 title: "紅酒起司燉飯附炙烤鵪鶉，蔬菜與檸檬香菜奶油 (Red Wine Risotto with Grilled Quail, Vegetables & Lime Coriander Butter)"
+cardTitle: "紅酒起司燉飯附炙烤鵪鶉"
 date: 2026-05-08T22:01:14+08:00
 description: "以紅酒為靈魂的濃郁燉飯，搭配醃漬炙烤鵪鶉與清爽的檸檬香菜奶油，色彩繽紛的炙烤蔬菜點綴其間，呈現義法融合的精緻風味。"
 type: "lifestyle"

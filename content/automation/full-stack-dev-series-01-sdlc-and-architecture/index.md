@@ -1,5 +1,6 @@
 ---
 title: "全端開發實錄系列 01：SDLC 與架構評估"
+cardTitle: "全端開發實錄 01：SDLC 與架構"
 date: 2026-04-26T13:30:00+08:00
 tags: ["SDLC", "Architecture", "Planning", "Full-stack"]
 categories: ["Coding", "Diary"]

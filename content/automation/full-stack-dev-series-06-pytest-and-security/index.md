@@ -1,5 +1,6 @@
 ---
 title: "全端開發實錄系列 06：pytest 與安全檢查上線流程"
+cardTitle: "全端開發實錄 06：pytest 與安全"
 date: 2026-04-26T13:35:00+08:00
 tags: ["pytest", "Security Review", "SAST", "Deployment Checklist"]
 categories: ["Coding", "Diary"]

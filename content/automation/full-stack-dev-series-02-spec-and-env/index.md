@@ -1,5 +1,6 @@
 ---
 title: "全端開發實錄系列 02：規格驅動與開發環境"
+cardTitle: "全端開發實錄 02：規格與環境"
 date: 2026-04-26T13:31:00+08:00
 tags: ["OpenSpec", "Spec-Driven", "Environment", "Node.js"]
 categories: ["Coding", "Diary"]

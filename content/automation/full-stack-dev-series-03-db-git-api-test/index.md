@@ -1,5 +1,6 @@
 ---
 title: "全端開發實錄系列 03：資料庫、Git、API 與測試策略"
+cardTitle: "全端開發實錄 03：資料庫與測試"
 date: 2026-04-26T13:32:00+08:00
 tags: ["Database", "Git", "API", "Testing"]
 categories: ["Coding", "Diary"]

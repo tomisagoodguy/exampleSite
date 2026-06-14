@@ -53,9 +53,11 @@
             <span class="mx-2 text-muted">|</span>
             <span class="text-muted small"><i class="fas fa-clock mr-1"></i>{{ .ReadingTime }} min</span>
           </div>
+          {{/* 卡片短標：優先用 cardTitle，否則自動截掉「中文 (English)」的英文括號 */}}
+          {{ $cardTitle := .Params.cardTitle | default (index (split .Title " (") 0) }}
           <h4 class="card-title h5 mb-3">
-            <a href="{{ .Permalink }}" class="text-dark hover-blue"
-              style="font-family: 'Outfit', sans-serif; font-weight: 700;">{{ .Title | markdownify }}</a>
+            <a href="{{ .Permalink }}" class="text-dark hover-blue" title="{{ .Title }}"
+              style="font-family: 'Outfit', sans-serif; font-weight: 700;">{{ $cardTitle | markdownify }}</a>
           </h4>
           <p class="card-text text-muted small" style="line-height: 1.6;">{{ .Summary | truncate 80 }}</p>
           <div class="mt-auto pt-3 d-flex justify-content-between align-items-center">

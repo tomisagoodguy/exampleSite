@@ -2059,53 +2059,145 @@ pre:hover .copy-button,
 }
 
 /* --- Improved Arrow Styling & Positioning --- */
-.slick-prev,
-.slick-next {
-  width: 30px;
-  height: 30px;
+/* 提高 specificity（scoped 到三個 slider）以覆蓋主題 style.min.css 的綠底綠箭頭 */
+.real-estate-slider .slick-arrow,
+.automation-slider .slick-arrow,
+.lifestyle-slider .slick-arrow {
+  width: 44px;
+  /* 符合 44px 觸控標準 */
+  height: 44px;
   z-index: 20;
-  /* Center vertically */
   top: 50%;
   transform: translateY(-50%);
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 50% !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
 /* Position them in the padded area we created */
-.slick-prev {
-  left: 20px !important;
+.real-estate-slider .slick-prev,
+.automation-slider .slick-prev,
+.lifestyle-slider .slick-prev {
+  left: 14px !important;
 }
 
-.slick-next {
-  right: 20px !important;
+.real-estate-slider .slick-next,
+.automation-slider .slick-next,
+.lifestyle-slider .slick-next {
+  right: 14px !important;
 }
 
-/* Style the arrow icons (Pseudo-elements) */
-.slick-prev:before,
-.slick-next:before {
-  font-family: 'Font Awesome 5 Free';
-  /* Use FontAwesome if available, or fallback */
-  font-weight: 900;
-  font-size: 20px;
-  color: #adb5bd;
-  /* Neutral grey, not ugly blue */
-  opacity: 1;
-  transition: all 0.3s ease;
+/* 箭頭 glyph：綠色畫在白圈上，不再與背景同色而隱形 */
+.real-estate-slider .slick-arrow:before,
+.automation-slider .slick-arrow:before,
+.lifestyle-slider .slick-arrow:before {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1;
+  color: #6B9080 !important;
+  opacity: 1 !important;
 }
 
-.slick-prev:before {
-  content: "←";
-  /* Fallback to standard arrow if FA fails */
+.real-estate-slider .slick-prev:before,
+.automation-slider .slick-prev:before,
+.lifestyle-slider .slick-prev:before {
+  content: "\2190";
+  /* ← */
 }
 
-.slick-next:before {
-  content: "→";
+.real-estate-slider .slick-next:before,
+.automation-slider .slick-next:before,
+.lifestyle-slider .slick-next:before {
+  content: "\2192";
+  /* → */
 }
 
-/* Hover effects for arrows */
-.slick-prev:hover:before,
-.slick-next:hover:before {
-  color: var(--accent-blue);
-  /* Primary color on hover */
-  transform: scale(1.2);
+/* Hover：反白（綠底白箭頭），維持品牌色 */
+.real-estate-slider .slick-arrow:hover,
+.automation-slider .slick-arrow:hover,
+.lifestyle-slider .slick-arrow:hover {
+  background: #6B9080 !important;
+  border-color: #6B9080 !important;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.real-estate-slider .slick-arrow:hover:before,
+.automation-slider .slick-arrow:hover:before,
+.lifestyle-slider .slick-arrow:hover:before {
+  color: #ffffff !important;
+}
+
+/* 停用狀態（infinite:false 時最前/最後）：降低存在感 */
+.real-estate-slider .slick-arrow.slick-disabled,
+.automation-slider .slick-arrow.slick-disabled,
+.lifestyle-slider .slick-arrow.slick-disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* 深色模式 */
+body.dark-mode .real-estate-slider .slick-arrow,
+body.dark-mode .automation-slider .slick-arrow,
+body.dark-mode .lifestyle-slider .slick-arrow {
+  background: #2c2825 !important;
+  border-color: #3d3833 !important;
+}
+
+/* --- 分類列（Topic Explorer）箭頭，沿用同一套白圈綠箭頭 --- */
+.category-slider .slick-arrow {
+  width: 36px;
+  height: 36px;
+  z-index: 20;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 50% !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.category-slider .slick-prev {
+  left: -6px !important;
+}
+
+.category-slider .slick-next {
+  right: -6px !important;
+}
+
+.category-slider .slick-arrow:before {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  color: #6B9080 !important;
+  opacity: 1 !important;
+}
+
+.category-slider .slick-prev:before {
+  content: "\2190";
+}
+
+.category-slider .slick-next:before {
+  content: "\2192";
+}
+
+.category-slider .slick-arrow:hover {
+  background: #6B9080 !important;
+  border-color: #6B9080 !important;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.category-slider .slick-arrow:hover:before {
+  color: #ffffff !important;
+}
+
+body.dark-mode .category-slider .slick-arrow {
+  background: #2c2825 !important;
+  border-color: #3d3833 !important;
 }
 
 /* Ensure the track doesn't calculate wild widths */
@@ -2134,8 +2226,15 @@ body {
 .slick-slide .h5 {
   margin-top: 0.5rem !important;
   margin-bottom: 0.5rem !important;
-  font-size: 1.1rem;
-  /* Slightly smaller title */
+  font-size: 0.95rem;
+  /* 卡片僅 ~154px 寬，縮小字級讓短標完整收進 2 行（含 pytest 等英文整詞） */
+  line-height: 1.4;
+}
+
+/* 連結預設被主題設成 1.5rem(24px)，強制繼承 h4 字級，否則標題溢出 3 行 */
+.slick-slide .card-title a {
+  font-size: inherit !important;
+  line-height: inherit !important;
 }
 
 .slick-slide .post-meta {
@@ -2498,6 +2597,17 @@ body.dark-mode .search-result-card {
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  min-height: calc(1.5em * 3); /* 鎖 3 行高度，讓內文段一致 */
+}
+
+/* 標題鎖 2 行，避免長標題（如食譜全名）獨自撐高整列卡片 */
+.search-result-card .card-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: calc(1.3em * 2); /* 保留 2 行，讓單行/雙行標題的頁尾對齊 */
 }
 
 .search-result-card:hover .card-img-wrapper img {

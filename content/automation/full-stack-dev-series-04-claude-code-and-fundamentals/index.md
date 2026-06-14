@@ -1,5 +1,6 @@
 ---
 title: "全端開發實錄系列 04：Claude Code 與開發核心觀念"
+cardTitle: "全端開發實錄 04：Claude Code"
 date: 2026-04-26T13:33:00+08:00
 tags: ["Claude Code", "AI Workflow", "Function", "Tag"]
 categories: ["Coding", "Diary"]

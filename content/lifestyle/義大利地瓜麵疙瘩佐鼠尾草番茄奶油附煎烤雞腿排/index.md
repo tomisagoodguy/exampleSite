@@ -1,5 +1,6 @@
 ﻿---
 title: "義大利地瓜麵疙瘩佐鼠尾草番茄奶油醬附煎烤雞腿排 (Sweet Potato Gnocchi with Sage Tomato Cream Sauce)"
+cardTitle: "義式地瓜麵疙瘩佐番茄奶油雞腿"
 date: 2025-10-10T22:01:14+08:00
 description: "Sweet potato gnocchi with sage tomato cream sauce and boneless chicken thighs"
 type: "lifestyle"
