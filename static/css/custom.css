@@ -1112,31 +1112,9 @@ body.dark-mode .sticky-sidebar .nav-link:hover {
    Hero Section Animations (Tech / Cyberpunk)
    -------------------------- */
 
-/* 1. Hero Background — warm editorial (Option A) */
-
-/* 2. Editorial Title — clean dark text (Option A) */
-.hero-title {
-  position: relative;
-  display: inline-block;
-  background: none;
-  -webkit-background-clip: initial;
-  background-clip: initial;
-  -webkit-text-fill-color: initial;
-  color: #1e293b !important;
-  animation: none;
-  text-shadow: none !important;
-}
-
-.hero-title::before,
-.hero-title::after {
-  display: none;
-}
-
-.hero-title:hover {
-  transform: none;
-}
-
-/* 3. Editorial Subtitle — simple display (Option A) */
+/* Editorial Subtitle — simple display (Option A).
+   NOTE: base .hero-title / .hero-section live near the top of this file; the
+   old cyberpunk reset blocks + their keyframes were dead and have been removed. */
 .hero-subtitle {
   font-family: inherit;
   color: #64748b !important;
@@ -1151,43 +1129,6 @@ body.dark-mode .sticky-sidebar .nav-link:hover {
   overflow: visible;
 }
 
-/* Cursor removed for editorial style */
-.hero-subtitle::after {
-  display: none;
-}
-
-@keyframes revealSteps {
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-
-@keyframes showCursor {
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes blink-caret {
-
-  from,
-  to {
-    opacity: 0;
-  }
-
-  50% {
-    opacity: 1;
-  }
-}
-
-/* 4. Hero title — no holographic override needed for Option A */
-
-@keyframes shine {
-  to {
-    background-position: 200% center;
-  }
-}
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -1200,37 +1141,15 @@ body.dark-mode .sticky-sidebar .nav-link:hover {
   }
 }
 
-/* Mobile Tweak: Ensure animation doesn't kill contrast on small screens */
+/* Mobile Tweak: editorial subtitle stays grey on the light hero (was leftover
+   white text-fill from the old dark hero → invisible on cream background) */
 @media (max-width: 768px) {
   .hero-subtitle {
-    background-position: 0 0;
-    /* Fully visible by default or simpler animation */
-    -webkit-text-fill-color: #fff;
+    color: #64748b !important;
+    -webkit-text-fill-color: #64748b;
     background-clip: initial;
     -webkit-background-clip: initial;
     animation: fadeInUp 1s ease-out forwards;
-  }
-}
-
-@keyframes typing {
-  from {
-    width: 0
-  }
-
-  to {
-    width: 100%
-  }
-}
-
-@keyframes blink-caret {
-
-  from,
-  to {
-    border-color: transparent
-  }
-
-  50% {
-    border-color: #E07A5F;
   }
 }
 
@@ -2272,6 +2191,7 @@ section.section.pb-0 {
 }
 
 /* Reduce space below "Topic Explorer" title */
+.col-12.mb-4 h2.section-title,
 .col-12.mb-4 h3.section-title {
   margin-bottom: 0.5rem !important;
 }
@@ -2358,6 +2278,7 @@ footer .quick-links li a {
 }
 
 /* Larger Section Titles */
+h2.section-title,
 h3.section-title {
   font-size: 2rem !important;
   /* Bigger title */
@@ -2369,14 +2290,17 @@ h3.section-title {
 }
 
 /* Add a colored bar next to titles for "霸氣" look */
+h2.section-title.text-orange,
 h3.section-title.text-orange {
   border-left: 6px solid #fd7e14;
 }
 
+h2.section-title.text-success,
 h3.section-title.text-success {
   border-left: 6px solid #28a745;
 }
 
+h2.section-title.text-danger,
 h3.section-title.text-danger {
   border-left: 6px solid #dc3545;
 }
@@ -3897,7 +3821,31 @@ body.dark-mode .btn-read-more-red    { background-color: #c82333; }
 }
 
 @media (max-width: 575px) {
+  h2.section-title,
   h3.section-title {
     font-size: 1.4rem !important;
+  }
+}
+
+/* --------------------------
+   Accessibility: respect reduced-motion
+   Disable entrance animations and force reveal targets visible so users with
+   prefers-reduced-motion never get stuck on opacity:0 content.
+   -------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal-on-scroll,
+  .search-item-fade {
+    opacity: 1 !important;
+    animation: none !important;
+    transform: none !important;
   }
 }

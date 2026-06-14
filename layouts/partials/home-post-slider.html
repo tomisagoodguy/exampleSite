@@ -25,10 +25,10 @@
 {{ $posts := where $ctx.Site.RegularPages "Section" $section | first 9 }}
 
 <div class="col-12 mb-4 {{ $topClass }} d-flex justify-content-between align-items-center reveal-on-scroll">
-  <h3 class="section-title {{ $titleColor }} mb-0">
+  <h2 class="section-title {{ $titleColor }} mb-0">
     <span class="section-title-main">{{ $title }}</span>
     <span class="section-title-sub">{{ $subtitle }}</span>
-  </h3>
+  </h2>
   <a href="{{ ($ctx.Site.GetPage "section" $section).RelPermalink }}"
     class="btn btn-sm {{ $btnOutline }}">查看更多</a>
 </div>
@@ -41,9 +41,9 @@
         <div class="card-img-wrapper">
           {{ $image := .Resources.GetMatch .Params.Image }}
           {{ if $image }}
-          <img src="{{ $image.RelPermalink }}" class="card-img-top" alt="{{ .Title }}">
+          <img src="{{ $image.RelPermalink }}" class="card-img-top" alt="{{ .Title }}" loading="lazy" decoding="async">
           {{ else }}
-          <img src="{{ .Params.Image | absURL }}" class="card-img-top" alt="{{ .Title }}">
+          <img src="{{ .Params.Image | absURL }}" class="card-img-top" alt="{{ .Title }}" loading="lazy" decoding="async">
           {{ end }}
         </div>
         {{ end }}
