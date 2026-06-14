@@ -18,9 +18,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **Vite** | `^8` | TypeScript 打包，設定於 `vite.config.ts` |
 | **Yarn** | — | 套件管理（**禁止使用 npm install**） |
 | **Netlify** | Hugo `0.87.0` | 主部署平台 |
-| **GitHub Pages** | — | 備用部署（`deploy.bat` → `tomisagoodguy.github.io`） |
+| **GitHub Pages** | Hugo `0.127.0` | push 到 main 由 GitHub Actions 自動 build 並部署至 `tomisagoodguy.github.io` |
 
-> ⚠️ **本地 Hugo（0.127.0）vs Netlify（0.87.0）**：避免使用 0.87.0 之後才加入的 Hugo 功能。
+> ⚠️ **Hugo 版本不一致**：本地與 GitHub Actions 都用 `0.127.0`，只有 **Netlify** 是 `0.87.0`。為保 Netlify 相容，避免使用 0.87.0 之後才加入的 Hugo 功能。
 
 ---
 
@@ -47,8 +47,10 @@ yarn hugo:log                 # Hugo 建置 log → logs/hugo-build.log
 
 ### 發布至 GitHub Pages
 
+push 到 `main` 即由 GitHub Actions（`.github/workflows/deploy.yml`）自動以 Hugo 0.127.0 build 並部署到 `tomisagoodguy.github.io`，**無需手動操作**。
+
 ```bat
-deploy.bat                    # Hugo build → robocopy → git push
+deploy.bat                    # 便利包裝：git add → commit → push（最後仍由 GHA 自動部署）
 ```
 
 ---
@@ -167,5 +169,5 @@ pipe 左右必須有空格，separator 使用 `---`：
 
 ## Active Status
 
-- **最後更新**：2026-04-12
+- **最後更新**：2026-06-14
 - **已知問題**：無
