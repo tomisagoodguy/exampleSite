@@ -1,13 +1,13 @@
-﻿---
+---
 title: "皮埃蒙特式嫩牛排佐雙醬與綜合菇 (Piedmontese Style Tenderloin with Double Sauce)"
 date: 2025-10-04T00:00:00+08:00
 description: "Beef tenderloin piedmont style with daul sauces"
 type: "lifestyle"
 image: "完成品.jpg"
 categories:
+  - "食譜筆記"
   - "歐式料理"
   - "義式料理"
-  - "【食譜筆記】"
 tags:
   - "主菜"
   - "牛肉"

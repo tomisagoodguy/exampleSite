@@ -6,7 +6,7 @@ description: "融合啤酒、在來米粉與冷藏工法，打造外脆內嫩的
 type: "lifestyle"
 image: "cover.png"
 categories:
-  - "烹飪筆記"
+  - "食譜筆記"
   - "法式料理課程"
 tags:
   - "炸魚薯條"

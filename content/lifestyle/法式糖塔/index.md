@@ -5,9 +5,9 @@ description: "經典法國北方甜點，酵母塔皮與焦糖奶油的完美結
 type: "lifestyle"
 image: "法式糖塔.jpg"
 categories:
+  - "食譜筆記"
   - "歐式料理"
   - "法式料理"
-  - "【食譜筆記】"
 tags:
   - "甜點"
   - "法式"

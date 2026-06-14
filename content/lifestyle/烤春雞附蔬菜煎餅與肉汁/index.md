@@ -6,9 +6,9 @@ description: "整隻春雞以綁線定型入爐烤至金黃，搭配酥脆蔬菜
 type: "lifestyle"
 image: "成品.jpg"
 categories:
+  - "食譜筆記"
   - "歐式料理"
   - "法式料理"
-  - "【食譜筆記】"
 tags:
   - "主菜"
   - "春雞"

@@ -1,13 +1,13 @@
-﻿---
+---
 title: "俄式燴牛肉附蔬菜飯"
 date: 2025-11-27T22:01:14+08:00
 description: "俄式燴牛肉附蔬菜飯 (Beef stroganoff and rice with vegetables)"
 type: "lifestyle"
 image: "成品.jpg"
 categories:
+  - "食譜筆記"
   - "歐式料理"
   - "俄式料理"
-  - "【食譜筆記】"
 tags:
   - "主菜"
   - "牛肉"

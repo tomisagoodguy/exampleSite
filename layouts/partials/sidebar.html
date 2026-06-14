@@ -38,22 +38,15 @@
         <!-- recent post -->
         <div class="widget">
             <h4 class="widget-title">Recent Post</h4>
-            <div class="sidebar-post-slider">
-                {{ range (where .Site.RegularPages.ByLastmod.Reverse "Type" "in" .Site.Params.mainSections) }}
-                <div class="sidebar-post-item">
-                    <article class="widget-card m-0" style="padding: 10px 0; border-bottom: 1px solid #eee;">
-                        <!-- reduced padding and added separator -->
-                        <div class="d-flex justify-content-center align-items-center">
-                            <div class="text-center w-100">
-                                <h5><a class="post-title" href="{{ .Permalink }}"
-                                        style="display: block; width: 100%; white-space: normal; font-size: 14px;">{{
-                                        .Title }}</a></h5>
-                            </div>
-                        </div>
-                    </article>
-                </div>
+            <ul class="list-unstyled recent-post-list mb-0">
+                {{ range first 5 (where .Site.RegularPages.ByLastmod.Reverse "Type" "in" .Site.Params.mainSections) }}
+                <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
+                    <a class="post-title text-dark" href="{{ .Permalink }}"
+                        style="display: block; width: 100%; white-space: normal; font-size: 14px; line-height: 1.5;">{{
+                        .Title }}</a>
+                </li>
                 {{ end }}
-            </div>
+            </ul>
         </div>
 
 

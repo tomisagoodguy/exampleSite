@@ -1,13 +1,13 @@
-﻿---
+---
 title: "嫩煎鴨胸附水波煮紅酒洋梨 (Seared Duck Breast with Red Wine Poached Pear)"
 date: 2025-11-07T22:01:14+08:00
 description: "融合法國傳統香煎鴨胸與紅酒慢煮洋梨的經典料理，以酸甜醬汁平衡濃郁脂香的歐陸精緻風味。"
 type: "lifestyle"
 image: "成品demo.jpg"
 categories:
+  - "食譜筆記"
   - "歐式料理"
   - "法式料理"
-  - "【食譜筆記】"
 tags:
   - "主菜"
   - "鴨胸"

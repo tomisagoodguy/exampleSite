@@ -1,13 +1,13 @@
-﻿---
+---
 title: "法式麵糊油炸蘋果附杏桃果醬 (Apple Beignets with Apricot Jam)"
 date: 2025-09-06T00:00:00+08:00
 description: "Apple fritters with apricot sauce"
 type: "lifestyle"
 image: "成品.jpg"
 categories:
+  - "食譜筆記"
   - "歐式料理"
   - "法式料理"
-  - "【食譜筆記】"
 tags:
   - "甜點"
   - "蘋果"

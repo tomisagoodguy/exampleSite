@@ -1,12 +1,12 @@
-﻿---
+---
 title: "義式辣味燉煮羊肉 (Spicy Basilicata Lamb Stew)"
 date: 2025-12-11T22:01:14+08:00
 description: "源自義大利南部 Basilicata 地區的農村料理，運用杜松子、乾辣椒與馬薩拉酒，將羊肩肉燉煮至軟嫩入味。"
 type: "lifestyle"
 image: "成品.jpg"
 categories:
+  - "食譜筆記"
   - "義式料理"
-  - "【食譜筆記】"
 tags:
   - "主菜"
   - "羊肉"

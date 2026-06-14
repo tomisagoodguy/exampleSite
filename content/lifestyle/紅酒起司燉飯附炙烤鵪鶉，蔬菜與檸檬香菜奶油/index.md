@@ -6,9 +6,9 @@ description: "以紅酒為靈魂的濃郁燉飯，搭配醃漬炙烤鵪鶉與清
 type: "lifestyle"
 image: "成品.jpg"
 categories:
+  - "食譜筆記"
   - "歐式料理"
   - "法式料理"
-  - "【食譜筆記】"
 tags:
   - "主菜"
   - "鵪鶉"

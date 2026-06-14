@@ -1,13 +1,13 @@
-﻿---
+---
 title: "義式菠菜瑞可達起司餃附炒番茄與芝麻菜 (Spinach Ricotta Ravioli with Sautéed Tomatoes)"
 date: 2025-10-23T22:01:14+08:00
 description: "義式菠菜瑞可達起司餃，搭配香炒番茄與芝麻菜，口感豐富，風味絕佳。"
 type: "lifestyle"
 image: "成品1.jpg"
 categories:
+  - "食譜筆記"
   - "歐式料理"
   - "義式料理"
-  - "【食譜筆記】"
 tags:
   - "義大利"
   - "義式餃子"

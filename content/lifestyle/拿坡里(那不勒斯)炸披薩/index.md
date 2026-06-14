@@ -1,13 +1,13 @@
-﻿---
+---
 title: "拿坡里(那不勒斯)炸披薩 (Pizza Fritta)"
 date: 2025-11-20T22:01:14+08:00
 description: "源自義大利那不勒斯的傳統街頭小吃，外層酥脆、內層柔軟的油炸美味。"
 type: "lifestyle"
 image: "成品.jpg"
 categories:
+  - "食譜筆記"
   - "歐式料理"
   - "義式料理"
-  - "【食譜筆記】"
 tags:
   - "主菜"
   - "拿坡里"

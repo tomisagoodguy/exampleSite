@@ -5,9 +5,9 @@ description: "義式馬薩拉奶油雞附麵條 (Boneless Chicken Thighs in Mars
 type: "lifestyle"
 image: "成品.jpg"
 categories:
+  - "食譜筆記"
   - "歐式料理"
   - "義式料理"
-  - "【食譜筆記】"
 tags:
   - "主菜"
   - "雞肉"

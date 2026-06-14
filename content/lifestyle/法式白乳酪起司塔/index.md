@@ -5,7 +5,7 @@ description: "選用諾曼地產區白乳酪，搭配沙狀混合法製作的酥
 type: "lifestyle"
 image: "成品.jpg"
 categories:
-  - "烹飪筆記"
+  - "食譜筆記"
   - "法式料理課程"
 tags:
   - "法式甜點"

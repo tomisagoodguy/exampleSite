@@ -1,12 +1,12 @@
-﻿---
+---
 title: "維也納式煎豬排附番茄義大利麵 (Pork Escalope à la viennoise)"
 date: 2025-11-15T22:01:14+08:00
 description: "深入解析經典維也納式煎豬排的製作工藝，從三段式裹粉到淺油煎炸的酥皮蓬鬆秘訣，搭配新鮮燉煮的番茄義大利麵，呈現一道經典的歐式主菜。"
 type: "lifestyle"
 image: "成品.jpg"
 categories:
+  - "食譜筆記"
   - "歐式料理"
-  - "【食譜筆記】"
 tags:
   - "主菜"
   - "維也納式"

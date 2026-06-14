@@ -6,8 +6,8 @@ description: "法式經典牛排料理：沙朗牛排先煎後烤，搭配綿密
 type: "lifestyle"
 image: "成品.jpg"
 categories:
-  - "法式料理"
   - "食譜筆記"
+  - "法式料理"
 tags:
   - "牛排"
   - "紅酒醬"

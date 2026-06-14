@@ -6,9 +6,9 @@ description: "從麵團揉製、番茄醬慢熬到手工牛肉球，用時間換
 type: "lifestyle"
 
 categories:
+  - "食譜筆記"
   - "歐式料理"
   - "義式料理"
-  - "【食譜筆記】"
 tags:
   - "主菜"
   - "義大利麵"

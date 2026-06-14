@@ -1,13 +1,13 @@
-﻿---
+---
 title: "麥年式鱸魚排附烤番茄佐橄欖肉醬汁 (Sea Bass Meunière with Roasted Tomatoes)"
 date: 2025-10-10T22:01:14+08:00
 description: "一份包含所有專業細節的法餐筆記，涵蓋醬汁、烤蕃茄與麥年煎魚的完整流程。"
 type: "lifestyle"
 image: "成品1.jpg"
 categories:
+  - "食譜筆記"
   - "歐式料理"
   - "法式料理"
-  - "【食譜筆記】"
 tags:
   - "麥年"
   - "鱸魚"

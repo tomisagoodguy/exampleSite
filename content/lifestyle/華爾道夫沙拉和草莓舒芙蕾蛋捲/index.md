@@ -1,12 +1,12 @@
-﻿---
+---
 title: "草莓舒芙蕾蛋捲佐華爾道夫沙拉 (Strawberry Soufflé Omelet & Waldorf Salad)"
 date: 2025-12-20T16:00:00+08:00
 description: "掌握蛋白霜打發與高溫烙印技巧，製作出雲朵般輕盈的舒芙蕾，搭配經典華爾道夫沙拉的完整食譜。"
 type: "lifestyle"
 image: "草莓舒芙蕾蛋捲.jpg"
 categories:
+  - "食譜筆記"
   - "法式甜點"
-  - "【食譜筆記】"
 tags:
   - "舒芙蕾"
   - "早午餐"

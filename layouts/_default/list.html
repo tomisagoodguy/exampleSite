@@ -1,0 +1,87 @@
+{{ define "main" }}
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <!-- sidebar -->
+      {{ partial "sidebar.html" . }}
+      <!-- /sidebar -->
+
+      <div class="col-lg-8">
+        <div class="title text-center">
+          <h2 class="mb-5">{{ .Title | markdownify }}</h2>
+        </div>
+
+        <div class="content">
+          {{ if .Data.Terms }}
+          <!-- This is a taxonomy terms page like /categories, /tags -->
+          <ul class="list-group list-group-flush">
+            {{ range .Data.Terms.ByCount }}
+            <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent">
+              <a href="{{ .Page.Permalink }}" class="h5 text-dark">{{ .Page.Title }}</a>
+              <span class="badge badge-primary badge-pill">{{ .Count }}</span>
+            </li>
+            {{ end }}
+          </ul>
+          {{ else }}
+          <!-- This is a regular list page -->
+          <div class="row">
+            {{ $paginator := .Paginate .Pages 8 }}
+            {{ range $paginator.Pages }}
+            <div class="col-md-6 mb-4">
+              <article class="card h-100 search-result-card">
+                {{ if .Params.Image }}
+                <div class="card-img-wrapper">
+                  {{ $image := .Resources.GetMatch .Params.Image }}
+                  {{ if $image }}
+                  <img src="{{ $image.RelPermalink }}" class="card-img-top" alt="{{ .Title }}">
+                  {{ else }}
+                  <img src="{{ .Params.Image | absURL }}" class="card-img-top" alt="{{ .Title }}">
+                  {{ end }}
+                </div>
+                {{ end }}
+                <div class="card-body d-flex flex-column">
+                  <div class="post-meta mb-2">
+                    <span class="text-muted small">
+                      <i class="fas fa-calendar-alt mr-1"></i>
+                      {{ .Date.Format "2006-01-02" }}
+                    </span>
+                    <span class="mx-2 text-muted">|</span>
+                    <span class="text-muted small"><i class="fas fa-clock mr-1"></i>{{ .ReadingTime }} min</span>
+                  </div>
+                  <h4 class="card-title h5 mb-3">
+                    <a href="{{ .Permalink }}" class="text-dark hover-blue"
+                      style="font-family: 'Noto Serif TC', 'Microsoft JhengHei', serif; font-weight: 700;">{{ .Title }}</a>
+                  </h4>
+                  <p class="card-text text-muted small" style="line-height: 1.6;">
+                    {{ with .Description }}
+                    {{ . }}
+                    {{ else }}
+                    {{ .Summary | plainify | truncate 100 }}
+                    {{ end }}
+                  </p>
+                  <div class="mt-auto pt-3">
+                    {{ range .Params.Categories }}
+                    <span class="badge badge-primary mr-1">{{ . }}</span>
+                    {{ end }}
+                    <a href="{{ .Permalink }}" class="btn btn-link p-0 float-right text-primary font-weight-bold"
+                      style="font-size: 0.85rem;">READ MORE</a>
+                  </div>
+                </div>
+              </article>
+            </div>
+            {{ end }}
+          </div>
+
+          <!-- Pagination -->
+          <div class="col-12 mt-5">
+            <nav aria-label="Page navigation">
+              {{ template "_internal/pagination.html" . }}
+            </nav>
+          </div>
+          {{ end }}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{{ end }}

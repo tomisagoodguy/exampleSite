@@ -5,8 +5,8 @@ description: "法式經典白醬燴雞，以牛肝菌的深邃香氣融合鮮奶
 type: "lifestyle"
 image: "成品.jpg"
 categories:
+  - "食譜筆記"
   - "法式料理"
-  - "【食譜筆記】"
 tags:
   - "燴雞"
   - "牛肝菌"

@@ -5,8 +5,8 @@ description: "法式古典主菜：櫻桃鴨胸以冷鍋逼油慢煎至玫瑰粉
 type: "lifestyle"
 image: "成品.jpg"
 categories:
-  - "法式料理"
   - "食譜筆記"
+  - "法式料理"
 tags:
   - "鴨胸"
   - "紅酒醬"

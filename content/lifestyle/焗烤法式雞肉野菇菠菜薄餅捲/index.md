@@ -1,13 +1,13 @@
-﻿---
+---
 title: "焗烤法式雞肉野菇菠菜薄餅捲 (French Crepes with Chicken, Mushroom and Spinach)"
 date: 2025-10-10T22:01:14+08:00
 description: "French crepes with chicken, mushroom and spinach"
 type: "lifestyle"
 image: "成品demo.jpg"
 categories:
+  - "食譜筆記"
   - "歐式料理"
   - "法式料理"
-  - "【食譜筆記】"
 tags:
   - "主菜"
   - "雞肉"

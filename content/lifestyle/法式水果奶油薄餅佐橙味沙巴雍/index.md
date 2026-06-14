@@ -5,9 +5,8 @@ description: "經典法式甜點食譜：細緻薄餅搭配濃郁卡士達醬與
 type: "lifestyle"
 image: "成品.jpg"
 categories:
-  - ""
+  - "食譜筆記"
   - "法式料理"
-  - "【食譜筆記】"
 tags:
   - "甜點"
   - "法式"

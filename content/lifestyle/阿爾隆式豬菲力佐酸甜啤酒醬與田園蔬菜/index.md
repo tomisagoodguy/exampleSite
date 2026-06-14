@@ -1,12 +1,12 @@
-﻿---
+---
 title: "阿爾隆式豬菲力佐酸甜啤酒醬與田園蔬菜 (Pork Tenderloin à l'Arlonaise with Vegetables)"
 date: 2025-09-18T00:00:00+08:00
 description: "Pork tenderloin with beer sauce arlonaise style and garden vegetables"
 type: "lifestyle"
 image: "成品1.jpg"
 categories:
+  - "食譜筆記"
   - "歐式料理"
-  - "【食譜筆記】"
 tags:
   - "比利時"
   - "豬肉"

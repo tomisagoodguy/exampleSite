@@ -5,8 +5,8 @@ description: "傳承超過 500 年的法式經典甜點「里昂式油炸點心 
 type: "lifestyle"
 image: "成品.jpg"
 categories:
-  - "法式料理"
   - "食譜筆記"
+  - "法式料理"
 tags:
   - "甜點"
   - "油炸"
