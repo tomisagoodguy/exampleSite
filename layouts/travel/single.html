@@ -1,0 +1,426 @@
+{{ define "main" }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+<article class="tv">
+
+  <!-- ===== Hero ===== -->
+  <header class="tv-hero">
+    <div class="tv-hero__inner">
+      <div class="tv-hero__kicker">
+        {{ range .Params.categories }}<span>{{ . }}</span>{{ end }}
+      </div>
+      <h1 class="tv-hero__title">{{ .Title }}</h1>
+      {{ with .Params.description }}<p class="tv-hero__desc">{{ . }}</p>{{ end }}
+      <div class="tv-hero__rule"></div>
+      <div class="tv-hero__meta">
+        <span>{{ if .Params.Author }}{{ .Params.Author }}{{ else }}{{ .Site.Params.Author }}{{ end }}</span>
+        <i></i><span>{{ .Date.Format "2006年01月02日" }}</span>
+        <i></i><span>閱讀 {{ .ReadingTime }} 分鐘</span>
+      </div>
+      {{ with .Params.trip }}
+      <div class="tv-hero__pills">
+        {{ with .days }}<span class="tv-pill">{{ . }} 天</span>{{ end }}
+        {{ with .area }}<span class="tv-pill">{{ . }}</span>{{ end }}
+        {{ with .distance }}<span class="tv-pill">{{ . }}</span>{{ end }}
+      </div>
+      {{ end }}
+    </div>
+  </header>
+
+  <div class="tv-wrap">
+
+    <!-- ===== 時間軸內文 ===== -->
+    <div class="tv-prose">
+      {{ .Content }}
+    </div>
+
+    <!-- ===== 陳定康花費儀表板 ===== -->
+    {{ if .Params.spend_total_yen }}
+    <section class="dash" aria-label="陳定康花費統計">
+      <header class="dash__head">
+        <h2>花費總覽<small>陳定康 · ¥1≈NT$0.2</small></h2>
+      </header>
+
+      <!-- KPI -->
+      <div class="kpi">
+        <div class="kpi__item">
+          <span class="kpi__num">¥{{ lang.FormatNumberCustom 0 .Params.spend_total_yen }}</span>
+          <span class="kpi__lbl">行程日圓花費{{ with .Params.spend_yen_nt }}<i>≈NT${{ lang.FormatNumberCustom 0 . }}</i>{{ end }}</span>
+        </div>
+        <div class="kpi__item">
+          <span class="kpi__num">NT${{ lang.FormatNumberCustom 0 .Params.spend_twd_extra }}</span>
+          <span class="kpi__lbl">台幣自付{{ with .Params.spend_extra_note }}<i>{{ . }}</i>{{ end }}</span>
+        </div>
+        <div class="kpi__item kpi__item--hl">
+          <span class="kpi__num">NT${{ lang.FormatNumberCustom 0 .Params.spend_total_nt }}</span>
+          <span class="kpi__lbl">總負擔</span>
+        </div>
+      </div>
+
+      <!-- 總負擔組成 -->
+      {{ if .Params.spend_compose_yen }}
+      <div class="compose">
+        <h3 class="compose__title">NT${{ lang.FormatNumberCustom 0 .Params.spend_total_nt }} 是怎麼來的？</h3>
+        <div class="compose__cols">
+          <div class="compose__col">
+            <div class="compose__h">行程日圓 ¥{{ lang.FormatNumberCustom 0 .Params.spend_total_yen }}<i>≈NT${{ lang.FormatNumberCustom 0 .Params.spend_yen_nt }}</i></div>
+            {{ range .Params.spend_compose_yen }}
+            <div class="compose__row"><span>{{ .item }}</span><b>¥{{ lang.FormatNumberCustom 0 .yen }}</b></div>
+            {{ end }}
+          </div>
+          <div class="compose__col">
+            <div class="compose__h">台幣自付 NT${{ lang.FormatNumberCustom 0 .Params.spend_twd_extra }}</div>
+            {{ range .Params.spend_compose_twd }}
+            <div class="compose__row"><span>{{ .item }}</span><b>NT${{ lang.FormatNumberCustom 0 .nt }}</b></div>
+            {{ end }}
+          </div>
+        </div>
+        <div class="compose__sum"><span>合計總負擔（日圓換算 ＋ 台幣自付）</span><b>NT${{ lang.FormatNumberCustom 0 .Params.spend_total_nt }}</b></div>
+      </div>
+      {{ end }}
+
+      <!-- 圖表雙欄 -->
+      <div class="charts">
+        <figure class="chart-box">
+          <figcaption>消費分類占比</figcaption>
+          <div class="chart-canvas"><canvas id="catChart" aria-label="消費分類甜甜圈圖" role="img"></canvas></div>
+        </figure>
+        <figure class="chart-box">
+          <figcaption>每日花費（日圓）</figcaption>
+          <div class="chart-canvas"><canvas id="dayChart" aria-label="每日花費長條圖" role="img"></canvas></div>
+        </figure>
+      </div>
+
+      <!-- 逐日細表 -->
+      {{ with .Params.spend_daily }}
+      <div class="dtable-wrap">
+        <table class="dtable">
+          <caption>逐日花費明細</caption>
+          <thead><tr><th>日期</th><th>地點</th><th class="num">日圓 ¥</th><th class="num">≈ NT$</th></tr></thead>
+          <tbody>
+            {{ range . }}
+            <tr><td>{{ .date }}</td><td>{{ .place }}</td>
+              <td class="num">{{ lang.FormatNumberCustom 0 .yen }}</td>
+              <td class="num">{{ lang.FormatNumberCustom 0 (math.Round (mul .yen 0.2)) }}</td></tr>
+            {{ end }}
+          </tbody>
+          <tfoot><tr><td colspan="2">合計</td>
+            <td class="num">{{ lang.FormatNumberCustom 0 $.Params.spend_total_yen }}</td>
+            <td class="num">{{ lang.FormatNumberCustom 0 $.Params.spend_yen_nt }}</td></tr></tfoot>
+        </table>
+      </div>
+      {{ end }}
+
+      <!-- 分類細表 -->
+      <div class="dtable-wrap">
+        <table class="dtable">
+          <caption>消費分類明細</caption>
+          <thead><tr><th>分類</th><th class="num">日圓 ¥</th><th class="num">≈ NT$</th><th class="num">占比</th></tr></thead>
+          <tbody>
+            {{ range .Params.spend_breakdown }}
+            <tr><td>{{ .cat }}</td>
+              <td class="num">{{ lang.FormatNumberCustom 0 .yen }}</td>
+              <td class="num">{{ lang.FormatNumberCustom 0 .nt }}</td>
+              <td class="num">{{ .pct }}%</td></tr>
+            {{ end }}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 完整逐筆明細（可折疊） -->
+      {{ if .Params.spend_items_stay }}
+      <details class="detail">
+        <summary>📋 點此展開完整逐筆明細（每一筆都能對帳）</summary>
+
+        <div class="dtable-wrap">
+          <table class="dtable">
+            <caption>🏨 住宿 5 晚（個人半額）</caption>
+            <thead><tr><th>日期</th><th>項目</th><th class="num">¥</th><th class="num">≈NT$</th></tr></thead>
+            <tbody>{{ range .Params.spend_items_stay }}<tr><td>{{ .date }}</td><td>{{ .name }}</td><td class="num">{{ lang.FormatNumberCustom 0 .yen }}</td><td class="num">{{ lang.FormatNumberCustom 0 (math.Round (mul .yen 0.2)) }}</td></tr>{{ end }}</tbody>
+            <tfoot><tr><td colspan="2">小計</td><td class="num">57,005</td><td class="num">11,401</td></tr></tfoot>
+          </table>
+        </div>
+
+        <div class="dtable-wrap">
+          <table class="dtable">
+            <caption>🧾 個人單獨消費（全額自己付）</caption>
+            <thead><tr><th>日期</th><th>項目</th><th class="num">¥</th><th class="num">≈NT$</th></tr></thead>
+            <tbody>{{ range .Params.spend_items_solo }}<tr><td>{{ .date }}</td><td>{{ .name }}</td><td class="num">{{ lang.FormatNumberCustom 0 .yen }}</td><td class="num">{{ lang.FormatNumberCustom 0 (math.Round (mul .yen 0.2)) }}</td></tr>{{ end }}</tbody>
+            <tfoot><tr><td colspan="2">小計</td><td class="num">22,359</td><td class="num">4,472</td></tr></tfoot>
+          </table>
+        </div>
+
+        <div class="dtable-wrap">
+          <table class="dtable">
+            <caption>🤝 共同分攤（與同行均分，已取我的半額）</caption>
+            <thead><tr><th>日期</th><th>項目</th><th class="num">¥</th><th class="num">≈NT$</th></tr></thead>
+            <tbody>{{ range .Params.spend_items_shared }}<tr><td>{{ .date }}</td><td>{{ .name }}</td><td class="num">{{ lang.FormatNumberCustom 0 .yen }}</td><td class="num">{{ lang.FormatNumberCustom 0 (math.Round (mul .yen 0.2)) }}</td></tr>{{ end }}</tbody>
+            <tfoot><tr><td colspan="2">小計</td><td class="num">50,720</td><td class="num">10,144</td></tr></tfoot>
+          </table>
+        </div>
+
+        <div class="dtable-wrap">
+          <table class="dtable">
+            <caption>🇹🇼 台幣項目（自付）</caption>
+            <thead><tr><th>項目</th><th class="num">NT$</th></tr></thead>
+            <tbody>{{ range .Params.spend_items_twd }}<tr><td>{{ .name }}</td><td class="num">{{ lang.FormatNumberCustom 0 .nt }}</td></tr>{{ end }}</tbody>
+            <tfoot><tr><td>小計</td><td class="num">33,151</td></tr></tfoot>
+          </table>
+        </div>
+      </details>
+      {{ end }}
+
+      <p class="dash__note">註：住宿、租車、加油等共同支出已計入個人 50% 分攤；台幣項目（機票、eSIM、OMO7）另計於上方「台幣自付」。¥ 旁 ≈NT$ 以 ¥1≈NT$0.2 換算，半額四捨五入。</p>
+    </section>
+    {{ end }}
+
+    <!-- ===== 前後篇 ===== -->
+    <nav class="tv-nav">
+      <div>{{ with .PrevInSection }}<a href="{{ .RelPermalink }}"><small>← 上一篇</small><strong>{{ .Title }}</strong></a>{{ end }}</div>
+      <div class="tv-nav--next">{{ with .NextInSection }}<a href="{{ .RelPermalink }}"><small>下一篇 →</small><strong>{{ .Title }}</strong></a>{{ end }}</div>
+    </nav>
+
+    {{ template "_internal/disqus.html" . }}
+  </div>
+</article>
+
+<style>
+.tv{--ink:#23222b;--ink-soft:#55545f;--muted:#8d8c98;--lav:#6d5cae;--lav-d:#574795;--teal:#2a9d8f;--gold:#e0a13a;--line:#e9e6f0;--bg:#faf8f5;--card:#fff;
+  color:var(--ink);background:var(--bg);font-family:"Noto Sans TC",-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;font-variant-numeric:tabular-nums}
+.tv *{box-sizing:border-box}
+.tv h1,.tv h2,.tv h3,.tv .serif{font-family:"Noto Serif TC","Source Han Serif TC",serif}
+
+/* ===== Hero ===== */
+.tv-hero{background:linear-gradient(160deg,#2b2640 0%,#3d2f63 45%,#574795 100%);color:#fff;padding:84px 22px 76px;text-align:center;position:relative;overflow:hidden}
+.tv-hero::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 15%,rgba(255,255,255,.10),transparent 45%);pointer-events:none}
+.tv-hero__inner{max-width:760px;margin:0 auto;position:relative}
+.tv-hero__kicker{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:24px}
+.tv-hero__kicker span{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:#d8cdf5;border:1px solid rgba(255,255,255,.32);padding:5px 14px;border-radius:2px;font-weight:500}
+.tv-hero h1.tv-hero__title{color:#fff;font-size:clamp(1.9rem,4.6vw,3.05rem);font-weight:900;line-height:1.6;letter-spacing:.01em;margin:0 0 .55em;padding:.08em .02em;text-wrap:balance}
+.tv-hero__desc{font-size:1.02rem;line-height:2;color:#e7e1f5;max-width:600px;margin:0 auto 1.6em}
+.tv-hero__rule{width:54px;height:3px;background:linear-gradient(90deg,var(--gold),#f0c97a);margin:0 auto 22px;border-radius:2px}
+.tv-hero__meta{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:.84rem;color:#cfc6e8;margin-bottom:24px}
+.tv-hero__meta i{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.4)}
+.tv-hero__pills{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.tv-pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);padding:7px 17px;border-radius:999px;font-size:.88rem;font-weight:500;backdrop-filter:blur(6px)}
+
+/* ===== Wrap ===== */
+.tv-wrap{max-width:840px;margin:0 auto;padding:0 22px 90px}
+.tv-prose{margin-top:46px}
+.tv-prose>p{font-size:1.05rem;line-height:2.05;color:var(--ink-soft)}
+.tv-prose blockquote{border-left:4px solid var(--lav);background:#f3effb;margin:26px 0;padding:16px 22px;border-radius:0 10px 10px 0;color:var(--ink-soft);font-size:.96rem;line-height:1.9}
+.tv-prose blockquote p{margin:.3em 0}
+.tv-prose hr{border:0;border-top:1px solid var(--line);margin:38px 0}
+
+/* ===== 時間軸 ===== */
+.travel-day{position:relative;background:var(--card);border-radius:16px;padding:28px 28px 24px;margin:30px 0;box-shadow:0 8px 30px rgba(60,40,120,.07);border:1px solid var(--line)}
+.travel-day::before{content:"";position:absolute;left:-22px;top:38px;bottom:-30px;width:2px;background:linear-gradient(var(--lav),rgba(109,92,174,.15));display:none}
+@media(min-width:920px){.tv-prose{padding-left:34px}.travel-day::before{display:block}
+  .travel-day::after{content:"";position:absolute;left:-30px;top:34px;width:16px;height:16px;border-radius:50%;background:var(--lav);border:3px solid var(--bg);box-shadow:0 0 0 2px var(--lav)}}
+.travel-day:last-child::before{display:none}
+.travel-day__head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.travel-day__date{background:var(--lav);color:#fff;font-weight:700;border-radius:10px;padding:9px 14px;font-size:1.02rem;white-space:nowrap;text-align:center;line-height:1.2}
+.travel-day__date small{display:block;font-size:.62rem;font-weight:400;opacity:.85;margin-top:1px}
+.tv .travel-day__place{color:var(--ink);font-family:"Noto Serif TC",serif;font-size:1.4rem;font-weight:700;margin:0;line-height:1.5}
+.travel-day__spend{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.travel-chip{font-size:.76rem;font-weight:500;padding:6px 12px;border-radius:999px;white-space:nowrap}
+.travel-chip--yen{background:#efeafc;color:var(--lav-d)}
+.travel-chip--me{background:#e1f4f1;color:#1f7a6e}
+.travel-day__body{margin-top:14px}
+.travel-day__body p{line-height:1.95;color:var(--ink-soft);margin:.55em 0;font-size:1rem}
+
+/* 照片網格 */
+.travel-day__gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:18px 0 4px}
+.travel-day__gallery figure{margin:0;border-radius:12px;overflow:hidden;position:relative;background:#eee;box-shadow:0 3px 12px rgba(0,0,0,.07)}
+.travel-day__gallery img{width:100%;height:178px;object-fit:cover;display:block;transition:transform .5s ease}
+.travel-day__gallery figure:hover img{transform:scale(1.06)}
+.travel-day__gallery figcaption{position:absolute;left:0;right:0;bottom:0;padding:20px 11px 8px;font-size:.78rem;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.72));font-weight:500;letter-spacing:.02em}
+
+/* ===== 花費儀表板 ===== */
+.dash{background:var(--card);border-radius:20px;padding:34px 30px;margin:54px 0;border:1px solid var(--line);box-shadow:0 10px 40px rgba(60,40,120,.08)}
+.tv .dash__head h2{color:var(--ink);font-size:1.6rem;font-weight:700;margin:0 0 4px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.dash__head small{font-family:"Noto Sans TC",sans-serif;font-size:.78rem;font-weight:400;color:var(--muted);letter-spacing:.04em}
+.dash__head{padding-bottom:20px;border-bottom:2px solid var(--line);margin-bottom:26px}
+
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:30px}
+.kpi__item{background:#f5f2fc;border-radius:14px;padding:20px 18px;text-align:center}
+.kpi__item--hl{background:linear-gradient(135deg,var(--lav),var(--lav-d));color:#fff}
+.kpi__num{display:block;font-family:"Noto Serif TC",serif;font-size:1.6rem;font-weight:700;color:var(--lav-d);line-height:1.3}
+.kpi__item--hl .kpi__num{color:#fff}
+.kpi__lbl{display:block;font-size:.82rem;color:var(--ink-soft);margin-top:6px;font-weight:500}
+.kpi__item--hl .kpi__lbl{color:#e7defb}
+.kpi__lbl i{display:block;font-style:normal;font-size:.7rem;color:var(--muted);font-weight:400;margin-top:3px;line-height:1.5}
+.kpi__item--hl .kpi__lbl i{color:#d6c9f5}
+
+.charts{display:grid;grid-template-columns:1fr 1.25fr;gap:22px;margin-bottom:8px}
+.chart-box{margin:0;background:#fbfaff;border:1px solid var(--line);border-radius:14px;padding:18px}
+.chart-box figcaption{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:14px;text-align:center}
+.chart-canvas{position:relative;height:260px}
+
+.dtable-wrap{margin-top:24px;overflow-x:auto}
+.dtable{width:100%;border-collapse:collapse;font-size:.9rem}
+.dtable caption{caption-side:top;text-align:left;font-weight:700;color:var(--ink);margin-bottom:10px;font-size:.98rem}
+.dtable th,.dtable td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line)}
+.dtable thead th{background:#f3effb;color:var(--lav-d);font-weight:700;font-size:.82rem;letter-spacing:.03em}
+.dtable .num{text-align:right;font-variant-numeric:tabular-nums}
+.dtable tbody tr:hover{background:#faf8ff}
+.dtable tfoot td{font-weight:700;background:#f7f5fc;color:var(--ink);border-top:2px solid var(--lav)}
+.dash__note{font-size:.8rem;color:var(--muted);margin-top:22px;line-height:1.8}
+
+/* 總負擔組成 */
+.compose{background:#f7f5fc;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:30px}
+.compose__title{font-family:"Noto Serif TC",serif;font-size:1.15rem;font-weight:700;margin:0 0 16px;color:var(--ink)}
+.compose__cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.compose__col{background:#fff;border-radius:10px;padding:14px 16px}
+.compose__h{font-weight:700;font-size:.9rem;color:var(--lav-d);padding-bottom:8px;margin-bottom:6px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px}
+.compose__h i{font-style:normal;font-size:.75rem;color:var(--muted);font-weight:400}
+.compose__row{display:flex;justify-content:space-between;gap:10px;font-size:.86rem;padding:5px 0;color:var(--ink-soft)}
+.compose__row b{color:var(--ink);font-weight:600;white-space:nowrap}
+.compose__sum{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px;padding-top:14px;border-top:2px solid var(--lav);font-weight:700;color:var(--ink)}
+.compose__sum b{font-family:"Noto Serif TC",serif;font-size:1.4rem;color:var(--lav-d)}
+
+/* 完整逐筆明細折疊 */
+.detail{margin-top:26px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.detail summary{cursor:pointer;padding:16px 20px;font-weight:700;color:var(--lav-d);background:#f7f5fc;user-select:none;list-style:none}
+.detail summary::-webkit-details-marker{display:none}
+.detail summary::before{content:"▸ ";color:var(--lav)}
+.detail[open] summary::before{content:"▾ "}
+.detail summary:hover{background:#f1ecfa}
+.detail>.dtable-wrap{padding:0 20px;margin-top:18px}
+.detail>.dtable-wrap:last-of-type{padding-bottom:20px}
+
+/* ===== 前後篇 ===== */
+.tv-nav{display:flex;justify-content:space-between;gap:16px;margin:46px 0 10px}
+.tv-nav a{display:block;text-decoration:none;color:var(--ink)}
+.tv-nav small{color:var(--muted);font-size:.78rem}
+.tv-nav strong{display:block;color:var(--lav-d);font-weight:700;margin-top:3px}
+.tv-nav--next{text-align:right}
+
+@media(max-width:680px){
+  .tv-hero{padding:60px 18px 54px}
+  .kpi{grid-template-columns:1fr;gap:10px}
+  .charts{grid-template-columns:1fr}
+  .compose__cols{grid-template-columns:1fr}
+  .dash{padding:24px 16px}
+  .travel-day{padding:22px 16px}
+  .travel-day__spend{margin-left:0;width:100%}
+  .travel-day__gallery{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+  .travel-day__gallery img{height:130px}
+}
+
+/* ===== 暗色模式 ===== */
+body.dark-mode .tv{--ink:#ece9f5;--ink-soft:#c4c1d4;--muted:#9794a8;--lav:#9b8bd6;--lav-d:#b6a8ec;--line:#393450;--bg:#15141d;--card:#201e2b;background:#15141d;color:#ece9f5}
+body.dark-mode .tv-prose>p{color:var(--ink-soft)}
+body.dark-mode .tv-prose blockquote{background:#272238;border-left-color:#9b8bd6;color:#dcd9ea}
+body.dark-mode .tv-prose hr{border-top-color:var(--line)}
+body.dark-mode .tv .travel-day{background:var(--card);border-color:var(--line);box-shadow:0 8px 30px rgba(0,0,0,.35)}
+body.dark-mode .tv .travel-day__head{border-bottom-color:var(--line)}
+body.dark-mode .tv .travel-day__place{color:var(--ink)}
+body.dark-mode .tv .travel-day__body p{color:var(--ink-soft)}
+body.dark-mode .tv .travel-day__date{background:#5a4a9a}
+body.dark-mode .tv .travel-chip--yen{background:#332b52;color:#d3c4f7}
+body.dark-mode .tv .travel-chip--me{background:#1d3d38;color:#79e0d1}
+body.dark-mode .tv .dash{background:var(--card);border-color:var(--line);box-shadow:0 10px 40px rgba(0,0,0,.4)}
+body.dark-mode .tv .dash__head{border-bottom-color:var(--line)}
+body.dark-mode .tv .dash__head h2{color:var(--ink)}
+body.dark-mode .tv .kpi__item{background:#2a2740}
+body.dark-mode .tv .kpi__num{color:#c9bbf5}
+body.dark-mode .tv .kpi__lbl{color:var(--ink-soft)}
+body.dark-mode .tv .kpi__item--hl{background:linear-gradient(135deg,#6a5ab0,#4a3b86)}
+body.dark-mode .tv .kpi__item--hl .kpi__num,body.dark-mode .tv .kpi__item--hl .kpi__lbl{color:#fff}
+body.dark-mode .tv .chart-box{background:#1b1926;border-color:var(--line)}
+body.dark-mode .tv .chart-box figcaption{color:var(--ink)}
+body.dark-mode .tv .dtable thead th{background:#2a2740;color:#d3c4f7}
+body.dark-mode .tv .dtable th,body.dark-mode .tv .dtable td{border-bottom-color:var(--line)}
+body.dark-mode .tv .dtable td{color:var(--ink-soft)}
+body.dark-mode .tv .dtable caption{color:var(--ink)}
+body.dark-mode .tv .dtable tbody tr:hover{background:#241f33}
+body.dark-mode .tv .dtable tfoot td{background:#241f33;color:var(--ink);border-top-color:var(--lav)}
+body.dark-mode .tv-nav a{color:var(--ink-soft)}
+body.dark-mode .tv-nav strong{color:#c9bbf5}
+body.dark-mode .tv .compose{background:#211f2d;border-color:var(--line)}
+body.dark-mode .tv .compose__title{color:var(--ink)}
+body.dark-mode .tv .compose__col{background:#191722}
+body.dark-mode .tv .compose__h{color:#c9bbf5;border-bottom-color:var(--line)}
+body.dark-mode .tv .compose__row{color:var(--ink-soft)}
+body.dark-mode .tv .compose__row b{color:var(--ink)}
+body.dark-mode .tv .compose__sum{color:var(--ink)}
+body.dark-mode .tv .compose__sum b{color:#c9bbf5}
+body.dark-mode .tv .detail{border-color:var(--line)}
+body.dark-mode .tv .detail summary{background:#211f2d;color:#c9bbf5}
+body.dark-mode .tv .detail summary:hover{background:#2a2740}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+<script defer>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof Chart === 'undefined') return;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var anim = reduce ? false : { duration: 700, easing: 'easeOutQuart' };
+  Chart.defaults.font.family = "'Noto Sans TC', sans-serif";
+
+  function isDark(){ return document.body.classList.contains('dark-mode'); }
+  function txt(){ return isDark() ? '#c4c1d4' : '#55545f'; }
+  function grid(){ return isDark() ? 'rgba(255,255,255,.08)' : '#eee'; }
+
+  var breakdown = {{ .Params.spend_breakdown | jsonify | safeJS }};
+  var daily = {{ .Params.spend_daily | jsonify | safeJS }};
+  var palette = ['#6d5cae','#2a9d8f','#e0a13a','#d9776a','#8aa1c9'];
+  var charts = [];
+
+  var cat = document.getElementById('catChart');
+  if (cat && breakdown) {
+    charts.push(new Chart(cat, {
+      type: 'doughnut',
+      data: {
+        labels: breakdown.map(function(d){return d.cat;}),
+        datasets: [{ data: breakdown.map(function(d){return d.yen;}),
+          backgroundColor: palette, borderColor: isDark() ? '#201e2b' : '#fff', borderWidth: 2 }]
+      },
+      options: { animation: anim, cutout: '60%', responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { color: txt(), padding: 14, usePointStyle: true, font:{size:12} } },
+          tooltip: { callbacks: { label: function(c){
+            var t = c.dataset.data.reduce(function(a,b){return a+b;},0);
+            return ' ' + c.label + '：¥' + c.parsed.toLocaleString() + '（' + (c.parsed/t*100).toFixed(1) + '%）'; } } } } }
+    }));
+  }
+
+  var day = document.getElementById('dayChart');
+  if (day && daily) {
+    charts.push(new Chart(day, {
+      type: 'bar',
+      data: {
+        labels: daily.map(function(d){return d.date + ' ' + d.place;}),
+        datasets: [{ data: daily.map(function(d){return d.yen;}),
+          backgroundColor: '#7c6bb5', hoverBackgroundColor: '#574795', borderRadius: 6, maxBarThickness: 38 }]
+      },
+      options: { animation: anim, responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false },
+          tooltip: { callbacks: { label: function(c){
+            return ' ¥' + c.parsed.y.toLocaleString() + '（≈NT$' + Math.round(c.parsed.y*0.2).toLocaleString() + '）'; } } } },
+        scales: { x: { grid: { display: false }, ticks: { color: txt(), font:{size:11}, maxRotation: 45, minRotation: 0 } },
+          y: { grid: { color: grid() }, ticks: { color: txt(), callback: function(v){return '¥'+(v/1000)+'k';} } } } }
+    }));
+  }
+
+  // 主題切換時即時更新圖表配色
+  function refresh(){
+    charts.forEach(function(ch){
+      if (ch.config.type === 'doughnut'){
+        ch.options.plugins.legend.labels.color = txt();
+        ch.data.datasets[0].borderColor = isDark() ? '#201e2b' : '#fff';
+      } else {
+        ch.options.scales.x.ticks.color = txt();
+        ch.options.scales.y.ticks.color = txt();
+        ch.options.scales.y.grid.color = grid();
+      }
+      ch.update('none');
+    });
+  }
+  var cb = document.getElementById('checkbox');
+  if (cb) cb.addEventListener('change', function(){ setTimeout(refresh, 30); });
+});
+</script>
+{{ end }}

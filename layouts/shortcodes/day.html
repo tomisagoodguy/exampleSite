@@ -1,0 +1,35 @@
+{{- /* 用法：
+{{< day date="6/21" weekday="日" place="小樽" yen="50,465" me="NT$7,245"
+       imgs="新千歲機場.jpg|抵達新千歲機場;本次的租車.jpg|這趟的愛車" >}}
+敘述文字（markdown）...
+{{< /day >}}
+*/ -}}
+<section class="travel-day">
+  <div class="travel-day__head">
+    <span class="travel-day__date">{{ .Get "date" }}{{ with .Get "weekday" }}<small>星期{{ . }}</small>{{ end }}</span>
+    <h2 class="travel-day__place">{{ .Get "place" }}</h2>
+    <span class="travel-day__spend">
+      {{ with .Get "yen" }}<span class="travel-chip travel-chip--yen">當日共 ¥{{ . }}</span>{{ end }}
+      {{ with .Get "me" }}<span class="travel-chip travel-chip--me">我付 {{ . }}</span>{{ end }}
+    </span>
+  </div>
+  <div class="travel-day__body">
+    {{ .Page.RenderString (dict "display" "block") .Inner }}
+    {{ with .Get "imgs" }}
+    <div class="travel-day__gallery">
+      {{ range split . ";" }}
+      {{ $parts := split (trim . " ") "|" }}
+      {{ $name := trim (index $parts 0) " " }}
+      {{ $cap := "" }}{{ if gt (len $parts) 1 }}{{ $cap = trim (index $parts 1) " " }}{{ end }}
+      {{ $img := $.Page.Resources.GetMatch $name }}
+      {{ if $img }}
+      <figure>
+        <img loading="lazy" src="{{ $img.RelPermalink }}" alt="{{ $cap | default $name }}">
+        {{ with $cap }}<figcaption>{{ . }}</figcaption>{{ end }}
+      </figure>
+      {{ else }}<!-- 找不到圖片：{{ $name }} -->{{ end }}
+      {{ end }}
+    </div>
+    {{ end }}
+  </div>
+</section>
