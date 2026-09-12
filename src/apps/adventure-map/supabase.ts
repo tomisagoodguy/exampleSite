@@ -6,7 +6,28 @@ const key = (window as any).DATING_MAP_SUPABASE_KEY as string;
 
 export const supabase = createClient(url, key);
 
+export const IDENTITIES = ['小黃', '阿康'] as const;
+export type Identity = (typeof IDENTITIES)[number];
+
 const PASSPHRASE_KEY = 'dating_map_passphrase';
+const IDENTITY_KEY = 'dating_map_identity';
+
+export function getStoredIdentity(): Identity | null {
+  try {
+    const v = localStorage.getItem(IDENTITY_KEY);
+    return (IDENTITIES as readonly string[]).includes(v || '') ? (v as Identity) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function storeIdentity(value: Identity) {
+  try {
+    localStorage.setItem(IDENTITY_KEY, value);
+  } catch {
+    // ignore
+  }
+}
 
 export function getStoredPassphrase(): string | null {
   try {
@@ -67,6 +88,17 @@ export async function proposePlace(payload: ProposePayload): Promise<PlaceEntry>
     p_address: payload.address ?? null,
     p_mrt_station: payload.mrt_station ?? null,
     p_status: payload.status ?? 'proposed',
+  });
+
+  if (error) throw error;
+  return data as PlaceEntry;
+}
+
+export async function toggleLike(passphrase: string, id: number, identity: Identity): Promise<PlaceEntry> {
+  const { data, error } = await supabase.rpc('dating_map_toggle_like', {
+    p_passphrase: passphrase,
+    p_id: id,
+    p_identity: identity,
   });
 
   if (error) throw error;

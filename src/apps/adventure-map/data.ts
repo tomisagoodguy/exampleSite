@@ -48,14 +48,6 @@ export function filterPlaces(
   });
 }
 
-export function locatedPlaces(places: PlaceEntry[]): PlaceEntry[] {
-  return places.filter(p => p.lat != null && p.lng != null);
-}
-
-export function ideaPlaces(places: PlaceEntry[]): PlaceEntry[] {
-  return places.filter(p => p.status === 'idea');
-}
-
 export function calculateStats(places: PlaceEntry[]) {
   const committed = places.filter(p => p.status !== 'idea');
   const total = committed.length;

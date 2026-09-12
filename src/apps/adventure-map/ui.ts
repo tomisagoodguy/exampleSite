@@ -1,12 +1,8 @@
 import { PlaceEntry } from '../../shared/types';
-import { CATEGORY_CONFIG, STATUS_LABEL, calculateStats, ideaPlaces } from './data';
+import { CATEGORY_CONFIG, calculateStats } from './data';
+import { IDENTITIES, Identity } from './supabase';
 
-export function getStars(rating: number = 0): string {
-  const full = Math.floor(rating);
-  return '★'.repeat(full) + '☆'.repeat(5 - full);
-}
-
-export function updateStatsUI(places: PlaceEntry[], allPlaces: PlaceEntry[]) {
+export function updateStatsUI(allPlaces: PlaceEntry[]) {
   const { total, done, percent } = calculateStats(allPlaces);
 
   const elTotal = document.getElementById('total-count');
@@ -20,7 +16,7 @@ export function updateStatsUI(places: PlaceEntry[], allPlaces: PlaceEntry[]) {
   if (elLabel) elLabel.textContent = `${percent}% 解鎖`;
 }
 
-/** 依實際出現在資料中的分類，動態產生篩選按鈕 */
+/** 依實際出現在資料中的分類，動態產生篩選 chips */
 export function renderFilterBar(
   places: PlaceEntry[],
   currentCat: string,
@@ -31,8 +27,8 @@ export function renderFilterBar(
 
   const usedCats = Array.from(new Set(places.map(p => p.category)));
 
-  const btnHTML = (cat: string, label: string, color?: string) => `
-    <button class="adv-filter-btn ${cat === currentCat ? 'adv-filter-btn--active' : ''}"
+  const chipHTML = (cat: string, label: string, color?: string) => `
+    <button class="adv-chip ${cat === currentCat ? 'adv-chip--active' : ''}"
             data-cat="${cat}"
             style="${color && cat === currentCat ? `background:${color};border-color:${color};` : ''}">
       ${label}
@@ -40,209 +36,159 @@ export function renderFilterBar(
   `;
 
   mount.innerHTML = [
-    btnHTML('all', '全部'),
+    chipHTML('all', '全部'),
     ...usedCats.map(cat => {
       const config = CATEGORY_CONFIG[cat];
-      return btnHTML(cat, config ? config.label : cat, config?.color);
+      return chipHTML(cat, config ? config.label : cat, config?.color);
     }),
   ].join('');
 
-  mount.querySelectorAll('.adv-filter-btn').forEach(btn => {
+  mount.querySelectorAll('.adv-chip').forEach(btn => {
     btn.addEventListener('click', () => {
       onSelect((btn as HTMLElement).dataset.cat || 'all');
     });
   });
 }
 
-export function renderSidebarList(
-  places: PlaceEntry[],
-  onPlaceClick: (id: number) => void
-) {
-  const detailEl = document.getElementById('sidebar-detail');
-  const defaultEl = document.getElementById('sidebar-default');
-  if (!detailEl) return;
-
-  const located = places.filter(p => p.lat != null && p.lng != null);
-
-  if (located.length === 0) {
-    if (defaultEl) defaultEl.style.display = 'flex';
-    detailEl.style.display = 'none';
-    return;
-  }
-
-  if (defaultEl) defaultEl.style.display = 'none';
-  detailEl.style.display = 'block';
-
-  const listHTML = located.map(p => {
-    const config = CATEGORY_CONFIG[p.category] || CATEGORY_CONFIG.food;
-    const photo = (p.photos && p.photos.length > 0) ? p.photos[0] : config.placeholder;
-
-    return `
-      <div class="adv-list-item"
-           data-id="${p.id}"
-           style="--cat-color: ${config.color}; --cat-color-fade: ${config.fade};">
-        <div class="adv-list-img-box">
-          <div class="adv-list-img" style="background-image:url('${photo}')"></div>
-        </div>
-        <div class="adv-list-content">
-          <div class="adv-list-tag" style="background:${config.color}">${config.label}</div>
-          <div class="adv-list-name">${p.name}</div>
-          <div class="adv-list-stars">${getStars(p.rating)}</div>
-          <div class="adv-list-meta">
-            <span class="adv-list-status ${p.status}">
-              ${STATUS_LABEL[p.status] || p.status}
-            </span>
-            <span style="font-size: 0.6rem; opacity: 0.4;">VIEW DETAILS ›</span>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  detailEl.innerHTML = `
-    <div class="adv-list-container">
-      <div class="adv-list-header">
-        <span>COLLECTION (${located.length})</span>
-      </div>
-      <div class="adv-list-body">${listHTML}</div>
-    </div>
-  `;
-
-  detailEl.querySelectorAll('.adv-list-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const id = parseInt(item.getAttribute('data-id') || '0');
-      onPlaceClick(id);
-    });
-  });
-}
-
-/** 願望清單：還沒有座標的 idea 項目，附「定位提案」按鈕 */
-export function renderWishlist(
-  allPlaces: PlaceEntry[],
-  onPick: (place: PlaceEntry) => void
-) {
-  const mount = document.getElementById('adv-wishlist-mount');
-  if (!mount) return;
-
-  const ideas = ideaPlaces(allPlaces);
-  if (ideas.length === 0) {
-    mount.innerHTML = '';
-    return;
-  }
-
-  const itemsHTML = ideas.map(p => {
-    const config = CATEGORY_CONFIG[p.category];
-    return `
-      <div class="adv-wishlist-item" style="--cat-color:${config?.color || '#999'}">
-        <div class="adv-wishlist-item-main">
-          <span class="adv-wishlist-name">${p.name}</span>
-          <span class="adv-wishlist-meta">${config?.label || p.category}${p.mrt_station ? ' · ' + p.mrt_station : ''}</span>
-        </div>
-        <button class="adv-wishlist-pick-btn" data-id="${p.id}">定位提案</button>
-      </div>
-    `;
-  }).join('');
-
-  mount.innerHTML = `
-    <div class="adv-wishlist">
-      <div class="adv-wishlist-header">💭 願望清單（${ideas.length}）</div>
-      <div class="adv-wishlist-body">${itemsHTML}</div>
-    </div>
-  `;
-
-  mount.querySelectorAll('.adv-wishlist-pick-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = parseInt((btn as HTMLElement).dataset.id || '0');
-      const place = ideas.find(p => p.id === id);
-      if (place) onPick(place);
-    });
-  });
-}
-
-export interface DetailActions {
+export interface CardActions {
+  onPromote: (place: PlaceEntry) => void;
   onConfirm: (place: PlaceEntry) => void;
+  onUnpropose: (place: PlaceEntry) => void;
   onMarkDone: (place: PlaceEntry) => void;
   onReopen: (place: PlaceEntry) => void;
+  onToggleLike: (place: PlaceEntry) => void;
 }
 
-export function showSidebarDetail(
-  place: PlaceEntry,
-  onBack: () => void,
-  actions: DetailActions
-) {
-  const detailEl = document.getElementById('sidebar-detail');
-  if (!detailEl) return;
+function navQuery(place: PlaceEntry): string {
+  if (place.lat != null && place.lng != null) return `${place.lat},${place.lng}`;
+  return encodeURIComponent(place.address || place.mrt_station || place.name);
+}
 
-  const config = CATEGORY_CONFIG[place.category] || CATEGORY_CONFIG.food;
-  const photo = (place.photos && place.photos.length > 0) ? place.photos[0] : config.placeholder;
+function metaLine(place: PlaceEntry): string {
+  const parts = [place.address, place.mrt_station].filter(
+    (v, i, arr) => Boolean(v) && arr.indexOf(v) === i
+  );
+  return parts.join(' · ');
+}
 
-  const statusActionsHTML = (() => {
-    if (place.status === 'proposed') {
-      return `<button class="sdl-status-btn" id="sdl-confirm-btn">✅ 定案</button>`;
-    }
-    if (place.status === 'confirmed') {
-      return `<button class="sdl-status-btn" id="sdl-done-btn">🏁 標記已去過</button>`;
-    }
-    if (place.status === 'done') {
-      return `<button class="sdl-status-btn" id="sdl-reopen-btn">↩ 重新開放提案</button>`;
-    }
-    return '';
-  })();
-
-  detailEl.innerHTML = `
-    <div class="adv-sidebar__detail">
-      <div class="sdl-photo-hero" style="background-image: url('${photo}')">
-        <div class="sdl-hero-overlay"></div>
-        <button class="sdl-close-btn" id="sdl-close-btn">✕</button>
-      </div>
-
-      <div class="sdl-header" style="background: linear-gradient(to bottom, ${config.fade}, transparent);">
-        <span class="sdl-category-badge" style="background:${config.color}; color:#fff;">${config.label}</span>
-        <h3 class="sdl-place-name">${place.name}</h3>
-        <div class="sdl-status sdl-status--${place.status === 'done' ? 'done' : 'pending'}">${STATUS_LABEL[place.status] || place.status}</div>
-        <div class="sdl-status-actions">${statusActionsHTML}</div>
-      </div>
-
-      <div class="sdl-body">
-        ${place.note ? `
-        <div class="sdl-section">
-          <div class="sdl-label">提案備註</div>
-          <p class="sdl-description">${place.note}</p>
-        </div>
-        ` : ''}
-
-        ${place.proposed_by ? `
-        <div class="sdl-info-block">
-          <div class="sdl-info-label">提案人</div>
-          <p class="sdl-info-text">${place.proposed_by}</p>
-        </div>
-        ` : ''}
-
-        <div class="sdl-info-block">
-          <div class="sdl-info-label">地址 / 捷運站</div>
-          <p class="sdl-info-text">${place.address || place.mrt_station || '尚未填寫'}</p>
-        </div>
-
-        ${place.visit_date ? `
-        <div class="sdl-info-block">
-          <div class="sdl-info-label">去過的日期</div>
-          <p class="sdl-info-text">${place.visit_date}</p>
-        </div>
-        ` : ''}
-
-        <div class="sdl-footer">
-          <button class="sdl-nav-btn" onclick="window.open('https://www.google.com/maps?q=${place.lat},${place.lng}')">
-             GOOGLE MAPS 導航
-          </button>
-        </div>
+function ideaCard(place: PlaceEntry): string {
+  const config = CATEGORY_CONFIG[place.category];
+  return `
+    <div class="adv-card" style="--cat-color:${config?.color || '#999'}">
+      <div class="adv-card-tag" style="background:${config?.color || '#999'}">${config?.label || place.category}</div>
+      <div class="adv-card-name">${place.name}</div>
+      ${metaLine(place) ? `<div class="adv-card-meta">${metaLine(place)}</div>` : ''}
+      <div class="adv-card-actions">
+        <button class="adv-card-btn adv-card-btn--primary" data-action="promote" data-id="${place.id}">📍 我要提案</button>
       </div>
     </div>
   `;
+}
 
-  document.getElementById('sdl-close-btn')?.addEventListener('click', onBack);
-  document.getElementById('sdl-confirm-btn')?.addEventListener('click', () => actions.onConfirm(place));
-  document.getElementById('sdl-done-btn')?.addEventListener('click', () => actions.onMarkDone(place));
-  document.getElementById('sdl-reopen-btn')?.addEventListener('click', () => actions.onReopen(place));
+function proposedCard(place: PlaceEntry): string {
+  const config = CATEGORY_CONFIG[place.category];
+  const likedBy = place.liked_by || [];
+
+  const likeButtons = IDENTITIES.map(name => `
+    <button class="adv-like-btn ${likedBy.includes(name) ? 'adv-like-btn--active' : ''}" data-action="like" data-identity="${name}" data-id="${place.id}">
+      👍 ${name}
+    </button>
+  `).join('');
+
+  return `
+    <div class="adv-card" style="--cat-color:${config?.color || '#999'}">
+      <div class="adv-card-tag" style="background:${config?.color || '#999'}">${config?.label || place.category}</div>
+      <div class="adv-card-name">${place.name}</div>
+      ${metaLine(place) ? `<div class="adv-card-meta">${metaLine(place)}</div>` : ''}
+      ${place.note ? `<p class="adv-card-note">${place.note}</p>` : ''}
+      ${place.proposed_by ? `<div class="adv-card-by">${place.proposed_by} 提案</div>` : ''}
+      <div class="adv-like-row">${likeButtons}</div>
+      <div class="adv-card-actions">
+        <a class="adv-card-btn" href="https://www.google.com/maps?q=${navQuery(place)}" target="_blank" rel="noopener">🗺️ 導航</a>
+        <button class="adv-card-btn adv-card-btn--ghost" data-action="unpropose" data-id="${place.id}">回到願望清單</button>
+        <button class="adv-card-btn adv-card-btn--primary" data-action="confirm" data-id="${place.id}">✅ 定案</button>
+      </div>
+    </div>
+  `;
+}
+
+function itineraryCard(place: PlaceEntry): string {
+  const config = CATEGORY_CONFIG[place.category];
+  const isDone = place.status === 'done';
+
+  return `
+    <div class="adv-card ${isDone ? 'adv-card--done' : ''}" style="--cat-color:${config?.color || '#999'}">
+      <div class="adv-card-tag" style="background:${config?.color || '#999'}">${config?.label || place.category}</div>
+      <div class="adv-card-name">${place.name}${isDone ? ' 🏁' : ''}</div>
+      ${metaLine(place) ? `<div class="adv-card-meta">${metaLine(place)}</div>` : ''}
+      ${place.visit_date ? `<div class="adv-card-meta">📅 ${place.visit_date}</div>` : ''}
+      ${place.note ? `<p class="adv-card-note">${place.note.replace(/\n/g, '<br>')}</p>` : ''}
+      <div class="adv-card-actions">
+        <a class="adv-card-btn" href="https://www.google.com/maps?q=${navQuery(place)}" target="_blank" rel="noopener">🗺️ 導航</a>
+        ${isDone
+          ? `<button class="adv-card-btn adv-card-btn--ghost" data-action="reopen" data-id="${place.id}">↩ 重新開放</button>`
+          : `<button class="adv-card-btn adv-card-btn--primary" data-action="done" data-id="${place.id}">🏁 標記已去過</button>`
+        }
+      </div>
+    </div>
+  `;
+}
+
+function bindActions(mount: HTMLElement, places: PlaceEntry[], actions: CardActions) {
+  mount.querySelectorAll('[data-action]').forEach(el => {
+    const id = parseInt((el as HTMLElement).dataset.id || '0');
+    const place = places.find(p => p.id === id);
+    if (!place) return;
+
+    const action = (el as HTMLElement).dataset.action;
+    el.addEventListener('click', () => {
+      if (action === 'promote') actions.onPromote(place);
+      else if (action === 'confirm') actions.onConfirm(place);
+      else if (action === 'unpropose') actions.onUnpropose(place);
+      else if (action === 'done') actions.onMarkDone(place);
+      else if (action === 'reopen') actions.onReopen(place);
+      else if (action === 'like') actions.onToggleLike(place);
+    });
+  });
+}
+
+export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
+  const ideas = allPlaces.filter(p => p.status === 'idea');
+  const proposed = allPlaces.filter(p => p.status === 'proposed');
+  const itinerary = allPlaces
+    .filter(p => p.status === 'confirmed' || p.status === 'done')
+    .sort((a, b) => (a.visit_date || '9999').localeCompare(b.visit_date || '9999'));
+
+  const ideaMount = document.getElementById('adv-section-idea');
+  const proposedMount = document.getElementById('adv-section-proposed');
+  const itineraryMount = document.getElementById('adv-section-itinerary');
+
+  if (ideaMount) {
+    ideaMount.innerHTML = ideas.length
+      ? ideas.map(ideaCard).join('')
+      : `<p class="adv-empty">目前沒有這個分類的願望清單項目</p>`;
+    bindActions(ideaMount, ideas, actions);
+  }
+
+  if (proposedMount) {
+    proposedMount.innerHTML = proposed.length
+      ? proposed.map(proposedCard).join('')
+      : `<p class="adv-empty">還沒有人提案，點下面「＋ 新增提案」試試</p>`;
+    bindActions(proposedMount, proposed, actions);
+  }
+
+  if (itineraryMount) {
+    itineraryMount.innerHTML = itinerary.length
+      ? itinerary.map(itineraryCard).join('')
+      : `<p class="adv-empty">還沒有定案的行程</p>`;
+    bindActions(itineraryMount, itinerary, actions);
+  }
+
+  document.querySelectorAll('.adv-section-count').forEach(el => {
+    const section = (el as HTMLElement).dataset.section;
+    const count = section === 'idea' ? ideas.length : section === 'proposed' ? proposed.length : itinerary.length;
+    el.textContent = `${count}`;
+  });
 }
 
 // ───────────────────────── Modals ─────────────────────────
@@ -259,6 +205,28 @@ function openModal(innerHTML: string): { root: HTMLElement; close: () => void } 
   });
 
   return { root, close };
+}
+
+export function openIdentityModal(): Promise<Identity> {
+  return new Promise((resolve) => {
+    const buttonsHTML = IDENTITIES.map(name => `
+      <button class="adv-modal-btn adv-modal-btn--primary" data-name="${name}" style="flex:1;">${name}</button>
+    `).join('');
+
+    const { root, close } = openModal(`
+      <h3>你是誰？</h3>
+      <p style="font-size:0.85rem;color:var(--adv-brown-light);margin:0 0 4px;">選一下，「我也想去」才知道要標記誰</p>
+      <div class="adv-modal-actions">${buttonsHTML}</div>
+    `);
+
+    root.querySelectorAll('[data-name]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = (btn as HTMLElement).dataset.name as Identity;
+        close();
+        resolve(name);
+      });
+    });
+  });
 }
 
 export function openPassphraseModal(errorMsg?: string): Promise<string | null> {
@@ -296,23 +264,18 @@ export function openPassphraseModal(errorMsg?: string): Promise<string | null> {
 export interface ProposeFormResult {
   name: string;
   category: string;
+  address: string;
   note: string;
   proposedBy: string;
-  lat: number | null;
-  lng: number | null;
 }
 
 export function openProposeModal(
-  defaults: Partial<{ name: string; category: string; note: string; proposedBy: string; lat: number; lng: number }>,
-  onPickLocation: (onPick: (lat: number, lng: number) => void) => void
+  defaults: Partial<{ name: string; category: string; address: string; note: string; proposedBy: string }>
 ): Promise<ProposeFormResult | null> {
   return new Promise((resolve) => {
     const categoryOptions = Object.entries(CATEGORY_CONFIG)
       .map(([key, cfg]) => `<option value="${key}" ${defaults.category === key ? 'selected' : ''}>${cfg.label}</option>`)
       .join('');
-
-    let pickedLat = defaults.lat ?? null;
-    let pickedLng = defaults.lng ?? null;
 
     const { root, close } = openModal(`
       <h3>新增約會提案</h3>
@@ -320,10 +283,8 @@ export function openProposeModal(
       <input type="text" id="adv-pf-name" value="${defaults.name || ''}" />
       <label>分類</label>
       <select id="adv-pf-category">${categoryOptions}</select>
-      <label>座標</label>
-      <button type="button" class="adv-modal-pick-btn ${pickedLat != null ? 'picked' : ''}" id="adv-pf-pick">
-        ${pickedLat != null ? `📍 已選 (${pickedLat.toFixed(4)}, ${pickedLng!.toFixed(4)})` : '📍 點地圖選位置'}
-      </button>
+      <label>地址 / 捷運站</label>
+      <input type="text" id="adv-pf-address" value="${defaults.address || ''}" placeholder="方便導航跟約時間" />
       <label>備註（為什麼想去 / 想約什麼時候）</label>
       <textarea id="adv-pf-note">${defaults.note || ''}</textarea>
       <label>提案人</label>
@@ -335,20 +296,6 @@ export function openProposeModal(
       </div>
     `);
 
-    root.querySelector('#adv-pf-pick')?.addEventListener('click', () => {
-      const currentDefaults = {
-        ...defaults,
-        name: (root.querySelector('#adv-pf-name') as HTMLInputElement)?.value,
-        category: (root.querySelector('#adv-pf-category') as HTMLSelectElement)?.value,
-        note: (root.querySelector('#adv-pf-note') as HTMLTextAreaElement)?.value,
-        proposedBy: (root.querySelector('#adv-pf-who') as HTMLInputElement)?.value,
-      };
-      close();
-      onPickLocation((lat, lng) => {
-        openProposeModal({ ...currentDefaults, lat, lng }, onPickLocation).then(resolve);
-      });
-    });
-
     root.querySelector('#adv-pf-cancel')?.addEventListener('click', () => {
       close();
       resolve(null);
@@ -357,6 +304,7 @@ export function openProposeModal(
     root.querySelector('#adv-pf-submit')?.addEventListener('click', () => {
       const name = (root.querySelector('#adv-pf-name') as HTMLInputElement)?.value.trim();
       const category = (root.querySelector('#adv-pf-category') as HTMLSelectElement)?.value;
+      const address = (root.querySelector('#adv-pf-address') as HTMLInputElement)?.value.trim();
       const note = (root.querySelector('#adv-pf-note') as HTMLTextAreaElement)?.value.trim();
       const proposedBy = (root.querySelector('#adv-pf-who') as HTMLInputElement)?.value.trim();
       const errorEl = root.querySelector('#adv-pf-error') as HTMLElement;
@@ -368,7 +316,7 @@ export function openProposeModal(
       }
 
       close();
-      resolve({ name, category, note, proposedBy, lat: pickedLat, lng: pickedLng });
+      resolve({ name, category, address, note, proposedBy });
     });
   });
 }
@@ -408,6 +356,7 @@ export function showToast(message: string) {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
     background: var(--adv-brown); color: #fff; padding: 10px 20px; border-radius: 100px;
     font-size: 0.85rem; font-weight: 600; z-index: 10001; box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    max-width: 90vw; text-align: center;
   `;
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 2600);

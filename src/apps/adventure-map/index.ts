@@ -1,16 +1,14 @@
 import './styles/map.css';
 import './styles/list.css';
-import { MapEngine } from './engine';
 import { filterPlaces } from './data';
 import {
   updateStatsUI,
   renderFilterBar,
-  renderSidebarList,
-  renderWishlist,
-  showSidebarDetail,
+  renderSections,
   openPassphraseModal,
   openProposeModal,
   openMarkDoneModal,
+  openIdentityModal,
   showToast,
 } from './ui';
 import { PlaceEntry } from '../../shared/types';
@@ -18,24 +16,32 @@ import {
   fetchPlaces,
   proposePlace,
   updatePlace,
+  toggleLike,
   getStoredPassphrase,
   storePassphrase,
   clearStoredPassphrase,
+  getStoredIdentity,
+  storeIdentity,
+  Identity,
 } from './supabase';
 
-class AdventureMapApp {
-  private engine: MapEngine;
+class DatingMapApp {
   private allPlaces: PlaceEntry[] = [];
   private currentCat: string = 'all';
-  private currentSeason: string = 'all';
-  private lastFilteredPlaces: PlaceEntry[] = [];
+  private identity: Identity | null = null;
 
   constructor() {
-    this.engine = new MapEngine('adventure-map');
     this.init();
   }
 
   private async init() {
+    this.identity = getStoredIdentity();
+    if (!this.identity) {
+      this.identity = await openIdentityModal();
+      storeIdentity(this.identity);
+    }
+    this.updateIdentityBadge();
+
     try {
       this.allPlaces = await fetchPlaces();
     } catch (err) {
@@ -44,62 +50,46 @@ class AdventureMapApp {
       this.allPlaces = [];
     }
 
-    this.lastFilteredPlaces = this.allPlaces;
     this.renderAll();
-    this.setupSeasonFilters();
     this.setupFab();
+    this.setupIdentityBadge();
+  }
 
-    const located = this.allPlaces.filter(p => p.lat != null && p.lng != null);
-    if (located.length > 0) {
-      this.engine.fitBounds(located);
-    }
+  private updateIdentityBadge() {
+    const el = document.getElementById('adv-identity-badge');
+    if (el) el.textContent = `你是：${this.identity}`;
+  }
+
+  private setupIdentityBadge() {
+    document.getElementById('adv-identity-badge')?.addEventListener('click', async () => {
+      const identity = await openIdentityModal();
+      this.identity = identity;
+      storeIdentity(identity);
+      this.updateIdentityBadge();
+    });
   }
 
   private renderAll() {
-    const filtered = filterPlaces(this.allPlaces, this.currentCat, this.currentSeason);
-    this.lastFilteredPlaces = filtered;
+    const filtered = filterPlaces(this.allPlaces, this.currentCat, 'all');
 
-    this.engine.renderMarkers(filtered, (p) => this.focusPlace(p.id));
-    updateStatsUI(filtered, this.allPlaces);
+    updateStatsUI(this.allPlaces);
     renderFilterBar(this.allPlaces, this.currentCat, (cat) => {
       this.currentCat = cat;
       this.renderAll();
     });
-    renderSidebarList(filtered, (id) => this.focusPlace(id));
-    renderWishlist(this.allPlaces, (idea) => this.promoteIdea(idea));
-  }
-
-  private setupSeasonFilters() {
-    document.querySelectorAll('.adv-season-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const target = e.currentTarget as HTMLElement;
-        document.querySelectorAll('.adv-season-btn').forEach(b => b.classList.remove('active'));
-        target.classList.add('active');
-        this.currentSeason = target.dataset.season || 'all';
-        this.renderAll();
-      });
+    renderSections(filtered, {
+      onPromote: (p) => this.promoteIdea(p),
+      onConfirm: (p) => this.changeStatus(p, 'confirmed'),
+      onUnpropose: (p) => this.changeStatus(p, 'idea'),
+      onMarkDone: (p) => this.markDone(p),
+      onReopen: (p) => this.changeStatus(p, 'confirmed'),
+      onToggleLike: (p) => this.toggleLike(p),
     });
   }
 
   private setupFab() {
     const fab = document.getElementById('adv-fab');
     fab?.addEventListener('click', () => this.createProposal());
-  }
-
-  private focusPlace(id: number) {
-    const target = this.allPlaces.find(p => p.id === id);
-    if (target && target.lat != null && target.lng != null) {
-      this.engine.flyTo(target.lat, target.lng);
-      showSidebarDetail(
-        target,
-        () => renderSidebarList(this.lastFilteredPlaces, (id) => this.focusPlace(id)),
-        {
-          onConfirm: (p) => this.changeStatus(p, 'confirmed'),
-          onMarkDone: (p) => this.markDone(p),
-          onReopen: (p) => this.changeStatus(p, 'proposed'),
-        }
-      );
-    }
   }
 
   private async withPassphrase<T>(action: (pw: string) => Promise<T>): Promise<T | null> {
@@ -133,7 +123,7 @@ class AdventureMapApp {
   }
 
   private async createProposal() {
-    const result = await openProposeModal({}, (onPick) => this.engine.pickLocation(onPick));
+    const result = await openProposeModal({});
     if (!result) return;
 
     const saved = await this.withPassphrase((pw) =>
@@ -143,8 +133,7 @@ class AdventureMapApp {
         category: result.category,
         note: result.note,
         proposed_by: result.proposedBy,
-        lat: result.lat ?? undefined,
-        lng: result.lng ?? undefined,
+        address: result.address,
         status: 'proposed',
       })
     );
@@ -156,24 +145,19 @@ class AdventureMapApp {
   }
 
   private async promoteIdea(idea: PlaceEntry) {
-    const result = await openProposeModal(
-      { name: idea.name, category: idea.category },
-      (onPick) => this.engine.pickLocation(onPick)
-    );
+    const result = await openProposeModal({
+      name: idea.name,
+      category: idea.category,
+      address: idea.mrt_station,
+    });
     if (!result) return;
-
-    if (result.lat == null || result.lng == null) {
-      showToast('要先在地圖上點一個位置才能提案喔');
-      return;
-    }
 
     const saved = await this.withPassphrase((pw) =>
       updatePlace({
         passphrase: pw,
         id: idea.id,
         status: 'proposed',
-        lat: result.lat as number,
-        lng: result.lng as number,
+        address: result.address || undefined,
         note: result.note || undefined,
       })
     );
@@ -184,13 +168,13 @@ class AdventureMapApp {
     }
   }
 
-  private async changeStatus(place: PlaceEntry, status: 'proposed' | 'confirmed') {
+  private async changeStatus(place: PlaceEntry, status: 'idea' | 'confirmed') {
     const saved = await this.withPassphrase((pw) =>
       updatePlace({ passphrase: pw, id: place.id, status })
     );
     if (saved) {
-      showToast(status === 'confirmed' ? '定案了！期待這次約會 🎉' : '改回提案中');
-      await this.refresh(place.id);
+      showToast(status === 'confirmed' ? '定案了！期待這次約會 🎉' : '已回到願望清單');
+      await this.refresh();
     }
   }
 
@@ -213,21 +197,26 @@ class AdventureMapApp {
     );
     if (saved) {
       showToast('恭喜破關！🏆');
-      await this.refresh(place.id);
+      await this.refresh();
     }
   }
 
-  private async refresh(focusId?: number) {
+  private async toggleLike(place: PlaceEntry) {
+    if (!this.identity) return;
+    const saved = await this.withPassphrase((pw) => toggleLike(pw, place.id, this.identity as Identity));
+    if (saved) await this.refresh();
+  }
+
+  private async refresh() {
     try {
       this.allPlaces = await fetchPlaces();
     } catch (err) {
       console.error(err);
     }
     this.renderAll();
-    if (focusId != null) this.focusPlace(focusId);
   }
 }
 
-if (document.getElementById('adventure-map')) {
-  new AdventureMapApp();
+if (document.getElementById('adv-app-root')) {
+  new DatingMapApp();
 }

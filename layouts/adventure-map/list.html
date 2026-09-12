@@ -1,48 +1,13 @@
 {{ define "main" }}
 
-{{/* ─── 注入 Leaflet（UMD 版，掛在 window.L，供打包後的 module script 使用）─── */}}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="">
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
-<link rel="stylesheet" href="{{ "css/adventure-map.bundle.css" | absURL }}">
-
 {{/* ─── Supabase 連線資訊（anon/publishable key，設計上可公開） ─── */}}
 <script>
   window.DATING_MAP_SUPABASE_URL = "https://zvomerdcsxvuymnpuvxk.supabase.co";
   window.DATING_MAP_SUPABASE_KEY = "sb_publishable_xAprCS1COLD7ePcF08buGw_LHfh6d9q";
 </script>
+<link rel="stylesheet" href="{{ "css/adventure-map.bundle.css" | absURL }}">
 
-<style>
-  /* 兩邊各一半 50:50 */
-  .adv-layout {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important; 
-    height: 650px !important;
-    margin: 0 20px !important;
-    gap: 0;
-    border-radius: 12px;
-    overflow: hidden;
-    background: var(--adv-glass);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  }
-  
-  .adv-map-wrap {
-    border-right: 1px solid var(--adv-glass-border);
-  }
-
-  /* 確保在小螢幕也能正確顯示 */
-  @media (max-width: 900px) {
-    .adv-layout {
-      grid-template-columns: 1fr !important;
-      grid-template-rows: 300px 1fr !important;
-      height: auto !important;
-    }
-  }
-</style>
-
-<section class="adv-page">
+<section class="adv-page" id="adv-app-root">
 
   {{/* ─── Hero Banner ─── */}}
   <div class="adv-hero">
@@ -51,15 +16,16 @@
         <h1 class="adv-hero__title">破關地圖</h1>
         <p class="adv-hero__subtitle">喔，你也在這裡嗎?</p>
       </div>
-      <div class="adv-hero__stats">
-        <div class="adv-stat">
-          <span class="adv-stat__num" id="total-count">0</span>
-          <span class="adv-stat__label">收藏地點</span>
-        </div>
-        <div class="adv-stat adv-stat--done">
-          <span class="adv-stat__num" id="done-count">0</span>
-          <span class="adv-stat__label">已破關</span>
-        </div>
+      <button class="adv-identity-badge" id="adv-identity-badge">你是：？</button>
+    </div>
+    <div class="adv-hero__stats-row">
+      <div class="adv-stat">
+        <span class="adv-stat__num" id="total-count">0</span>
+        <span class="adv-stat__label">收藏地點</span>
+      </div>
+      <div class="adv-stat adv-stat--done">
+        <span class="adv-stat__num" id="done-count">0</span>
+        <span class="adv-stat__label">已破關</span>
       </div>
     </div>
     <div class="adv-hero__progress-wrap">
@@ -70,59 +36,43 @@
     </div>
   </div>
 
-  {{/* ─── 篩選器（依實際資料動態產生） ─── */}}
-  <div class="adv-filter-bar" id="adv-filter-mount"></div>
+  {{/* ─── 篩選 chips（依實際資料動態產生） ─── */}}
+  <div class="adv-chip-bar" id="adv-filter-mount"></div>
 
-  <div class="adv-filter-bar adv-filter-bar--seasons" style="margin-top:-8px; padding-top:0;">
-    <span style="font-size:.7rem; color:var(--brown-lt); margin-right:8px; font-weight:600;">適合季節：</span>
-    <button class="adv-season-btn active" data-season="all">全部</button>
-    <button class="adv-season-btn" data-season="spring">🌸 春</button>
-    <button class="adv-season-btn" data-season="summer">☀️ 夏</button>
-    <button class="adv-season-btn" data-season="autumn">🍂 秋</button>
-    <button class="adv-season-btn" data-season="winter">❄️ 冬</button>
+  {{/* ─── 提案中：核心討論區 ─── */}}
+  <div class="adv-section">
+    <div class="adv-section-header">
+      <span>🗳️ 提案中</span>
+      <span class="adv-section-count" data-section="proposed">0</span>
+    </div>
+    <div class="adv-card-list" id="adv-section-proposed"></div>
   </div>
 
-  {{/* ─── 主體：地圖 + 側欄 ─── */}}
-  <div class="adv-layout">
-    
-    {{/* 地圖 */}}
-    <div class="adv-map-wrap">
-      <div id="adventure-map"></div>
-      <button class="adv-fab" id="adv-fab">＋ 新增提案</button>
+  {{/* ─── 行程：定案 + 已去過 ─── */}}
+  <div class="adv-section">
+    <div class="adv-section-header">
+      <span>🧭 行程</span>
+      <span class="adv-section-count" data-section="itinerary">0</span>
     </div>
-
-    {{/* 側欄 */}}
-    <div class="adv-sidebar" id="adv-sidebar">
-
-      {{/* 預設狀態 */}}
-      <div class="adv-sidebar__default" id="sidebar-default">
-        <div class="adv-sidebar__default-icon">
-          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
-        </div>
-        <h4 class="adv-sidebar__default-title">選一個地點</h4>
-        <p class="adv-sidebar__default-desc">點擊地圖上的圖釘，<br>探索這份不完整的清單。</p>
-        <div class="adv-legend">
-          <div class="adv-legend__item">
-            <span class="adv-legend__dot adv-legend__dot--pending"></span>待解鎖
-          </div>
-          <div class="adv-legend__item">
-            <span class="adv-legend__dot adv-legend__dot--done"></span>已破關
-          </div>
-        </div>
-      </div>
-
-      {{/* 地點詳情（預設隱藏）*/}}
-      <div class="adv-sidebar__detail" id="sidebar-detail"></div>
-
-      {{/* 願望清單：還沒定位的提案候選 */}}
-      <div id="adv-wishlist-mount"></div>
-
-    </div>
+    <div class="adv-card-list" id="adv-section-itinerary"></div>
   </div>
+
+  {{/* ─── 願望清單 ─── */}}
+  <div class="adv-section">
+    <div class="adv-section-header">
+      <span>💭 願望清單</span>
+      <span class="adv-section-count" data-section="idea">0</span>
+    </div>
+    <div class="adv-card-list" id="adv-section-idea"></div>
+  </div>
+
+  <div style="height:80px;"></div>
+
+  <button class="adv-fab" id="adv-fab">＋ 新增提案</button>
 
 </section>
 
-{{/* ─── 載入 Leaflet + 地圖邏輯 ─── */}}
+{{/* ─── 載入互動邏輯 ─── */}}
 <script type="module" src="{{ "js/adventure-map.bundle.js" | absURL }}"></script>
 
 {{ end }}
