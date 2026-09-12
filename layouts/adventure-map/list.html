@@ -36,6 +36,14 @@
     <button class="adv-hero__next-trip-btn" id="adv-next-trip-btn">📅 最近行程要去哪？</button>
   </div>
 
+  {{/* ─── 首次造訪說明（看過一次後用 localStorage 記住，不再顯示） ─── */}}
+  <div class="adv-intro" id="adv-intro" hidden>
+    <p class="adv-intro__text">
+      💭 <strong>願望清單</strong>丟點子 → 🗳️ <strong>提案中</strong>大家按讚／PK／滑卡選一個 → ✅ 定案排進 🧭 <strong>行程</strong>
+    </p>
+    <button class="adv-intro__close" id="adv-intro-close" aria-label="關閉說明">知道了</button>
+  </div>
+
   {{/* ─── 地點搜尋框 ─── */}}
   <div class="adv-search-wrap">
     <input type="search" id="adv-search-input" class="adv-search-input" placeholder="🔍 搜尋地點名稱、地址、捷運站…">

@@ -461,6 +461,36 @@ body.dark-mode {
   gap: 10px;
 }
 
+.adv-intro {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 16px 0;
+  padding: 10px 12px;
+  background: var(--adv-cream, #FBF3EA);
+  border: 1px solid rgba(92, 61, 46, 0.15);
+  border-radius: 10px;
+}
+
+.adv-intro__text {
+  flex: 1;
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--adv-brown, #5C3D2E);
+}
+
+.adv-intro__close {
+  flex-shrink: 0;
+  border: none;
+  background: var(--adv-brown, #5C3D2E);
+  color: #fff;
+  font-size: 0.78rem;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
 .adv-empty {
   font-size: 0.82rem;
   color: var(--adv-brown-light);

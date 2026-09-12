@@ -303,7 +303,7 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
       bindActions(itineraryMount, itinerary, actions);
       setupDayDragAndDrop(itineraryMount, actions.onReorder);
     } else {
-      itineraryMount.innerHTML = `<p class="adv-empty">還沒有定案的行程</p>`;
+      itineraryMount.innerHTML = `<p class="adv-empty">還沒有定案的行程，去「提案中」按 ✅ 定案吧！</p>`;
     }
   }
 

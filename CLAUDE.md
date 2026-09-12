@@ -17,6 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **TypeScript** | — | 互動功能腳本，原始碼在 `src/` |
 | **Vite** | `^8` | TypeScript 打包，設定於 `vite.config.ts` |
 | **Yarn** | — | 套件管理（**禁止使用 npm install**） |
+| **Supabase** | `@supabase/supabase-js` | 破關地圖的即時資料後端（地點、分類皆存於此，非靜態檔） |
 | **Netlify** | Hugo `0.87.0` | 主部署平台 |
 | **GitHub Pages** | Hugo `0.127.0` | push 到 main 由 GitHub Actions 自動 build 並部署至 `tomisagoodguy.github.io` |
 
@@ -57,15 +58,15 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 
 ## 架構概覽
 
-### Hugo ↔ TypeScript 的資料橋接（關鍵）
+### 破關地圖的資料流（關鍵，已改為 Supabase 即時後端）
 
-破關地圖（`adventure-map`）的資料流：
+地點與分類資料**不再**存於 `data/places.json`（此檔已移除），改由 Supabase 提供：
 
-1. `data/places.json` — 地點資料，Hugo 在建置時讀入
-2. `layouts/adventure-map/list.html` — Hugo 將資料序列化成 `<script type="application/json">`，注入頁面
-3. `src/apps/adventure-map/` — TypeScript 讀取 `window.PLACES_DATA`，驅動 Leaflet 地圖
+1. `layouts/adventure-map/list.html` — 在 `<head>` 注入 `window.DATING_MAP_SUPABASE_URL` / `window.DATING_MAP_SUPABASE_KEY`（anon/publishable key，設計上可公開，非機密）
+2. `src/apps/adventure-map/supabase.ts` — 建立 Supabase client，提供 `fetchPlaces` / `proposePlace` / `updatePlace` / `deletePlace` / `toggleLike` / `fetchCategories` / `upsertCategory` / `deleteCategory`，並用 `subscribeToPlaces` / `subscribeToCategories` 做即時同步（Realtime）
+3. `src/apps/adventure-map/index.ts` — 組合資料存取與 `ui.ts` 的面板渲染
 
-新增地點只需修改 `data/places.json`，不需動 TypeScript。
+新增/修改地點是**資料庫操作**（透過破關地圖頁面上的表單），不是改 JSON 檔。`place-helper` 工具頁（`src/tools/place-helper/`）是獨立的地點資料產生輔助工具，透過 File System Access API 直接讀寫本機檔案，**不連接 Supabase**。
 
 ### Vite 打包輸出路徑（`yarn build` 後的結果）
 
@@ -93,22 +94,24 @@ Leaflet / MarkerCluster 以 `external` 方式排除，頁面直接從 CDN 載入
 
 | 檔案 | 用途 |
 | --- | --- |
-| `data/places.json` | 破關地圖地點（由 Hugo 注入頁面） |
 | `data/gallery.yml` | 圖庫資料 |
 | `data/links.yml` | 相關連結頁資料 |
+
+> 破關地圖地點**不在**這裡，已改存 Supabase（見上方資料流說明）。
 
 ### src/ 模組說明
 
 ```text
 src/
-├── apps/adventure-map/     # 破關地圖（Leaflet + MarkerCluster）
+├── apps/adventure-map/     # 破關地圖（Leaflet + MarkerCluster + Supabase）
 │   ├── data.ts             # 分類設定（CATEGORY_CONFIG）
-│   ├── engine.ts           # MapEngine class（Leaflet 地圖核心）
-│   ├── ui.ts               # 面板 UI 邏輯
+│   ├── supabase.ts         # Supabase client、CRUD 與 Realtime 訂閱
+│   ├── ui.ts               # 面板 UI 邏輯（面板、Modal、Toast）
 │   └── index.ts            # 入口，組合各模組
-├── tools/place-helper/     # 地點新增輔助工具（獨立 HTML 頁）
+├── tools/place-helper/     # 地點資料產生輔助工具（獨立 HTML 頁，不連 Supabase）
 │   ├── geocoder.ts         # 地址轉座標
-│   ├── persist.ts          # IndexedDB 暫存
+│   ├── persist.ts / file-store.ts  # File System Access API 本機讀寫
+│   ├── mgmt.ts             # 地點管理（編輯/刪除既有紀錄）
 │   └── main.ts             # 入口
 └── shared/
     └── types.ts            # PlaceEntry 等共用型別
@@ -169,5 +172,5 @@ pipe 左右必須有空格，separator 使用 `---`：
 
 ## Active Status
 
-- **最後更新**：2026-06-14
+- **最後更新**：2026-09-12
 - **已知問題**：無

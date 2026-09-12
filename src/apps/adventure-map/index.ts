@@ -76,6 +76,32 @@ class DatingMapApp {
     this.setupSearch();
     this.setupBackToTop();
     this.setupPullToRefresh();
+    this.setupIntro();
+  }
+
+  /** 首次造訪說明流程用的三段式看板，看過一次後用 localStorage 記住不再顯示 */
+  private setupIntro() {
+    const INTRO_KEY = 'adv-intro-dismissed';
+    const intro = document.getElementById('adv-intro');
+    if (!intro) return;
+
+    let dismissed = false;
+    try {
+      dismissed = localStorage.getItem(INTRO_KEY) === '1';
+    } catch {
+      dismissed = false;
+    }
+    if (dismissed) return;
+
+    intro.hidden = false;
+    document.getElementById('adv-intro-close')?.addEventListener('click', () => {
+      intro.hidden = true;
+      try {
+        localStorage.setItem(INTRO_KEY, '1');
+      } catch {
+        // 私密瀏覽模式等情境下寫入會失敗，忽略即可，下次造訪再顯示一次
+      }
+    });
   }
 
   private async loadCategories() {
