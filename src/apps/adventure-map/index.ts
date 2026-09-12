@@ -12,6 +12,9 @@ import {
   openConfirmModal,
   openScheduleModal,
   openCategoryManagerModal,
+  openPkModal,
+  openSwipeDeckModal,
+  openNextTripModal,
   showToast,
 } from './ui';
 import { PlaceEntry } from '../../shared/types';
@@ -47,10 +50,6 @@ class DatingMapApp {
 
   private async init() {
     this.identity = getStoredIdentity();
-    if (!this.identity) {
-      this.identity = await openIdentityModal();
-      storeIdentity(this.identity);
-    }
     this.updateIdentityBadge();
 
     await this.loadCategories();
@@ -67,6 +66,10 @@ class DatingMapApp {
     this.setupFab();
     this.setupIdentityBadge();
     this.setupCategoryManager();
+    this.setupPk();
+    this.setupSwipe();
+    this.setupNextTrip();
+    this.setupTabBar();
     this.setupRealtime();
   }
 
@@ -124,6 +127,65 @@ class DatingMapApp {
     });
   }
 
+  private setupPk() {
+    document.getElementById('adv-pk-btn')?.addEventListener('click', () => this.startPk());
+  }
+
+  private setupSwipe() {
+    document.getElementById('adv-swipe-btn')?.addEventListener('click', () => this.startSwipe());
+  }
+
+  private setupNextTrip() {
+    document.getElementById('adv-next-trip-btn')?.addEventListener('click', () =>
+      openNextTripModal(this.allPlaces)
+    );
+  }
+
+  /** 手機版底部分頁列：一次只顯示一段清單，感覺像原生 App 而非長長的網頁 */
+  private setupTabBar() {
+    const tabbar = document.getElementById('adv-tabbar');
+    if (!tabbar) return;
+
+    const setActive = (tab: string) => {
+      document.querySelectorAll('.adv-section[data-tab]').forEach((el) => {
+        el.classList.toggle('adv-section--active', (el as HTMLElement).dataset.tab === tab);
+      });
+      tabbar.querySelectorAll('.adv-tab').forEach((btn) => {
+        btn.classList.toggle('adv-tab--active', (btn as HTMLElement).dataset.tabTarget === tab);
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    tabbar.querySelectorAll('.adv-tab').forEach((btn) => {
+      btn.addEventListener('click', () => setActive((btn as HTMLElement).dataset.tabTarget || 'proposed'));
+    });
+
+    setActive('proposed');
+  }
+
+  private startSwipe() {
+    const ideas = this.allPlaces.filter((p) => p.status === 'idea');
+    if (!ideas.length) {
+      showToast('願望清單是空的，先新增幾個地點吧');
+      return;
+    }
+    openSwipeDeckModal(ideas, (place) => this.goIdea(place));
+  }
+
+  private async startPk() {
+    const candidates = this.allPlaces.filter((p) => p.status === 'proposed');
+    if (candidates.length < 2) {
+      showToast('至少要有兩個提案才能 PK 喔');
+      return;
+    }
+
+    const winner = await openPkModal(candidates);
+    if (winner) {
+      showToast(`🏆 PK 冠軍：${winner.name}！`);
+      await this.confirmPlace(winner);
+    }
+  }
+
   private setupRealtime() {
     subscribeToPlaces(() => this.scheduleRealtimeRefresh());
     subscribeToCategories(async () => {
@@ -142,7 +204,7 @@ class DatingMapApp {
 
   private updateIdentityBadge() {
     const el = document.getElementById('adv-identity-badge');
-    if (el) el.textContent = `你是：${this.identity}`;
+    if (el) el.textContent = this.identity ? `你是：${this.identity}` : '設定身份';
   }
 
   private setupIdentityBadge() {
@@ -152,6 +214,16 @@ class DatingMapApp {
       storeIdentity(identity);
       this.updateIdentityBadge();
     });
+  }
+
+  /** 身分是低調小按鈕，只有真的需要標記「誰按讚/誰提案」時才問一次，不擋住開場畫面 */
+  private async ensureIdentity(): Promise<Identity | null> {
+    if (this.identity) return this.identity;
+    const identity = await openIdentityModal();
+    this.identity = identity;
+    storeIdentity(identity);
+    this.updateIdentityBadge();
+    return identity;
   }
 
   private renderAll() {
@@ -234,8 +306,8 @@ class DatingMapApp {
   }
 
   private async goIdea(idea: PlaceEntry) {
-    if (!this.identity) return;
-    const identity = this.identity;
+    const identity = await this.ensureIdentity();
+    if (!identity) return;
 
     const saved = await this.withPassphrase(async (pw) => {
       await toggleLike(pw, idea.id, identity);
@@ -359,8 +431,9 @@ class DatingMapApp {
   }
 
   private async toggleLike(place: PlaceEntry) {
-    if (!this.identity) return;
-    const saved = await this.withPassphrase((pw) => toggleLike(pw, place.id, this.identity as Identity));
+    const identity = await this.ensureIdentity();
+    if (!identity) return;
+    const saved = await this.withPassphrase((pw) => toggleLike(pw, place.id, identity));
     if (saved) await this.refresh();
   }
 

@@ -7,6 +7,15 @@
 </script>
 <link rel="stylesheet" href="{{ "css/adventure-map.bundle.css" | absURL }}">
 
+{{/* ─── PWA：加到主畫面後可全螢幕、無瀏覽器網址列開啟 ─── */}}
+<link rel="manifest" href="{{ "adventure-map.webmanifest" | absURL }}">
+<meta name="theme-color" content="#5C3D2E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="破關地圖">
+<link rel="apple-touch-icon" href="{{ "images/adventure-map-icon-192.png" | absURL }}">
+
 <section class="adv-page" id="adv-app-root">
 
   {{/* ─── Hero Banner ─── */}}
@@ -17,7 +26,7 @@
         <p class="adv-hero__subtitle">喔，你也在這裡嗎?</p>
       </div>
       <div class="adv-hero__actions">
-        <button class="adv-identity-badge" id="adv-identity-badge">你是：？</button>
+        <button class="adv-identity-badge" id="adv-identity-badge">設定身份</button>
         <button class="adv-identity-badge" id="adv-category-manage-btn" title="管理分類">⚙️ 分類</button>
       </div>
     </div>
@@ -37,25 +46,29 @@
       </div>
       <span class="adv-hero__progress-label" id="progress-label">0% 解鎖</span>
     </div>
+    <button class="adv-hero__next-trip-btn" id="adv-next-trip-btn">📅 最近行程要去哪？</button>
   </div>
 
   {{/* ─── 篩選 chips（依實際資料動態產生） ─── */}}
   <div class="adv-chip-bar" id="adv-filter-mount"></div>
 
-  {{/* ─── 三段式看板：手機直向堆疊，桌面併排三欄 ─── */}}
-  <div class="adv-board">
+  {{/* ─── 三段式看板：手機一次顯示一段（底部分頁切換），桌面併排三欄 ─── */}}
+  <div class="adv-board" id="adv-board">
 
     {{/* 提案中：核心討論區 */}}
-    <div class="adv-section">
+    <div class="adv-section" data-tab="proposed">
       <div class="adv-section-header">
         <span>🗳️ 提案中</span>
-        <span class="adv-section-count" data-section="proposed">0</span>
+        <div class="adv-section-header__right">
+          <button class="adv-pk-trigger" id="adv-pk-btn" title="PK 淘汰賽選一個">🥊 PK</button>
+          <span class="adv-section-count" data-section="proposed">0</span>
+        </div>
       </div>
       <div class="adv-card-list" id="adv-section-proposed"></div>
     </div>
 
     {{/* 行程：定案 + 已去過 */}}
-    <div class="adv-section">
+    <div class="adv-section" data-tab="itinerary">
       <div class="adv-section-header">
         <span>🧭 行程</span>
         <span class="adv-section-count" data-section="itinerary">0</span>
@@ -64,10 +77,13 @@
     </div>
 
     {{/* 願望清單 */}}
-    <div class="adv-section">
+    <div class="adv-section" data-tab="idea">
       <div class="adv-section-header">
         <span>💭 願望清單</span>
-        <span class="adv-section-count" data-section="idea">0</span>
+        <div class="adv-section-header__right">
+          <button class="adv-pk-trigger" id="adv-swipe-btn" title="用滑卡片方式決定想去哪">🔥 滑卡</button>
+          <span class="adv-section-count" data-section="idea">0</span>
+        </div>
       </div>
       <div class="adv-card-list adv-row-list" id="adv-section-idea"></div>
     </div>
@@ -77,6 +93,25 @@
   <div style="height:80px;"></div>
 
   <button class="adv-fab" id="adv-fab">＋ 新增提案</button>
+
+  {{/* ─── 手機版底部分頁列，桌面隱藏（三欄一起看） ─── */}}
+  <nav class="adv-tabbar" id="adv-tabbar">
+    <button class="adv-tab" data-tab-target="proposed">
+      <span class="adv-tab__icon">🗳️</span>
+      提案中
+      <span class="adv-section-count adv-tab__badge" data-section="proposed">0</span>
+    </button>
+    <button class="adv-tab" data-tab-target="itinerary">
+      <span class="adv-tab__icon">🧭</span>
+      行程
+      <span class="adv-section-count adv-tab__badge" data-section="itinerary">0</span>
+    </button>
+    <button class="adv-tab" data-tab-target="idea">
+      <span class="adv-tab__icon">💭</span>
+      願望清單
+      <span class="adv-section-count adv-tab__badge" data-section="idea">0</span>
+    </button>
+  </nav>
 
 </section>
 

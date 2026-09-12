@@ -1,0 +1,31 @@
+{
+  "name": "破關地圖",
+  "short_name": "破關地圖",
+  "description": "定康的約會清單與行程規劃",
+  "start_url": "/adventure-map/",
+  "scope": "/adventure-map/",
+  "display": "standalone",
+  "background_color": "#FAF7F2",
+  "theme_color": "#5C3D2E",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/images/adventure-map-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/adventure-map-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/adventure-map-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

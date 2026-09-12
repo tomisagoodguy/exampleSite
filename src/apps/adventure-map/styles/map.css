@@ -186,6 +186,64 @@ body.dark-mode {
   font-weight: 600;
 }
 
+.adv-hero__next-trip-btn {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  color: #5C3D2E;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.adv-hero__next-trip-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+}
+
+.adv-next-trip-hero {
+  background: var(--adv-cream, #FBF3EA);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 4px;
+}
+
+.adv-next-trip-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-top: 8px;
+  color: var(--adv-brown, #5C3D2E);
+}
+
+.adv-next-trip-date {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--adv-brown-light, #8C6A55);
+  margin-top: 2px;
+}
+
+.adv-next-trip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.adv-next-trip-row {
+  font-size: 0.82rem;
+  color: var(--adv-brown, #5C3D2E);
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
 
 /* ─── Category Chip Bar ─── */
 .adv-chip-bar {
@@ -286,6 +344,80 @@ body.dark-mode {
   padding: 2px 10px;
 }
 
+.adv-section-header__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adv-pk-trigger {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--adv-terracotta);
+  border: none;
+  border-radius: 100px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+}
+
+.adv-pk-trigger:hover {
+  background: var(--adv-brown);
+}
+
+/* ─── PK 淘汰賽 ─── */
+.adv-pk-progress {
+  font-size: 0.8rem;
+  color: var(--adv-brown-light);
+  margin: 0 0 16px;
+}
+
+.adv-pk-pair {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.adv-pk-card {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  background: var(--adv-glass);
+  border: 2px solid var(--adv-glass-border);
+  border-left: 4px solid var(--cat-color, var(--adv-terracotta));
+  border-radius: 14px;
+  padding: 14px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.adv-pk-card:hover,
+.adv-pk-card:active {
+  border-color: var(--cat-color, var(--adv-terracotta));
+  transform: translateY(-2px);
+  box-shadow: var(--adv-shadow);
+}
+
+.adv-pk-card-name {
+  font-family: 'Noto Serif TC', 'Outfit', serif;
+  font-weight: 700;
+  color: var(--adv-brown);
+  margin: 8px 0 4px;
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+
+.adv-pk-vs {
+  align-self: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--adv-brown-light);
+  flex-shrink: 0;
+}
+
 .adv-card-list {
   display: flex;
   flex-direction: column;
@@ -297,6 +429,25 @@ body.dark-mode {
   color: var(--adv-brown-light);
   opacity: 0.7;
   padding: 8px 2px;
+}
+
+
+/* 手機版：一次只顯示選中的那一段清單（配合底部分頁列） */
+@media (max-width: 899px) {
+  .adv-board .adv-section[data-tab] {
+    display: none;
+  }
+
+  .adv-board .adv-section[data-tab].adv-section--active {
+    display: block;
+  }
+}
+
+/* 桌面：三欄一起顯示，不受分頁狀態影響 */
+@media (min-width: 900px) {
+  .adv-board .adv-section[data-tab] {
+    display: block;
+  }
 }
 
 
@@ -337,6 +488,86 @@ body.dark-mode {
 
   .adv-fab:hover {
     transform: translateY(-2px);
+  }
+}
+
+
+/* ─── 底部分頁列（手機版：一次只看一段清單，App 感的核心） ─── */
+.adv-tabbar {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .adv-page {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .adv-fab {
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .adv-tabbar {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 600;
+    background: var(--adv-glass);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--adv-glass-border);
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -6px 20px rgba(92, 61, 46, 0.12);
+  }
+
+  .adv-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 8px 4px 6px;
+    border: none;
+    background: transparent;
+    color: var(--adv-brown-light);
+    font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 14px;
+    position: relative;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .adv-tab:active {
+    transform: scale(0.95);
+  }
+
+  .adv-tab__icon {
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+
+  .adv-tab--active {
+    color: var(--adv-terracotta);
+    background: rgba(196, 123, 90, 0.12);
+  }
+
+  .adv-tab__badge {
+    position: absolute;
+    top: 2px;
+    right: calc(50% - 26px);
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 100px;
+    background: var(--adv-terracotta);
+    color: #fff;
+    font-size: 0.6rem;
+    line-height: 16px;
+    border: none;
   }
 }
 
@@ -488,6 +719,226 @@ body.dark-mode {
   font-weight: 700;
   cursor: pointer;
   padding: 4px 8px;
+}
+
+
+/* ─── 滑卡模式（Tinder 風） ─── */
+.adv-swipe-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: linear-gradient(160deg, #2A1E14 0%, #1A1210 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+.adv-swipe-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 18px 10px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.adv-swipe-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.adv-swipe-stack {
+  flex: 1;
+  position: relative;
+  padding: 0 20px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adv-swipe-card-wrap {
+  position: absolute;
+  inset: 0;
+  margin: 0 20px;
+  will-change: transform, opacity;
+}
+
+.adv-swipe-card-wrap--behind {
+  transform: scale(0.94) translateY(10px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.adv-swipe-card-wrap--top {
+  touch-action: none;
+}
+
+.adv-swipe-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(255,255,255,0.16) 0%, transparent 45%),
+    linear-gradient(160deg, var(--cat-color, #C47B5A) 0%, color-mix(in srgb, var(--cat-color, #C47B5A) 55%, #1A1210) 100%);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  cursor: grab;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.adv-swipe-card:active {
+  cursor: grabbing;
+}
+
+.adv-swipe-card-tag {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 2;
+  padding: 5px 14px;
+  border-radius: 100px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.adv-swipe-card-body {
+  position: relative;
+  z-index: 2;
+  padding: 24px 24px calc(24px + env(safe-area-inset-bottom, 0px));
+  color: #fff;
+  text-align: center;
+}
+
+.adv-swipe-card-name {
+  font-family: 'Noto Serif TC', 'Outfit', serif;
+  font-size: 1.7rem;
+  font-weight: 800;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  line-height: 1.3;
+}
+
+.adv-swipe-card-meta {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.9);
+  margin-top: 10px;
+}
+
+.adv-swipe-card-note {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.85);
+  margin: 16px 0 0;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.adv-swipe-stamp {
+  position: absolute;
+  top: 26px;
+  z-index: 3;
+  padding: 8px 16px;
+  border: 3px solid;
+  border-radius: 10px;
+  font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+  opacity: 0;
+  pointer-events: none;
+  text-transform: uppercase;
+}
+
+.adv-swipe-stamp--like {
+  left: 20px;
+  color: #81B29A;
+  border-color: #81B29A;
+  transform: rotate(-18deg);
+}
+
+.adv-swipe-stamp--nope {
+  right: 20px;
+  color: #C0392B;
+  border-color: #C0392B;
+  transform: rotate(18deg);
+}
+
+.adv-swipe-actions {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  padding: 6px 0 calc(24px + env(safe-area-inset-bottom, 0px));
+}
+
+.adv-swipe-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+  transition: transform 0.15s ease;
+}
+
+.adv-swipe-btn:active {
+  transform: scale(0.9);
+}
+
+.adv-swipe-btn--nope {
+  background: #fff;
+  color: #C0392B;
+}
+
+.adv-swipe-btn--like {
+  background: #fff;
+  color: #81B29A;
+}
+
+.adv-swipe-empty {
+  text-align: center;
+  color: #fff;
+}
+
+.adv-swipe-empty-emoji {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.adv-swipe-empty p {
+  color: rgba(255,255,255,0.85);
+  margin: 0 0 18px;
+}
+
+@media (min-width: 560px) {
+  .adv-swipe-card-wrap {
+    margin: 0 auto;
+    max-width: 380px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: 380px;
+  }
+
+  .adv-swipe-card-wrap--behind {
+    transform: translateX(-50%) scale(0.94) translateY(10px);
+  }
 }
 
 

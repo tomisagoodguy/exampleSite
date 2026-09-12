@@ -306,6 +306,54 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
   });
 }
 
+/** 「最近行程」快速預覽：不用滑過三欄看板，一鍵看下一次要去哪 */
+export function openNextTripModal(allPlaces: PlaceEntry[]): void {
+  const confirmed = allPlaces.filter(p => p.status === 'confirmed');
+
+  const { root, close } = openModal(`<div id="adv-next-trip-body"></div>`);
+  const body = root.querySelector('#adv-next-trip-body') as HTMLElement;
+
+  if (!confirmed.length) {
+    body.innerHTML = `
+      <h3>📅 最近行程</h3>
+      <p style="font-size:0.9rem;color:var(--adv-brown-light);margin:0 0 4px;">還沒有定案的行程，去「提案中」按 ✅ 定案吧！</p>
+      <div class="adv-modal-actions">
+        <button class="adv-modal-btn adv-modal-btn--primary" id="adv-next-trip-close">好</button>
+      </div>
+    `;
+    body.querySelector('#adv-next-trip-close')?.addEventListener('click', close);
+    return;
+  }
+
+  const sorted = [...confirmed].sort((a, b) =>
+    (a.visit_date || '9999-99-99').localeCompare(b.visit_date || '9999-99-99')
+  );
+  const [next, ...rest] = sorted;
+  const config = CATEGORY_CONFIG[next.category];
+
+  body.innerHTML = `
+    <h3>📅 最近行程</h3>
+    <div class="adv-next-trip-hero">
+      <div class="adv-card-tag" style="background:${config?.color || '#999'}">${config?.label || next.category}</div>
+      <div class="adv-next-trip-name">${next.name}</div>
+      <div class="adv-next-trip-date">${next.visit_date ? dayLabel(next.visit_date) : '📌 還沒排日期'}</div>
+      ${metaLine(next) ? `<div class="adv-card-meta">${metaLine(next)}</div>` : ''}
+      ${next.note ? `<p class="adv-card-note">${next.note.replace(/\n/g, '<br>')}</p>` : ''}
+      <a class="adv-card-btn adv-card-btn--primary" href="https://www.google.com/maps?q=${navQuery(next)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;">🗺️ 導航</a>
+    </div>
+    ${rest.length ? `
+      <p style="font-size:0.8rem;color:var(--adv-brown-light);margin:14px 0 6px;">之後還有 ${rest.length} 個定案行程</p>
+      <div class="adv-next-trip-list">
+        ${rest.map(p => `<div class="adv-next-trip-row">${p.visit_date ? dayLabel(p.visit_date) : '📌 未排日期'} · ${p.name}</div>`).join('')}
+      </div>
+    ` : ''}
+    <div class="adv-modal-actions">
+      <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-next-trip-close">關閉</button>
+    </div>
+  `;
+  body.querySelector('#adv-next-trip-close')?.addEventListener('click', close);
+}
+
 // ───────────────────────── Modals ─────────────────────────
 
 function openModal(innerHTML: string): { root: HTMLElement; close: () => void } {
@@ -632,6 +680,256 @@ export function openScheduleModal(title: string, defaultDate?: string): Promise<
       resolve(date);
     });
   });
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function pkCardHTML(place: PlaceEntry, idx: number): string {
+  const config = CATEGORY_CONFIG[place.category];
+  return `
+    <button class="adv-pk-card" style="--cat-color:${config?.color || '#999'}" data-idx="${idx}">
+      <div class="adv-card-tag" style="background:${config?.color || '#999'}">${config?.label || place.category}</div>
+      <div class="adv-pk-card-name">${place.name}</div>
+      ${metaLine(place) ? `<div class="adv-card-meta">${metaLine(place)}</div>` : ''}
+      ${place.note ? `<p class="adv-card-note">${place.note}</p>` : ''}
+    </button>
+  `;
+}
+
+/** 淘汰賽：兩兩比拼直到剩一個，取消回傳 null */
+export function openPkModal(candidates: PlaceEntry[]): Promise<PlaceEntry | null> {
+  return new Promise((resolve) => {
+    let queue = shuffle(candidates);
+    let round = 1;
+    let cancelled = false;
+
+    const { root, close } = openModal(`<div id="adv-pk-body"></div>`);
+
+    function renderMatch(a: PlaceEntry, b: PlaceEntry, matchesLeftAfter: number) {
+      const body = root.querySelector('#adv-pk-body') as HTMLElement;
+      body.innerHTML = `
+        <h3>🥊 PK 淘汰賽</h3>
+        <p class="adv-pk-progress">第 ${round} 輪 · 選完這場還剩 ${matchesLeftAfter} 場</p>
+        <div class="adv-pk-pair">
+          ${pkCardHTML(a, 0)}
+          <div class="adv-pk-vs">VS</div>
+          ${pkCardHTML(b, 1)}
+        </div>
+        <div class="adv-modal-actions">
+          <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-pk-cancel">取消 PK</button>
+        </div>
+      `;
+      body.querySelector('#adv-pk-cancel')?.addEventListener('click', () => {
+        cancelled = true;
+        close();
+        resolve(null);
+      });
+    }
+
+    function pickWinner(a: PlaceEntry, b: PlaceEntry, matchesLeftAfter: number): Promise<PlaceEntry> {
+      renderMatch(a, b, matchesLeftAfter);
+      return new Promise((res) => {
+        const body = root.querySelector('#adv-pk-body') as HTMLElement;
+        body.querySelectorAll('.adv-pk-card').forEach((btn) => {
+          btn.addEventListener(
+            'click',
+            () => {
+              const idx = parseInt((btn as HTMLElement).dataset.idx || '0');
+              res(idx === 0 ? a : b);
+            },
+            { once: true }
+          );
+        });
+      });
+    }
+
+    (async () => {
+      while (queue.length > 1 && !cancelled) {
+        const nextRound: PlaceEntry[] = [];
+        let matchesLeft = Math.floor(queue.length / 2);
+        while (queue.length > 1 && !cancelled) {
+          const a = queue.shift() as PlaceEntry;
+          const b = queue.shift() as PlaceEntry;
+          matchesLeft -= 1;
+          const winner = await pickWinner(a, b, matchesLeft);
+          nextRound.push(winner);
+        }
+        if (cancelled) return;
+        if (queue.length === 1) nextRound.push(queue.shift() as PlaceEntry);
+        queue = nextRound;
+        round += 1;
+      }
+      if (!cancelled) {
+        close();
+        resolve(queue[0] || null);
+      }
+    })();
+  });
+}
+
+// ───────────────────────── 滑卡模式（Tinder 風） ─────────────────────────
+
+function swipeCardHTML(place: PlaceEntry): string {
+  const config = CATEGORY_CONFIG[place.category];
+  return `
+    <div class="adv-swipe-card" style="--cat-color:${config?.color || '#999'}">
+      <div class="adv-swipe-stamp adv-swipe-stamp--like">想去</div>
+      <div class="adv-swipe-stamp adv-swipe-stamp--nope">先跳過</div>
+      <div class="adv-swipe-card-tag">${config?.label || place.category}</div>
+      <div class="adv-swipe-card-body">
+        <div class="adv-swipe-card-name">${place.name}</div>
+        ${metaLine(place) ? `<div class="adv-swipe-card-meta">📍 ${metaLine(place)}</div>` : ''}
+        ${place.note ? `<p class="adv-swipe-card-note">${place.note}</p>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+/** 滑卡模式：把願望清單變成 Tinder 式左右滑決策，回傳「想去」的地點清單 */
+export function openSwipeDeckModal(
+  ideas: PlaceEntry[],
+  onGo: (place: PlaceEntry) => void
+): void {
+  const deck = shuffle(ideas);
+  let index = 0;
+
+  const root = document.createElement('div');
+  root.className = 'adv-swipe-overlay';
+  root.innerHTML = `
+    <div class="adv-swipe-header">
+      <span id="adv-swipe-progress"></span>
+      <button class="adv-swipe-close" id="adv-swipe-close">✕</button>
+    </div>
+    <div class="adv-swipe-stack" id="adv-swipe-stack"></div>
+    <div class="adv-swipe-actions">
+      <button class="adv-swipe-btn adv-swipe-btn--nope" id="adv-swipe-nope" title="先跳過">✕</button>
+      <button class="adv-swipe-btn adv-swipe-btn--like" id="adv-swipe-like" title="想去">🙋</button>
+    </div>
+  `;
+  document.body.appendChild(root);
+  document.body.style.overflow = 'hidden';
+
+  const close = () => {
+    document.body.style.overflow = '';
+    root.remove();
+  };
+
+  root.querySelector('#adv-swipe-close')?.addEventListener('click', close);
+
+  const stackEl = root.querySelector('#adv-swipe-stack') as HTMLElement;
+  const progressEl = root.querySelector('#adv-swipe-progress') as HTMLElement;
+
+  function render() {
+    progressEl.textContent = `${Math.min(index + 1, deck.length)} / ${deck.length}`;
+
+    if (index >= deck.length) {
+      stackEl.innerHTML = `
+        <div class="adv-swipe-empty">
+          <div class="adv-swipe-empty-emoji">🎉</div>
+          <p>願望清單都看過一輪囉！</p>
+          <button class="adv-modal-btn adv-modal-btn--primary" id="adv-swipe-restart">再滑一輪</button>
+        </div>
+      `;
+      stackEl.querySelector('#adv-swipe-restart')?.addEventListener('click', () => {
+        index = 0;
+        render();
+      });
+      return;
+    }
+
+    const next = deck[index + 1];
+    stackEl.innerHTML = [
+      next ? `<div class="adv-swipe-card-wrap adv-swipe-card-wrap--behind">${swipeCardHTML(next)}</div>` : '',
+      `<div class="adv-swipe-card-wrap adv-swipe-card-wrap--top" id="adv-swipe-top">${swipeCardHTML(deck[index])}</div>`,
+    ].join('');
+
+    bindDrag();
+  }
+
+  function commit(direction: 'like' | 'nope') {
+    const place = deck[index];
+    if (direction === 'like') onGo(place);
+    index += 1;
+    render();
+  }
+
+  function flyOut(direction: 'like' | 'nope') {
+    const topWrap = root.querySelector('#adv-swipe-top') as HTMLElement | null;
+    if (!topWrap) return;
+    const sign = direction === 'like' ? 1 : -1;
+    topWrap.style.transition = 'transform 0.35s ease, opacity 0.35s ease';
+    topWrap.style.transform = `translate(${sign * 600}px, -40px) rotate(${sign * 30}deg)`;
+    topWrap.style.opacity = '0';
+    window.setTimeout(() => commit(direction), 220);
+  }
+
+  function bindDrag() {
+    const wrap = root.querySelector('#adv-swipe-top') as HTMLElement | null;
+    if (!wrap) return;
+    const card = wrap.querySelector('.adv-swipe-card') as HTMLElement;
+    const likeStamp = wrap.querySelector('.adv-swipe-stamp--like') as HTMLElement;
+    const nopeStamp = wrap.querySelector('.adv-swipe-stamp--nope') as HTMLElement;
+
+    let dragging = false;
+    let startX = 0;
+    let startY = 0;
+    let dx = 0;
+    let dy = 0;
+
+    const onPointerDown = (e: PointerEvent) => {
+      dragging = true;
+      startX = e.clientX - dx;
+      startY = e.clientY - dy;
+      card.setPointerCapture(e.pointerId);
+      card.style.transition = 'none';
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!dragging) return;
+      dx = e.clientX - startX;
+      dy = (e.clientY - startY) * 0.3;
+      const rotate = dx / 18;
+      card.style.transform = `translate(${dx}px, ${dy}px) rotate(${rotate}deg)`;
+      const ratio = Math.min(Math.abs(dx) / 100, 1);
+      likeStamp.style.opacity = dx > 0 ? `${ratio}` : '0';
+      nopeStamp.style.opacity = dx < 0 ? `${ratio}` : '0';
+    };
+
+    const onPointerUp = () => {
+      if (!dragging) return;
+      dragging = false;
+      const threshold = 100;
+      if (dx > threshold) {
+        flyOut('like');
+      } else if (dx < -threshold) {
+        flyOut('nope');
+      } else {
+        card.style.transition = 'transform 0.3s ease';
+        card.style.transform = 'translate(0, 0) rotate(0)';
+        likeStamp.style.opacity = '0';
+        nopeStamp.style.opacity = '0';
+        dx = 0;
+        dy = 0;
+      }
+    };
+
+    card.addEventListener('pointerdown', onPointerDown);
+    card.addEventListener('pointermove', onPointerMove);
+    card.addEventListener('pointerup', onPointerUp);
+    card.addEventListener('pointercancel', onPointerUp);
+  }
+
+  root.querySelector('#adv-swipe-nope')?.addEventListener('click', () => flyOut('nope'));
+  root.querySelector('#adv-swipe-like')?.addEventListener('click', () => flyOut('like'));
+
+  render();
 }
 
 export function showToast(message: string) {

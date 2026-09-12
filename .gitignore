@@ -13,3 +13,4 @@ dist/
 .vite/
 .gemini/
 .antigravity/
+.playwright-mcp/
