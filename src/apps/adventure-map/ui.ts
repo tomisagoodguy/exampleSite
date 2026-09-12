@@ -387,9 +387,12 @@ function openModal(innerHTML: string): { root: HTMLElement; close: () => void } 
   const modalEl = root.querySelector('.adv-modal') as HTMLElement;
   const vv = window.visualViewport;
 
-  // 手機鍵盤彈出時視窗變矮，縮小 modal 高度避免內容被鍵盤蓋住
+  // 手機鍵盤彈出時視窗變矮，縮小 modal 高度避免內容被鍵盤蓋住；
+  // 平常（鍵盤沒開）就把 inline maxHeight 清掉，讓手機版全螢幕的 CSS 自己決定高度
   const onViewportResize = () => {
-    if (vv) modalEl.style.maxHeight = `${Math.round(vv.height * 0.9)}px`;
+    if (!vv) return;
+    const keyboardOpen = vv.height < window.innerHeight * 0.85;
+    modalEl.style.maxHeight = keyboardOpen ? `${Math.round(vv.height * 0.95)}px` : '';
   };
   vv?.addEventListener('resize', onViewportResize);
   onViewportResize();
