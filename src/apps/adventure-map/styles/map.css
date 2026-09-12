@@ -47,6 +47,13 @@ body.dark-mode {
   }
 }
 
+/* 手機：藏起站台導覽列，讓破關地圖看起來像獨立 App；桌面保留，方便晃回部落格 */
+@media (max-width: 899px) {
+  body.adv-shell-body header.navigation {
+    display: none;
+  }
+}
+
 
 /* ─── Hero Banner ─── */
 .adv-hero {

@@ -23,6 +23,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
           ${Z(t)?`<span class="adv-row-meta">${Z(t)}</span>`:``}
         </div>
         <button class="adv-row-btn" data-action="go" data-id="${t.id}">🙋 想去</button>
+        <button class="adv-row-delete" data-action="delete" data-id="${t.id}" title="刪除">🗑</button>
       </div>
       ${r?`<div class="adv-row-detail" id="adv-row-detail-${t.id}" hidden>${t.note}</div>`:``}
     </div>
@@ -62,8 +63,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
       ${Z(t)?`<div class="adv-card-meta">${Z(t)}</div>`:``}
       ${t.note?`<p class="adv-card-note">${t.note.replace(/\n/g,`<br>`)}</p>`:``}
       <div class="adv-card-actions adv-card-actions--collapsible" id="adv-itin-actions-${t.id}">
-        <a class="adv-card-btn adv-card-btn--icon" href="https://www.google.com/maps?q=${Ha(t)}" target="_blank" rel="noopener" title="導航">🗺️</a>
-        <button class="adv-card-btn adv-card-btn--icon adv-card-btn--ghost" data-action="share" data-id="${t.id}" title="分享">🔗</button>
+        ${t.lat!=null&&t.lng!=null?`<a class="adv-card-btn adv-card-btn--icon" href="https://www.google.com/maps?q=${Ha(t)}" target="_blank" rel="noopener" title="導航">🗺️</a>`:``}
         <button class="adv-card-btn adv-card-btn--icon adv-card-btn--ghost" data-action="reschedule" data-id="${t.id}" title="改日期">📅</button>
         <button class="adv-card-btn adv-card-btn--icon adv-card-btn--ghost" data-action="edit" data-id="${t.id}" title="修改">✏️</button>
         <button class="adv-card-btn adv-card-btn--icon adv-card-btn--danger" data-action="delete" data-id="${t.id}" title="刪除">🗑</button>

@@ -203,6 +203,22 @@ body.dark-mode .adv-like-btn {
   cursor: pointer;
 }
 
+.adv-row-delete {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--adv-brown-light);
+  font-size: 0.9rem;
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.adv-row-delete:active {
+  background: rgba(192, 57, 43, 0.1);
+  color: #C0392B;
+}
+
 .adv-row-detail {
   padding: 0 10px 10px 26px;
   font-size: 0.78rem;

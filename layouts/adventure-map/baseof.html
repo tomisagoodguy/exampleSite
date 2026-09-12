@@ -2,7 +2,7 @@
 <html lang="{{ with .Site.LanguageCode }}{{ . }}{{ else }}en-US{{ end }}">
 {{- partial "head.html" . -}}
 
-<body>
+<body class="adv-shell-body">
     {{- partial "preloader.html" . -}}
     {{- partial "header.html" . -}}
     {{- block "main" . }}{{- end }}

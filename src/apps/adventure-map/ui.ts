@@ -95,6 +95,7 @@ function ideaRow(place: PlaceEntry): string {
           ${metaLine(place) ? `<span class="adv-row-meta">${metaLine(place)}</span>` : ''}
         </div>
         <button class="adv-row-btn" data-action="go" data-id="${place.id}">🙋 想去</button>
+        <button class="adv-row-delete" data-action="delete" data-id="${place.id}" title="刪除">🗑</button>
       </div>
       ${hasNote ? `<div class="adv-row-detail" id="adv-row-detail-${place.id}" hidden>${place.note}</div>` : ''}
     </div>
@@ -150,8 +151,10 @@ function itineraryCard(place: PlaceEntry, position: number, dayTotal: number): s
       ${metaLine(place) ? `<div class="adv-card-meta">${metaLine(place)}</div>` : ''}
       ${place.note ? `<p class="adv-card-note">${place.note.replace(/\n/g, '<br>')}</p>` : ''}
       <div class="adv-card-actions adv-card-actions--collapsible" id="adv-itin-actions-${place.id}">
-        <a class="adv-card-btn adv-card-btn--icon" href="https://www.google.com/maps?q=${navQuery(place)}" target="_blank" rel="noopener" title="導航">🗺️</a>
-        <button class="adv-card-btn adv-card-btn--icon adv-card-btn--ghost" data-action="share" data-id="${place.id}" title="分享">🔗</button>
+        ${place.lat != null && place.lng != null
+          ? `<a class="adv-card-btn adv-card-btn--icon" href="https://www.google.com/maps?q=${navQuery(place)}" target="_blank" rel="noopener" title="導航">🗺️</a>`
+          : ''
+        }
         <button class="adv-card-btn adv-card-btn--icon adv-card-btn--ghost" data-action="reschedule" data-id="${place.id}" title="改日期">📅</button>
         <button class="adv-card-btn adv-card-btn--icon adv-card-btn--ghost" data-action="edit" data-id="${place.id}" title="修改">✏️</button>
         <button class="adv-card-btn adv-card-btn--icon adv-card-btn--danger" data-action="delete" data-id="${place.id}" title="刪除">🗑</button>
