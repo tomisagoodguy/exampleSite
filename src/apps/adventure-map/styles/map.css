@@ -64,6 +64,13 @@ body.dark-mode {
   overflow: hidden;
 }
 
+/* Hero 在手機貼齊螢幕最頂端後，補上安全區域，避免被 Dynamic Island／瀏海遮住（iPhone 14 Pro Max 等） */
+@media (max-width: 899px) {
+  .adv-hero {
+    padding-top: calc(28px + env(safe-area-inset-top, 0px));
+  }
+}
+
 .adv-hero::before {
   content: '';
   position: absolute;
