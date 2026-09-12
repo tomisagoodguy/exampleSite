@@ -39,31 +39,36 @@
   {{/* ─── 篩選 chips（依實際資料動態產生） ─── */}}
   <div class="adv-chip-bar" id="adv-filter-mount"></div>
 
-  {{/* ─── 提案中：核心討論區 ─── */}}
-  <div class="adv-section">
-    <div class="adv-section-header">
-      <span>🗳️ 提案中</span>
-      <span class="adv-section-count" data-section="proposed">0</span>
-    </div>
-    <div class="adv-card-list" id="adv-section-proposed"></div>
-  </div>
+  {{/* ─── 三段式看板：手機直向堆疊，桌面併排三欄 ─── */}}
+  <div class="adv-board">
 
-  {{/* ─── 行程：定案 + 已去過 ─── */}}
-  <div class="adv-section">
-    <div class="adv-section-header">
-      <span>🧭 行程</span>
-      <span class="adv-section-count" data-section="itinerary">0</span>
+    {{/* 提案中：核心討論區 */}}
+    <div class="adv-section">
+      <div class="adv-section-header">
+        <span>🗳️ 提案中</span>
+        <span class="adv-section-count" data-section="proposed">0</span>
+      </div>
+      <div class="adv-card-list" id="adv-section-proposed"></div>
     </div>
-    <div class="adv-card-list" id="adv-section-itinerary"></div>
-  </div>
 
-  {{/* ─── 願望清單 ─── */}}
-  <div class="adv-section">
-    <div class="adv-section-header">
-      <span>💭 願望清單</span>
-      <span class="adv-section-count" data-section="idea">0</span>
+    {{/* 行程：定案 + 已去過 */}}
+    <div class="adv-section">
+      <div class="adv-section-header">
+        <span>🧭 行程</span>
+        <span class="adv-section-count" data-section="itinerary">0</span>
+      </div>
+      <div class="adv-card-list" id="adv-section-itinerary"></div>
     </div>
-    <div class="adv-card-list" id="adv-section-idea"></div>
+
+    {{/* 願望清單 */}}
+    <div class="adv-section">
+      <div class="adv-section-header">
+        <span>💭 願望清單</span>
+        <span class="adv-section-count" data-section="idea">0</span>
+      </div>
+      <div class="adv-card-list" id="adv-section-idea"></div>
+    </div>
+
   </div>
 
   <div style="height:80px;"></div>

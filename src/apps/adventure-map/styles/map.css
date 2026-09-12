@@ -40,6 +40,13 @@ body.dark-mode {
   margin: 0 auto;
 }
 
+/* 桌面：放寬版面，三段清單改成並排看板 */
+@media (min-width: 900px) {
+  .adv-page {
+    max-width: 1200px;
+  }
+}
+
 
 /* ─── Hero Banner ─── */
 .adv-hero {
@@ -206,9 +213,40 @@ body.dark-mode {
 }
 
 
+/* ─── Board (三段清單容器) ─── */
+.adv-board {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 900px) {
+  .adv-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: start;
+    gap: 4px;
+    padding: 8px 8px 0;
+  }
+}
+
 /* ─── Sections ─── */
 .adv-section {
   padding: 18px 16px 6px;
+}
+
+@media (min-width: 900px) {
+  .adv-section {
+    padding: 10px 8px 6px;
+  }
+
+  .adv-card-list {
+    max-height: calc(100vh - 260px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .adv-card-list::-webkit-scrollbar { width: 5px; }
+  .adv-card-list::-webkit-scrollbar-thumb { background: var(--adv-glass-border); border-radius: 10px; }
 }
 
 .adv-section-header {
@@ -272,6 +310,18 @@ body.dark-mode {
 .adv-fab:hover {
   background: var(--adv-terracotta);
   transform: translateX(-50%) translateY(-2px);
+}
+
+@media (min-width: 900px) {
+  .adv-fab {
+    left: auto;
+    right: 32px;
+    transform: none;
+  }
+
+  .adv-fab:hover {
+    transform: translateY(-2px);
+  }
 }
 
 
