@@ -213,3 +213,41 @@ body.dark-mode .adv-like-btn {
 body.dark-mode .adv-row-list {
   background: rgba(45, 35, 28, 0.6);
 }
+
+/* ─── Itinerary day groups (drag to reorder) ─── */
+.adv-day-group + .adv-day-group {
+  margin-top: 14px;
+}
+
+.adv-day-header {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--adv-brown-light);
+  margin-bottom: 6px;
+  padding-left: 2px;
+}
+
+.adv-day-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 8px;
+}
+
+.adv-card--draggable {
+  cursor: grab;
+}
+
+.adv-card--dragging {
+  opacity: 0.4;
+}
+
+.adv-drag-handle {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  color: var(--adv-brown-light);
+  font-size: 0.9rem;
+  cursor: grab;
+  user-select: none;
+}

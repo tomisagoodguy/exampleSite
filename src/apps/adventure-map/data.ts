@@ -29,6 +29,15 @@ export const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
   daytrip:      { color: '#4E7A8C', fade: 'rgba(78, 122, 140, 0.3)', label: '郊區一日遊', placeholder: '/images/placeholders/scenery.png' },
 };
 
+export function colorToFade(color: string, alpha = 0.3): string {
+  const hex = color.replace('#', '');
+  const full = hex.length === 3 ? hex.split('').map(c => c + c).join('') : hex;
+  const r = parseInt(full.slice(0, 2), 16) || 0;
+  const g = parseInt(full.slice(2, 4), 16) || 0;
+  const b = parseInt(full.slice(4, 6), 16) || 0;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export const STATUS_LABEL: Record<string, string> = {
   idea: '💭 願望清單',
   proposed: '🗳️ 提案中',

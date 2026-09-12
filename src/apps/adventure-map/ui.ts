@@ -1,5 +1,5 @@
 import { PlaceEntry } from '../../shared/types';
-import { CATEGORY_CONFIG, calculateStats } from './data';
+import { CATEGORY_CONFIG, CategoryConfig, calculateStats, colorToFade } from './data';
 import { IDENTITIES, Identity } from './supabase';
 
 export function updateStatsUI(allPlaces: PlaceEntry[]) {
@@ -51,7 +51,7 @@ export function renderFilterBar(
 }
 
 export interface CardActions {
-  onPromote: (place: PlaceEntry) => void;
+  onGo: (place: PlaceEntry) => void;
   onConfirm: (place: PlaceEntry) => void;
   onUnpropose: (place: PlaceEntry) => void;
   onMarkDone: (place: PlaceEntry) => void;
@@ -59,6 +59,8 @@ export interface CardActions {
   onToggleLike: (place: PlaceEntry) => void;
   onEdit: (place: PlaceEntry) => void;
   onDelete: (place: PlaceEntry) => void;
+  onReschedule: (place: PlaceEntry) => void;
+  onReorder: (dayKey: string, orderedIds: number[]) => void;
 }
 
 function navQuery(place: PlaceEntry): string {
@@ -84,7 +86,7 @@ function ideaRow(place: PlaceEntry): string {
           <span class="adv-row-name">${place.name}</span>
           ${metaLine(place) ? `<span class="adv-row-meta">${metaLine(place)}</span>` : ''}
         </div>
-        <button class="adv-row-btn" data-action="promote" data-id="${place.id}">提案</button>
+        <button class="adv-row-btn" data-action="go" data-id="${place.id}">🙋 想去</button>
       </div>
       ${hasNote ? `<div class="adv-row-detail" id="adv-row-detail-${place.id}" hidden>${place.note}</div>` : ''}
     </div>
@@ -125,14 +127,18 @@ function itineraryCard(place: PlaceEntry): string {
   const isDone = place.status === 'done';
 
   return `
-    <div class="adv-card ${isDone ? 'adv-card--done' : ''}" style="--cat-color:${config?.color || '#999'}">
+    <div class="adv-card adv-card--draggable ${isDone ? 'adv-card--done' : ''}"
+         style="--cat-color:${config?.color || '#999'}"
+         draggable="true"
+         data-id="${place.id}">
+      <span class="adv-drag-handle" title="拖曳排序">⠿</span>
       <div class="adv-card-tag" style="background:${config?.color || '#999'}">${config?.label || place.category}</div>
       <div class="adv-card-name">${place.name}${isDone ? ' 🏁' : ''}</div>
       ${metaLine(place) ? `<div class="adv-card-meta">${metaLine(place)}</div>` : ''}
-      ${place.visit_date ? `<div class="adv-card-meta">📅 ${place.visit_date}</div>` : ''}
       ${place.note ? `<p class="adv-card-note">${place.note.replace(/\n/g, '<br>')}</p>` : ''}
       <div class="adv-card-actions">
         <a class="adv-card-btn" href="https://www.google.com/maps?q=${navQuery(place)}" target="_blank" rel="noopener">🗺️ 導航</a>
+        <button class="adv-card-btn adv-card-btn--ghost" data-action="reschedule" data-id="${place.id}">📅 ${place.visit_date || '排日期'}</button>
         <button class="adv-card-btn adv-card-btn--ghost" data-action="edit" data-id="${place.id}">✏️ 修改</button>
         <button class="adv-card-btn adv-card-btn--danger" data-action="delete" data-id="${place.id}">🗑 刪除</button>
         ${isDone
@@ -152,7 +158,7 @@ function bindActions(mount: HTMLElement, places: PlaceEntry[], actions: CardActi
 
     const action = (el as HTMLElement).dataset.action;
     el.addEventListener('click', () => {
-      if (action === 'promote') actions.onPromote(place);
+      if (action === 'go') actions.onGo(place);
       else if (action === 'confirm') actions.onConfirm(place);
       else if (action === 'unpropose') actions.onUnpropose(place);
       else if (action === 'done') actions.onMarkDone(place);
@@ -160,6 +166,7 @@ function bindActions(mount: HTMLElement, places: PlaceEntry[], actions: CardActi
       else if (action === 'like') actions.onToggleLike(place);
       else if (action === 'edit') actions.onEdit(place);
       else if (action === 'delete') actions.onDelete(place);
+      else if (action === 'reschedule') actions.onReschedule(place);
       else if (action === 'expand') {
         const detail = document.getElementById(`adv-row-detail-${place.id}`);
         if (detail) detail.hidden = !detail.hidden;
@@ -168,12 +175,91 @@ function bindActions(mount: HTMLElement, places: PlaceEntry[], actions: CardActi
   });
 }
 
+const UNSCHEDULED_KEY = '__unscheduled__';
+const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
+
+function dayLabel(dayKey: string): string {
+  if (dayKey === UNSCHEDULED_KEY) return '📌 未排日期';
+  const d = new Date(`${dayKey}T00:00:00`);
+  if (isNaN(d.getTime())) return `📅 ${dayKey}`;
+  return `📅 ${dayKey}（週${WEEKDAYS[d.getDay()]}）`;
+}
+
+function groupItineraryByDay(itinerary: PlaceEntry[]): [string, PlaceEntry[]][] {
+  const groups = new Map<string, PlaceEntry[]>();
+  for (const place of itinerary) {
+    const key = place.visit_date || UNSCHEDULED_KEY;
+    if (!groups.has(key)) groups.set(key, []);
+    (groups.get(key) as PlaceEntry[]).push(place);
+  }
+
+  for (const list of groups.values()) {
+    list.sort((a, b) => {
+      const orderA = a.sort_order ?? Number.MAX_SAFE_INTEGER;
+      const orderB = b.sort_order ?? Number.MAX_SAFE_INTEGER;
+      if (orderA !== orderB) return orderA - orderB;
+      return a.id - b.id;
+    });
+  }
+
+  return Array.from(groups.entries()).sort(([a], [b]) => {
+    if (a === UNSCHEDULED_KEY) return 1;
+    if (b === UNSCHEDULED_KEY) return -1;
+    return a.localeCompare(b);
+  });
+}
+
+function getDragAfterElement(container: HTMLElement, y: number): Element | null {
+  const draggableEls = Array.from(container.querySelectorAll('.adv-card--draggable:not(.adv-card--dragging)'));
+  return draggableEls.reduce<{ offset: number; element: Element | null }>(
+    (closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset, element: child };
+      }
+      return closest;
+    },
+    { offset: Number.NEGATIVE_INFINITY, element: null }
+  ).element;
+}
+
+function setupDayDragAndDrop(mount: HTMLElement, onReorder: (dayKey: string, orderedIds: number[]) => void) {
+  mount.querySelectorAll('.adv-card--draggable').forEach(card => {
+    card.addEventListener('dragstart', (e) => {
+      card.classList.add('adv-card--dragging');
+      (e as DragEvent).dataTransfer?.setData('text/plain', (card as HTMLElement).dataset.id || '');
+    });
+    card.addEventListener('dragend', () => card.classList.remove('adv-card--dragging'));
+  });
+
+  mount.querySelectorAll('.adv-day-cards').forEach(group => {
+    const groupEl = group as HTMLElement;
+
+    groupEl.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const dragging = mount.querySelector('.adv-card--dragging');
+      if (!dragging) return;
+      const afterEl = getDragAfterElement(groupEl, (e as DragEvent).clientY);
+      if (afterEl == null) groupEl.appendChild(dragging);
+      else groupEl.insertBefore(dragging, afterEl);
+    });
+
+    groupEl.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const dayKey = groupEl.dataset.day || UNSCHEDULED_KEY;
+      const orderedIds = Array.from(groupEl.querySelectorAll('.adv-card--draggable')).map(
+        el => parseInt((el as HTMLElement).dataset.id || '0')
+      );
+      onReorder(dayKey, orderedIds);
+    });
+  });
+}
+
 export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
   const ideas = allPlaces.filter(p => p.status === 'idea');
   const proposed = allPlaces.filter(p => p.status === 'proposed');
-  const itinerary = allPlaces
-    .filter(p => p.status === 'confirmed' || p.status === 'done')
-    .sort((a, b) => (a.visit_date || '9999').localeCompare(b.visit_date || '9999'));
+  const itinerary = allPlaces.filter(p => p.status === 'confirmed' || p.status === 'done');
 
   const ideaMount = document.getElementById('adv-section-idea');
   const proposedMount = document.getElementById('adv-section-proposed');
@@ -194,10 +280,23 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
   }
 
   if (itineraryMount) {
-    itineraryMount.innerHTML = itinerary.length
-      ? itinerary.map(itineraryCard).join('')
-      : `<p class="adv-empty">還沒有定案的行程</p>`;
-    bindActions(itineraryMount, itinerary, actions);
+    if (itinerary.length) {
+      const groups = groupItineraryByDay(itinerary);
+      itineraryMount.innerHTML = groups
+        .map(([dayKey, places]) => `
+          <div class="adv-day-group">
+            <div class="adv-day-header">${dayLabel(dayKey)}</div>
+            <div class="adv-day-cards" data-day="${dayKey}">
+              ${places.map(itineraryCard).join('')}
+            </div>
+          </div>
+        `)
+        .join('');
+      bindActions(itineraryMount, itinerary, actions);
+      setupDayDragAndDrop(itineraryMount, actions.onReorder);
+    } else {
+      itineraryMount.innerHTML = `<p class="adv-empty">還沒有定案的行程</p>`;
+    }
   }
 
   document.querySelectorAll('.adv-section-count').forEach(el => {
@@ -264,6 +363,123 @@ export function openConfirmModal(message: string): Promise<boolean> {
       close();
       resolve(true);
     });
+  });
+}
+
+export interface CategoryManagerHandlers {
+  add: (label: string, color: string) => Promise<boolean>;
+  updateColor: (key: string, color: string) => Promise<boolean>;
+  /** 回傳 null 代表刪除成功，否則回傳要顯示的錯誤訊息 */
+  remove: (key: string) => Promise<string | null>;
+}
+
+export function openCategoryManagerModal(
+  categoryConfig: Record<string, CategoryConfig>,
+  builtinKeys: Set<string>,
+  handlers: CategoryManagerHandlers,
+  onChanged: () => void
+): void {
+  const { root, close } = openModal(`
+    <h3>管理分類</h3>
+    <div id="adv-cat-list" class="adv-cat-list"></div>
+    <label>新增分類名稱</label>
+    <input type="text" id="adv-cat-new-label" placeholder="例如：野餐" />
+    <label>顏色</label>
+    <input type="color" id="adv-cat-new-color" class="adv-cat-color" value="#8C6A55" />
+    <div class="adv-modal-error" id="adv-cat-error" style="display:none;"></div>
+    <div class="adv-modal-actions">
+      <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-cat-close">關閉</button>
+      <button class="adv-modal-btn adv-modal-btn--primary" id="adv-cat-add">新增分類</button>
+    </div>
+  `);
+
+  const errorEl = root.querySelector('#adv-cat-error') as HTMLElement;
+  const showError = (msg: string) => {
+    errorEl.style.display = 'block';
+    errorEl.textContent = msg;
+  };
+  const clearError = () => {
+    errorEl.style.display = 'none';
+  };
+
+  function renderList() {
+    const listEl = root.querySelector('#adv-cat-list') as HTMLElement;
+    listEl.innerHTML = Object.entries(categoryConfig)
+      .map(
+        ([key, cfg]) => `
+      <div class="adv-cat-row">
+        <input type="color" class="adv-cat-color" data-key="${key}" value="${cfg.color}" />
+        <span class="adv-cat-label">${cfg.label}</span>
+        ${builtinKeys.has(key) ? '' : `<button class="adv-cat-del" data-key="${key}">刪除</button>`}
+      </div>
+    `
+      )
+      .join('');
+
+    listEl.querySelectorAll('.adv-cat-color').forEach((input) => {
+      input.addEventListener('change', async () => {
+        const key = (input as HTMLElement).dataset.key as string;
+        const color = (input as HTMLInputElement).value;
+        clearError();
+        const ok = await handlers.updateColor(key, color);
+        if (!ok) {
+          showError('更新失敗，請確認密碼');
+          return;
+        }
+        categoryConfig[key].color = color;
+        categoryConfig[key].fade = colorToFade(color);
+        onChanged();
+      });
+    });
+
+    listEl.querySelectorAll('.adv-cat-del').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const key = (btn as HTMLElement).dataset.key as string;
+        const confirmed = await openConfirmModal(`要刪除「${categoryConfig[key]?.label}」這個分類嗎？`);
+        if (!confirmed) return;
+        clearError();
+        const errorMsg = await handlers.remove(key);
+        if (errorMsg) {
+          showError(errorMsg);
+          return;
+        }
+        delete categoryConfig[key];
+        renderList();
+        onChanged();
+      });
+    });
+  }
+
+  renderList();
+
+  root.querySelector('#adv-cat-close')?.addEventListener('click', () => close());
+
+  root.querySelector('#adv-cat-add')?.addEventListener('click', async () => {
+    const labelInput = root.querySelector('#adv-cat-new-label') as HTMLInputElement;
+    const colorInput = root.querySelector('#adv-cat-new-color') as HTMLInputElement;
+    const label = labelInput.value.trim();
+    const color = colorInput.value;
+    clearError();
+
+    if (!label) {
+      showError('請輸入分類名稱');
+      return;
+    }
+    if (categoryConfig[label]) {
+      showError('這個分類已經存在');
+      return;
+    }
+
+    const ok = await handlers.add(label, color);
+    if (!ok) {
+      showError('新增失敗，請確認密碼');
+      return;
+    }
+
+    categoryConfig[label] = { color, fade: colorToFade(color), label, placeholder: '/images/placeholders/quest.png' };
+    labelInput.value = '';
+    renderList();
+    onChanged();
   });
 }
 
@@ -384,6 +600,36 @@ export function openMarkDoneModal(): Promise<{ visitDate: string; note: string }
       const note = (root.querySelector('#adv-done-note') as HTMLTextAreaElement)?.value.trim();
       close();
       resolve({ visitDate, note });
+    });
+  });
+}
+
+export function openScheduleModal(title: string, defaultDate?: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    const { root, close } = openModal(`
+      <h3>${title}</h3>
+      <p style="font-size:0.85rem;color:var(--adv-brown-light);margin:0 0 4px;">選哪一天去，之後可以在行程卡片上再拖曳排順序</p>
+      <label>日期</label>
+      <input type="date" id="adv-sch-date" value="${defaultDate || ''}" />
+      <div class="adv-modal-actions">
+        <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-sch-cancel">取消</button>
+        <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-sch-skip">先不排日期</button>
+        <button class="adv-modal-btn adv-modal-btn--primary" id="adv-sch-submit">儲存</button>
+      </div>
+    `);
+
+    root.querySelector('#adv-sch-cancel')?.addEventListener('click', () => {
+      close();
+      resolve(null);
+    });
+    root.querySelector('#adv-sch-skip')?.addEventListener('click', () => {
+      close();
+      resolve('');
+    });
+    root.querySelector('#adv-sch-submit')?.addEventListener('click', () => {
+      const date = (root.querySelector('#adv-sch-date') as HTMLInputElement)?.value || '';
+      close();
+      resolve(date);
     });
   });
 }

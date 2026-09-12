@@ -117,6 +117,7 @@ export interface UpdatePayload {
   visit_date?: string;
   name?: string;
   category?: string;
+  sort_order?: number;
 }
 
 export async function updatePlace(payload: UpdatePayload): Promise<PlaceEntry> {
@@ -132,6 +133,7 @@ export async function updatePlace(payload: UpdatePayload): Promise<PlaceEntry> {
     p_visit_date: payload.visit_date ?? null,
     p_name: payload.name ?? null,
     p_category: payload.category ?? null,
+    p_sort_order: payload.sort_order ?? null,
   });
 
   if (error) throw error;
@@ -145,4 +147,79 @@ export async function deletePlace(passphrase: string, id: number): Promise<void>
   });
 
   if (error) throw error;
+}
+
+export interface CategoryRow {
+  key: string;
+  label: string;
+  color: string;
+  created_by?: string;
+}
+
+export async function fetchCategories(): Promise<CategoryRow[]> {
+  const { data, error } = await supabase
+    .from('dating_map_categories')
+    .select('*')
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+  return (data || []) as CategoryRow[];
+}
+
+export async function upsertCategory(
+  passphrase: string,
+  key: string,
+  label: string,
+  color: string,
+  createdBy?: string
+): Promise<CategoryRow> {
+  const { data, error } = await supabase.rpc('dating_map_upsert_category', {
+    p_passphrase: passphrase,
+    p_key: key,
+    p_label: label,
+    p_color: color,
+    p_created_by: createdBy ?? null,
+  });
+
+  if (error) throw error;
+  return data as CategoryRow;
+}
+
+export async function deleteCategory(passphrase: string, key: string): Promise<void> {
+  const { error } = await supabase.rpc('dating_map_delete_category', {
+    p_passphrase: passphrase,
+    p_key: key,
+  });
+
+  if (error) throw error;
+}
+
+export function subscribeToPlaces(onChange: () => void): () => void {
+  const channel = supabase
+    .channel('dating_map_places_changes')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'dating_map_places' },
+      () => onChange()
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}
+
+export function subscribeToCategories(onChange: () => void): () => void {
+  const channel = supabase
+    .channel('dating_map_categories_changes')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'dating_map_categories' },
+      () => onChange()
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }

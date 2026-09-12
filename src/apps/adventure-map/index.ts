@@ -1,6 +1,6 @@
 import './styles/map.css';
 import './styles/list.css';
-import { filterPlaces } from './data';
+import { CATEGORY_CONFIG, colorToFade, filterPlaces } from './data';
 import {
   updateStatsUI,
   renderFilterBar,
@@ -10,6 +10,8 @@ import {
   openMarkDoneModal,
   openIdentityModal,
   openConfirmModal,
+  openScheduleModal,
+  openCategoryManagerModal,
   showToast,
 } from './ui';
 import { PlaceEntry } from '../../shared/types';
@@ -25,12 +27,19 @@ import {
   getStoredIdentity,
   storeIdentity,
   Identity,
+  subscribeToPlaces,
+  fetchCategories,
+  upsertCategory,
+  deleteCategory,
+  subscribeToCategories,
 } from './supabase';
 
 class DatingMapApp {
   private allPlaces: PlaceEntry[] = [];
   private currentCat: string = 'all';
   private identity: Identity | null = null;
+  private refreshTimer: number | null = null;
+  private readonly builtinCategoryKeys = new Set(Object.keys(CATEGORY_CONFIG));
 
   constructor() {
     this.init();
@@ -44,6 +53,8 @@ class DatingMapApp {
     }
     this.updateIdentityBadge();
 
+    await this.loadCategories();
+
     try {
       this.allPlaces = await fetchPlaces();
     } catch (err) {
@@ -55,6 +66,78 @@ class DatingMapApp {
     this.renderAll();
     this.setupFab();
     this.setupIdentityBadge();
+    this.setupCategoryManager();
+    this.setupRealtime();
+  }
+
+  private async loadCategories() {
+    try {
+      const rows = await fetchCategories();
+      const dbKeys = new Set(rows.map((r) => r.key));
+
+      for (const key of Object.keys(CATEGORY_CONFIG)) {
+        if (!this.builtinCategoryKeys.has(key) && !dbKeys.has(key)) {
+          delete CATEGORY_CONFIG[key];
+        }
+      }
+
+      for (const row of rows) {
+        CATEGORY_CONFIG[row.key] = {
+          color: row.color,
+          fade: colorToFade(row.color),
+          label: row.label,
+          placeholder: '/images/placeholders/quest.png',
+        };
+      }
+    } catch (err) {
+      console.error('讀取分類失敗', err);
+    }
+  }
+
+  private setupCategoryManager() {
+    document.getElementById('adv-category-manage-btn')?.addEventListener('click', () => {
+      openCategoryManagerModal(
+        CATEGORY_CONFIG,
+        this.builtinCategoryKeys,
+        {
+          add: (label, color) =>
+            this.withPassphrase((pw) => upsertCategory(pw, label, label, color, this.identity || undefined)).then(
+              (r) => r !== null
+            ),
+          updateColor: (key, color) => {
+            const cfg = CATEGORY_CONFIG[key];
+            return this.withPassphrase((pw) =>
+              upsertCategory(pw, key, cfg?.label || key, color, this.identity || undefined)
+            ).then((r) => r !== null);
+          },
+          remove: (key) => {
+            if (this.allPlaces.some((p) => p.category === key)) {
+              return Promise.resolve('這個分類還有地點在使用，無法刪除');
+            }
+            return this.withPassphrase((pw) => deleteCategory(pw, key)).then((r) =>
+              r === null ? '刪除失敗，請確認密碼' : null
+            );
+          },
+        },
+        () => this.renderAll()
+      );
+    });
+  }
+
+  private setupRealtime() {
+    subscribeToPlaces(() => this.scheduleRealtimeRefresh());
+    subscribeToCategories(async () => {
+      await this.loadCategories();
+      this.renderAll();
+    });
+  }
+
+  private scheduleRealtimeRefresh() {
+    if (this.refreshTimer !== null) window.clearTimeout(this.refreshTimer);
+    this.refreshTimer = window.setTimeout(() => {
+      this.refreshTimer = null;
+      this.refresh();
+    }, 300);
   }
 
   private updateIdentityBadge() {
@@ -80,14 +163,16 @@ class DatingMapApp {
       this.renderAll();
     });
     renderSections(filtered, {
-      onPromote: (p) => this.promoteIdea(p),
-      onConfirm: (p) => this.changeStatus(p, 'confirmed'),
+      onGo: (p) => this.goIdea(p),
+      onConfirm: (p) => this.confirmPlace(p),
       onUnpropose: (p) => this.changeStatus(p, 'idea'),
       onMarkDone: (p) => this.markDone(p),
       onReopen: (p) => this.changeStatus(p, 'confirmed'),
       onToggleLike: (p) => this.toggleLike(p),
       onEdit: (p) => this.editPlace(p),
       onDelete: (p) => this.deletePlace(p),
+      onReschedule: (p) => this.reschedulePlace(p),
+      onReorder: (dayKey, orderedIds) => this.reorderDay(dayKey, orderedIds),
     });
   }
 
@@ -148,26 +233,22 @@ class DatingMapApp {
     }
   }
 
-  private async promoteIdea(idea: PlaceEntry) {
-    const result = await openProposeModal({
-      name: idea.name,
-      category: idea.category,
-      address: idea.mrt_station,
-    });
-    if (!result) return;
+  private async goIdea(idea: PlaceEntry) {
+    if (!this.identity) return;
+    const identity = this.identity;
 
-    const saved = await this.withPassphrase((pw) =>
-      updatePlace({
+    const saved = await this.withPassphrase(async (pw) => {
+      await toggleLike(pw, idea.id, identity);
+      return updatePlace({
         passphrase: pw,
         id: idea.id,
         status: 'proposed',
-        address: result.address || undefined,
-        note: result.note || undefined,
-      })
-    );
+        proposed_by: idea.proposed_by || identity,
+      });
+    });
 
     if (saved) {
-      showToast('已從願望清單提案！');
+      showToast(`${identity} 想去，已加入提案中！`);
       await this.refresh();
     }
   }
@@ -180,6 +261,78 @@ class DatingMapApp {
       showToast(status === 'confirmed' ? '定案了！期待這次約會 🎉' : '已回到願望清單');
       await this.refresh();
     }
+  }
+
+  private nextSortOrderForDay(date: string): number {
+    const sameDay = this.allPlaces.filter(
+      (p) => (p.status === 'confirmed' || p.status === 'done') && p.visit_date === date
+    );
+    return sameDay.length
+      ? Math.max(...sameDay.map((p) => p.sort_order ?? 0)) + 1
+      : 0;
+  }
+
+  private async confirmPlace(place: PlaceEntry) {
+    const date = await openScheduleModal('這次約會排哪一天？');
+    if (date === null) return;
+
+    const saved = await this.withPassphrase((pw) =>
+      updatePlace({
+        passphrase: pw,
+        id: place.id,
+        status: 'confirmed',
+        visit_date: date || undefined,
+        sort_order: date ? this.nextSortOrderForDay(date) : undefined,
+      })
+    );
+    if (saved) {
+      showToast('定案了！期待這次約會 🎉');
+      await this.refresh();
+    }
+  }
+
+  private async reschedulePlace(place: PlaceEntry) {
+    const date = await openScheduleModal('改到哪一天？', place.visit_date);
+    if (!date) return;
+
+    const saved = await this.withPassphrase((pw) =>
+      updatePlace({
+        passphrase: pw,
+        id: place.id,
+        visit_date: date,
+        sort_order: this.nextSortOrderForDay(date),
+      })
+    );
+    if (saved) {
+      showToast('已更新日期');
+      await this.refresh();
+    }
+  }
+
+  private async reorderDay(dayKey: string, orderedIds: number[]) {
+    const changed = orderedIds
+      .map((id, index) => ({ id, sort_order: index }))
+      .filter(({ id, sort_order }) => {
+        const place = this.allPlaces.find((p) => p.id === id);
+        return place && place.sort_order !== sort_order;
+      });
+
+    if (!changed.length) return;
+
+    // 樂觀更新本地順序，避免拖曳後畫面跳動
+    changed.forEach(({ id, sort_order }) => {
+      const place = this.allPlaces.find((p) => p.id === id);
+      if (place) place.sort_order = sort_order;
+    });
+
+    const ok = await this.withPassphrase(async (pw) => {
+      for (const { id, sort_order } of changed) {
+        await updatePlace({ passphrase: pw, id, sort_order });
+      }
+      return true;
+    });
+
+    if (!ok) await this.refresh();
   }
 
   private async markDone(place: PlaceEntry) {

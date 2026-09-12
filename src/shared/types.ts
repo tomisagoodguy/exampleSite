@@ -21,6 +21,7 @@ export interface PlaceEntry {
   note?: string;
   mrt_station?: string;
   visit_date?: string;
+  sort_order?: number;
   liked_by?: string[];
   added?: string;
   rating?: number;
