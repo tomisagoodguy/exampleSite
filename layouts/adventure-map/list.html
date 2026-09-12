@@ -1,6 +1,6 @@
 {{ define "main" }}
 
-{{/* ─── 注入 Leaflet + 頁面專屬 CSS ─── */}}
+{{/* ─── 注入 Leaflet（UMD 版，掛在 window.L，供打包後的 module script 使用）─── */}}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="">
@@ -8,10 +8,10 @@
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
 <link rel="stylesheet" href="{{ "css/adventure-map.bundle.css" | absURL }}">
 
-{{/* ─── 把 Hugo data 注入全域 JS 變數 ─── */}}
-<script id="data-places" type="application/json">{{ .Site.Data.places | jsonify | safeJS }}</script>
+{{/* ─── Supabase 連線資訊（anon/publishable key，設計上可公開） ─── */}}
 <script>
-  window.PLACES_DATA = JSON.parse(document.getElementById('data-places').textContent);
+  window.DATING_MAP_SUPABASE_URL = "https://zvomerdcsxvuymnpuvxk.supabase.co";
+  window.DATING_MAP_SUPABASE_KEY = "sb_publishable_xAprCS1COLD7ePcF08buGw_LHfh6d9q";
 </script>
 
 <style>
@@ -70,21 +70,8 @@
     </div>
   </div>
 
-  {{/* ─── 篩選器 ─── */}}
-  <div class="adv-filter-bar">
-    <button class="adv-filter-btn adv-filter-btn--active" data-cat="all" id="filter-all">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-      全部
-    </button>
-    <button class="adv-filter-btn" data-cat="food" id="filter-food">美食</button>
-    <button class="adv-filter-btn" data-cat="scenery" id="filter-scenery">風景</button>
-    <button class="adv-filter-btn" data-cat="oldshop" id="filter-oldshop">老店</button>
-    <button class="adv-filter-btn" data-cat="walk" id="filter-walk">散步</button>
-    <button class="adv-filter-btn" data-cat="cafe" id="filter-cafe">咖啡</button>
-    <button class="adv-filter-btn" data-cat="shop" id="filter-shop">購物</button>
-    <button class="adv-filter-btn" data-cat="stay" id="filter-stay">住宿</button>
-    <button class="adv-filter-btn" data-cat="quest" id="filter-quest">破關任務</button>
-  </div>
+  {{/* ─── 篩選器（依實際資料動態產生） ─── */}}
+  <div class="adv-filter-bar" id="adv-filter-mount"></div>
 
   <div class="adv-filter-bar adv-filter-bar--seasons" style="margin-top:-8px; padding-top:0;">
     <span style="font-size:.7rem; color:var(--brown-lt); margin-right:8px; font-weight:600;">適合季節：</span>
@@ -101,6 +88,7 @@
     {{/* 地圖 */}}
     <div class="adv-map-wrap">
       <div id="adventure-map"></div>
+      <button class="adv-fab" id="adv-fab">＋ 新增提案</button>
     </div>
 
     {{/* 側欄 */}}
@@ -125,6 +113,9 @@
 
       {{/* 地點詳情（預設隱藏）*/}}
       <div class="adv-sidebar__detail" id="sidebar-detail"></div>
+
+      {{/* 願望清單：還沒定位的提案候選 */}}
+      <div id="adv-wishlist-mount"></div>
 
     </div>
   </div>

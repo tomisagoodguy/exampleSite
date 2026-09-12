@@ -3,18 +3,24 @@ export interface Visit {
   note: string;
 }
 
+export type PlaceStatus = 'idea' | 'proposed' | 'confirmed' | 'done';
+
 export interface PlaceEntry {
   id: number;
   name: string;
   category: string;
-  lat: number;
-  lng: number;
+  lat: number | null;
+  lng: number | null;
   description?: string;
   address?: string;
   trivia?: string;
   why?: string;
   best_time?: string;
-  status: 'pending' | 'done';
+  status: PlaceStatus;
+  proposed_by?: string;
+  note?: string;
+  mrt_station?: string;
+  visit_date?: string;
   added?: string;
   rating?: number;
   seasons?: string[];

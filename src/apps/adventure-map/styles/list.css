@@ -277,3 +277,79 @@ body.dark-mode .adv-list-item:hover {
   font-style: italic;
   margin: 0;
 }
+
+/* ─── Wishlist (idea, no coords yet) ─── */
+.adv-wishlist {
+  border-top: 1px solid var(--adv-glass-border);
+  padding: 20px 24px 28px;
+}
+
+.adv-wishlist-header {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--adv-brown);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.6;
+  margin-bottom: 12px;
+}
+
+.adv-wishlist-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.adv-wishlist-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--adv-glass);
+  border: 1px solid var(--adv-glass-border);
+}
+
+.adv-wishlist-item-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.adv-wishlist-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--adv-brown);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adv-wishlist-meta {
+  font-size: 0.68rem;
+  color: var(--adv-brown-light);
+}
+
+.adv-wishlist-pick-btn {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 100px;
+  border: none;
+  background: var(--adv-brown);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adv-wishlist-pick-btn:hover {
+  background: var(--adv-terracotta);
+}
+
+body.dark-mode .adv-wishlist-item {
+  background: rgba(255, 255, 255, 0.03);
+}

@@ -805,6 +805,200 @@ body.dark-mode .adv-sidebar__default-title { color: #E8D5C0; }
 body.dark-mode .adv-sidebar__default-desc  { color: #C4A882; }
 body.dark-mode .adv-hero__title            { color: #fff !important; }
 
+/* ─── Proposed / Picking States ─── */
+.adv-marker--proposed {
+  border-style: dashed;
+  opacity: 0.8;
+}
+
+.adv-marker-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--adv-sage);
+  color: #fff;
+  font-size: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+}
+
+.adv-map--picking {
+  cursor: crosshair !important;
+}
+
+.adv-map--picking .leaflet-marker-icon {
+  pointer-events: none;
+}
+
+/* ─── Floating Propose Button ─── */
+.adv-fab {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 100px;
+  border: none;
+  background: var(--adv-brown);
+  color: #fff;
+  font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(92, 61, 46, 0.35);
+  transition: all 0.2s ease;
+}
+
+.adv-fab:hover {
+  background: var(--adv-terracotta);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(196, 123, 90, 0.4);
+}
+
+/* ─── Modal ─── */
+.adv-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(30, 20, 12, 0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.adv-modal {
+  background: var(--adv-cream);
+  border-radius: 20px;
+  padding: 28px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--adv-shadow-lg);
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.adv-modal h3 {
+  font-family: 'Noto Serif TC', 'Outfit', serif;
+  color: var(--adv-brown);
+  margin: 0 0 16px;
+  font-size: 1.1rem;
+}
+
+.adv-modal label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--adv-brown-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 14px 0 6px;
+}
+
+.adv-modal input,
+.adv-modal select,
+.adv-modal textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--adv-glass-border);
+  background: #fff;
+  color: var(--adv-brown);
+  font-size: 0.9rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.adv-modal textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.adv-modal-pick-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1.5px dashed var(--adv-glass-border);
+  background: transparent;
+  color: var(--adv-brown-light);
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.adv-modal-pick-btn.picked {
+  border-style: solid;
+  border-color: var(--adv-sage);
+  color: var(--adv-sage);
+}
+
+.adv-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.adv-modal-btn {
+  flex: 1;
+  padding: 11px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+}
+
+.adv-modal-btn--primary {
+  background: var(--adv-terracotta);
+  color: #fff;
+}
+
+.adv-modal-btn--ghost {
+  background: transparent;
+  border: 1.5px solid var(--adv-glass-border);
+  color: var(--adv-brown-light);
+}
+
+.adv-modal-error {
+  color: #C0392B;
+  font-size: 0.8rem;
+  margin-top: 10px;
+}
+
+/* ─── Status action buttons in detail panel ─── */
+.sdl-status-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.sdl-status-btn {
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid var(--adv-glass-border);
+  background: var(--adv-glass);
+  color: var(--adv-brown-light);
+}
+
+.sdl-status-btn:hover {
+  border-color: var(--adv-terracotta);
+  color: var(--adv-terracotta);
+}
+
 /* ─── Season Filters ─── */
 .adv-season-btn {
   padding: 4px 10px;

@@ -8,19 +8,33 @@ export interface CategoryConfig {
 }
 
 export const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
-  food:    { color: '#C47B5A', fade: 'rgba(196, 123, 90, 0.3)', label: '美食', placeholder: '/images/placeholders/food.png' },
-  scenery: { color: '#81B29A', fade: 'rgba(129, 178, 154, 0.3)', label: '風景', placeholder: '/images/placeholders/scenery.png' },
-  oldshop: { color: '#D4A853', fade: 'rgba(212, 168, 83, 0.3)', label: '老店', placeholder: '/images/placeholders/oldshop.png' },
-  walk:    { color: '#7B8CDE', fade: 'rgba(123, 140, 222, 0.3)', label: '散步', placeholder: '/images/placeholders/walk.png' },
-  cafe:    { color: '#A67B5B', fade: 'rgba(166, 123, 91, 0.3)', label: '咖啡', placeholder: '/images/placeholders/cafe.png' },
-  shop:    { color: '#E07A5F', fade: 'rgba(224, 122, 95, 0.3)', label: '購物', placeholder: '/images/placeholders/shop.png' },
-  stay:    { color: '#3D5A80', fade: 'rgba(61, 90, 128, 0.3)', label: '住宿', placeholder: '/images/placeholders/stay.png' },
-  quest:   { color: '#9B72AA', fade: 'rgba(155, 114, 170, 0.3)', label: '破關任務', placeholder: '/images/placeholders/quest.png' },
+  food:         { color: '#C47B5A', fade: 'rgba(196, 123, 90, 0.3)', label: '美食', placeholder: '/images/placeholders/food.png' },
+  scenery:      { color: '#81B29A', fade: 'rgba(129, 178, 154, 0.3)', label: '風景', placeholder: '/images/placeholders/scenery.png' },
+  oldshop:      { color: '#D4A853', fade: 'rgba(212, 168, 83, 0.3)', label: '老店', placeholder: '/images/placeholders/oldshop.png' },
+  walk:         { color: '#7B8CDE', fade: 'rgba(123, 140, 222, 0.3)', label: '散步', placeholder: '/images/placeholders/walk.png' },
+  cafe:         { color: '#A67B5B', fade: 'rgba(166, 123, 91, 0.3)', label: '咖啡', placeholder: '/images/placeholders/cafe.png' },
+  shop:         { color: '#E07A5F', fade: 'rgba(224, 122, 95, 0.3)', label: '購物', placeholder: '/images/placeholders/shop.png' },
+  stay:         { color: '#3D5A80', fade: 'rgba(61, 90, 128, 0.3)', label: '住宿', placeholder: '/images/placeholders/stay.png' },
+  quest:        { color: '#9B72AA', fade: 'rgba(155, 114, 170, 0.3)', label: '破關任務', placeholder: '/images/placeholders/quest.png' },
+  museum:       { color: '#8E6C88', fade: 'rgba(142, 108, 136, 0.3)', label: '博物館/展覽', placeholder: '/images/placeholders/quest.png' },
+  indoor:       { color: '#B08968', fade: 'rgba(176, 137, 104, 0.3)', label: '室內活動', placeholder: '/images/placeholders/quest.png' },
+  diy:          { color: '#C9A05C', fade: 'rgba(201, 160, 92, 0.3)', label: '動手做', placeholder: '/images/placeholders/quest.png' },
+  indoor_sport: { color: '#5B7F9E', fade: 'rgba(91, 127, 158, 0.3)', label: '室內運動', placeholder: '/images/placeholders/quest.png' },
+  shopping:     { color: '#E07A5F', fade: 'rgba(224, 122, 95, 0.3)', label: '逛街', placeholder: '/images/placeholders/shop.png' },
+  park:         { color: '#7FA37A', fade: 'rgba(127, 163, 122, 0.3)', label: '公園', placeholder: '/images/placeholders/scenery.png' },
+  outdoor:      { color: '#6FA88E', fade: 'rgba(111, 168, 142, 0.3)', label: '戶外景點', placeholder: '/images/placeholders/scenery.png' },
+  hiking:       { color: '#5C8A5C', fade: 'rgba(92, 138, 92, 0.3)', label: '爬山步道', placeholder: '/images/placeholders/scenery.png' },
+  temple:       { color: '#B5502F', fade: 'rgba(181, 80, 47, 0.3)', label: '廟宇', placeholder: '/images/placeholders/oldshop.png' },
+  night_market: { color: '#CC5B45', fade: 'rgba(204, 91, 69, 0.3)', label: '夜市', placeholder: '/images/placeholders/food.png' },
+  daytrip:      { color: '#4E7A8C', fade: 'rgba(78, 122, 140, 0.3)', label: '郊區一日遊', placeholder: '/images/placeholders/scenery.png' },
 };
 
-export function getPlacesData(): PlaceEntry[] {
-  return (window as any).PLACES_DATA || [];
-}
+export const STATUS_LABEL: Record<string, string> = {
+  idea: '💭 願望清單',
+  proposed: '🗳️ 提案中',
+  confirmed: '✅ 已定案',
+  done: '🏁 已去過',
+};
 
 export function filterPlaces(
   places: PlaceEntry[],
@@ -34,9 +48,18 @@ export function filterPlaces(
   });
 }
 
+export function locatedPlaces(places: PlaceEntry[]): PlaceEntry[] {
+  return places.filter(p => p.lat != null && p.lng != null);
+}
+
+export function ideaPlaces(places: PlaceEntry[]): PlaceEntry[] {
+  return places.filter(p => p.status === 'idea');
+}
+
 export function calculateStats(places: PlaceEntry[]) {
-  const total = places.length;
-  const done = places.filter(p => p.status === 'done').length;
+  const committed = places.filter(p => p.status !== 'idea');
+  const total = committed.length;
+  const done = committed.filter(p => p.status === 'done').length;
   const percent = total > 0 ? Math.round((done / total) * 100) : 0;
   return { total, done, percent };
 }
