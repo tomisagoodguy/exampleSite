@@ -18,6 +18,9 @@
 
 <section class="adv-page" id="adv-app-root">
 
+  {{/* ─── 下拉刷新指示器 ─── */}}
+  <div class="adv-pull-refresh" id="adv-pull-refresh"><span class="adv-pull-refresh__icon">⟳</span></div>
+
   {{/* ─── Hero Banner ─── */}}
   <div class="adv-hero">
     <div class="adv-hero__inner">
@@ -47,6 +50,11 @@
       <span class="adv-hero__progress-label" id="progress-label">0% 解鎖</span>
     </div>
     <button class="adv-hero__next-trip-btn" id="adv-next-trip-btn">📅 最近行程要去哪？</button>
+  </div>
+
+  {{/* ─── 地點搜尋框 ─── */}}
+  <div class="adv-search-wrap">
+    <input type="search" id="adv-search-input" class="adv-search-input" placeholder="🔍 搜尋地點名稱、地址、捷運站…">
   </div>
 
   {{/* ─── 篩選 chips（依實際資料動態產生） ─── */}}
@@ -93,6 +101,9 @@
   <div style="height:80px;"></div>
 
   <button class="adv-fab" id="adv-fab">＋ 新增提案</button>
+
+  {{/* ─── 回到頂部 ─── */}}
+  <button class="adv-back-top" id="adv-back-top" aria-label="回到頂部" title="回到頂部">↑</button>
 
   {{/* ─── 手機版底部分頁列，桌面隱藏（三欄一起看） ─── */}}
   <nav class="adv-tabbar" id="adv-tabbar">

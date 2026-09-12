@@ -61,11 +61,19 @@ export interface CardActions {
   onDelete: (place: PlaceEntry) => void;
   onReschedule: (place: PlaceEntry) => void;
   onReorder: (dayKey: string, orderedIds: number[]) => void;
+  onShare: (place: PlaceEntry) => void;
 }
 
-function navQuery(place: PlaceEntry): string {
+export function navQuery(place: PlaceEntry): string {
   if (place.lat != null && place.lng != null) return `${place.lat},${place.lng}`;
   return encodeURIComponent(place.address || place.mrt_station || place.name);
+}
+
+/** 手機震動回饋，桌面瀏覽器沒有 vibrate API 時安靜跳過 */
+export function vibrate(pattern: number | number[] = 12): void {
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    navigator.vibrate(pattern);
+  }
 }
 
 function metaLine(place: PlaceEntry): string {
@@ -113,6 +121,7 @@ function proposedCard(place: PlaceEntry): string {
       <div class="adv-like-row">${likeButtons}</div>
       <div class="adv-card-actions">
         <a class="adv-card-btn" href="https://www.google.com/maps?q=${navQuery(place)}" target="_blank" rel="noopener">🗺️ 導航</a>
+        <button class="adv-card-btn adv-card-btn--ghost" data-action="share" data-id="${place.id}">🔗 分享</button>
         <button class="adv-card-btn adv-card-btn--ghost" data-action="edit" data-id="${place.id}">✏️ 修改</button>
         <button class="adv-card-btn adv-card-btn--ghost" data-action="unpropose" data-id="${place.id}">回到願望清單</button>
         <button class="adv-card-btn adv-card-btn--danger" data-action="delete" data-id="${place.id}">🗑 刪除</button>
@@ -122,7 +131,7 @@ function proposedCard(place: PlaceEntry): string {
   `;
 }
 
-function itineraryCard(place: PlaceEntry): string {
+function itineraryCard(place: PlaceEntry, position: number, dayTotal: number): string {
   const config = CATEGORY_CONFIG[place.category];
   const isDone = place.status === 'done';
 
@@ -132,18 +141,23 @@ function itineraryCard(place: PlaceEntry): string {
          draggable="true"
          data-id="${place.id}">
       <span class="adv-drag-handle" title="拖曳排序">⠿</span>
-      <div class="adv-card-tag" style="background:${config?.color || '#999'}">${config?.label || place.category}</div>
+      <button class="adv-card-more" data-action="toggle-actions" data-id="${place.id}" title="更多操作">⋯</button>
+      <div class="adv-card-top-row">
+        ${dayTotal > 1 ? `<span class="adv-stop-badge" title="第 ${position} 站">${position}</span>` : ''}
+        <div class="adv-card-tag" style="background:${config?.color || '#999'}">${config?.label || place.category}</div>
+      </div>
       <div class="adv-card-name">${place.name}${isDone ? ' 🏁' : ''}</div>
       ${metaLine(place) ? `<div class="adv-card-meta">${metaLine(place)}</div>` : ''}
       ${place.note ? `<p class="adv-card-note">${place.note.replace(/\n/g, '<br>')}</p>` : ''}
-      <div class="adv-card-actions">
-        <a class="adv-card-btn" href="https://www.google.com/maps?q=${navQuery(place)}" target="_blank" rel="noopener">🗺️ 導航</a>
-        <button class="adv-card-btn adv-card-btn--ghost" data-action="reschedule" data-id="${place.id}">📅 ${place.visit_date || '排日期'}</button>
-        <button class="adv-card-btn adv-card-btn--ghost" data-action="edit" data-id="${place.id}">✏️ 修改</button>
-        <button class="adv-card-btn adv-card-btn--danger" data-action="delete" data-id="${place.id}">🗑 刪除</button>
+      <div class="adv-card-actions adv-card-actions--collapsible" id="adv-itin-actions-${place.id}">
+        <a class="adv-card-btn adv-card-btn--icon" href="https://www.google.com/maps?q=${navQuery(place)}" target="_blank" rel="noopener" title="導航">🗺️</a>
+        <button class="adv-card-btn adv-card-btn--icon adv-card-btn--ghost" data-action="share" data-id="${place.id}" title="分享">🔗</button>
+        <button class="adv-card-btn adv-card-btn--icon adv-card-btn--ghost" data-action="reschedule" data-id="${place.id}" title="改日期">📅</button>
+        <button class="adv-card-btn adv-card-btn--icon adv-card-btn--ghost" data-action="edit" data-id="${place.id}" title="修改">✏️</button>
+        <button class="adv-card-btn adv-card-btn--icon adv-card-btn--danger" data-action="delete" data-id="${place.id}" title="刪除">🗑</button>
         ${isDone
-          ? `<button class="adv-card-btn adv-card-btn--ghost" data-action="reopen" data-id="${place.id}">↩ 重新開放</button>`
-          : `<button class="adv-card-btn adv-card-btn--primary" data-action="done" data-id="${place.id}">🏁 標記已去過</button>`
+          ? `<button class="adv-card-btn adv-card-btn--icon adv-card-btn--ghost" data-action="reopen" data-id="${place.id}" title="重新開放">↩</button>`
+          : `<button class="adv-card-btn adv-card-btn--icon adv-card-btn--primary" data-action="done" data-id="${place.id}" title="標記已去過">🏁</button>`
         }
       </div>
     </div>
@@ -167,9 +181,14 @@ function bindActions(mount: HTMLElement, places: PlaceEntry[], actions: CardActi
       else if (action === 'edit') actions.onEdit(place);
       else if (action === 'delete') actions.onDelete(place);
       else if (action === 'reschedule') actions.onReschedule(place);
+      else if (action === 'share') actions.onShare(place);
       else if (action === 'expand') {
         const detail = document.getElementById(`adv-row-detail-${place.id}`);
         if (detail) detail.hidden = !detail.hidden;
+      }
+      else if (action === 'toggle-actions') {
+        const row = document.getElementById(`adv-itin-actions-${place.id}`);
+        if (row) row.classList.toggle('adv-card-actions--open');
       }
     });
   });
@@ -287,7 +306,7 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
           <div class="adv-day-group">
             <div class="adv-day-header">${dayLabel(dayKey)}</div>
             <div class="adv-day-cards" data-day="${dayKey}">
-              ${places.map(itineraryCard).join('')}
+              ${places.map((p, i) => itineraryCard(p, i + 1, places.length)).join('')}
             </div>
           </div>
         `)
@@ -362,7 +381,29 @@ function openModal(innerHTML: string): { root: HTMLElement; close: () => void } 
   root.innerHTML = `<div class="adv-modal">${innerHTML}</div>`;
   document.body.appendChild(root);
 
-  const close = () => root.remove();
+  const modalEl = root.querySelector('.adv-modal') as HTMLElement;
+  const vv = window.visualViewport;
+
+  // 手機鍵盤彈出時視窗變矮，縮小 modal 高度避免內容被鍵盤蓋住
+  const onViewportResize = () => {
+    if (vv) modalEl.style.maxHeight = `${Math.round(vv.height * 0.9)}px`;
+  };
+  vv?.addEventListener('resize', onViewportResize);
+  onViewportResize();
+
+  // 聚焦的輸入框自動滾到可視範圍中間，避免被鍵盤擋住
+  const onFocusIn = (e: FocusEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.matches('input, textarea, select')) {
+      window.setTimeout(() => target.scrollIntoView({ block: 'center', behavior: 'smooth' }), 250);
+    }
+  };
+  root.addEventListener('focusin', onFocusIn);
+
+  const close = () => {
+    vv?.removeEventListener('resize', onViewportResize);
+    root.remove();
+  };
   root.addEventListener('click', (e) => {
     if (e.target === root) close();
   });
@@ -741,6 +782,7 @@ export function openPkModal(candidates: PlaceEntry[]): Promise<PlaceEntry | null
           btn.addEventListener(
             'click',
             () => {
+              vibrate(10);
               const idx = parseInt((btn as HTMLElement).dataset.idx || '0');
               res(idx === 0 ? a : b);
             },
@@ -863,6 +905,7 @@ export function openSwipeDeckModal(
   function flyOut(direction: 'like' | 'nope') {
     const topWrap = root.querySelector('#adv-swipe-top') as HTMLElement | null;
     if (!topWrap) return;
+    vibrate(direction === 'like' ? [10, 30, 10] : 10);
     const sign = direction === 'like' ? 1 : -1;
     topWrap.style.transition = 'transform 0.35s ease, opacity 0.35s ease';
     topWrap.style.transform = `translate(${sign * 600}px, -40px) rotate(${sign * 30}deg)`;

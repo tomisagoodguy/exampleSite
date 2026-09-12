@@ -245,6 +245,100 @@ body.dark-mode {
 }
 
 
+/* ─── 下拉刷新指示器 ─── */
+.adv-pull-refresh {
+  position: fixed;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 700;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--adv-glass);
+  border: 1px solid var(--adv-glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: var(--adv-brown-light);
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: var(--adv-shadow);
+  transition: top 0.2s ease, opacity 0.2s ease;
+}
+
+.adv-pull-refresh--ready {
+  color: var(--adv-terracotta);
+}
+
+.adv-pull-refresh--spinning .adv-pull-refresh__icon {
+  display: inline-block;
+  animation: adv-spin 0.6s linear infinite;
+}
+
+@keyframes adv-spin {
+  to { transform: rotate(360deg); }
+}
+
+
+/* ─── 地點搜尋框 ─── */
+.adv-search-wrap {
+  padding: 12px 16px 0;
+}
+
+.adv-search-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 100px;
+  border: 1.5px solid var(--adv-glass-border);
+  background: var(--adv-glass);
+  color: var(--adv-brown);
+  font-size: 0.88rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.adv-search-input::placeholder {
+  color: var(--adv-brown-light);
+  opacity: 0.7;
+}
+
+
+/* ─── 回到頂部按鈕 ─── */
+.adv-back-top {
+  position: fixed;
+  right: 16px;
+  bottom: 96px;
+  z-index: 550;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--adv-glass-border);
+  background: var(--adv-glass);
+  color: var(--adv-brown);
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: var(--adv-shadow);
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.adv-back-top--visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+@media (max-width: 899px) {
+  .adv-back-top {
+    bottom: calc(150px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+
 /* ─── Category Chip Bar ─── */
 .adv-chip-bar {
   display: flex;

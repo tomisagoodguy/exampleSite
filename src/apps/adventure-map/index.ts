@@ -16,6 +16,8 @@ import {
   openSwipeDeckModal,
   openNextTripModal,
   showToast,
+  navQuery,
+  vibrate,
 } from './ui';
 import { PlaceEntry } from '../../shared/types';
 import {
@@ -40,6 +42,7 @@ import {
 class DatingMapApp {
   private allPlaces: PlaceEntry[] = [];
   private currentCat: string = 'all';
+  private currentSearch: string = '';
   private identity: Identity | null = null;
   private refreshTimer: number | null = null;
   private readonly builtinCategoryKeys = new Set(Object.keys(CATEGORY_CONFIG));
@@ -71,6 +74,9 @@ class DatingMapApp {
     this.setupNextTrip();
     this.setupTabBar();
     this.setupRealtime();
+    this.setupSearch();
+    this.setupBackToTop();
+    this.setupPullToRefresh();
   }
 
   private async loadCategories() {
@@ -227,7 +233,7 @@ class DatingMapApp {
   }
 
   private renderAll() {
-    const filtered = filterPlaces(this.allPlaces, this.currentCat, 'all');
+    const filtered = filterPlaces(this.allPlaces, this.currentCat, 'all', this.currentSearch);
 
     updateStatsUI(this.allPlaces);
     renderFilterBar(this.allPlaces, this.currentCat, (cat) => {
@@ -245,7 +251,113 @@ class DatingMapApp {
       onDelete: (p) => this.deletePlace(p),
       onReschedule: (p) => this.reschedulePlace(p),
       onReorder: (dayKey, orderedIds) => this.reorderDay(dayKey, orderedIds),
+      onShare: (p) => this.sharePlace(p),
     });
+  }
+
+  /** 地點搜尋框：debounce 後依名稱/地址/捷運站/備註做本地篩選 */
+  private setupSearch() {
+    const input = document.getElementById('adv-search-input') as HTMLInputElement | null;
+    if (!input) return;
+
+    let timer: number | null = null;
+    input.addEventListener('input', () => {
+      if (timer !== null) window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        this.currentSearch = input.value;
+        this.renderAll();
+      }, 150);
+    });
+  }
+
+  /** 手機捲動夠遠時顯示「回到頂部」按鈕 */
+  private setupBackToTop() {
+    const btn = document.getElementById('adv-back-top');
+    if (!btn) return;
+
+    const onScroll = () => {
+      btn.classList.toggle('adv-back-top--visible', window.scrollY > 400);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  }
+
+  /** 頁面頂端下拉刷新，模擬原生 App 手感 */
+  private setupPullToRefresh() {
+    const indicator = document.getElementById('adv-pull-refresh');
+    if (!indicator) return;
+
+    const threshold = 70;
+    let startY = 0;
+    let pulling = false;
+    let refreshing = false;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (window.scrollY > 0 || refreshing) return;
+      startY = e.touches[0].clientY;
+      pulling = true;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!pulling) return;
+      const dy = e.touches[0].clientY - startY;
+      if (dy <= 0) return;
+      const dist = Math.min(dy, threshold * 1.6);
+      indicator.style.top = `${dist - 40}px`;
+      indicator.style.opacity = `${Math.min(dist / threshold, 1)}`;
+      indicator.classList.toggle('adv-pull-refresh--ready', dist >= threshold);
+    };
+
+    const onTouchEnd = async (e: TouchEvent) => {
+      if (!pulling) return;
+      pulling = false;
+      const endY = e.changedTouches[0]?.clientY ?? startY;
+      const dy = endY - startY;
+      indicator.classList.remove('adv-pull-refresh--ready');
+
+      if (dy >= threshold && !refreshing) {
+        refreshing = true;
+        indicator.style.top = '16px';
+        indicator.style.opacity = '1';
+        indicator.classList.add('adv-pull-refresh--spinning');
+        vibrate(10);
+        await this.refresh();
+        indicator.classList.remove('adv-pull-refresh--spinning');
+        indicator.style.top = '';
+        indicator.style.opacity = '';
+        refreshing = false;
+      } else {
+        indicator.style.top = '';
+        indicator.style.opacity = '';
+      }
+    };
+
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchmove', onTouchMove, { passive: true });
+    document.addEventListener('touchend', onTouchEnd);
+  }
+
+  /** 分享單一地點：支援時用系統分享面板，否則複製連結到剪貼簿 */
+  private async sharePlace(place: PlaceEntry) {
+    const url = `https://www.google.com/maps?q=${navQuery(place)}`;
+    const text = `${place.name}${place.address ? ' - ' + place.address : ''}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: place.name, text, url });
+      } catch {
+        // 使用者取消分享面板，不需處理
+      }
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      vibrate(8);
+      showToast('已複製地點連結');
+    } catch {
+      showToast('複製失敗');
+    }
   }
 
   private setupFab() {
@@ -425,6 +537,7 @@ class DatingMapApp {
       })
     );
     if (saved) {
+      vibrate([10, 40, 10, 40, 20]);
       showToast('恭喜破關！🏆');
       await this.refresh();
     }
