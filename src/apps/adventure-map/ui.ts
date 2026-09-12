@@ -1,20 +1,6 @@
 import { PlaceEntry } from '../../shared/types';
-import { CATEGORY_CONFIG, CategoryConfig, calculateStats, colorToFade } from './data';
+import { CATEGORY_CONFIG, CategoryConfig, colorToFade } from './data';
 import { IDENTITIES, Identity } from './supabase';
-
-export function updateStatsUI(allPlaces: PlaceEntry[]) {
-  const { total, done, percent } = calculateStats(allPlaces);
-
-  const elTotal = document.getElementById('total-count');
-  const elDone = document.getElementById('done-count');
-  const elBar = document.getElementById('progress-bar');
-  const elLabel = document.getElementById('progress-label');
-
-  if (elTotal) elTotal.textContent = total.toString();
-  if (elDone) elDone.textContent = done.toString();
-  if (elBar) elBar.style.width = `${percent}%`;
-  if (elLabel) elLabel.textContent = `${percent}% 解鎖`;
-}
 
 /** 依實際出現在資料中的分類，動態產生篩選 chips */
 export function renderFilterBar(

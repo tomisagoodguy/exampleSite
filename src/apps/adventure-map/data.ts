@@ -61,11 +61,3 @@ export function filterPlaces(
     return matchCat && matchSeason && matchSearch;
   });
 }
-
-export function calculateStats(places: PlaceEntry[]) {
-  const committed = places.filter(p => p.status !== 'idea');
-  const total = committed.length;
-  const done = committed.filter(p => p.status === 'done').length;
-  const percent = total > 0 ? Math.round((done / total) * 100) : 0;
-  return { total, done, percent };
-}

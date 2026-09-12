@@ -2,7 +2,6 @@ import './styles/map.css';
 import './styles/list.css';
 import { CATEGORY_CONFIG, colorToFade, filterPlaces } from './data';
 import {
-  updateStatsUI,
   renderFilterBar,
   renderSections,
   openPassphraseModal,
@@ -235,7 +234,6 @@ class DatingMapApp {
   private renderAll() {
     const filtered = filterPlaces(this.allPlaces, this.currentCat, 'all', this.currentSearch);
 
-    updateStatsUI(this.allPlaces);
     renderFilterBar(this.allPlaces, this.currentCat, (cat) => {
       this.currentCat = cat;
       this.renderAll();
