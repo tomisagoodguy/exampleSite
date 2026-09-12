@@ -90,6 +90,11 @@ weight = 2
 
 
 [[menu.main]]
+name = "破關地圖"
+URL = "adventure-map/"
+weight = 3
+
+[[menu.main]]
 name = "代書修煉"
 URL = "real-estate/"
 weight = 4
