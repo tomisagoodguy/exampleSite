@@ -6,9 +6,9 @@
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-left: 4px solid var(--cat-color, var(--adv-terracotta));
-  border-radius: 14px;
-  padding: 14px 16px;
-  box-shadow: 0 6px 16px rgba(92, 61, 46, 0.06);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 4px 12px rgba(92, 61, 46, 0.05);
 }
 
 .adv-card--done {
@@ -17,34 +17,34 @@
 
 .adv-card-tag {
   display: inline-block;
-  padding: 3px 10px;
-  border-radius: 8px;
-  font-size: 0.62rem;
+  padding: 2px 8px;
+  border-radius: 7px;
+  font-size: 0.6rem;
   font-weight: 800;
   color: #fff;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .adv-card-name {
   font-family: 'Outfit', 'Noto Sans TC', sans-serif;
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: var(--adv-brown);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .adv-card-meta {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--adv-brown-light);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .adv-card-note {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--adv-brown);
-  line-height: 1.6;
-  margin: 8px 0;
-  padding: 8px 10px;
+  line-height: 1.5;
+  margin: 6px 0;
+  padding: 6px 9px;
   background: rgba(255, 255, 255, 0.4);
   border-radius: 8px;
 }
@@ -62,15 +62,15 @@ body.dark-mode .adv-card-note {
 
 .adv-card-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
-  margin-top: 10px;
+  margin-top: 6px;
 }
 
 .adv-card-btn {
-  padding: 7px 14px;
+  padding: 5px 12px;
   border-radius: 100px;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 700;
   cursor: pointer;
   border: 1.5px solid var(--adv-glass-border);
@@ -92,6 +92,16 @@ body.dark-mode .adv-card-note {
   background: transparent;
 }
 
+.adv-card-btn--danger {
+  background: transparent;
+  border-color: rgba(192, 57, 43, 0.35);
+  color: #C0392B;
+}
+
+.adv-card-btn--danger:hover {
+  background: rgba(192, 57, 43, 0.08);
+}
+
 body.dark-mode .adv-card {
   background: rgba(45, 35, 28, 0.8);
   border-color: rgba(255, 255, 255, 0.05);
@@ -101,18 +111,18 @@ body.dark-mode .adv-card {
 /* ─── Like Row ─── */
 .adv-like-row {
   display: flex;
-  gap: 8px;
-  margin: 8px 0;
+  gap: 6px;
+  margin: 6px 0;
 }
 
 .adv-like-btn {
   flex: 1;
-  padding: 7px 10px;
-  border-radius: 10px;
+  padding: 5px 8px;
+  border-radius: 8px;
   border: 1.5px solid var(--adv-glass-border);
   background: rgba(255, 255, 255, 0.4);
   color: var(--adv-brown-light);
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 700;
   cursor: pointer;
   text-align: center;
@@ -126,4 +136,80 @@ body.dark-mode .adv-card {
 
 body.dark-mode .adv-like-btn {
   background: rgba(255, 255, 255, 0.04);
+}
+
+/* ─── Compact row list (願望清單) ─── */
+.adv-row-list {
+  gap: 0 !important;
+  background: var(--adv-glass);
+  border: 1px solid var(--adv-glass-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.adv-row-wrap + .adv-row-wrap .adv-row {
+  border-top: 1px solid var(--adv-glass-border);
+}
+
+.adv-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.adv-row-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cat-color, var(--adv-terracotta));
+}
+
+.adv-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.adv-row-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--adv-brown);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adv-row-meta {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  color: var(--adv-brown-light);
+  white-space: nowrap;
+}
+
+.adv-row-btn {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  border-radius: 100px;
+  border: none;
+  background: var(--adv-terracotta);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adv-row-detail {
+  padding: 0 10px 10px 26px;
+  font-size: 0.78rem;
+  color: var(--adv-brown-light);
+  line-height: 1.5;
+}
+
+body.dark-mode .adv-row-list {
+  background: rgba(45, 35, 28, 0.6);
 }

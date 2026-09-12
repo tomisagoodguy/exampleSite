@@ -9,6 +9,7 @@ import {
   openProposeModal,
   openMarkDoneModal,
   openIdentityModal,
+  openConfirmModal,
   showToast,
 } from './ui';
 import { PlaceEntry } from '../../shared/types';
@@ -16,6 +17,7 @@ import {
   fetchPlaces,
   proposePlace,
   updatePlace,
+  deletePlace,
   toggleLike,
   getStoredPassphrase,
   storePassphrase,
@@ -84,6 +86,8 @@ class DatingMapApp {
       onMarkDone: (p) => this.markDone(p),
       onReopen: (p) => this.changeStatus(p, 'confirmed'),
       onToggleLike: (p) => this.toggleLike(p),
+      onEdit: (p) => this.editPlace(p),
+      onDelete: (p) => this.deletePlace(p),
     });
   }
 
@@ -205,6 +209,44 @@ class DatingMapApp {
     if (!this.identity) return;
     const saved = await this.withPassphrase((pw) => toggleLike(pw, place.id, this.identity as Identity));
     if (saved) await this.refresh();
+  }
+
+  private async editPlace(place: PlaceEntry) {
+    const result = await openProposeModal({
+      name: place.name,
+      category: place.category,
+      address: place.address || place.mrt_station,
+      note: place.note,
+      proposedBy: place.proposed_by,
+    }, 'edit');
+    if (!result) return;
+
+    const saved = await this.withPassphrase((pw) =>
+      updatePlace({
+        passphrase: pw,
+        id: place.id,
+        name: result.name,
+        category: result.category,
+        address: result.address,
+        note: result.note,
+      })
+    );
+
+    if (saved) {
+      showToast('已更新');
+      await this.refresh();
+    }
+  }
+
+  private async deletePlace(place: PlaceEntry) {
+    const confirmed = await openConfirmModal(`要刪除「${place.name}」嗎？這個動作無法復原。`);
+    if (!confirmed) return;
+
+    const saved = await this.withPassphrase((pw) => deletePlace(pw, place.id));
+    if (saved !== null) {
+      showToast('已刪除');
+      await this.refresh();
+    }
   }
 
   private async refresh() {

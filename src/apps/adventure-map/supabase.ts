@@ -115,6 +115,8 @@ export interface UpdatePayload {
   mrt_station?: string;
   note?: string;
   visit_date?: string;
+  name?: string;
+  category?: string;
 }
 
 export async function updatePlace(payload: UpdatePayload): Promise<PlaceEntry> {
@@ -128,8 +130,19 @@ export async function updatePlace(payload: UpdatePayload): Promise<PlaceEntry> {
     p_mrt_station: payload.mrt_station ?? null,
     p_note: payload.note ?? null,
     p_visit_date: payload.visit_date ?? null,
+    p_name: payload.name ?? null,
+    p_category: payload.category ?? null,
   });
 
   if (error) throw error;
   return data as PlaceEntry;
+}
+
+export async function deletePlace(passphrase: string, id: number): Promise<void> {
+  const { error } = await supabase.rpc('dating_map_delete', {
+    p_passphrase: passphrase,
+    p_id: id,
+  });
+
+  if (error) throw error;
 }

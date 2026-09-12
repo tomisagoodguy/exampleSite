@@ -57,6 +57,8 @@ export interface CardActions {
   onMarkDone: (place: PlaceEntry) => void;
   onReopen: (place: PlaceEntry) => void;
   onToggleLike: (place: PlaceEntry) => void;
+  onEdit: (place: PlaceEntry) => void;
+  onDelete: (place: PlaceEntry) => void;
 }
 
 function navQuery(place: PlaceEntry): string {
@@ -71,16 +73,20 @@ function metaLine(place: PlaceEntry): string {
   return parts.join(' · ');
 }
 
-function ideaCard(place: PlaceEntry): string {
+function ideaRow(place: PlaceEntry): string {
   const config = CATEGORY_CONFIG[place.category];
+  const hasNote = Boolean(place.note);
   return `
-    <div class="adv-card" style="--cat-color:${config?.color || '#999'}">
-      <div class="adv-card-tag" style="background:${config?.color || '#999'}">${config?.label || place.category}</div>
-      <div class="adv-card-name">${place.name}</div>
-      ${metaLine(place) ? `<div class="adv-card-meta">${metaLine(place)}</div>` : ''}
-      <div class="adv-card-actions">
-        <button class="adv-card-btn adv-card-btn--primary" data-action="promote" data-id="${place.id}">📍 我要提案</button>
+    <div class="adv-row-wrap">
+      <div class="adv-row" style="--cat-color:${config?.color || '#999'}">
+        <span class="adv-row-dot" title="${config?.label || place.category}"></span>
+        <div class="adv-row-main" ${hasNote ? `data-action="expand" data-id="${place.id}"` : ''}>
+          <span class="adv-row-name">${place.name}</span>
+          ${metaLine(place) ? `<span class="adv-row-meta">${metaLine(place)}</span>` : ''}
+        </div>
+        <button class="adv-row-btn" data-action="promote" data-id="${place.id}">提案</button>
       </div>
+      ${hasNote ? `<div class="adv-row-detail" id="adv-row-detail-${place.id}" hidden>${place.note}</div>` : ''}
     </div>
   `;
 }
@@ -105,7 +111,9 @@ function proposedCard(place: PlaceEntry): string {
       <div class="adv-like-row">${likeButtons}</div>
       <div class="adv-card-actions">
         <a class="adv-card-btn" href="https://www.google.com/maps?q=${navQuery(place)}" target="_blank" rel="noopener">🗺️ 導航</a>
+        <button class="adv-card-btn adv-card-btn--ghost" data-action="edit" data-id="${place.id}">✏️ 修改</button>
         <button class="adv-card-btn adv-card-btn--ghost" data-action="unpropose" data-id="${place.id}">回到願望清單</button>
+        <button class="adv-card-btn adv-card-btn--danger" data-action="delete" data-id="${place.id}">🗑 刪除</button>
         <button class="adv-card-btn adv-card-btn--primary" data-action="confirm" data-id="${place.id}">✅ 定案</button>
       </div>
     </div>
@@ -125,6 +133,8 @@ function itineraryCard(place: PlaceEntry): string {
       ${place.note ? `<p class="adv-card-note">${place.note.replace(/\n/g, '<br>')}</p>` : ''}
       <div class="adv-card-actions">
         <a class="adv-card-btn" href="https://www.google.com/maps?q=${navQuery(place)}" target="_blank" rel="noopener">🗺️ 導航</a>
+        <button class="adv-card-btn adv-card-btn--ghost" data-action="edit" data-id="${place.id}">✏️ 修改</button>
+        <button class="adv-card-btn adv-card-btn--danger" data-action="delete" data-id="${place.id}">🗑 刪除</button>
         ${isDone
           ? `<button class="adv-card-btn adv-card-btn--ghost" data-action="reopen" data-id="${place.id}">↩ 重新開放</button>`
           : `<button class="adv-card-btn adv-card-btn--primary" data-action="done" data-id="${place.id}">🏁 標記已去過</button>`
@@ -148,6 +158,12 @@ function bindActions(mount: HTMLElement, places: PlaceEntry[], actions: CardActi
       else if (action === 'done') actions.onMarkDone(place);
       else if (action === 'reopen') actions.onReopen(place);
       else if (action === 'like') actions.onToggleLike(place);
+      else if (action === 'edit') actions.onEdit(place);
+      else if (action === 'delete') actions.onDelete(place);
+      else if (action === 'expand') {
+        const detail = document.getElementById(`adv-row-detail-${place.id}`);
+        if (detail) detail.hidden = !detail.hidden;
+      }
     });
   });
 }
@@ -165,7 +181,7 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
 
   if (ideaMount) {
     ideaMount.innerHTML = ideas.length
-      ? ideas.map(ideaCard).join('')
+      ? ideas.map(ideaRow).join('')
       : `<p class="adv-empty">目前沒有這個分類的願望清單項目</p>`;
     bindActions(ideaMount, ideas, actions);
   }
@@ -229,6 +245,28 @@ export function openIdentityModal(): Promise<Identity> {
   });
 }
 
+export function openConfirmModal(message: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const { root, close } = openModal(`
+      <h3>確定嗎？</h3>
+      <p style="font-size:0.9rem;color:var(--adv-brown);margin:0 0 4px;">${message}</p>
+      <div class="adv-modal-actions">
+        <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-confirm-cancel">取消</button>
+        <button class="adv-modal-btn adv-modal-btn--primary" id="adv-confirm-ok" style="background:#C0392B;">確定刪除</button>
+      </div>
+    `);
+
+    root.querySelector('#adv-confirm-cancel')?.addEventListener('click', () => {
+      close();
+      resolve(false);
+    });
+    root.querySelector('#adv-confirm-ok')?.addEventListener('click', () => {
+      close();
+      resolve(true);
+    });
+  });
+}
+
 export function openPassphraseModal(errorMsg?: string): Promise<string | null> {
   return new Promise((resolve) => {
     const { root, close } = openModal(`
@@ -270,7 +308,8 @@ export interface ProposeFormResult {
 }
 
 export function openProposeModal(
-  defaults: Partial<{ name: string; category: string; address: string; note: string; proposedBy: string }>
+  defaults: Partial<{ name: string; category: string; address: string; note: string; proposedBy: string }>,
+  mode: 'create' | 'edit' = 'create'
 ): Promise<ProposeFormResult | null> {
   return new Promise((resolve) => {
     const categoryOptions = Object.entries(CATEGORY_CONFIG)
@@ -278,7 +317,7 @@ export function openProposeModal(
       .join('');
 
     const { root, close } = openModal(`
-      <h3>新增約會提案</h3>
+      <h3>${mode === 'edit' ? '修改地點' : '新增約會提案'}</h3>
       <label>地點名稱</label>
       <input type="text" id="adv-pf-name" value="${defaults.name || ''}" />
       <label>分類</label>
@@ -292,7 +331,7 @@ export function openProposeModal(
       <div class="adv-modal-error" id="adv-pf-error" style="display:none;"></div>
       <div class="adv-modal-actions">
         <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-pf-cancel">取消</button>
-        <button class="adv-modal-btn adv-modal-btn--primary" id="adv-pf-submit">送出提案</button>
+        <button class="adv-modal-btn adv-modal-btn--primary" id="adv-pf-submit">${mode === 'edit' ? '儲存修改' : '送出提案'}</button>
       </div>
     `);
 
