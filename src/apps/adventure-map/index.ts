@@ -8,6 +8,9 @@ import {
   renderSections,
   renderGuides,
   GuideSeasonFilter,
+  renderAchievements,
+  achievementUnlock,
+  AchievementFilter,
   openPassphraseModal,
   openProposeModal,
   openMarkDoneModal,
@@ -28,6 +31,10 @@ import {
   fetchPlaces,
   fetchGuides,
   Guide,
+  fetchAchievements,
+  setAchievement,
+  subscribeToAchievements,
+  Achievement,
   proposePlace,
   updatePlace,
   setPlaceAttrs,
@@ -50,6 +57,8 @@ class DatingMapApp {
   private allPlaces: PlaceEntry[] = [];
   private guides: Guide[] = [];
   private currentGuideSeason: GuideSeasonFilter = 'all';
+  private achievements: Achievement[] = [];
+  private currentAchFilter: AchievementFilter = 'all';
   private currentCat: string = 'all';
   private currentAttr: AttrFilter = { region: 'all', rainOnly: false };
   private currentSearch: string = '';
@@ -74,7 +83,7 @@ class DatingMapApp {
       showToast('資料讀取失敗，稍後再試試');
       this.allPlaces = [];
     }
-    await this.loadGuides();
+    await Promise.all([this.loadGuides(), this.loadAchievements()]);
 
     this.renderAll();
     this.setupFab();
@@ -231,6 +240,7 @@ class DatingMapApp {
 
   private setupRealtime() {
     subscribeToPlaces(() => this.scheduleRealtimeRefresh());
+    subscribeToAchievements(() => this.scheduleRealtimeRefresh());
     subscribeToCategories(async () => {
       await this.loadCategories();
       this.renderAll();
@@ -308,6 +318,62 @@ class DatingMapApp {
       },
       (g) => this.applyGuide(g)
     );
+    renderAchievements(
+      this.achievements,
+      this.filterAchievements(),
+      this.allPlaces,
+      this.currentAchFilter,
+      (filter) => {
+        this.currentAchFilter = filter;
+        this.renderAll();
+      },
+      (a) => this.unlockAchievement(a),
+      (a) => this.undoAchievement(a)
+    );
+  }
+
+  private async loadAchievements() {
+    try {
+      this.achievements = await fetchAchievements();
+    } catch (err) {
+      console.error('讀取成就失敗', err);
+      this.achievements = [];
+    }
+  }
+
+  private filterAchievements(): Achievement[] {
+    const q = this.currentSearch.trim().toLowerCase();
+    if (!q) return this.achievements;
+    return this.achievements.filter((a) =>
+      [a.title, a.description, a.when_text].some((v) => v && v.toLowerCase().includes(q))
+    );
+  }
+
+  private async unlockAchievement(a: Achievement) {
+    const form = await openMarkDoneModal(`解鎖「${a.title}」`);
+    if (!form) return;
+
+    const saved = await this.withPassphrase((pw) =>
+      setAchievement(pw, a.id, { date: form.visitDate, by: this.identity || undefined, note: form.note })
+    );
+    if (saved) {
+      vibrate([10, 40, 10, 40, 20]);
+      showToast(`🏆 成就解鎖：${a.title}`);
+      await this.refresh();
+    }
+  }
+
+  private async undoAchievement(a: Achievement) {
+    const confirmed = await openConfirmModal(`要取消「${a.title}」的解鎖紀錄嗎？`);
+    if (!confirmed) return;
+
+    const saved = await this.withPassphrase((pw) => setAchievement(pw, a.id, null));
+    if (saved) {
+      const placeById = new Map(this.allPlaces.map((p) => [p.id, p]));
+      const stillByPlace = achievementUnlock({ ...a, done_date: null }, placeById) !== null;
+      showToast(stillByPlace ? '已取消手動紀錄（連結的地點去過了，仍算解鎖）' : '已取消解鎖');
+      await this.refresh();
+    }
   }
 
   private async loadGuides() {
@@ -658,7 +724,12 @@ class DatingMapApp {
     );
     if (saved) {
       vibrate([10, 40, 10, 40, 20]);
-      showToast('恭喜破關！🏆');
+      // 在 refresh 前判斷：這個地點連結的成就裡，哪些是這次才解鎖的
+      const placeById = new Map(this.allPlaces.map((p) => [p.id, p]));
+      const unlocked = this.achievements.filter(
+        (a) => a.place_ids.includes(place.id) && achievementUnlock(a, placeById) === null
+      );
+      showToast(unlocked.length ? `恭喜破關！🏆 成就解鎖：${unlocked.map((a) => a.title).join('、')}` : '恭喜破關！🏆');
       await this.refresh();
     }
   }
@@ -728,7 +799,7 @@ class DatingMapApp {
     } catch (err) {
       console.error(err);
     }
-    await this.loadGuides();
+    await Promise.all([this.loadGuides(), this.loadAchievements()]);
     this.renderAll();
   }
 }

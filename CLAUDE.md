@@ -83,7 +83,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | 欄位 | 合法值 | 說明 |
 | --- | --- | --- |
 | `category` | `food` 吃、`cafe` 咖啡甜點、`shop` 逛街、`walk` 城市散步、`museum` 展覽文化、`diy` 體驗玩樂、`scenery` 自然風景、`stay` 住宿、`quest` 破關任務（目前僅 2 家租機車行） | 只回答「去那裡做什麼」；定義在 `data.ts` 的 `CATEGORY_CONFIG`，宣告順序＝篩選列順序 |
-| `region` | `north` 北北基、`tzm` 桃竹苗、`taichung` 台中、`central_south` 中南部、`east` 宜花東 | 無座標時為 `null` |
+| `region` | `north` 北北基、`tzm` 桃竹苗、`taichung` 台中、`central_south` 中南部、`east` 宜花東、`islands` 離島（澎金馬、小琉球、綠島、蘭嶼） | 無座標時為 `null` |
 | `is_indoor` | `true` / `false` | 「☔ 雨天可去」篩選 |
 
 - 夜市→`food`、老店/商圈→`shop`、廟宇→`museum`、公園→`walk`、步道→`scenery`、室內運動→`diy`；距離遠近用 `region` 表示，不另設「一日遊」分類
@@ -102,6 +102,17 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - `seasons text[]` 只接受 `spring` / `summer` / `autumn` / `winter`（CHECK 約束），**空陣列代表全年皆宜**；前端季節篩選列選某季只顯示有標該季的路線，「全年皆宜」另成一顆。只標季節性明顯的路線（芒花、玩水、泡湯），不要每條都標
 - 兩張表只開放 `SELECT`（RLS），內容目前由 Supabase SQL 直接寫入，前端沒有編輯介面
 - 「📅 照這個排行程」會把各站地點依 `seq` 定案到同一天（寫入 `visit_date` + `sort_order`），已在行程中的地點跳過
+
+**旅行成就**（「🏆 成就」分頁，清單改編自 [ivanusto/taiwan-travel-achievement-list](https://github.com/ivanusto/taiwan-travel-achievement-list)，MIT）：
+
+| 資料表 | 內容 |
+| --- | --- |
+| `dating_map_achievements` | 一項成就：`category`（`nature` 自然／`photo` 攝影／`festival` 祭典／`island` 離島）、`title`、`emoji`、`difficulty` 1–5、`when_text`（何時去）、手動解鎖紀錄 `done_date` / `done_by` / `done_note` |
+| `dating_map_achievement_places` | 成就 ↔ 地點多對多連結（`achievement_id`, `place_id`） |
+
+- **解鎖規則（前端 `achievementUnlock` 判斷）**：`done_date` 有值（手動打勾），**或**任一連結地點 `status = 'done'`；所以地點標記「已去過」會自動解鎖成就，祭典這類沒有固定地點的只能手動
+- 前端寫入只走 RPC `dating_map_set_achievement`（`p_done=false` 清除手動紀錄）；新增成就、調整連結目前用 SQL 直接寫
+- 分類徽章門檻與稱號定義在 `data.ts` 的 `ACHIEVEMENT_CATEGORY` / `ACHIEVEMENT_TITLES`；新增成就分類要同時改這裡與資料表的 CHECK 約束
 
 **自動補座標**：頁面上「新增提案」與「修改地點」（原本無座標或地址有改）送出前，`geocode.ts` 會先用地址、再用店名查 ArcGIS `findAddressCandidates`，**分數 ≥ 90 且落在台灣範圍內**才寫入 `lat` / `lng`（`region` 由 trigger 跟著重算）；查不到照常存檔，toast 會提示「找不到座標」。門牌、公園、商圈命中率高，小店名與「捷運○○站」多半查不到，需事後用下方「補座標」方式處理。
 
@@ -141,9 +152,9 @@ Leaflet / MarkerCluster 以 `external` 方式排除，頁面直接從 CDN 載入
 src/
 ├── apps/adventure-map/     # 破關地圖（Leaflet + MarkerCluster + Supabase）
 │   ├── data.ts             # 分類設定（CATEGORY_CONFIG）
-│   ├── supabase.ts         # Supabase client、CRUD、Realtime 訂閱、懶人包讀取（fetchGuides）
+│   ├── supabase.ts         # Supabase client、CRUD、Realtime 訂閱、懶人包（fetchGuides）與成就（fetchAchievements）讀取
 │   ├── geocode.ts          # 提案／編輯時以 ArcGIS 自動補座標
-│   ├── ui.ts               # 面板 UI 邏輯（面板、懶人包時間軸、Modal、Toast）
+│   ├── ui.ts               # 面板 UI 邏輯（面板、懶人包時間軸、成就徽章、Modal、Toast）
 │   └── index.ts            # 入口，組合各模組
 └── shared/
     └── types.ts            # PlaceEntry 等共用型別

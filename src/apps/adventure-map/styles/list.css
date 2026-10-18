@@ -570,3 +570,158 @@ body.dark-mode .adv-row-list {
   color: var(--adv-brown-light);
   margin-top: 8px;
 }
+
+/* ─── 旅行成就 ─── */
+.adv-ach-summary {
+  padding: 12px 14px;
+  margin: 0 0 8px;
+  border-radius: 14px;
+  background: var(--adv-glass);
+  border: 1px solid var(--adv-glass-border);
+}
+
+.adv-ach-rank {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--adv-brown);
+  font-weight: 800;
+}
+
+.adv-ach-rank-count {
+  font-size: 0.85rem;
+  color: var(--adv-brown-light);
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-ach-progress {
+  height: 6px;
+  margin: 8px 0 10px;
+  border-radius: 100px;
+  background: var(--adv-cream-dark);
+  overflow: hidden;
+}
+
+.adv-ach-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--adv-gold);
+  transition: width 0.3s ease;
+}
+
+.adv-ach-badges {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 6px;
+}
+
+.adv-ach-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1.5px dashed var(--adv-glass-border);
+  color: var(--adv-brown-light);
+  font-size: 0.75rem;
+}
+
+.adv-ach-badge-icon {
+  font-size: 1.1rem;
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.adv-ach-badge-name {
+  flex: 1;
+  font-weight: 700;
+}
+
+.adv-ach-badge-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-ach-badge.is-earned {
+  border-style: solid;
+  border-color: var(--cat-color);
+  color: var(--adv-brown);
+}
+
+.adv-ach-badge.is-earned .adv-ach-badge-icon {
+  filter: none;
+  opacity: 1;
+}
+
+.adv-ach-card {
+  border-left-color: var(--adv-glass-border);
+}
+
+.adv-ach-card.is-unlocked {
+  border-left-color: var(--cat-color);
+}
+
+.adv-ach-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adv-ach-emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.adv-ach-card:not(.is-unlocked) .adv-ach-emoji {
+  opacity: 0.45;
+}
+
+.adv-ach-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.adv-ach-title {
+  font-weight: 800;
+  color: var(--adv-brown);
+}
+
+.adv-ach-stars {
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  color: var(--adv-gold);
+}
+
+.adv-ach-desc {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: var(--adv-brown-light);
+}
+
+.adv-ach-places {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.adv-ach-place {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 100px;
+  border: 1px solid var(--adv-glass-border);
+  color: var(--adv-brown);
+  text-decoration: none;
+}
+
+.adv-ach-unlocked {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--adv-sage);
+}
+
+.adv-ach-credit a {
+  color: inherit;
+}

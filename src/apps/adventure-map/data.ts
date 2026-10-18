@@ -43,7 +43,35 @@ export const REGION_LABEL: Record<Region, string> = {
   taichung: '台中',
   central_south: '中南部',
   east: '宜花東',
+  islands: '離島',
 };
+
+export type AchievementCategory = 'nature' | 'photo' | 'festival' | 'island';
+
+export interface AchievementCategoryConfig {
+  label: string;
+  emoji: string;
+  color: string;
+  /** 解鎖幾項拿到這類的徽章 */
+  badge: { name: string; threshold: number };
+}
+
+/** 宣告順序即成就分頁的分類順序；徽章門檻沿用參考專案（ivanusto/taiwan-travel-achievement-list） */
+export const ACHIEVEMENT_CATEGORY: Record<AchievementCategory, AchievementCategoryConfig> = {
+  nature:   { label: '自然', emoji: '🏔️', color: '#81B29A', badge: { name: '山海自然控', threshold: 6 } },
+  photo:    { label: '攝影', emoji: '📷', color: '#7B8CDE', badge: { name: '極景攝影師', threshold: 5 } },
+  festival: { label: '祭典', emoji: '🥁', color: '#C47B5A', badge: { name: '民俗祭典通', threshold: 4 } },
+  island:   { label: '離島', emoji: '🚢', color: '#3D5A80', badge: { name: '跳島旅行家', threshold: 4 } },
+};
+
+/** 依解鎖總數決定稱號，由低到高 */
+export const ACHIEVEMENT_TITLES: { min: number; title: string }[] = [
+  { min: 0, title: '🌱 台灣新手' },
+  { min: 5, title: '🎒 週末旅人' },
+  { min: 12, title: '✈️ 台灣探索家' },
+  { min: 22, title: '🗺️ 破關老手' },
+  { min: 32, title: '🏯 台灣旅行神' },
+];
 
 export function filterPlaces(
   places: PlaceEntry[],

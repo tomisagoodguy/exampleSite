@@ -101,6 +101,20 @@
       <div class="adv-card-list adv-guide-list" id="adv-section-guides"></div>
     </div>
 
+    {{/* 旅行成就：清單改編自 ivanusto/taiwan-travel-achievement-list（MIT），桌面版同懶人包橫跨三欄 */}}
+    <div class="adv-section adv-section--guides" data-tab="achievements">
+      <div class="adv-section-header">
+        <span>🏆 旅行成就</span>
+        <span class="adv-section-count" data-section="achievements">0</span>
+      </div>
+      <div class="adv-ach-summary" id="adv-ach-summary"></div>
+      <div class="adv-guide-seasons" id="adv-ach-filter" role="group" aria-label="依分類篩選成就"></div>
+      <div class="adv-card-list adv-guide-list" id="adv-section-achievements"></div>
+      <div class="adv-guide-source adv-ach-credit">
+        成就清單改編自 <a href="https://github.com/ivanusto/taiwan-travel-achievement-list" target="_blank" rel="noopener">台灣旅行成就系統</a>（MIT）
+      </div>
+    </div>
+
   </div>
 
   <div style="height:80px;"></div>
@@ -131,6 +145,11 @@
       <span class="adv-tab__icon">📚</span>
       懶人包
       <span class="adv-section-count adv-tab__badge" data-section="guides">0</span>
+    </button>
+    <button class="adv-tab" data-tab-target="achievements">
+      <span class="adv-tab__icon">🏆</span>
+      成就
+      <span class="adv-section-count adv-tab__badge" data-section="achievements">0</span>
     </button>
   </nav>
 

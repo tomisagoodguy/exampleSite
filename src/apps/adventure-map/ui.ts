@@ -1,6 +1,16 @@
 import { PlaceEntry, Region } from '../../shared/types';
-import { CATEGORY_CONFIG, CategoryConfig, colorToFade, REGION_LABEL } from './data';
-import { IDENTITIES, Identity, Guide, GuideStop, Season } from './supabase';
+import {
+  CATEGORY_CONFIG,
+  CategoryConfig,
+  colorToFade,
+  REGION_LABEL,
+  STATUS_LABEL,
+  ACHIEVEMENT_CATEGORY,
+  AchievementCategory,
+  AchievementCategoryConfig,
+  ACHIEVEMENT_TITLES,
+} from './data';
+import { IDENTITIES, Identity, Guide, GuideStop, Season, Achievement } from './supabase';
 
 /** 依實際出現在資料中的分類，動態產生篩選 chips */
 export function renderFilterBar(
@@ -559,6 +569,142 @@ export function renderGuides(
   });
 }
 
+// ───────────────────────── 旅行成就 ─────────────────────────
+
+export interface AchievementUnlock {
+  date: string | null;
+  /** manual = 手動打勾；place = 連結的地點已標記去過 */
+  via: 'manual' | 'place';
+  place?: PlaceEntry;
+}
+
+/** 手動解鎖優先；否則取連結地點中最早去過的那一個 */
+export function achievementUnlock(a: Achievement, placeById: Map<number, PlaceEntry>): AchievementUnlock | null {
+  if (a.done_date) return { date: a.done_date, via: 'manual' };
+  const done = a.place_ids
+    .map((id) => placeById.get(id))
+    .filter((p): p is PlaceEntry => p?.status === 'done')
+    .sort((x, y) => (x.visit_date || '9999').localeCompare(y.visit_date || '9999'));
+  return done.length ? { date: done[0].visit_date || null, via: 'place', place: done[0] } : null;
+}
+
+export type AchievementFilter = 'all' | AchievementCategory;
+
+function achievementCardHTML(a: Achievement, placeById: Map<number, PlaceEntry>): string {
+  const cfg = ACHIEVEMENT_CATEGORY[a.category];
+  const unlock = achievementUnlock(a, placeById);
+  const places = a.place_ids.map((id) => placeById.get(id)).filter((p): p is PlaceEntry => p != null);
+
+  const unlockLine = !unlock
+    ? ''
+    : unlock.via === 'manual'
+      ? `✅ ${esc(unlock.date)}${a.done_by ? ` · ${esc(a.done_by)}` : ''}`
+      : `🏁 去過「${esc(unlock.place?.name)}」${unlock.date ? ` · ${esc(unlock.date)}` : ''}`;
+
+  const action = !unlock
+    ? `<button class="adv-card-btn adv-card-btn--primary" data-ach-action="unlock" data-ach-id="${a.id}">🏆 我們完成了</button>`
+    : unlock.via === 'manual'
+      ? `<button class="adv-card-btn adv-card-btn--ghost" data-ach-action="undo" data-ach-id="${a.id}">取消解鎖</button>`
+      : '';
+
+  return `
+    <div class="adv-card adv-ach-card ${unlock ? 'is-unlocked' : ''}" style="--cat-color:${cfg.color}">
+      <div class="adv-ach-head">
+        <span class="adv-ach-emoji" aria-hidden="true">${unlock ? esc(a.emoji) || cfg.emoji : '🔒'}</span>
+        <div class="adv-ach-main">
+          <div class="adv-ach-title">${esc(a.title)}</div>
+          <div class="adv-ach-stars" title="難度 ${a.difficulty}/5">${'★'.repeat(a.difficulty)}${'☆'.repeat(5 - a.difficulty)}</div>
+        </div>
+      </div>
+      ${a.description ? `<div class="adv-ach-desc">${esc(a.description)}</div>` : ''}
+      ${a.when_text ? `<div class="adv-guide-meta"><span class="adv-guide-tag adv-guide-tag--season">🗓️ ${esc(a.when_text)}</span></div>` : ''}
+      ${places.length ? `<div class="adv-ach-places">${places.map((p) => `
+        <a class="adv-ach-place" href="https://www.google.com/maps?q=${navQuery(p)}" target="_blank" rel="noopener" title="${esc(STATUS_LABEL[p.status])}">
+          ${STATUS_BADGE[p.status] || ''} ${esc(p.name)}
+        </a>`).join('')}</div>` : ''}
+      ${unlockLine ? `<div class="adv-ach-unlocked">${unlockLine}</div>` : ''}
+      ${a.done_note ? `<div class="adv-guide-stop-tip">📝 ${esc(a.done_note)}</div>` : ''}
+      ${action ? `<div class="adv-card-actions">${action}</div>` : ''}
+    </div>
+  `;
+}
+
+/** 成就分頁：稱號 + 徽章進度 + 分類篩選 + 成就卡片 */
+export function renderAchievements(
+  all: Achievement[],
+  searched: Achievement[],
+  allPlaces: PlaceEntry[],
+  filter: AchievementFilter,
+  onFilterChange: (filter: AchievementFilter) => void,
+  onUnlock: (a: Achievement) => void,
+  onUndo: (a: Achievement) => void
+) {
+  const mount = document.getElementById('adv-section-achievements');
+  const summary = document.getElementById('adv-ach-summary');
+  const bar = document.getElementById('adv-ach-filter');
+  if (!mount || !summary || !bar) return;
+
+  const placeById = new Map(allPlaces.map((p) => [p.id, p]));
+  const isUnlocked = (a: Achievement) => achievementUnlock(a, placeById) !== null;
+  const cats = Object.entries(ACHIEVEMENT_CATEGORY) as [AchievementCategory, AchievementCategoryConfig][];
+
+  // 稱號與徽章看全部成就，不受搜尋影響
+  const total = all.filter(isUnlocked).length;
+  const title = [...ACHIEVEMENT_TITLES].reverse().find((t) => total >= t.min)?.title || '';
+
+  summary.innerHTML = `
+    <div class="adv-ach-rank">
+      <span class="adv-ach-rank-title">${title}</span>
+      <span class="adv-ach-rank-count">${total} / ${all.length}</span>
+    </div>
+    <div class="adv-ach-progress"><span style="width:${all.length ? (total / all.length) * 100 : 0}%"></span></div>
+    <div class="adv-ach-badges">
+      ${cats.map(([key, cfg]) => {
+        const got = all.filter((a) => a.category === key && isUnlocked(a)).length;
+        const earned = got >= cfg.badge.threshold;
+        return `<div class="adv-ach-badge ${earned ? 'is-earned' : ''}" style="--cat-color:${cfg.color}" title="解鎖 ${cfg.badge.threshold} 項${cfg.label}成就">
+          <span class="adv-ach-badge-icon">${cfg.emoji}</span>
+          <span class="adv-ach-badge-name">${cfg.badge.name}</span>
+          <span class="adv-ach-badge-count">${Math.min(got, cfg.badge.threshold)}/${cfg.badge.threshold}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+
+  const options: [AchievementFilter, string][] = [['all', '全部'], ...cats.map(([k, c]) => [k, `${c.emoji} ${c.label}`] as [AchievementFilter, string])];
+  bar.innerHTML = options.map(([value, label]) => {
+    const inCat = searched.filter((a) => value === 'all' || a.category === value);
+    return `<button class="adv-guide-season ${value === filter ? 'is-active' : ''}" data-ach-filter="${value}" aria-pressed="${value === filter}">${label}<span class="adv-guide-season-count">${inCat.filter(isUnlocked).length}/${inCat.length}</span></button>`;
+  }).join('');
+  bar.querySelectorAll<HTMLElement>('[data-ach-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => onFilterChange(btn.dataset.achFilter as AchievementFilter));
+  });
+
+  // 未解鎖排前面，同一分類內維持原本順序
+  const order = cats.map(([k]) => k);
+  const shown = searched
+    .filter((a) => filter === 'all' || a.category === filter)
+    .sort((x, y) =>
+      Number(isUnlocked(x)) - Number(isUnlocked(y)) ||
+      order.indexOf(x.category) - order.indexOf(y.category) ||
+      x.sort_order - y.sort_order
+    );
+
+  mount.innerHTML = shown.length
+    ? shown.map((a) => achievementCardHTML(a, placeById)).join('')
+    : `<p class="adv-empty">沒有符合的成就</p>`;
+
+  mount.querySelectorAll<HTMLElement>('[data-ach-action]').forEach((btn) => {
+    const a = shown.find((x) => x.id === parseInt(btn.dataset.achId || '0'));
+    if (!a) return;
+    btn.addEventListener('click', () => (btn.dataset.achAction === 'unlock' ? onUnlock(a) : onUndo(a)));
+  });
+
+  document.querySelectorAll('.adv-section-count[data-section="achievements"]').forEach((el) => {
+    el.textContent = `${total}`;
+  });
+}
+
 /** 「最近行程」快速預覽：不用滑過三欄看板，一鍵看下一次要去哪 */
 export function openNextTripModal(allPlaces: PlaceEntry[]): void {
   const confirmed = allPlaces.filter(p => p.status === 'confirmed');
@@ -928,11 +1074,11 @@ export function openProposeModal(
   });
 }
 
-export function openMarkDoneModal(): Promise<{ visitDate: string; note: string } | null> {
+export function openMarkDoneModal(title = '標記已去過'): Promise<{ visitDate: string; note: string } | null> {
   return new Promise((resolve) => {
     const today = new Date().toISOString().slice(0, 10);
     const { root, close } = openModal(`
-      <h3>標記已去過</h3>
+      <h3>${esc(title)}</h3>
       <label>去的日期</label>
       <input type="date" id="adv-done-date" value="${today}" />
       <label>當天筆記</label>

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { PlaceEntry, PlaceStatus, Region } from '../../shared/types';
+import type { AchievementCategory } from './data';
 
 const url = (window as any).DATING_MAP_SUPABASE_URL as string;
 const key = (window as any).DATING_MAP_SUPABASE_KEY as string;
@@ -102,6 +103,67 @@ export async function fetchGuides(): Promise<Guide[]> {
     seasons: g.seasons || [],
     stops: [...(g.stops || [])].sort((a, b) => a.seq - b.seq),
   }));
+}
+
+/** 旅行成就；done_date 是手動解鎖，連結地點有任一 status='done' 也算解鎖（前端判斷） */
+export interface Achievement {
+  id: number;
+  category: AchievementCategory;
+  title: string;
+  emoji: string | null;
+  description: string | null;
+  difficulty: number;
+  when_text: string | null;
+  sort_order: number;
+  done_date: string | null;
+  done_by: string | null;
+  done_note: string | null;
+  place_ids: number[];
+}
+
+export async function fetchAchievements(): Promise<Achievement[]> {
+  const { data, error } = await supabase
+    .from('dating_map_achievements')
+    .select('*, links:dating_map_achievement_places(place_id)')
+    .order('sort_order', { ascending: true });
+
+  if (error) throw error;
+  return ((data || []) as (Omit<Achievement, 'place_ids'> & { links: { place_id: number }[] | null })[]).map(
+    ({ links, ...a }) => ({ ...a, place_ids: (links || []).map((l) => l.place_id) })
+  );
+}
+
+export async function setAchievement(
+  passphrase: string,
+  id: number,
+  done: { date: string; by?: string; note?: string } | null
+): Promise<Achievement> {
+  const { data, error } = await supabase.rpc('dating_map_set_achievement', {
+    p_passphrase: passphrase,
+    p_id: id,
+    p_done: done !== null,
+    p_done_date: done?.date ?? null,
+    p_done_by: done?.by ?? null,
+    p_note: done?.note ?? null,
+  });
+
+  if (error) throw error;
+  return data as Achievement;
+}
+
+export function subscribeToAchievements(onChange: () => void): () => void {
+  const channel = supabase
+    .channel('dating_map_achievements_changes')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'dating_map_achievements' },
+      () => onChange()
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }
 
 export interface ProposePayload {
