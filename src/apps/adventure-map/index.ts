@@ -199,6 +199,9 @@ class DatingMapApp {
     const tabbar = document.getElementById('adv-tabbar');
     if (!tabbar) return;
 
+    const root = document.getElementById('adv-app-root');
+    const board = document.getElementById('adv-board');
+
     const setActive = (tab: string) => {
       document.querySelectorAll('.adv-section[data-tab]').forEach((el) => {
         el.classList.toggle('adv-section--active', (el as HTMLElement).dataset.tab === tab);
@@ -206,14 +209,34 @@ class DatingMapApp {
       tabbar.querySelectorAll('.adv-tab').forEach((btn) => {
         btn.classList.toggle('adv-tab--active', (btn as HTMLElement).dataset.tabTarget === tab);
       });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (root) root.dataset.activeTab = tab;
+      // 已經捲過看板頂端才拉回看板開頭；還在上方就不動，避免每次換頁都重看一次 Hero
+      if (board) {
+        const boardTop = board.getBoundingClientRect().top + window.scrollY;
+        if (window.scrollY > boardTop) window.scrollTo({ top: boardTop, behavior: 'smooth' });
+      }
     };
 
     tabbar.querySelectorAll('.adv-tab').forEach((btn) => {
       btn.addEventListener('click', () => setActive((btn as HTMLElement).dataset.tabTarget || 'proposed'));
     });
 
-    setActive('proposed');
+    // 空狀態裡的「去某分頁」按鈕
+    root?.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement).closest<HTMLElement>('[data-goto-tab]');
+      if (target?.dataset.gotoTab) setActive(target.dataset.gotoTab);
+    });
+
+    setActive(this.defaultTab());
+  }
+
+  /** 開場停在第一個有內容的分頁，不要讓第一眼看到空白的「提案中」 */
+  private defaultTab(): string {
+    const count = (status: PlaceEntry['status'][]) => this.allPlaces.filter((p) => status.includes(p.status)).length;
+    if (count(['proposed'])) return 'proposed';
+    if (count(['confirmed', 'done'])) return 'itinerary';
+    if (count(['idea'])) return 'idea';
+    return this.guides.length ? 'guides' : 'proposed';
   }
 
   private startSwipe() {

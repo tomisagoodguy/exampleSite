@@ -52,6 +52,11 @@ body.dark-mode {
   body.adv-shell-body header.navigation {
     display: none;
   }
+
+  /* 主題替固定導覽列留的 70px 也一併拿掉，否則頂端會空一截 */
+  body.adv-shell-body {
+    padding-top: 0 !important;
+  }
 }
 
 
@@ -67,7 +72,34 @@ body.dark-mode {
 /* Hero 在手機貼齊螢幕最頂端後，補上安全區域，避免被 Dynamic Island／瀏海遮住（iPhone 14 Pro Max 等） */
 @media (max-width: 899px) {
   .adv-hero {
-    padding-top: calc(28px + env(safe-area-inset-top, 0px));
+    padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 14px;
+  }
+}
+
+/* 手機：Hero 壓成「標題列＋行程鈕」，把首屏留給清單 */
+@media (max-width: 899px) {
+  .adv-hero .adv-hero__inner {
+    align-items: center;
+  }
+
+  .adv-hero .adv-hero__title {
+    font-size: 1.4rem;
+    margin: 0;
+  }
+
+  .adv-hero .adv-hero__subtitle {
+    display: none;
+  }
+
+  .adv-hero .adv-hero__actions {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .adv-hero .adv-hero__next-trip-btn {
+    margin-top: 12px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
   }
 }
 
@@ -519,6 +551,32 @@ body.dark-mode {
   .adv-board .adv-section[data-tab].adv-section--active {
     display: block;
   }
+
+  /* 懶人包、成就不吃分類／地區／雨天篩選，切到這兩頁就收起來，只留它們自己的篩選列 */
+  .adv-page[data-active-tab="guides"] :is(#adv-filter-mount, #adv-attr-mount, #adv-region-mount),
+  .adv-page[data-active-tab="achievements"] :is(#adv-filter-mount, #adv-attr-mount, #adv-region-mount) {
+    display: none !important;
+  }
+}
+
+.adv-empty__action {
+  display: none;
+}
+
+/* 空狀態的導引按鈕只在手機出現；桌面三欄併排，願望清單本來就看得到 */
+@media (max-width: 899px) {
+  .adv-empty__action {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 16px;
+    border-radius: 100px;
+    border: 1.5px solid var(--adv-terracotta);
+    background: transparent;
+    color: var(--adv-terracotta);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
 }
 
 /* 桌面：三欄一起顯示，不受分頁狀態影響 */
@@ -580,10 +638,21 @@ body.dark-mode {
     padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
   }
 
+  /* 靠右縮小，不再擋住清單中間的「想去」按鈕與卡片標籤 */
   .adv-fab {
+    left: auto;
+    right: 16px;
+    transform: none;
+    padding: 12px 18px;
+    font-size: 0.88rem;
     bottom: calc(84px + env(safe-area-inset-bottom, 0px));
   }
 
+  .adv-fab:hover {
+    transform: translateY(-2px);
+  }
+
+  /* 不透明底色：半透明時底下卡片文字會透出來，看起來很亂 */
   .adv-tabbar {
     display: flex;
     position: fixed;
@@ -591,9 +660,7 @@ body.dark-mode {
     right: 0;
     bottom: 0;
     z-index: 600;
-    background: var(--adv-glass);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    background: var(--adv-cream);
     border-top: 1px solid var(--adv-glass-border);
     padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
     box-shadow: 0 -6px 20px rgba(92, 61, 46, 0.12);

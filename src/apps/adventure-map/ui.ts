@@ -380,7 +380,8 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
   if (proposedMount) {
     proposedMount.innerHTML = proposed.length
       ? proposed.map(proposedCard).join('')
-      : `<p class="adv-empty">還沒有人提案，點下面「＋ 新增提案」試試</p>`;
+      : `<div class="adv-empty">還沒有人提案，按「＋ 新增提案」或從願望清單挑一個<br>
+          <button type="button" class="adv-empty__action" data-goto-tab="idea">💭 去願望清單挑一個 →</button></div>`;
     bindActions(proposedMount, proposed, actions);
   }
 
