@@ -4,6 +4,7 @@ import { CATEGORY_CONFIG, colorToFade, filterPlaces } from './data';
 import {
   renderFilterBar,
   renderAttrBar,
+  renderRegionCard,
   AttrFilter,
   renderSections,
   renderGuides,
@@ -295,6 +296,7 @@ class DatingMapApp {
         this.renderAll();
       }
     );
+    renderRegionCard(this.allPlaces, region);
     renderSections(filtered, {
       onGo: (p) => this.goIdea(p),
       onConfirm: (p) => this.confirmPlace(p),

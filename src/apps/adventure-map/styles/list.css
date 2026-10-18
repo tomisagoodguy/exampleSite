@@ -421,10 +421,15 @@ body.dark-mode .adv-row-list {
   background: rgba(196, 123, 90, 0.12);
 }
 
+/* 觸控設定與分類列（.adv-chip-bar）一致：鎖定橫向手勢，避免手機上滑不動 */
 .adv-guide-seasons {
   display: flex;
   gap: 6px;
   overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
   scrollbar-width: none;
   padding: 2px 2px 10px;
 }
@@ -460,6 +465,48 @@ body.dark-mode .adv-row-list {
   padding: 8px 16px;
   background: var(--adv-cream-dark);
   border-bottom: 1px solid var(--adv-glass-border);
+}
+
+/* 選了地區時的介紹卡，接在地區篩選列正下方 */
+.adv-region-card {
+  padding: 8px 16px 10px;
+  background: var(--adv-cream-dark);
+  border-bottom: 1px solid var(--adv-glass-border);
+  color: var(--adv-brown);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.adv-region-card[hidden] {
+  display: none;
+}
+
+.adv-region-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.adv-region-title {
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.adv-region-progress {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--adv-terracotta);
+  white-space: nowrap;
+}
+
+.adv-region-tagline {
+  font-weight: 700;
+  margin: 1px 0 3px;
+}
+
+.adv-region-row {
+  color: var(--adv-brown-light);
 }
 
 .adv-guide-season-count {
@@ -552,6 +599,33 @@ body.dark-mode .adv-row-list {
   color: var(--adv-brown);
   line-height: 1.5;
   margin-top: 2px;
+}
+
+.adv-guide-stop-extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 3px;
+}
+
+.adv-guide-chip {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--adv-brown);
+  background: var(--adv-cream-dark);
+  border-radius: 100px;
+  padding: 2px 8px;
+}
+
+/* 語音導覽念到的那一站 */
+.adv-guide-stop.is-speaking {
+  background: rgba(212, 168, 83, 0.16);
+  border-radius: 10px;
+  box-shadow: -4px 0 0 rgba(212, 168, 83, 0.16), 4px 0 0 rgba(212, 168, 83, 0.16);
+}
+
+.adv-guide-stop.is-speaking .adv-guide-stop-num {
+  box-shadow: 0 0 0 3px var(--adv-gold);
 }
 
 .adv-guide-stop-nav {

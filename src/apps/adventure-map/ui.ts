@@ -9,8 +9,10 @@ import {
   AchievementCategory,
   AchievementCategoryConfig,
   ACHIEVEMENT_TITLES,
+  REGION_INFO,
 } from './data';
 import { IDENTITIES, Identity, Guide, GuideStop, Season, Achievement } from './supabase';
+import { speechSupported, speak, stopSpeech, currentSpeech, setSpeechListener, SpeechState } from './voice';
 
 /** 依實際出現在資料中的分類，動態產生篩選 chips */
 export function renderFilterBar(
@@ -50,16 +52,19 @@ export function renderFilterBar(
     });
   });
 
-  // 桌面滑鼠滾輪只有垂直方向，轉成橫向捲動；mount 不會被重建，只綁一次
-  if (!mount.dataset.wheelBound) {
-    mount.dataset.wheelBound = '1';
-    mount.addEventListener('wheel', (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
-      if (mount.scrollWidth <= mount.clientWidth) return;
-      e.preventDefault();
-      mount.scrollLeft += e.deltaY;
-    }, { passive: false });
-  }
+  bindHorizontalWheel(mount);
+}
+
+/** 橫向篩選列：桌面滑鼠滾輪只有垂直方向，轉成橫向捲動；容器不會被重建，只綁一次 */
+function bindHorizontalWheel(el: HTMLElement) {
+  if (el.dataset.wheelBound) return;
+  el.dataset.wheelBound = '1';
+  el.addEventListener('wheel', (e: WheelEvent) => {
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+    if (el.scrollWidth <= el.clientWidth) return;
+    e.preventDefault();
+    el.scrollLeft += e.deltaY;
+  }, { passive: false });
 }
 
 export interface AttrFilter {
@@ -75,6 +80,7 @@ export function renderAttrBar(
 ) {
   const bar = document.getElementById('adv-attr-mount');
   if (!bar) return;
+  bindHorizontalWheel(bar);
 
   const forRegion = current.rainOnly ? places.filter(p => p.is_indoor === true) : places;
   const forRain = current.region === 'all' ? places : places.filter(p => p.region === current.region);
@@ -98,6 +104,32 @@ export function renderAttrBar(
   bar.querySelector('[data-rain]')?.addEventListener('click', () => {
     onChange({ ...current, rainOnly: !current.rainOnly });
   });
+}
+
+/** 選了某個地區時，在篩選列下方介紹這區：一句話、代表美食、交通，加上你們在這區的進度 */
+export function renderRegionCard(allPlaces: PlaceEntry[], region: Region | 'all') {
+  const mount = document.getElementById('adv-region-mount');
+  if (!mount) return;
+  if (region === 'all') {
+    mount.hidden = true;
+    mount.innerHTML = '';
+    return;
+  }
+
+  const info = REGION_INFO[region];
+  const inRegion = allPlaces.filter(p => p.region === region);
+  const done = inRegion.filter(p => p.status === 'done').length;
+
+  mount.hidden = false;
+  mount.innerHTML = `
+    <div class="adv-region-head">
+      <span class="adv-region-title">${info.emoji} ${REGION_LABEL[region]}</span>
+      <span class="adv-region-progress">去過 ${done} / ${inRegion.length} 個</span>
+    </div>
+    <div class="adv-region-tagline">${info.tagline}</div>
+    <div class="adv-region-row">🍜 ${info.foods.join('、')}</div>
+    <div class="adv-region-row">🚆 ${info.transport}</div>
+  `;
 }
 
 export interface CardActions {
@@ -424,7 +456,7 @@ function guideStopHTML(stop: GuideStop, place: PlaceEntry | undefined, index: nu
 
   return `
     ${stop.transit && index > 0 ? `<div class="adv-guide-transit">${esc(stop.transit)}</div>` : ''}
-    <div class="adv-guide-stop" style="--cat-color:${color}">
+    <div class="adv-guide-stop" style="--cat-color:${color}" data-stop-index="${index}">
       <span class="adv-guide-stop-num ${place ? '' : 'adv-guide-stop-num--free'}">${stop.seq}</span>
       <div class="adv-guide-stop-body">
         ${stop.time_text ? `<div class="adv-guide-stop-time">${esc(stop.time_text)}</div>` : ''}
@@ -434,6 +466,10 @@ function guideStopHTML(stop: GuideStop, place: PlaceEntry | undefined, index: nu
         </div>
         ${index === 0 && stop.transit ? `<div class="adv-card-meta">${esc(stop.transit)}</div>` : ''}
         ${meta ? `<div class="adv-card-meta">${esc(meta)}</div>` : ''}
+        ${stop.must_try || stop.cost ? `<div class="adv-guide-stop-extra">
+          ${stop.must_try ? `<span class="adv-guide-chip">⭐ 必點 ${esc(stop.must_try)}</span>` : ''}
+          ${stop.cost ? `<span class="adv-guide-chip">💰 ${esc(stop.cost)}</span>` : ''}
+        </div>` : ''}
         ${stop.tip ? `<div class="adv-guide-stop-tip">💡 ${esc(stop.tip)}</div>` : ''}
       </div>
       ${hasCoords(place)
@@ -466,6 +502,7 @@ function guideCardHTML(guide: Guide, placeById: Map<number, PlaceEntry>): string
           ${guide.stops.map((s, i) => guideStopHTML(s, s.place_id != null ? placeById.get(s.place_id) : undefined, i)).join('')}
         </div>
         <div class="adv-card-actions">
+          ${speechSupported ? `<button class="adv-card-btn" data-guide-action="speak" data-guide-id="${guide.id}">🔊 聽導覽</button>` : ''}
           ${routeUrl ? `<a class="adv-card-btn" href="${routeUrl}" target="_blank" rel="noopener">🗺️ 整條路線</a>` : ''}
           ${guide.source_url ? `<a class="adv-card-btn adv-card-btn--ghost" href="${esc(guide.source_url)}" target="_blank" rel="noopener">🔗 原文</a>` : ''}
           <button class="adv-card-btn adv-card-btn--primary" data-guide-action="apply" data-guide-id="${guide.id}">📅 照這個排行程</button>
@@ -475,6 +512,40 @@ function guideCardHTML(guide: Guide, placeById: Map<number, PlaceEntry>): string
     </div>
   `;
 }
+
+/** 朗讀稿：第 0 段是開場，第 1..n 段對應各站（段號 - 1 = 站的 index），最後一段收尾 */
+function guideSpeechSegments(guide: Guide): string[] {
+  const sentence = (text: string) => (/[。！？!?]$/.test(text) ? text : `${text}。`);
+  const intro = [sentence(guide.title), guide.summary ? sentence(guide.summary) : '', `總共 ${guide.stops.length} 站。`].join('');
+  const stops = guide.stops.map((s) => [
+    `第 ${s.seq} 站，${s.label}。`,
+    s.time_text ? `時間：${s.time_text}。` : '',
+    s.transit ? `怎麼去：${s.transit}。` : '',
+    s.must_try ? `必點：${s.must_try}。` : '',
+    s.cost ? `花費：${s.cost}。` : '',
+    s.tip ? `${s.tip}。` : '',
+  ].join(''));
+  return [intro, ...stops, '以上就是這條路線，玩得開心！'];
+}
+
+/** 依目前朗讀狀態更新按鈕文字與「念到這站」的高亮；重新渲染後也要呼叫一次 */
+function syncSpeechUI(state: SpeechState | null) {
+  document.querySelectorAll<HTMLElement>('[data-guide-action="speak"]').forEach((btn) => {
+    const playing = state?.guideId === parseInt(btn.dataset.guideId || '0');
+    btn.textContent = playing ? '⏹ 停止朗讀' : '🔊 聽導覽';
+    btn.classList.toggle('adv-card-btn--primary', playing);
+  });
+  document.querySelectorAll('.adv-guide-stop.is-speaking').forEach((el) => el.classList.remove('is-speaking'));
+  if (!state || state.segment < 1) return;
+  const stopEl = document.querySelector<HTMLElement>(
+    `[data-guide-id="${state.guideId}"] .adv-guide-stop[data-stop-index="${state.segment - 1}"]`
+  );
+  if (!stopEl) return;
+  stopEl.classList.add('is-speaking');
+  stopEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+setSpeechListener(syncSpeechUI);
 
 const SEASON_LABEL: Record<Season, string> = {
   spring: '🌸 春',
@@ -499,6 +570,7 @@ function renderSeasonBar(
 ) {
   const bar = document.getElementById('adv-guide-seasons');
   if (!bar) return;
+  bindHorizontalWheel(bar);
 
   const options: [GuideSeasonFilter, string][] = [
     ['all', '全部'],
@@ -557,6 +629,11 @@ export function renderGuides(
         onApply(guide);
         return;
       }
+      if (btn.dataset.guideAction === 'speak') {
+        if (currentSpeech()?.guideId === guide.id) stopSpeech();
+        else speak(guide.id, guideSpeechSegments(guide));
+        return;
+      }
       const detail = document.getElementById(`adv-guide-detail-${guide.id}`);
       if (!detail) return;
       detail.hidden = !detail.hidden;
@@ -567,6 +644,7 @@ export function renderGuides(
   document.querySelectorAll('.adv-section-count[data-section="guides"]').forEach((el) => {
     el.textContent = `${guides.length}`;
   });
+  syncSpeechUI(currentSpeech());
 }
 
 // ───────────────────────── 旅行成就 ─────────────────────────
@@ -643,6 +721,7 @@ export function renderAchievements(
   const summary = document.getElementById('adv-ach-summary');
   const bar = document.getElementById('adv-ach-filter');
   if (!mount || !summary || !bar) return;
+  bindHorizontalWheel(bar);
 
   const placeById = new Map(allPlaces.map((p) => [p.id, p]));
   const isUnlocked = (a: Achievement) => achievementUnlock(a, placeById) !== null;

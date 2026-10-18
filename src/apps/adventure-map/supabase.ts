@@ -73,6 +73,10 @@ export interface GuideStop {
   time_text: string | null;
   transit: string | null;
   tip: string | null;
+  /** 這站必點／必做，只填來源有寫的 */
+  must_try: string | null;
+  /** 大約花費，文字（例如「湯屋約 400 元」） */
+  cost: string | null;
 }
 
 /** 別人排好的行程懶人包（例如 Threads 上分享的約會路線） */

@@ -87,6 +87,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | `is_indoor` | `true` / `false` | 「☔ 雨天可去」篩選 |
 
 - 夜市→`food`、老店/商圈→`shop`、廟宇→`museum`、公園→`walk`、步道→`scenery`、室內運動→`diy`；距離遠近用 `region` 表示，不另設「一日遊」分類
+- 選了地區篩選時頂部會出現地區介紹卡（一句話、代表美食、交通、去過幾個），文字寫死在 `data.ts` 的 `REGION_INFO`；新增地區要同時補這裡與 `REGION_LABEL`
 - 新增時若沒給 `region` / `is_indoor`，trigger `dating_map_places_fill_attrs` 會依座標（`dating_map_guess_region` 矩形框，邊界附近不準）與分類補預設值；大批匯入應自行用 ArcGIS `reverseGeocode` 反查縣市後寫入
 - 前端修改這兩個欄位走獨立 RPC `dating_map_set_attrs`（`setPlaceAttrs`），沒有改 `dating_map_update` 的參數簽章
 
@@ -95,12 +96,14 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | 資料表 | 內容 |
 | --- | --- |
 | `dating_map_guides` | 一條路線：標題、摘要、地區、來源（`source` / `source_url`）、標籤、`seasons`、`sort_order` |
-| `dating_map_guide_stops` | 路線的每一站：`seq` 站序、`place_id` → `dating_map_places`（單一座標）、`time_text`、`transit`（到這站的交通）、`tip` |
+| `dating_map_guide_stops` | 路線的每一站：`seq` 站序、`place_id` → `dating_map_places`（單一座標）、`time_text`、`transit`（到這站的交通）、`tip`、`must_try`（必點／必做）、`cost`（大約花費，文字） |
 
 - 每一站**只對應一個地點**；「台北花市、建國花市」這種多地點寫法要拆成多筆 `dating_map_places` 再連結
 - `place_id` 為 `null` 代表沒有固定地點的步驟（例如「約在捷運站」）
 - `seasons text[]` 只接受 `spring` / `summer` / `autumn` / `winter`（CHECK 約束），**空陣列代表全年皆宜**；前端季節篩選列選某季只顯示有標該季的路線，「全年皆宜」另成一顆。只標季節性明顯的路線（芒花、玩水、泡湯），不要每條都標
 - 兩張表只開放 `SELECT`（RLS），內容目前由 Supabase SQL 直接寫入，前端沒有編輯介面
+- `must_try` / `cost` **只填來源原文有寫的**，不要自己估價；填了就別在 `tip` 重複同一句
+- 「🔊 聽導覽」用瀏覽器 Web Speech API（`voice.ts`）逐站朗讀，朗讀稿由 `ui.ts` 的 `guideSpeechSegments` 組出；emoji 會先濾掉、`→` 念成「到」
 - 「📅 照這個排行程」會把各站地點依 `seq` 定案到同一天（寫入 `visit_date` + `sort_order`），已在行程中的地點跳過
 
 **旅行成就**（「🏆 成就」分頁，清單改編自 [ivanusto/taiwan-travel-achievement-list](https://github.com/ivanusto/taiwan-travel-achievement-list)，MIT）：
@@ -151,9 +154,10 @@ Leaflet / MarkerCluster 以 `external` 方式排除，頁面直接從 CDN 載入
 ```text
 src/
 ├── apps/adventure-map/     # 破關地圖（Leaflet + MarkerCluster + Supabase）
-│   ├── data.ts             # 分類設定（CATEGORY_CONFIG）
+│   ├── data.ts             # 分類設定（CATEGORY_CONFIG）、地區名稱與介紹（REGION_LABEL / REGION_INFO）
 │   ├── supabase.ts         # Supabase client、CRUD、Realtime 訂閱、懶人包（fetchGuides）與成就（fetchAchievements）讀取
 │   ├── geocode.ts          # 提案／編輯時以 ArcGIS 自動補座標
+│   ├── voice.ts            # 懶人包語音導覽（Web Speech API，逐段朗讀＋目前站狀態）
 │   ├── ui.ts               # 面板 UI 邏輯（面板、懶人包時間軸、成就徽章、Modal、Toast）
 │   └── index.ts            # 入口，組合各模組
 └── shared/

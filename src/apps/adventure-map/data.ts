@@ -46,7 +46,55 @@ export const REGION_LABEL: Record<Region, string> = {
   islands: '離島',
 };
 
-export type AchievementCategory = 'nature' | 'photo' | 'festival' | 'island';
+export interface RegionInfo {
+  emoji: string;
+  tagline: string;
+  foods: string[];
+  /** 怎麼去、在當地怎麼移動；離島寫船班／航班 */
+  transport: string;
+}
+
+/** 選了地區篩選時頂部顯示的介紹卡；離島的船班航班隨季節變動，文字只寫大方向 */
+export const REGION_INFO: Record<Region, RegionInfo> = {
+  north: {
+    emoji: '🏙️',
+    tagline: '捷運到得了大部分地方，下雨也有地方躲',
+    foods: ['牛肉麵', '夜市小吃', '基隆廟口'],
+    transport: '捷運＋YouBike 最方便；陽明山、瑞芳、九份搭觀光公車或開車',
+  },
+  tzm: {
+    emoji: '🍊',
+    tagline: '老街、客家庄跟山區露營，離台北一小時內',
+    foods: ['客家菜', '新竹米粉貢丸', '大溪豆干'],
+    transport: '台鐵／高鐵到市區，山區景點開車或騎車比較實際',
+  },
+  taichung: {
+    emoji: '🧋',
+    tagline: '天氣穩定少雨，吃喝跟文創園區很集中',
+    foods: ['珍珠奶茶', '太陽餅', '第二市場'],
+    transport: '捷運綠線＋YouBike／公車；高鐵台中站有捷運接市區',
+  },
+  central_south: {
+    emoji: '🏯',
+    tagline: '古蹟、老屋跟小吃，一天吃五餐是基本',
+    foods: ['台南小吃', '嘉義雞肉飯', '彰化肉圓'],
+    transport: '高鐵到站後租機車或開車；台南、嘉義市區步行也行',
+  },
+  east: {
+    emoji: '🌊',
+    tagline: '山跟海貼在一起，行程要排鬆一點',
+    foods: ['三星蔥', '花蓮扁食', '池上便當'],
+    transport: '台鐵東部幹線車票難買要提早訂；當地租車或機車才好移動',
+  },
+  islands: {
+    emoji: '🚢',
+    tagline: '要搭船或飛機，天候不好會停航，留一天彈性',
+    foods: ['澎湖海鮮', '金門高粱', '小琉球麻花捲'],
+    transport: '小琉球：東港搭船；綠島、蘭嶼：台東富岡搭船或飛機；澎湖、金門、馬祖：主要靠飛機，夏季另有船班。出發前查當天船班航班',
+  },
+};
+
+export type AchievementCategory ='nature' | 'photo' | 'festival' | 'island';
 
 export interface AchievementCategoryConfig {
   label: string;
