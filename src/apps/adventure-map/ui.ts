@@ -10,6 +10,9 @@ import {
   AchievementCategoryConfig,
   ACHIEVEMENT_TITLES,
   REGION_INFO,
+  IDEA_TIER,
+  IdeaTier,
+  ideaTier,
 } from './data';
 import { IDENTITIES, Identity, Guide, GuideStop, Season, Scene, GuideDuration, Achievement } from './supabase';
 import { speechSupported, speak, stopSpeech, currentSpeech, setSpeechListener, SpeechState } from './voice';
@@ -371,9 +374,39 @@ function setupDayDragAndDrop(mount: HTMLElement, onReorder: (dayKey: string, ord
 
 const IDEA_PAGE_SIZE = 40;
 let ideaLimit = IDEA_PAGE_SIZE;
+let ideaTierSel: IdeaTier = 'mrt';
+
+/** 願望清單分組按鈕；目前分組被篩選成空的時，自動跳到第一個有地點的分組 */
+function renderIdeaTiers(ideas: PlaceEntry[], rerender: () => void): PlaceEntry[] {
+  const tiers = Object.keys(IDEA_TIER) as IdeaTier[];
+  const counts = Object.fromEntries(tiers.map(t => [t, 0])) as Record<IdeaTier, number>;
+  ideas.forEach(p => counts[ideaTier(p)]++);
+  if (counts[ideaTierSel] === 0) ideaTierSel = tiers.find(t => counts[t] > 0) ?? ideaTierSel;
+
+  const mount = document.getElementById('adv-idea-tiers');
+  if (mount) {
+    bindHorizontalWheel(mount);
+    mount.innerHTML = tiers
+      .filter(t => counts[t] > 0)
+      .map(t => {
+        const active = t === ideaTierSel;
+        return `<button class="adv-guide-season ${active ? 'is-active' : ''}" data-idea-tier="${t}" aria-pressed="${active}" title="${IDEA_TIER[t].hint}">${IDEA_TIER[t].label}<span class="adv-guide-season-count">${counts[t]}</span></button>`;
+      })
+      .join('');
+    mount.querySelectorAll<HTMLElement>('[data-idea-tier]').forEach(el => {
+      el.addEventListener('click', () => {
+        ideaTierSel = el.dataset.ideaTier as IdeaTier;
+        ideaLimit = IDEA_PAGE_SIZE;
+        rerender();
+      });
+    });
+  }
+  return ideas.filter(p => ideaTier(p) === ideaTierSel);
+}
 
 export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
-  const ideas = allPlaces.filter(p => p.status === 'idea');
+  const allIdeas = allPlaces.filter(p => p.status === 'idea');
+  const ideas = renderIdeaTiers(allIdeas, () => renderSections(allPlaces, actions));
   const proposed = allPlaces.filter(p => p.status === 'proposed');
   const itinerary = allPlaces.filter(p => p.status === 'confirmed' || p.status === 'done');
 
@@ -447,7 +480,7 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
   }
 
   const counts: Record<string, number> = {
-    idea: ideas.length,
+    idea: allIdeas.length,
     proposed: proposed.length,
     itinerary: itinerary.length,
   };
