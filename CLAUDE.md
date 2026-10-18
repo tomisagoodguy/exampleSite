@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 專案本質
 
-**定康筆記（Tom's Note）** 是以 Hugo 為核心的個人知識庫，涵蓋法式料理筆記、不動產分析、自動化開發記錄等主題，同時掛載 Leaflet 互動地圖（破關地圖）與純工具頁（房地稅務試算）。
+**定康筆記（Tom's Note）** 是以 Hugo 為核心的個人知識庫，涵蓋法式料理筆記、不動產分析、自動化開發記錄等主題，同時掛載破關地圖（約會／旅遊地點清單看板，Supabase 即時後端）與純工具頁（房地稅務試算）。
 
 ---
 
@@ -38,6 +38,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 > `hugo server` 開著時跑 `yarn build`，livereload 會重新整理頁面，Playwright 先前抓到的 DOM 元素全部失效；rebuild 後要重新 navigate 再測。
 >
 > 換 port 一定要同時給 `--baseURL`：`list.html` 用 `absURL` 載 bundle，會指向 `localhost:1313`，跨 port 被 CORS 擋下，地圖整頁空白、沒有任何卡片。
+>
+> 1313 已在跑**不代表 baseURL 是 1313**（可能是別的 session 用其他 baseURL 起的，曾指向 1414 導致整頁無樣式）。測試前先 `curl -s http://localhost:1313/adventure-map/ | grep -o 'href="[^"]*css[^"]*"'` 看 bundle 指向哪個 port，不對就自己開另一個 port＋`--baseURL`。
 
 ### TypeScript 建置
 
@@ -133,7 +135,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | `src/apps/adventure-map/index.html` | `static/js/adventure-map.bundle.js` + `static/css/adventure-map.bundle.css` |
 | 共用 JS chunks | `static/assets/` |
 
-Leaflet / MarkerCluster 以 `external` 方式排除，頁面直接從 CDN 載入（見 `layouts/adventure-map/list.html`）。
+> 破關地圖目前**沒有地圖圖層**（已無 Leaflet / MarkerCluster 引用），是純清單看板；`lat` / `lng` 目前主要用於 `region` 判定。
 
 ### layouts/ 覆寫規則
 
@@ -160,7 +162,7 @@ Leaflet / MarkerCluster 以 `external` 方式排除，頁面直接從 CDN 載入
 
 ```text
 src/
-├── apps/adventure-map/     # 破關地圖（Leaflet + MarkerCluster + Supabase）
+├── apps/adventure-map/     # 破關地圖（清單看板 + Supabase）
 │   ├── data.ts             # 分類設定（CATEGORY_CONFIG）、地區名稱與介紹（REGION_LABEL / REGION_INFO）
 │   ├── supabase.ts         # Supabase client、CRUD、Realtime 訂閱、懶人包（fetchGuides）與成就（fetchAchievements）讀取
 │   ├── geocode.ts          # 提案／編輯時以 ArcGIS 自動補座標
@@ -228,6 +230,7 @@ pipe 左右必須有空格，separator 使用 `---`：
 
 - **大量匯入資料後要用真實數量看 UI**：願望清單曾因 `.adv-row-list { overflow: hidden }` 蓋掉 `.adv-card-list` 的捲動，300+ 筆時桌面版被裁掉；資料寫入成功 ≠ 畫面可用
 - **用 Playwright 測 UI 前先看篩選列**：「☔ 雨天可去」、地區、分類篩選若被開著，行程／清單可能被濾成空的（例如唯一一筆定案地點非室內就消失），別誤判成功能壞掉
+- **手機分頁狀態在 `#adv-app-root[data-active-tab]`**（`index.ts` `setupTabBar`）：懶人包、成就只吃搜尋，不吃分類／地區／雨天篩選，CSS 會在這兩頁藏起 `#adv-filter-mount` / `#adv-attr-mount` / `#adv-region-mount`。新增分頁時要決定它吃不吃這些篩選，並同步 `map.css` 的規則；開場分頁由 `defaultTab()` 選第一個有內容的
 - **驗證正式站要繞過快取**：HTML 本身也快取 10 分鐘；用 `curl` 看 `Age` / `X-Cache` 標頭，瀏覽器測試前先清快取（Ctrl + Shift + R）
 - **補座標**：用**店名**查 → Google Maps MCP `maps_search_places`（Places 可用，小店命中率高）；已有**門牌地址** → ArcGIS `findAddressCandidates`（`Addr_type=PointAddress` 很準）。Google Maps MCP 的 Geocoding 未啟用；ArcGIS／Nominatim 拿店名查多半查不到或落點錯，結果都要用台北／台中經緯度框與行政區核對
 - **大批景點補座標（全台、上百筆）**：Google Maps MCP 連續大量查詢會把配額用盡（回 `API quota exceeded`），後續改 ArcGIS（`countryCode=TWN`、`langCode=zh`，景點／山／瀑布命中率高）→ 查不到再用 Nominatim（`countrycodes=tw`，每秒 1 次）。**要用 Python `urllib` 呼叫**，Git Bash 的 `curl --data-urlencode` 會把中文編碼成 cp950 而查無結果。同名景點很多（火炎山、北回歸線標誌、金剛大道、白沙灣），每筆都要核對縣市／鄉鎮。**ArcGIS 分數 100 也會錯**：曾把傳藝中心定位到高雄、莒光樓到高雄同名地、Xpark 偏 4 公里；`Addr_type=Locality`（只命中鄉鎮）的結果一律改用 Google Places 重查
