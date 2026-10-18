@@ -88,6 +88,15 @@
       <div class="adv-card-list adv-row-list" id="adv-section-idea"></div>
     </div>
 
+    {{/* 懶人包：別人怎麼排行程，桌面版橫跨三欄放在最下方 */}}
+    <div class="adv-section adv-section--guides" data-tab="guides">
+      <div class="adv-section-header">
+        <span>📚 行程懶人包</span>
+        <span class="adv-section-count" data-section="guides">0</span>
+      </div>
+      <div class="adv-card-list adv-guide-list" id="adv-section-guides"></div>
+    </div>
+
   </div>
 
   <div style="height:80px;"></div>
@@ -113,6 +122,11 @@
       <span class="adv-tab__icon">💭</span>
       願望清單
       <span class="adv-section-count adv-tab__badge" data-section="idea">0</span>
+    </button>
+    <button class="adv-tab" data-tab-target="guides">
+      <span class="adv-tab__icon">📚</span>
+      懶人包
+      <span class="adv-section-count adv-tab__badge" data-section="guides">0</span>
     </button>
   </nav>
 

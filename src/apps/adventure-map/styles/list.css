@@ -338,3 +338,182 @@ body.dark-mode .adv-row-list {
   margin-top: 6px;
   pointer-events: auto;
 }
+
+/* ─── 行程懶人包 ─── */
+@media (min-width: 900px) {
+  .adv-section--guides {
+    grid-column: 1 / -1;
+  }
+
+  .adv-guide-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    align-items: start;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+.adv-guide-card {
+  padding: 0;
+  border-left-color: var(--adv-plum);
+}
+
+.adv-guide-head {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 12px 14px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+}
+
+.adv-guide-title {
+  font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--adv-brown);
+}
+
+.adv-guide-summary {
+  font-size: 0.78rem;
+  color: var(--adv-brown-light);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
+.adv-guide-chain {
+  font-size: 0.74rem;
+  color: var(--adv-brown);
+  line-height: 1.6;
+  margin-top: 6px;
+}
+
+.adv-guide-chain-arrow {
+  color: var(--adv-terracotta);
+  margin: 0 4px;
+}
+
+.adv-guide-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin-top: 8px;
+}
+
+.adv-guide-tag {
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--adv-plum);
+  background: rgba(155, 114, 170, 0.12);
+  border-radius: 100px;
+  padding: 2px 8px;
+}
+
+.adv-guide-count {
+  margin-left: auto;
+  font-size: 0.68rem;
+  color: var(--adv-brown-light);
+}
+
+.adv-guide-detail {
+  padding: 0 14px 12px;
+  border-top: 1px dashed var(--adv-glass-border);
+}
+
+.adv-guide-timeline {
+  position: relative;
+  padding: 10px 0 2px;
+}
+
+/* 時間軸直線：從第一站圓點連到最後一站 */
+.adv-guide-timeline::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 20px;
+  bottom: 14px;
+  width: 2px;
+  background: var(--adv-glass-border);
+}
+
+.adv-guide-stop {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.adv-guide-stop-num {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--cat-color);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adv-guide-stop-num--free {
+  background: var(--adv-cream-dark);
+  color: var(--adv-brown-light);
+  border: 2px dashed var(--adv-glass-border);
+}
+
+.adv-guide-stop-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.adv-guide-stop-time {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--adv-terracotta);
+}
+
+.adv-guide-stop-name {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--adv-brown);
+  word-break: break-word;
+}
+
+.adv-guide-stop-status {
+  font-size: 0.75rem;
+  margin-left: 2px;
+}
+
+.adv-guide-stop-tip {
+  font-size: 0.74rem;
+  color: var(--adv-brown);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
+.adv-guide-stop-nav {
+  flex-shrink: 0;
+}
+
+.adv-guide-transit {
+  position: relative;
+  padding: 2px 0 2px 34px;
+  font-size: 0.68rem;
+  color: var(--adv-brown-light);
+}
+
+.adv-guide-source {
+  font-size: 0.66rem;
+  color: var(--adv-brown-light);
+  margin-top: 8px;
+}

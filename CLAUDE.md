@@ -66,7 +66,19 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 2. `src/apps/adventure-map/supabase.ts` — 建立 Supabase client，提供 `fetchPlaces` / `proposePlace` / `updatePlace` / `deletePlace` / `toggleLike` / `fetchCategories` / `upsertCategory` / `deleteCategory`，並用 `subscribeToPlaces` / `subscribeToCategories` 做即時同步（Realtime）
 3. `src/apps/adventure-map/index.ts` — 組合資料存取與 `ui.ts` 的面板渲染
 
-新增/修改地點是**資料庫操作**（透過破關地圖頁面上的表單），不是改 JSON 檔。`place-helper` 工具頁（`src/tools/place-helper/`）是獨立的地點資料產生輔助工具，透過 File System Access API 直接讀寫本機檔案，**不連接 Supabase**。
+新增/修改地點是**資料庫操作**（透過破關地圖頁面上的表單），不是改 JSON 檔。
+
+**行程懶人包**（「📚 懶人包」分頁，別人分享的一日路線）存在兩張表：
+
+| 資料表 | 內容 |
+| --- | --- |
+| `dating_map_guides` | 一條路線：標題、摘要、地區、來源（`source` / `source_url`）、標籤、`sort_order` |
+| `dating_map_guide_stops` | 路線的每一站：`seq` 站序、`place_id` → `dating_map_places`（單一座標）、`time_text`、`transit`（到這站的交通）、`tip` |
+
+- 每一站**只對應一個地點**；「台北花市、建國花市」這種多地點寫法要拆成多筆 `dating_map_places` 再連結
+- `place_id` 為 `null` 代表沒有固定地點的步驟（例如「約在捷運站」）
+- 兩張表只開放 `SELECT`（RLS），內容目前由 Supabase SQL 直接寫入，前端沒有編輯介面
+- 「📅 照這個排行程」會把各站地點依 `seq` 定案到同一天（寫入 `visit_date` + `sort_order`），已在行程中的地點跳過`place-helper` 工具頁（`src/tools/place-helper/`）是獨立的地點資料產生輔助工具，透過 File System Access API 直接讀寫本機檔案，**不連接 Supabase**。
 
 ### Vite 打包輸出路徑（`yarn build` 後的結果）
 
@@ -105,8 +117,8 @@ Leaflet / MarkerCluster 以 `external` 方式排除，頁面直接從 CDN 載入
 src/
 ├── apps/adventure-map/     # 破關地圖（Leaflet + MarkerCluster + Supabase）
 │   ├── data.ts             # 分類設定（CATEGORY_CONFIG）
-│   ├── supabase.ts         # Supabase client、CRUD 與 Realtime 訂閱
-│   ├── ui.ts               # 面板 UI 邏輯（面板、Modal、Toast）
+│   ├── supabase.ts         # Supabase client、CRUD、Realtime 訂閱、懶人包讀取（fetchGuides）
+│   ├── ui.ts               # 面板 UI 邏輯（面板、懶人包時間軸、Modal、Toast）
 │   └── index.ts            # 入口，組合各模組
 ├── tools/place-helper/     # 地點資料產生輔助工具（獨立 HTML 頁，不連 Supabase）
 │   ├── geocoder.ts         # 地址轉座標

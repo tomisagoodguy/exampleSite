@@ -4,6 +4,7 @@ import { CATEGORY_CONFIG, colorToFade, filterPlaces } from './data';
 import {
   renderFilterBar,
   renderSections,
+  renderGuides,
   openPassphraseModal,
   openProposeModal,
   openMarkDoneModal,
@@ -21,6 +22,8 @@ import {
 import { PlaceEntry } from '../../shared/types';
 import {
   fetchPlaces,
+  fetchGuides,
+  Guide,
   proposePlace,
   updatePlace,
   deletePlace,
@@ -40,6 +43,7 @@ import {
 
 class DatingMapApp {
   private allPlaces: PlaceEntry[] = [];
+  private guides: Guide[] = [];
   private currentCat: string = 'all';
   private currentSearch: string = '';
   private identity: Identity | null = null;
@@ -63,6 +67,7 @@ class DatingMapApp {
       showToast('資料讀取失敗，稍後再試試');
       this.allPlaces = [];
     }
+    await this.loadGuides();
 
     this.renderAll();
     this.setupFab();
@@ -277,6 +282,67 @@ class DatingMapApp {
       onReorder: (dayKey, orderedIds) => this.reorderDay(dayKey, orderedIds),
       onShare: (p) => this.sharePlace(p),
     });
+    renderGuides(this.filterGuides(), this.allPlaces, (g) => this.applyGuide(g));
+  }
+
+  private async loadGuides() {
+    try {
+      this.guides = await fetchGuides();
+    } catch (err) {
+      console.error('讀取懶人包失敗', err);
+      this.guides = [];
+    }
+  }
+
+  /** 搜尋框也套用到懶人包：比對標題、摘要、標籤與每一站名稱 */
+  private filterGuides(): Guide[] {
+    const q = this.currentSearch.trim().toLowerCase();
+    if (!q) return this.guides;
+    return this.guides.filter((g) =>
+      [g.title, g.summary, ...g.tags, ...g.stops.map((s) => s.label)].some(
+        (v) => v && v.toLowerCase().includes(q)
+      )
+    );
+  }
+
+  /** 照懶人包排行程：把每一站對應的地點依原本順序定案到同一天 */
+  private async applyGuide(guide: Guide) {
+    const stopPlaces = guide.stops
+      .map((s) => this.allPlaces.find((p) => p.id === s.place_id))
+      .filter((p, i, arr): p is PlaceEntry => p != null && arr.indexOf(p) === i);
+    const todo = stopPlaces.filter((p) => p.status === 'idea' || p.status === 'proposed');
+    const skipped = stopPlaces.length - todo.length;
+
+    if (!todo.length) {
+      showToast('這個懶人包的地點都已經在行程裡了');
+      return;
+    }
+
+    const date = await openScheduleModal(`「${guide.title}」排哪一天？`);
+    if (date === null) return;
+    if (!date) {
+      showToast('要選日期才能照順序排進行程喔');
+      return;
+    }
+
+    const start = this.nextSortOrderForDay(date);
+    const ok = await this.withPassphrase(async (pw) => {
+      for (const [i, place] of todo.entries()) {
+        await updatePlace({
+          passphrase: pw,
+          id: place.id,
+          status: 'confirmed',
+          visit_date: date,
+          sort_order: start + i,
+        });
+      }
+      return true;
+    });
+
+    if (ok) {
+      showToast(`已排進 ${date}：${todo.length} 站${skipped ? `（${skipped} 站原本就在行程中）` : ''}`);
+      await this.refresh();
+    }
   }
 
   /** 地點搜尋框：debounce 後依名稱/地址/捷運站/備註做本地篩選 */
@@ -618,6 +684,7 @@ class DatingMapApp {
     } catch (err) {
       console.error(err);
     }
+    await this.loadGuides();
     this.renderAll();
   }
 }

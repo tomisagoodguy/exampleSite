@@ -63,6 +63,42 @@ export async function fetchPlaces(): Promise<PlaceEntry[]> {
   return (data || []) as PlaceEntry[];
 }
 
+/** 懶人包的一站；place_id 指向單一座標的地點，null 代表「約在捷運站」這類沒有固定地點的步驟 */
+export interface GuideStop {
+  id: number;
+  seq: number;
+  place_id: number | null;
+  label: string;
+  time_text: string | null;
+  transit: string | null;
+  tip: string | null;
+}
+
+/** 別人排好的行程懶人包（例如 Threads 上分享的約會路線） */
+export interface Guide {
+  id: number;
+  title: string;
+  summary: string | null;
+  region: string | null;
+  source: string | null;
+  source_url: string | null;
+  tags: string[];
+  stops: GuideStop[];
+}
+
+export async function fetchGuides(): Promise<Guide[]> {
+  const { data, error } = await supabase
+    .from('dating_map_guides')
+    .select('*, stops:dating_map_guide_stops(*)')
+    .order('sort_order', { ascending: true });
+
+  if (error) throw error;
+  return ((data || []) as Guide[]).map((g) => ({
+    ...g,
+    stops: [...(g.stops || [])].sort((a, b) => a.seq - b.seq),
+  }));
+}
+
 export interface ProposePayload {
   passphrase: string;
   name: string;

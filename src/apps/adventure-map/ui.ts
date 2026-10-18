@@ -1,6 +1,6 @@
 import { PlaceEntry } from '../../shared/types';
 import { CATEGORY_CONFIG, CategoryConfig, colorToFade } from './data';
-import { IDENTITIES, Identity } from './supabase';
+import { IDENTITIES, Identity, Guide, GuideStop } from './supabase';
 
 /** 依實際出現在資料中的分類，動態產生篩選 chips */
 export function renderFilterBar(
@@ -307,10 +307,153 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
     }
   }
 
+  const counts: Record<string, number> = {
+    idea: ideas.length,
+    proposed: proposed.length,
+    itinerary: itinerary.length,
+  };
   document.querySelectorAll('.adv-section-count').forEach(el => {
-    const section = (el as HTMLElement).dataset.section;
-    const count = section === 'idea' ? ideas.length : section === 'proposed' ? proposed.length : itinerary.length;
-    el.textContent = `${count}`;
+    const section = (el as HTMLElement).dataset.section || '';
+    if (section in counts) el.textContent = `${counts[section]}`;
+  });
+}
+
+// ───────────────────────── 行程懶人包 ─────────────────────────
+
+const STATUS_BADGE: Record<string, string> = {
+  idea: '💭',
+  proposed: '🗳️',
+  confirmed: '✅',
+  done: '🏁',
+};
+
+function esc(text: string | null | undefined): string {
+  return (text || '').replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string
+  ));
+}
+
+function hasCoords(place: PlaceEntry | undefined): place is PlaceEntry & { lat: number; lng: number } {
+  return place != null && place.lat != null && place.lng != null;
+}
+
+/** 有座標的站依序串成 Google Maps 多點路線（起點 + 最多 9 個中繼點 + 終點） */
+function guideRouteUrl(guide: Guide, placeById: Map<number, PlaceEntry>): string | null {
+  const points = guide.stops
+    .map((s) => (s.place_id != null ? placeById.get(s.place_id) : undefined))
+    .filter(hasCoords)
+    .map((p) => `${p.lat},${p.lng}`)
+    .filter((pt, i, arr) => arr.indexOf(pt) === i);
+  if (points.length < 2) return null;
+
+  const [origin, ...rest] = points.slice(0, 11);
+  const destination = rest.pop() as string;
+  const params = new URLSearchParams({ api: '1', origin, destination });
+  if (rest.length) params.set('waypoints', rest.join('|'));
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
+}
+
+function guideStopHTML(stop: GuideStop, place: PlaceEntry | undefined, index: number): string {
+  const config = place ? CATEGORY_CONFIG[place.category] : undefined;
+  const color = config?.color || 'var(--adv-brown-light)';
+  const meta = place ? metaLine(place) : '';
+
+  return `
+    ${stop.transit && index > 0 ? `<div class="adv-guide-transit">${esc(stop.transit)}</div>` : ''}
+    <div class="adv-guide-stop" style="--cat-color:${color}">
+      <span class="adv-guide-stop-num ${place ? '' : 'adv-guide-stop-num--free'}">${stop.seq}</span>
+      <div class="adv-guide-stop-body">
+        ${stop.time_text ? `<div class="adv-guide-stop-time">${esc(stop.time_text)}</div>` : ''}
+        <div class="adv-guide-stop-name">
+          ${esc(stop.label)}
+          ${place ? `<span class="adv-guide-stop-status" title="目前在你們的清單狀態">${STATUS_BADGE[place.status] || ''}</span>` : ''}
+        </div>
+        ${index === 0 && stop.transit ? `<div class="adv-card-meta">${esc(stop.transit)}</div>` : ''}
+        ${meta ? `<div class="adv-card-meta">${esc(meta)}</div>` : ''}
+        ${stop.tip ? `<div class="adv-guide-stop-tip">💡 ${esc(stop.tip)}</div>` : ''}
+      </div>
+      ${hasCoords(place)
+        ? `<a class="adv-card-btn adv-card-btn--icon adv-guide-stop-nav" href="https://www.google.com/maps?q=${place.lat},${place.lng}" target="_blank" rel="noopener" title="導航到這一站">🗺️</a>`
+        : ''}
+    </div>
+  `;
+}
+
+function guideCardHTML(guide: Guide, placeById: Map<number, PlaceEntry>): string {
+  const located = guide.stops.filter((s) => s.place_id != null && hasCoords(placeById.get(s.place_id))).length;
+  const chain = guide.stops.map((s) => esc(s.label)).join('<span class="adv-guide-chain-arrow">→</span>');
+  const routeUrl = guideRouteUrl(guide, placeById);
+
+  return `
+    <div class="adv-card adv-guide-card" data-guide-id="${guide.id}">
+      <button class="adv-guide-head" data-guide-action="toggle" data-guide-id="${guide.id}" aria-expanded="false">
+        <div class="adv-guide-title">${esc(guide.title)}</div>
+        ${guide.summary ? `<div class="adv-guide-summary">${esc(guide.summary)}</div>` : ''}
+        <div class="adv-guide-chain">${chain}</div>
+        <div class="adv-guide-meta">
+          ${guide.region ? `<span class="adv-guide-tag">📍 ${esc(guide.region)}</span>` : ''}
+          ${guide.tags.map((t) => `<span class="adv-guide-tag">#${esc(t)}</span>`).join('')}
+          <span class="adv-guide-count">${guide.stops.length} 站 · ${located} 站有座標</span>
+        </div>
+      </button>
+      <div class="adv-guide-detail" id="adv-guide-detail-${guide.id}" hidden>
+        <div class="adv-guide-timeline">
+          ${guide.stops.map((s, i) => guideStopHTML(s, s.place_id != null ? placeById.get(s.place_id) : undefined, i)).join('')}
+        </div>
+        <div class="adv-card-actions">
+          ${routeUrl ? `<a class="adv-card-btn" href="${routeUrl}" target="_blank" rel="noopener">🗺️ 整條路線</a>` : ''}
+          ${guide.source_url ? `<a class="adv-card-btn adv-card-btn--ghost" href="${esc(guide.source_url)}" target="_blank" rel="noopener">🔗 原文</a>` : ''}
+          <button class="adv-card-btn adv-card-btn--primary" data-guide-action="apply" data-guide-id="${guide.id}">📅 照這個排行程</button>
+        </div>
+        ${guide.source ? `<div class="adv-guide-source">來源：${esc(guide.source)}</div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+/** 懶人包：別人怎麼排一日行程，每一站都對應到單一座標的地點 */
+export function renderGuides(
+  guides: Guide[],
+  allPlaces: PlaceEntry[],
+  onApply: (guide: Guide) => void
+) {
+  const mount = document.getElementById('adv-section-guides');
+  if (!mount) return;
+
+  const placeById = new Map(allPlaces.map((p) => [p.id, p]));
+  const openIds = new Set(
+    Array.from(mount.querySelectorAll('.adv-guide-detail:not([hidden])')).map((el) => el.id)
+  );
+
+  mount.innerHTML = guides.length
+    ? guides.map((g) => guideCardHTML(g, placeById)).join('')
+    : `<p class="adv-empty">沒有符合的懶人包</p>`;
+
+  // 重新渲染（例如即時同步）時保留使用者已展開的卡片
+  openIds.forEach((id) => {
+    const detail = document.getElementById(id);
+    if (detail) detail.hidden = false;
+  });
+
+  mount.querySelectorAll('[data-guide-action]').forEach((el) => {
+    const btn = el as HTMLElement;
+    const guide = guides.find((g) => g.id === parseInt(btn.dataset.guideId || '0'));
+    if (!guide) return;
+
+    btn.addEventListener('click', () => {
+      if (btn.dataset.guideAction === 'apply') {
+        onApply(guide);
+        return;
+      }
+      const detail = document.getElementById(`adv-guide-detail-${guide.id}`);
+      if (!detail) return;
+      detail.hidden = !detail.hidden;
+      btn.setAttribute('aria-expanded', `${!detail.hidden}`);
+    });
+  });
+
+  document.querySelectorAll('.adv-section-count[data-section="guides"]').forEach((el) => {
+    el.textContent = `${guides.length}`;
   });
 }
 
