@@ -108,6 +108,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - 兩張表只開放 `SELECT`（RLS），內容目前由 Supabase SQL 直接寫入，前端沒有編輯介面
 - `must_try` / `cost` **只填來源原文有寫的**，不要自己估價；填了就別在 `tip` 重複同一句
 - 「🔊 聽導覽」用瀏覽器 Web Speech API（`voice.ts`）逐站朗讀，朗讀稿由 `ui.ts` 的 `guideSpeechSegments` 組出；emoji 會先濾掉、`→` 念成「到」
+- 「🎨 海報」的時程甘特由 `poster.ts` 的 `parseGanttRows` 解析 `time_text`：`10:00–12:30` 直接用、`09:00` 結束取下一站開始、`30–45 分`／`1.5 小時` 接在上一站後；「午餐」這類文字不畫長條。至少兩站解析得出時間才開放甘特，所以新寫入的 `time_text` 盡量用 `HH:MM` 或 `HH:MM–HH:MM`
 - 「📅 照這個排行程」會把各站地點依 `seq` 定案到同一天（寫入 `visit_date` + `sort_order`），已在行程中的地點跳過
 
 **旅行成就**（「🏆 成就」分頁，清單改編自 [ivanusto/taiwan-travel-achievement-list](https://github.com/ivanusto/taiwan-travel-achievement-list)，MIT）：
@@ -162,6 +163,7 @@ src/
 │   ├── supabase.ts         # Supabase client、CRUD、Realtime 訂閱、懶人包（fetchGuides）與成就（fetchAchievements）讀取
 │   ├── geocode.ts          # 提案／編輯時以 ArcGIS 自動補座標
 │   ├── voice.ts            # 懶人包語音導覽（Web Speech API，逐段朗讀＋目前站狀態）
+│   ├── poster.ts           # 行程海報：Canvas 繪卷海報／時程甘特＋匯出 PNG（不畫地圖圖磚，避免 canvas tainted）
 │   ├── ui.ts               # 面板 UI 邏輯（面板、懶人包時間軸、成就徽章、Modal、Toast）
 │   └── index.ts            # 入口，組合各模組
 └── shared/

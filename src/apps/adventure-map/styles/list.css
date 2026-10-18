@@ -243,6 +243,80 @@ body.dark-mode .adv-row-list {
   color: var(--adv-brown-light);
   margin-bottom: 6px;
   padding-left: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.adv-day-poster {
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--adv-brown-light);
+  background: transparent;
+  border: 1px solid var(--adv-glass-border);
+  border-radius: 100px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+
+.adv-day-poster:hover {
+  color: var(--adv-terracotta);
+  border-color: var(--adv-terracotta);
+}
+
+/* 行程海報 Modal：比一般表單寬，讓預覽看得清楚 */
+.adv-modal.adv-modal--poster {
+  max-width: 560px;
+}
+
+.adv-poster-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 10px 0 8px;
+}
+
+.adv-poster-tab {
+  flex: 1;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--adv-brown);
+  background: var(--adv-cream-dark);
+  border: 1px solid transparent;
+  border-radius: 100px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.adv-poster-tab.is-active {
+  color: #fff;
+  background: var(--adv-terracotta);
+}
+
+.adv-poster-tab:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.adv-poster-hint {
+  font-size: 0.76rem;
+  color: var(--adv-brown-light);
+  margin-bottom: 8px;
+}
+
+.adv-poster-preview {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--adv-shadow);
+  background: var(--adv-cream-dark);
+}
+
+.adv-poster-preview canvas {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .adv-day-cards {

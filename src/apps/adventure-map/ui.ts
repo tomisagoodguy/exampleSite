@@ -13,6 +13,7 @@ import {
 } from './data';
 import { IDENTITIES, Identity, Guide, GuideStop, Season, Achievement } from './supabase';
 import { speechSupported, speak, stopSpeech, currentSpeech, setSpeechListener, SpeechState } from './voice';
+import { PosterData, PosterStop, drawPoster, drawGantt, ganttAvailable, ensurePosterFonts, exportPng } from './poster';
 
 /** 依實際出現在資料中的分類，動態產生篩選 chips */
 export function renderFilterBar(
@@ -389,7 +390,10 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
       itineraryMount.innerHTML = groups
         .map(([dayKey, places]) => `
           <div class="adv-day-group">
-            <div class="adv-day-header">${dayLabel(dayKey)}</div>
+            <div class="adv-day-header">
+              <span>${dayLabel(dayKey)}</span>
+              <button class="adv-day-poster" data-day-poster="${dayKey}" title="把這天的行程做成海報">🎨 海報</button>
+            </div>
             <div class="adv-day-cards" data-day="${dayKey}">
               ${places.map((p, i) => itineraryCard(p, i + 1, places.length)).join('')}
             </div>
@@ -397,6 +401,10 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
         `)
         .join('');
       bindActions(itineraryMount, itinerary, actions);
+      itineraryMount.querySelectorAll<HTMLElement>('[data-day-poster]').forEach((btn) => {
+        const group = groups.find(([key]) => key === btn.dataset.dayPoster);
+        if (group) btn.addEventListener('click', () => openPosterModal(dayPosterData(group[0], group[1])));
+      });
       setupDayDragAndDrop(itineraryMount, actions.onReorder);
     } else {
       itineraryMount.innerHTML = `<p class="adv-empty">還沒有定案的行程，去「提案中」按 ✅ 定案吧！</p>`;
@@ -503,6 +511,7 @@ function guideCardHTML(guide: Guide, placeById: Map<number, PlaceEntry>): string
         </div>
         <div class="adv-card-actions">
           ${speechSupported ? `<button class="adv-card-btn" data-guide-action="speak" data-guide-id="${guide.id}">🔊 聽導覽</button>` : ''}
+          <button class="adv-card-btn" data-guide-action="poster" data-guide-id="${guide.id}">🎨 海報</button>
           ${routeUrl ? `<a class="adv-card-btn" href="${routeUrl}" target="_blank" rel="noopener">🗺️ 整條路線</a>` : ''}
           ${guide.source_url ? `<a class="adv-card-btn adv-card-btn--ghost" href="${esc(guide.source_url)}" target="_blank" rel="noopener">🔗 原文</a>` : ''}
           <button class="adv-card-btn adv-card-btn--primary" data-guide-action="apply" data-guide-id="${guide.id}">📅 照這個排行程</button>
@@ -629,6 +638,10 @@ export function renderGuides(
         onApply(guide);
         return;
       }
+      if (btn.dataset.guideAction === 'poster') {
+        openPosterModal(guidePosterData(guide, placeById));
+        return;
+      }
       if (btn.dataset.guideAction === 'speak') {
         if (currentSpeech()?.guideId === guide.id) stopSpeech();
         else speak(guide.id, guideSpeechSegments(guide));
@@ -645,6 +658,115 @@ export function renderGuides(
     el.textContent = `${guides.length}`;
   });
   syncSpeechUI(currentSpeech());
+}
+
+// ───────────────────────── 行程海報 ─────────────────────────
+
+function posterStop(seq: number, label: string, timeText: string | null, place: PlaceEntry | undefined, extra: string | null): PosterStop {
+  const config = place ? CATEGORY_CONFIG[place.category] : undefined;
+  return { seq, label, timeText, color: config?.color || '#8C6A55', categoryLabel: config?.label || null, extra };
+}
+
+function safeFilename(text: string): string {
+  return text.replace(/[\\/:*?"<>|]/g, '').trim().slice(0, 40) || '行程';
+}
+
+function guidePosterData(guide: Guide, placeById: Map<number, PlaceEntry>): PosterData {
+  const stops = guide.stops.map((s) => {
+    const place = s.place_id != null ? placeById.get(s.place_id) : undefined;
+    const extra = [s.must_try ? `⭐ ${s.must_try}` : '', s.cost ? `💰 ${s.cost}` : ''].filter(Boolean).join('   ') || s.tip;
+    return posterStop(s.seq, s.label, s.time_text, place, extra || null);
+  });
+  const subtitle = [
+    guide.region ? `📍 ${guide.region}` : '',
+    guide.seasons.map((s) => SEASON_LABEL[s]).join(' '),
+    `${guide.stops.length} 站`,
+  ].filter(Boolean).join('  ·  ');
+  return {
+    title: guide.title,
+    subtitle,
+    summary: guide.summary,
+    stops,
+    footnote: guide.source ? `來源：${guide.source}` : null,
+    filename: `${safeFilename(guide.title)}.png`,
+  };
+}
+
+/** 某一天已定案的行程：地點沒有時段資料，所以只有繪卷海報 */
+function dayPosterData(dayKey: string, places: PlaceEntry[]): PosterData {
+  const label = dayLabel(dayKey).replace(/^📅 |^📌 /, '');
+  const regions = Array.from(new Set(places.map((p) => (p.region ? REGION_LABEL[p.region] : '')).filter(Boolean)));
+  return {
+    title: dayKey === UNSCHEDULED_KEY ? '還沒排日期的行程' : `${label}的約會`,
+    subtitle: [regions.length ? `📍 ${regions.join('、')}` : '', `${places.length} 站`].filter(Boolean).join('  ·  '),
+    summary: null,
+    stops: places.map((p, i) => posterStop(i + 1, p.name, null, p, metaLine(p) || p.note || null)),
+    footnote: null,
+    filename: `${safeFilename(dayKey === UNSCHEDULED_KEY ? '未排日期行程' : dayKey)}.png`,
+  };
+}
+
+type PosterMode = 'poster' | 'gantt';
+
+export function openPosterModal(data: PosterData) {
+  const canGantt = ganttAvailable(data.stops);
+  const { root, close } = openModal(`
+    <h3>🎨 行程海報</h3>
+    <div class="adv-poster-tabs" role="tablist">
+      <button class="adv-poster-tab is-active" data-poster-mode="poster" role="tab" aria-selected="true">繪卷海報</button>
+      <button class="adv-poster-tab" data-poster-mode="gantt" role="tab" aria-selected="false" ${canGantt ? '' : 'disabled title="至少要兩站寫了時間（例如 10:00）才畫得出甘特圖"'}>時程甘特</button>
+    </div>
+    ${canGantt ? '' : '<div class="adv-poster-hint">這條行程沒寫時間，只能做繪卷海報</div>'}
+    <div class="adv-poster-preview"><canvas id="adv-poster-canvas"></canvas></div>
+    <div class="adv-modal-actions">
+      <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-poster-close">關閉</button>
+      <button class="adv-modal-btn adv-modal-btn--primary" id="adv-poster-save">下載 PNG</button>
+    </div>
+  `);
+  root.querySelector('.adv-modal')?.classList.add('adv-modal--poster');
+
+  const canvas = root.querySelector('#adv-poster-canvas') as HTMLCanvasElement;
+  const saveBtn = root.querySelector('#adv-poster-save') as HTMLButtonElement;
+  let mode: PosterMode = 'poster';
+
+  const render = async () => {
+    try {
+      await ensurePosterFonts();
+    } catch (err) {
+      console.warn('海報字型載入失敗，改用系統字型', err);
+    }
+    if (mode === 'gantt') drawGantt(canvas, data);
+    else drawPoster(canvas, data);
+  };
+
+  root.querySelectorAll<HTMLButtonElement>('[data-poster-mode]').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      mode = tab.dataset.posterMode as PosterMode;
+      root.querySelectorAll<HTMLButtonElement>('[data-poster-mode]').forEach((t) => {
+        const active = t === tab;
+        t.classList.toggle('is-active', active);
+        t.setAttribute('aria-selected', `${active}`);
+      });
+      render();
+    });
+  });
+
+  saveBtn.addEventListener('click', async () => {
+    saveBtn.disabled = true;
+    try {
+      const filename = mode === 'gantt' ? data.filename.replace(/\.png$/, '-時程.png') : data.filename;
+      const result = await exportPng(canvas, filename);
+      if (result === 'downloaded') showToast('📥 已下載海報');
+    } catch (err) {
+      console.error('海報匯出失敗', err);
+      showToast('海報匯出失敗，請再試一次');
+    } finally {
+      saveBtn.disabled = false;
+    }
+  });
+  root.querySelector('#adv-poster-close')?.addEventListener('click', close);
+
+  render();
 }
 
 // ───────────────────────── 旅行成就 ─────────────────────────
