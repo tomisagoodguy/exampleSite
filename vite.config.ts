@@ -11,7 +11,6 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        'place-helper': resolve(__dirname, 'src/tools/place-helper/place-helper.html'),
         'adventure-map': resolve(__dirname, 'src/apps/adventure-map/index.html'),
       },
       output: {

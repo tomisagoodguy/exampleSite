@@ -23,6 +23,7 @@ import {
   vibrate,
 } from './ui';
 import { PlaceEntry } from '../../shared/types';
+import { geocodePlace } from './geocode';
 import {
   fetchPlaces,
   fetchGuides,
@@ -513,6 +514,9 @@ class DatingMapApp {
     const result = await openProposeModal({});
     if (!result) return;
 
+    // 在問密碼前查好，密碼輸錯重試時不必重查
+    const hit = await geocodePlace(result.name, result.address);
+
     const saved = await this.withPassphrase((pw) =>
       proposePlace({
         passphrase: pw,
@@ -521,12 +525,14 @@ class DatingMapApp {
         note: result.note,
         proposed_by: result.proposedBy,
         address: result.address,
+        lat: hit?.lat,
+        lng: hit?.lng,
         status: 'proposed',
       })
     );
 
     if (saved) {
-      showToast('提案送出啦！');
+      showToast(hit ? `提案送出啦！已定位到：${hit.matched}` : '提案送出啦！（找不到座標，地圖上暫時不會顯示）');
       await this.refresh();
     }
   }
@@ -680,6 +686,10 @@ class DatingMapApp {
       (result.region !== undefined && result.region !== place.region) ||
       (result.isIndoor !== undefined && result.isIndoor !== place.is_indoor);
 
+    // 原本沒座標，或地址改了，才重新定位；座標變動時 trigger 會一併重算地區
+    const addressChanged = !!result.address && result.address !== (place.address || place.mrt_station);
+    const hit = place.lat == null || addressChanged ? await geocodePlace(result.name, result.address) : null;
+
     const saved = await this.withPassphrase(async (pw) => {
       const updated = await updatePlace({
         passphrase: pw,
@@ -688,13 +698,15 @@ class DatingMapApp {
         category: result.category,
         address: result.address,
         note: result.note,
+        lat: hit?.lat,
+        lng: hit?.lng,
       });
       if (!attrsChanged) return updated;
       return setPlaceAttrs(pw, place.id, { region: result.region, is_indoor: result.isIndoor });
     });
 
     if (saved) {
-      showToast('已更新');
+      showToast(hit ? `已更新，並定位到：${hit.matched}` : '已更新');
       await this.refresh();
     }
   }

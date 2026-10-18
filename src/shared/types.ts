@@ -36,12 +36,3 @@ export interface PlaceEntry {
   done_note?: string; // Legacy support
   done_date?: string; // Legacy support
 }
-
-export interface SearchResult {
-  name: string;
-  address: string;
-  lat: number;
-  lng: number;
-  score?: number;
-  source: 'arcgis' | 'nominatim';
-}

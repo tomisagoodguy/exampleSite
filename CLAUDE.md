@@ -103,14 +103,13 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - 兩張表只開放 `SELECT`（RLS），內容目前由 Supabase SQL 直接寫入，前端沒有編輯介面
 - 「📅 照這個排行程」會把各站地點依 `seq` 定案到同一天（寫入 `visit_date` + `sort_order`），已在行程中的地點跳過
 
-`place-helper` 工具頁（`src/tools/place-helper/`）是獨立的地點資料產生輔助工具，透過 File System Access API 直接讀寫本機檔案，**不連接 Supabase**。
+**自動補座標**：頁面上「新增提案」與「修改地點」（原本無座標或地址有改）送出前，`geocode.ts` 會先用地址、再用店名查 ArcGIS `findAddressCandidates`，**分數 ≥ 90 且落在台灣範圍內**才寫入 `lat` / `lng`（`region` 由 trigger 跟著重算）；查不到照常存檔，toast 會提示「找不到座標」。門牌、公園、商圈命中率高，小店名與「捷運○○站」多半查不到，需事後用下方「補座標」方式處理。
 
 ### Vite 打包輸出路徑（`yarn build` 後的結果）
 
 | 入口 | 輸出位置 |
 | --- | --- |
 | `src/apps/adventure-map/index.html` | `static/js/adventure-map.bundle.js` + `static/css/adventure-map.bundle.css` |
-| `src/tools/place-helper/place-helper.html` | `static/tools/place-helper.html` |
 | 共用 JS chunks | `static/assets/` |
 
 Leaflet / MarkerCluster 以 `external` 方式排除，頁面直接從 CDN 載入（見 `layouts/adventure-map/list.html`）。
@@ -143,13 +142,9 @@ src/
 ├── apps/adventure-map/     # 破關地圖（Leaflet + MarkerCluster + Supabase）
 │   ├── data.ts             # 分類設定（CATEGORY_CONFIG）
 │   ├── supabase.ts         # Supabase client、CRUD、Realtime 訂閱、懶人包讀取（fetchGuides）
+│   ├── geocode.ts          # 提案／編輯時以 ArcGIS 自動補座標
 │   ├── ui.ts               # 面板 UI 邏輯（面板、懶人包時間軸、Modal、Toast）
 │   └── index.ts            # 入口，組合各模組
-├── tools/place-helper/     # 地點資料產生輔助工具（獨立 HTML 頁，不連 Supabase）
-│   ├── geocoder.ts         # 地址轉座標
-│   ├── persist.ts / file-store.ts  # File System Access API 本機讀寫
-│   ├── mgmt.ts             # 地點管理（編輯/刪除既有紀錄）
-│   └── main.ts             # 入口
 └── shared/
     └── types.ts            # PlaceEntry 等共用型別
 ```
