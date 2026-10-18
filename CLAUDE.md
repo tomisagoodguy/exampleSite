@@ -54,6 +54,8 @@ yarn hugo:log                 # Hugo 建置 log → logs/hugo-build.log
 npx tsc --noEmit --strict --target es2020 --module esnext --moduleResolution bundler --lib es2020,dom,dom.iterable --skipLibCheck src/apps/adventure-map/index.ts
 ```
 
+> 在 **PowerShell** 執行時 `--lib` 要加引號：`--lib "es2020,dom,dom.iterable"`，否則逗號會被拆成陣列，報 TS6046。
+
 ### 發布至 GitHub Pages
 
 push 到 `main` 即由 GitHub Actions（`.github/workflows/deploy.yml`）自動以 Hugo 0.127.0 build 並部署到 `tomisagoodguy.github.io`，**無需手動操作**。
