@@ -144,7 +144,9 @@ body.dark-mode .adv-like-btn {
   background: var(--adv-glass);
   border: 1px solid var(--adv-glass-border);
   border-radius: 12px;
-  overflow: hidden;
+  /* 只裁水平方向保住圓角；垂直要可捲動，否則桌面版 .adv-card-list 限高後超出的項目會被裁掉 */
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .adv-row-wrap + .adv-row-wrap .adv-row {
