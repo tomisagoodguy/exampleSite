@@ -32,7 +32,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 ./hugo.exe server -D          # 啟動本地預覽（含草稿）
 ./hugo.exe --minify --gc      # 建置輸出至 public/
+./hugo.exe server -D --port 1314 --baseURL http://localhost:1314/   # 1313 被占用時
 ```
+
+> 換 port 一定要同時給 `--baseURL`：`list.html` 用 `absURL` 載 bundle，會指向 `localhost:1313`，跨 port 被 CORS 擋下，地圖整頁空白、沒有任何卡片。
 
 ### TypeScript 建置
 
@@ -87,6 +90,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | `is_indoor` | `true` / `false` | 「☔ 雨天可去」篩選 |
 
 - 夜市→`food`、老店/商圈→`shop`、廟宇→`museum`、公園→`walk`、步道→`scenery`、室內運動→`diy`；距離遠近用 `region` 表示，不另設「一日遊」分類
+- 地區篩選按鈕只顯示**有地點**的地區；新增地區（例如 `islands`）要先有地點標上該 `region`，按鈕與介紹卡才會出現
 - 選了地區篩選時頂部會出現地區介紹卡（一句話、代表美食、交通、去過幾個），文字寫死在 `data.ts` 的 `REGION_INFO`；新增地區要同時補這裡與 `REGION_LABEL`
 - 新增時若沒給 `region` / `is_indoor`，trigger `dating_map_places_fill_attrs` 會依座標（`dating_map_guess_region` 矩形框，邊界附近不準）與分類補預設值；大批匯入應自行用 ArcGIS `reverseGeocode` 反查縣市後寫入
 - 前端修改這兩個欄位走獨立 RPC `dating_map_set_attrs`（`setPlaceAttrs`），沒有改 `dating_map_update` 的參數簽章
