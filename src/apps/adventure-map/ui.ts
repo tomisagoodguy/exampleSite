@@ -34,6 +34,17 @@ export function renderFilterBar(
       onSelect((btn as HTMLElement).dataset.cat || 'all');
     });
   });
+
+  // 桌面滑鼠滾輪只有垂直方向，轉成橫向捲動；mount 不會被重建，只綁一次
+  if (!mount.dataset.wheelBound) {
+    mount.dataset.wheelBound = '1';
+    mount.addEventListener('wheel', (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      if (mount.scrollWidth <= mount.clientWidth) return;
+      e.preventDefault();
+      mount.scrollLeft += e.deltaY;
+    }, { passive: false });
+  }
 }
 
 export interface CardActions {

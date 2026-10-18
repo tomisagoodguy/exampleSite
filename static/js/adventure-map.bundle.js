@@ -14,7 +14,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
             style="${r&&e===n?`background:${r};border-color:${r};`:``}">
       ${t}
     </button>
-  `;i.innerHTML=[o(`all`,`全部`),...a.map(t=>{let n=e[t];return o(t,n?n.label:t,n?.color)})].join(``),i.querySelectorAll(`.adv-chip`).forEach(e=>{e.addEventListener(`click`,()=>{r(e.dataset.cat||`all`)})})}function Ha(e){return e.lat!=null&&e.lng!=null?`${e.lat},${e.lng}`:encodeURIComponent(e.address||e.mrt_station||e.name)}function Ua(e=12){typeof navigator<`u`&&`vibrate`in navigator&&navigator.vibrate(e)}function X(e){return[e.address,e.mrt_station].filter((e,t,n)=>!!e&&n.indexOf(e)===t).join(` · `)}function Wa(t){let n=e[t.category],r=!!t.note;return`
+  `;i.innerHTML=[o(`all`,`全部`),...a.map(t=>{let n=e[t];return o(t,n?n.label:t,n?.color)})].join(``),i.querySelectorAll(`.adv-chip`).forEach(e=>{e.addEventListener(`click`,()=>{r(e.dataset.cat||`all`)})}),i.dataset.wheelBound||(i.dataset.wheelBound=`1`,i.addEventListener(`wheel`,e=>{Math.abs(e.deltaY)<=Math.abs(e.deltaX)||i.scrollWidth<=i.clientWidth||(e.preventDefault(),i.scrollLeft+=e.deltaY)},{passive:!1}))}function Ha(e){return e.lat!=null&&e.lng!=null?`${e.lat},${e.lng}`:encodeURIComponent(e.address||e.mrt_station||e.name)}function Ua(e=12){typeof navigator<`u`&&`vibrate`in navigator&&navigator.vibrate(e)}function X(e){return[e.address,e.mrt_station].filter((e,t,n)=>!!e&&n.indexOf(e)===t).join(` · `)}function Wa(t){let n=e[t.category],r=!!t.note;return`
     <div class="adv-row-wrap">
       <div class="adv-row" style="--cat-color:${n?.color||`#999`}">
         <span class="adv-row-dot" title="${n?.label||t.category}"></span>
