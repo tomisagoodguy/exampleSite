@@ -46,6 +46,14 @@ yarn hugo:log                 # Hugo 建置 log → logs/hugo-build.log
 
 > `logs/` 已被 `.gitignore` 排除。遇到 build 錯誤時，先執行對應指令產生 log，再讓 Claude 讀取 `logs/` 下的檔案。
 
+### 型別檢查
+
+專案**沒有 `tsconfig.json`**，`npx tsc --noEmit -p .` 會直接報 TS5057 失敗（不是「沒錯誤」）。要指定入口檔：
+
+```bash
+npx tsc --noEmit --strict --target es2020 --module esnext --moduleResolution bundler --lib es2020,dom,dom.iterable --skipLibCheck src/apps/adventure-map/index.ts
+```
+
 ### 發布至 GitHub Pages
 
 push 到 `main` 即由 GitHub Actions（`.github/workflows/deploy.yml`）自動以 Hugo 0.127.0 build 並部署到 `tomisagoodguy.github.io`，**無需手動操作**。
@@ -78,7 +86,9 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - 每一站**只對應一個地點**；「台北花市、建國花市」這種多地點寫法要拆成多筆 `dating_map_places` 再連結
 - `place_id` 為 `null` 代表沒有固定地點的步驟（例如「約在捷運站」）
 - 兩張表只開放 `SELECT`（RLS），內容目前由 Supabase SQL 直接寫入，前端沒有編輯介面
-- 「📅 照這個排行程」會把各站地點依 `seq` 定案到同一天（寫入 `visit_date` + `sort_order`），已在行程中的地點跳過`place-helper` 工具頁（`src/tools/place-helper/`）是獨立的地點資料產生輔助工具，透過 File System Access API 直接讀寫本機檔案，**不連接 Supabase**。
+- 「📅 照這個排行程」會把各站地點依 `seq` 定案到同一天（寫入 `visit_date` + `sort_order`），已在行程中的地點跳過
+
+`place-helper` 工具頁（`src/tools/place-helper/`）是獨立的地點資料產生輔助工具，透過 File System Access API 直接讀寫本機檔案，**不連接 Supabase**。
 
 ### Vite 打包輸出路徑（`yarn build` 後的結果）
 
@@ -179,10 +189,18 @@ pipe 左右必須有空格，separator 使用 `---`：
 | 把圖片放 `static/` 再用相對路徑引用 | 圖片與 `index.md` 放同一資料夾 |
 | 建立備份檔（`_old.md`、`.bak`） | 直接修改原檔，版控用 git |
 | 使用 Hugo 0.88+ 新功能 | 確認 Netlify 上 0.87.0 相容 |
+| 移除 `list.html` 裡 bundle 網址的 `?v={{ $assetVersion }}` | 保留：GitHub Pages 對 CSS/JS 設 `max-age=600` 且 bundle 檔名固定，拿掉後部署完瀏覽器會吃舊版 |
+
+### 破關地圖常見錯誤
+
+- **大量匯入資料後要用真實數量看 UI**：願望清單曾因 `.adv-row-list { overflow: hidden }` 蓋掉 `.adv-card-list` 的捲動，300+ 筆時桌面版被裁掉；資料寫入成功 ≠ 畫面可用
+- **驗證正式站要繞過快取**：HTML 本身也快取 10 分鐘；用 `curl` 看 `Age` / `X-Cache` 標頭，瀏覽器測試前先清快取（Ctrl + Shift + R）
+- **補座標（免費）**：Google Maps MCP 的 key 未啟用 Geocoding；改用 ArcGIS `findAddressCandidates` + Nominatim（同 `src/tools/place-helper/geocoder.ts`），並用台北／台中經緯度框篩掉錯誤結果
+- **Google Maps 短網址**：`maps.app.goo.gl` 轉址後的 `q=` 參數帶完整地址（如「永康街6巷5號」），取出地址查門牌比直接解析座標可靠
 
 ---
 
 ## Active Status
 
-- **最後更新**：2026-09-12
+- **最後更新**：2026-10-18
 - **已知問題**：無
