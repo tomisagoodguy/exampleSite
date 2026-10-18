@@ -11,7 +11,12 @@ export function renderFilterBar(
   const mount = document.getElementById('adv-filter-mount');
   if (!mount) return;
 
-  const usedCats = Array.from(new Set(places.map(p => p.category)));
+  const used = new Set(places.map(p => p.category));
+  const builtinOrder = Object.keys(CATEGORY_CONFIG);
+  const usedCats = [
+    ...builtinOrder.filter(cat => used.has(cat)),
+    ...Array.from(used).filter(cat => !builtinOrder.includes(cat)),
+  ];
 
   const chipHTML = (cat: string, label: string, color?: string) => `
     <button class="adv-chip ${cat === currentCat ? 'adv-chip--active' : ''}"
