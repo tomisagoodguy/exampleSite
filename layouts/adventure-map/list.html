@@ -5,7 +5,9 @@
   window.DATING_MAP_SUPABASE_URL = "https://zvomerdcsxvuymnpuvxk.supabase.co";
   window.DATING_MAP_SUPABASE_KEY = "sb_publishable_xAprCS1COLD7ePcF08buGw_LHfh6d9q";
 </script>
-<link rel="stylesheet" href="{{ "css/adventure-map.bundle.css" | absURL }}">
+{{/* bundle 檔名固定，GitHub Pages 會快取 10 分鐘；加建置時間當版本號，部署後瀏覽器才會抓新版 */}}
+{{ $assetVersion := now.Unix }}
+<link rel="stylesheet" href="{{ "css/adventure-map.bundle.css" | absURL }}?v={{ $assetVersion }}">
 
 {{/* ─── PWA：加到主畫面後可全螢幕、無瀏覽器網址列開啟 ─── */}}
 <link rel="manifest" href="{{ "adventure-map.webmanifest" | absURL }}">
@@ -133,6 +135,6 @@
 </section>
 
 {{/* ─── 載入互動邏輯 ─── */}}
-<script type="module" src="{{ "js/adventure-map.bundle.js" | absURL }}"></script>
+<script type="module" src="{{ "js/adventure-map.bundle.js" | absURL }}?v={{ $assetVersion }}"></script>
 
 {{ end }}
