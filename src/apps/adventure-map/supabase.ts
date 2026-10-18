@@ -285,6 +285,18 @@ export async function setPlaceAttrs(
   return data as PlaceEntry;
 }
 
+/** 縣市＋鄉鎮區；座標變動時 trigger 會先清空，再由前端反查後寫回 */
+export async function setPlaceArea(passphrase: string, id: number, area: string): Promise<PlaceEntry> {
+  const { data, error } = await supabase.rpc('dating_map_set_area', {
+    p_passphrase: passphrase,
+    p_id: id,
+    p_area: area,
+  });
+
+  if (error) throw error;
+  return data as PlaceEntry;
+}
+
 export async function deletePlace(passphrase: string, id: number): Promise<void> {
   const { error } = await supabase.rpc('dating_map_delete', {
     p_passphrase: passphrase,

@@ -30,6 +30,8 @@ export interface PlaceEntry {
   rating?: number;
   seasons?: string[];
   region?: Region | null;
+  /** 縣市＋鄉鎮區，例如「新北市瑞芳區」；願望清單依此分組 */
+  area?: string | null;
   is_indoor?: boolean | null;
   visits?: Visit[];
   photos?: string[];

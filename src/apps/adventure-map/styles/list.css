@@ -234,6 +234,71 @@ body.dark-mode .adv-row-list {
   background: rgba(45, 35, 28, 0.6);
 }
 
+/* 願望清單區域分組（<details>）：標題列收合，展開後才有地點列 */
+.adv-idea-group + .adv-idea-group {
+  border-top: 1px solid var(--adv-glass-border);
+}
+
+.adv-idea-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.adv-idea-group-head::-webkit-details-marker {
+  display: none;
+}
+
+.adv-idea-group-head::before {
+  content: '▸';
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: var(--adv-brown-light);
+  transition: transform 0.15s ease;
+}
+
+.adv-idea-group[open] > .adv-idea-group-head::before {
+  transform: rotate(90deg);
+}
+
+.adv-idea-group-head:focus-visible {
+  outline: 2px solid var(--adv-plum);
+  outline-offset: -2px;
+}
+
+.adv-idea-group-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--adv-brown);
+}
+
+.adv-idea-group-count {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--adv-brown-light);
+}
+
+.adv-idea-group[open] > .adv-idea-group-head {
+  border-bottom: 1px solid var(--adv-glass-border);
+}
+
+.adv-idea-group-body .adv-row {
+  padding-left: 22px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adv-idea-group-head::before {
+    transition: none;
+  }
+}
+
 /* ─── Itinerary day groups (drag to reorder) ─── */
 .adv-day-group + .adv-day-group {
   margin-top: 14px;

@@ -98,17 +98,29 @@ export type IdeaTier = 'mrt' | 'weekend' | 'trip' | 'activity';
 
 /** 願望清單依「出門成本」分組（以台北為起點）；宣告順序即分組按鈕順序，也是預設分組的優先順序 */
 export const IDEA_TIER: Record<IdeaTier, { label: string; hint: string }> = {
-  mrt:      { label: '🚇 下班就能去', hint: '北北基、有捷運站' },
-  weekend:  { label: '🚗 週末一日', hint: '北北基捷運到不了的地方、桃竹苗' },
+  mrt:      { label: '🚇 下班就能去', hint: '有填捷運站，或在台北市與新北捷運沿線區（步道、山景除外）' },
+  weekend:  { label: '🚗 週末一日', hint: '北北基山海景點、捷運到不了的地方、桃竹苗' },
   trip:     { label: '🧳 排趟旅行', hint: '台中、中南部、宜花東、離島' },
   activity: { label: '💡 活動點子', hint: '還沒指定店家的活動，例如捏陶、密室逃脫' },
 };
 
+/** 新北捷運沿線、從台北下班過去不用轉車太久的區；台北市整個都算 */
+const NEW_TAIPEI_MRT_AREAS = new Set(
+  ['板橋區', '永和區', '中和區', '三重區', '新莊區', '蘆洲區', '新店區', '土城區', '淡水區'].map(d => `新北市${d}`)
+);
+
+function inMrtArea(area?: string | null): boolean {
+  return !!area && (area.startsWith('台北市') || NEW_TAIPEI_MRT_AREAS.has(area));
+}
+
 export function ideaTier(p: PlaceEntry): IdeaTier {
   // 沒座標就沒有 region：多半是「保齡球館」「看球賽」這類還沒指定店家的活動，mrt_station 只是隨手備註
   if (p.region == null) return 'activity';
-  // 台中、高雄也有捷運，只有北北基的捷運站才算「下班就能去」
-  if (p.region === 'north') return p.mrt_station?.trim() ? 'mrt' : 'weekend';
+  if (p.region === 'north') {
+    // 台中、高雄也有捷運，只看北北基；陽明山、貓空這類步道雖在台北市，仍要半天以上
+    if (p.mrt_station?.trim()) return 'mrt';
+    return inMrtArea(p.area) && p.category !== 'scenery' ? 'mrt' : 'weekend';
+  }
   return p.region === 'tzm' ? 'weekend' : 'trip';
 }
 

@@ -372,9 +372,96 @@ function setupDayDragAndDrop(mount: HTMLElement, onReorder: (dayKey: string, ord
   });
 }
 
-const IDEA_PAGE_SIZE = 40;
-let ideaLimit = IDEA_PAGE_SIZE;
 let ideaTierSel: IdeaTier = 'mrt';
+/** 記住展開的區域；Realtime 更新重繪時才不會整個收起來 */
+const openIdeaGroups = new Set<string>();
+/** 分組內地點不超過這個數（例如搜尋後）就全部展開，不必一個個點 */
+const IDEA_OPEN_ALL = 12;
+
+interface IdeaGroup {
+  key: string;
+  label: string;
+  places: PlaceEntry[];
+}
+
+/** 旅行分組裡單一縣市超過這個數（例如台中）就改依鄉鎮區拆開 */
+const TRIP_SPLIT_COUNTY = 30;
+
+/**
+ * 近的（捷運、週末）依鄉鎮區分組，一組約等於一次約會能逛完的範圍；
+ * 旅行依縣市分組（排旅行是先決定去哪個縣）；活動點子沒有地點，改依分類
+ */
+function groupIdeas(tier: IdeaTier, ideas: PlaceEntry[]): IdeaGroup[] {
+  const countyCount = new Map<string, number>();
+  ideas.forEach(p => p.area && countyCount.set(p.area.slice(0, 3), (countyCount.get(p.area.slice(0, 3)) ?? 0) + 1));
+  const groups = new Map<string, IdeaGroup>();
+  for (const p of ideas) {
+    let key: string;
+    let label: string;
+    if (tier === 'activity') {
+      key = p.category;
+      label = CATEGORY_CONFIG[p.category]?.label ?? p.category;
+    } else if (!p.area) {
+      key = '';
+      label = '還沒有區域';
+    } else if (tier === 'trip' && (countyCount.get(p.area.slice(0, 3)) ?? 0) <= TRIP_SPLIT_COUNTY) {
+      key = p.area.slice(0, 3);
+      label = key;
+    } else {
+      key = p.area;
+      // 「台北市大安區」→「台北 大安區」
+      label = p.area.length > 3 ? `${p.area.slice(0, 2)} ${p.area.slice(3)}` : p.area;
+    }
+    const group = groups.get(key) ?? { key, label, places: [] };
+    group.places.push(p);
+    groups.set(key, group);
+  }
+  return Array.from(groups.values()).sort(
+    (a, b) =>
+      Number(a.key === '') - Number(b.key === '') ||
+      b.places.length - a.places.length ||
+      a.label.localeCompare(b.label, 'zh-Hant')
+  );
+}
+
+/** 收合的區域不產生地點列，展開時才補上並綁定按鈕；幾百筆不會一次塞進 DOM */
+function renderIdeaGroups(mount: HTMLElement, ideas: PlaceEntry[], actions: CardActions) {
+  const groups = groupIdeas(ideaTierSel, ideas);
+  const openAll = ideas.length <= IDEA_OPEN_ALL;
+  mount.innerHTML = groups
+    .map(g => {
+      const id = `${ideaTierSel}:${g.key}`;
+      return `
+        <details class="adv-idea-group" data-group="${id}" ${openAll || openIdeaGroups.has(id) ? 'open' : ''}>
+          <summary class="adv-idea-group-head">
+            <span class="adv-idea-group-name">${g.label}</span>
+            <span class="adv-idea-group-count">${g.places.length}</span>
+          </summary>
+          <div class="adv-idea-group-body"></div>
+        </details>`;
+    })
+    .join('');
+
+  mount.querySelectorAll<HTMLDetailsElement>('details[data-group]').forEach((el, i) => {
+    const group = groups[i];
+    const body = el.querySelector<HTMLElement>('.adv-idea-group-body');
+    const fill = () => {
+      if (!body || body.childElementCount) return;
+      body.innerHTML = group.places.map(ideaRow).join('');
+      bindActions(body, group.places, actions);
+    };
+    if (el.open) fill();
+    el.addEventListener('toggle', () => {
+      const id = el.dataset.group || '';
+      if (el.open) {
+        openIdeaGroups.add(id);
+        fill();
+      } else {
+        openIdeaGroups.delete(id);
+      }
+    });
+  });
+}
 
 /** 願望清單分組按鈕；目前分組被篩選成空的時，自動跳到第一個有地點的分組 */
 function renderIdeaTiers(ideas: PlaceEntry[], rerender: () => void): PlaceEntry[] {
@@ -396,7 +483,6 @@ function renderIdeaTiers(ideas: PlaceEntry[], rerender: () => void): PlaceEntry[
     mount.querySelectorAll<HTMLElement>('[data-idea-tier]').forEach(el => {
       el.addEventListener('click', () => {
         ideaTierSel = el.dataset.ideaTier as IdeaTier;
-        ideaLimit = IDEA_PAGE_SIZE;
         rerender();
       });
     });
@@ -415,18 +501,8 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
   const itineraryMount = document.getElementById('adv-section-itinerary');
 
   if (ideaMount) {
-    // 願望清單動輒數百筆，分批顯示，避免一次塞進整串 DOM、手機要滑很久
-    const shownIdeas = ideas.slice(0, ideaLimit);
-    const rest = ideas.length - shownIdeas.length;
-    ideaMount.innerHTML = ideas.length
-      ? shownIdeas.map(ideaRow).join('') +
-        (rest > 0 ? `<button type="button" class="adv-more-btn" data-more-ideas>顯示更多（還有 ${rest} 筆）</button>` : '')
-      : `<p class="adv-empty">目前沒有這個分類的願望清單項目</p>`;
-    bindActions(ideaMount, shownIdeas, actions);
-    ideaMount.querySelector('[data-more-ideas]')?.addEventListener('click', () => {
-      ideaLimit += IDEA_PAGE_SIZE * 2;
-      renderSections(allPlaces, actions);
-    });
+    if (ideas.length) renderIdeaGroups(ideaMount, ideas, actions);
+    else ideaMount.innerHTML = `<p class="adv-empty">目前沒有這個分類的願望清單項目</p>`;
   }
 
   if (proposedMount) {

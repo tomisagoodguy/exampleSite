@@ -28,7 +28,7 @@ import {
   vibrate,
 } from './ui';
 import { PlaceEntry } from '../../shared/types';
-import { geocodePlace } from './geocode';
+import { geocodePlace, lookupArea } from './geocode';
 import {
   fetchPlaces,
   fetchGuides,
@@ -40,6 +40,7 @@ import {
   proposePlace,
   updatePlace,
   setPlaceAttrs,
+  setPlaceArea,
   deletePlace,
   resetToIdea,
   toggleLike,
@@ -630,9 +631,10 @@ class DatingMapApp {
 
     // 在問密碼前查好，密碼輸錯重試時不必重查
     const hit = await geocodePlace(result.name, result.address);
+    const area = hit ? await lookupArea(hit.lat, hit.lng, result.address) : null;
 
-    const saved = await this.withPassphrase((pw) =>
-      proposePlace({
+    const saved = await this.withPassphrase(async (pw) => {
+      const created = await proposePlace({
         passphrase: pw,
         name: result.name,
         category: result.category,
@@ -642,8 +644,9 @@ class DatingMapApp {
         lat: hit?.lat,
         lng: hit?.lng,
         status: 'proposed',
-      })
-    );
+      });
+      return area ? setPlaceArea(pw, created.id, area) : created;
+    });
 
     if (saved) {
       showToast(hit ? `提案送出啦！已定位到：${hit.matched}` : '提案送出啦！（找不到座標，地圖上暫時不會顯示）');
@@ -823,9 +826,11 @@ class DatingMapApp {
     // 原本沒座標，或地址改了，才重新定位；座標變動時 trigger 會一併重算地區
     const addressChanged = !!result.address && result.address !== (place.address || place.mrt_station);
     const hit = place.lat == null || addressChanged ? await geocodePlace(result.name, result.address) : null;
+    // 座標一變 trigger 就清空 area，要在 updatePlace 之後寫回
+    const area = hit ? await lookupArea(hit.lat, hit.lng, result.address) : null;
 
     const saved = await this.withPassphrase(async (pw) => {
-      const updated = await updatePlace({
+      let updated = await updatePlace({
         passphrase: pw,
         id: place.id,
         name: result.name,
@@ -835,6 +840,7 @@ class DatingMapApp {
         lat: hit?.lat,
         lng: hit?.lng,
       });
+      if (area) updated = await setPlaceArea(pw, place.id, area);
       if (!attrsChanged) return updated;
       return setPlaceAttrs(pw, place.id, { region: result.region, is_indoor: result.isIndoor });
     });
