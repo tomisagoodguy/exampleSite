@@ -5,6 +5,7 @@ import {
   renderFilterBar,
   renderSections,
   renderGuides,
+  GuideSeasonFilter,
   openPassphraseModal,
   openProposeModal,
   openMarkDoneModal,
@@ -44,6 +45,7 @@ import {
 class DatingMapApp {
   private allPlaces: PlaceEntry[] = [];
   private guides: Guide[] = [];
+  private currentGuideSeason: GuideSeasonFilter = 'all';
   private currentCat: string = 'all';
   private currentSearch: string = '';
   private identity: Identity | null = null;
@@ -263,7 +265,7 @@ class DatingMapApp {
   }
 
   private renderAll() {
-    const filtered = filterPlaces(this.allPlaces, this.currentCat, 'all', this.currentSearch);
+    const filtered = filterPlaces(this.allPlaces, this.currentCat, this.currentSearch);
 
     renderFilterBar(this.allPlaces, this.currentCat, (cat) => {
       this.currentCat = cat;
@@ -282,7 +284,16 @@ class DatingMapApp {
       onReorder: (dayKey, orderedIds) => this.reorderDay(dayKey, orderedIds),
       onShare: (p) => this.sharePlace(p),
     });
-    renderGuides(this.filterGuides(), this.allPlaces, (g) => this.applyGuide(g));
+    renderGuides(
+      this.filterGuides(),
+      this.allPlaces,
+      this.currentGuideSeason,
+      (season) => {
+        this.currentGuideSeason = season;
+        this.renderAll();
+      },
+      (g) => this.applyGuide(g)
+    );
   }
 
   private async loadGuides() {

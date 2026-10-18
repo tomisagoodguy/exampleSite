@@ -83,8 +83,12 @@ export interface Guide {
   source: string | null;
   source_url: string | null;
   tags: string[];
+  /** 適合的季節，空陣列代表全年皆宜 */
+  seasons: Season[];
   stops: GuideStop[];
 }
+
+export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
 
 export async function fetchGuides(): Promise<Guide[]> {
   const { data, error } = await supabase
@@ -95,6 +99,7 @@ export async function fetchGuides(): Promise<Guide[]> {
   if (error) throw error;
   return ((data || []) as Guide[]).map((g) => ({
     ...g,
+    seasons: g.seasons || [],
     stops: [...(g.stops || [])].sort((a, b) => a.seq - b.seq),
   }));
 }

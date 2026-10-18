@@ -1,6 +1,6 @@
 import { PlaceEntry } from '../../shared/types';
 import { CATEGORY_CONFIG, CategoryConfig, colorToFade } from './data';
-import { IDENTITIES, Identity, Guide, GuideStop } from './supabase';
+import { IDENTITIES, Identity, Guide, GuideStop, Season } from './supabase';
 
 /** 依實際出現在資料中的分類，動態產生篩選 chips */
 export function renderFilterBar(
@@ -408,6 +408,7 @@ function guideCardHTML(guide: Guide, placeById: Map<number, PlaceEntry>): string
         <div class="adv-guide-chain">${chain}</div>
         <div class="adv-guide-meta">
           ${guide.region ? `<span class="adv-guide-tag">📍 ${esc(guide.region)}</span>` : ''}
+          ${guide.seasons.length ? `<span class="adv-guide-tag adv-guide-tag--season">${guide.seasons.map((s) => SEASON_LABEL[s]).join(' ')}</span>` : ''}
           ${guide.tags.map((t) => `<span class="adv-guide-tag">#${esc(t)}</span>`).join('')}
           <span class="adv-guide-count">${guide.stops.length} 站 · ${located} 站有座標</span>
         </div>
@@ -427,14 +428,61 @@ function guideCardHTML(guide: Guide, placeById: Map<number, PlaceEntry>): string
   `;
 }
 
+const SEASON_LABEL: Record<Season, string> = {
+  spring: '🌸 春',
+  summer: '☀️ 夏',
+  autumn: '🍂 秋',
+  winter: '❄️ 冬',
+};
+
+/** 'all' = 不篩選；'anytime' = 只看全年皆宜（seasons 為空）的懶人包 */
+export type GuideSeasonFilter = 'all' | 'anytime' | Season;
+
+function matchSeason(guide: Guide, filter: GuideSeasonFilter): boolean {
+  if (filter === 'all') return true;
+  if (filter === 'anytime') return guide.seasons.length === 0;
+  return guide.seasons.includes(filter);
+}
+
+function renderSeasonBar(
+  guides: Guide[],
+  current: GuideSeasonFilter,
+  onChange: (filter: GuideSeasonFilter) => void
+) {
+  const bar = document.getElementById('adv-guide-seasons');
+  if (!bar) return;
+
+  const options: [GuideSeasonFilter, string][] = [
+    ['all', '全部'],
+    ...(Object.entries(SEASON_LABEL) as [Season, string][]),
+    ['anytime', '全年皆宜'],
+  ];
+
+  bar.innerHTML = options
+    .map(([value, label]) => {
+      const count = guides.filter((g) => matchSeason(g, value)).length;
+      return `<button class="adv-guide-season ${value === current ? 'is-active' : ''}" data-season="${value}" aria-pressed="${value === current}">${label}<span class="adv-guide-season-count">${count}</span></button>`;
+    })
+    .join('');
+
+  bar.querySelectorAll<HTMLElement>('[data-season]').forEach((btn) => {
+    btn.addEventListener('click', () => onChange(btn.dataset.season as GuideSeasonFilter));
+  });
+}
+
 /** 懶人包：別人怎麼排一日行程，每一站都對應到單一座標的地點 */
 export function renderGuides(
-  guides: Guide[],
+  searchedGuides: Guide[],
   allPlaces: PlaceEntry[],
+  season: GuideSeasonFilter,
+  onSeasonChange: (filter: GuideSeasonFilter) => void,
   onApply: (guide: Guide) => void
 ) {
   const mount = document.getElementById('adv-section-guides');
   if (!mount) return;
+
+  renderSeasonBar(searchedGuides, season, onSeasonChange);
+  const guides = searchedGuides.filter((g) => matchSeason(g, season));
 
   const placeById = new Map(allPlaces.map((p) => [p.id, p]));
   const openIds = new Set(

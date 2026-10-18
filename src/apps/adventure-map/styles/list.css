@@ -416,6 +416,50 @@ body.dark-mode .adv-row-list {
   padding: 2px 8px;
 }
 
+.adv-guide-tag--season {
+  color: var(--adv-terracotta);
+  background: rgba(196, 123, 90, 0.12);
+}
+
+.adv-guide-seasons {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 2px 2px 10px;
+}
+
+.adv-guide-seasons::-webkit-scrollbar {
+  display: none;
+}
+
+.adv-guide-season {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--adv-brown);
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 100px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+
+.adv-guide-season.is-active {
+  color: #fff;
+  background: var(--adv-plum);
+  border-color: transparent;
+}
+
+.adv-guide-season-count {
+  font-size: 0.66rem;
+  opacity: 0.7;
+}
+
 .adv-guide-count {
   margin-left: auto;
   font-size: 0.68rem;

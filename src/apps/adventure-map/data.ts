@@ -39,16 +39,14 @@ export const STATUS_LABEL: Record<string, string> = {
 export function filterPlaces(
   places: PlaceEntry[],
   category: string,
-  season: string,
   search: string = ''
 ): PlaceEntry[] {
   const q = search.trim().toLowerCase();
   return places.filter(p => {
     const matchCat = category === 'all' || p.category === category;
-    const matchSeason = season === 'all' || (p.seasons && p.seasons.includes(season));
     const matchSearch = !q || [p.name, p.address, p.mrt_station, p.note].some(
       v => v && v.toLowerCase().includes(q)
     );
-    return matchCat && matchSeason && matchSearch;
+    return matchCat && matchSearch;
   });
 }
