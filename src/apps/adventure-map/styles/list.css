@@ -211,7 +211,9 @@ body.dark-mode .adv-like-btn {
   background: transparent;
   color: var(--adv-brown-light);
   font-size: 0.9rem;
-  padding: 4px 6px;
+  /* 和「想去」拉開距離、加大點擊範圍，避免誤觸刪除 */
+  margin-left: 6px;
+  padding: 8px 10px;
   border-radius: 6px;
   cursor: pointer;
 }
@@ -797,6 +799,50 @@ body.dark-mode .adv-row-list {
   color: var(--adv-brown);
 }
 
+/* 徽章兼分類篩選：是按鈕，要有按鈕的回饋 */
+button.adv-ach-badge {
+  width: 100%;
+  min-height: 40px;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+button.adv-ach-badge:hover {
+  background: rgba(196, 123, 90, 0.06);
+}
+
+.adv-ach-badge.is-active {
+  border-style: solid;
+  border-color: var(--cat-color);
+  background: color-mix(in srgb, var(--cat-color) 14%, transparent);
+  color: var(--adv-brown);
+}
+
+/* 清單「顯示更多」：願望清單分批、成就收合共用 */
+.adv-more-btn {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin: 8px 0 4px;
+  border: 1.5px dashed var(--adv-glass-border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--adv-terracotta);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  grid-column: 1 / -1;
+  transition: background 0.15s ease;
+}
+
+.adv-more-btn:hover {
+  background: rgba(196, 123, 90, 0.08);
+}
+
 .adv-ach-badge.is-earned .adv-ach-badge-icon {
   filter: none;
   opacity: 1;
@@ -872,4 +918,54 @@ body.dark-mode .adv-row-list {
 
 .adv-ach-credit a {
   color: inherit;
+}
+
+
+/* ─── 無障礙：鍵盤焦點、減少動態 ─── */
+.adv-page :focus-visible,
+.adv-modal-backdrop :focus-visible {
+  outline: 2px solid var(--adv-terracotta);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adv-page *,
+  .adv-modal-backdrop * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── 觸控裝置：篩選 chips 與小按鈕至少 40px 高，手指好按 ─── */
+@media (pointer: coarse) {
+  .adv-chip,
+  .adv-guide-season,
+  .adv-identity-badge,
+  .adv-pk-trigger,
+  .adv-intro__close {
+    min-height: 40px;
+  }
+
+  .adv-row-btn {
+    min-height: 36px;
+    padding: 6px 14px;
+  }
+}
+
+/* ─── 桌面字級：原本為手機調的 11–13px 在大螢幕偏小 ─── */
+@media (min-width: 900px) {
+  .adv-chip { font-size: 0.86rem; }
+  .adv-guide-season { font-size: 0.82rem; }
+  .adv-row-name { font-size: 0.92rem; }
+  .adv-row-meta { font-size: 0.76rem; }
+  .adv-row-btn { font-size: 0.8rem; }
+  .adv-card-name { font-size: 1rem; }
+  .adv-card-meta { font-size: 0.8rem; }
+  .adv-card-note { font-size: 0.86rem; }
+  .adv-card-btn { font-size: 0.8rem; }
+  .adv-guide-summary { font-size: 0.85rem; }
+  .adv-day-header { font-size: 0.85rem; }
+  .adv-intro__text { font-size: 0.86rem; }
+  .adv-search-input { font-size: 0.92rem; }
 }

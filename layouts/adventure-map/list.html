@@ -46,6 +46,13 @@
     <button class="adv-intro__close" id="adv-intro-close" aria-label="關閉說明">知道了</button>
   </div>
 
+  {{/* ─── 桌面版主題切換：規劃看板／懶人包／成就分開看，不再一路往下疊（手機用底部分頁列） ─── */}}
+  <nav class="adv-deskbar" id="adv-deskbar" aria-label="切換主題">
+    <button class="adv-deskbar__btn" data-desk-target="plan">🗳️ 規劃看板</button>
+    <button class="adv-deskbar__btn" data-desk-target="guides">📚 行程懶人包 <span class="adv-section-count" data-section="guides">0</span></button>
+    <button class="adv-deskbar__btn" data-desk-target="achievements">🏆 旅行成就 <span class="adv-section-count" data-section="achievements">0</span></button>
+  </nav>
+
   {{/* ─── 地點搜尋框 ─── */}}
   <div class="adv-search-wrap">
     <input type="search" id="adv-search-input" class="adv-search-input" placeholder="🔍 搜尋地點名稱、地址、捷運站…">
@@ -109,7 +116,6 @@
         <span class="adv-section-count" data-section="achievements">0</span>
       </div>
       <div class="adv-ach-summary" id="adv-ach-summary"></div>
-      <div class="adv-guide-seasons" id="adv-ach-filter" role="group" aria-label="依分類篩選成就"></div>
       <div class="adv-card-list adv-guide-list" id="adv-section-achievements"></div>
       <div class="adv-guide-source adv-ach-credit">
         成就清單改編自 <a href="https://github.com/ivanusto/taiwan-travel-achievement-list" target="_blank" rel="noopener">台灣旅行成就系統</a>（MIT）

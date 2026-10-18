@@ -552,10 +552,58 @@ body.dark-mode {
     display: block;
   }
 
-  /* 懶人包、成就不吃分類／地區／雨天篩選，切到這兩頁就收起來，只留它們自己的篩選列 */
-  .adv-page[data-active-tab="guides"] :is(#adv-filter-mount, #adv-attr-mount, #adv-region-mount),
-  .adv-page[data-active-tab="achievements"] :is(#adv-filter-mount, #adv-attr-mount, #adv-region-mount) {
-    display: none !important;
+}
+
+/* 懶人包、成就不吃分類／地區／雨天篩選，切到這兩頁就收起來（手機、桌面都適用），只留它們自己的篩選 */
+.adv-page[data-active-tab="guides"] :is(#adv-filter-mount, #adv-attr-mount, #adv-region-mount),
+.adv-page[data-active-tab="achievements"] :is(#adv-filter-mount, #adv-attr-mount, #adv-region-mount) {
+  display: none !important;
+}
+
+/* ─── 桌面主題切換列：規劃看板／懶人包／成就分開看 ─── */
+.adv-deskbar {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .adv-deskbar {
+    display: flex;
+    gap: 8px;
+    padding: 14px 16px 0;
+  }
+
+  .adv-deskbar__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 8px 18px;
+    border-radius: 12px;
+    border: 1.5px solid var(--adv-glass-border);
+    background: var(--adv-glass);
+    color: var(--adv-brown-light);
+    font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .adv-deskbar__btn:hover {
+    border-color: var(--adv-terracotta);
+    color: var(--adv-brown);
+  }
+
+  .adv-deskbar__btn--active,
+  .adv-deskbar__btn--active:hover {
+    background: var(--adv-brown);
+    border-color: var(--adv-brown);
+    color: #fff;
+  }
+
+  .adv-deskbar__btn--active .adv-section-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
   }
 }
 
@@ -579,10 +627,16 @@ body.dark-mode {
   }
 }
 
-/* 桌面：三欄一起顯示，不受分頁狀態影響 */
+/* 桌面：規劃看板三欄一起顯示；懶人包、成就各自獨立一頁（由主題切換列決定） */
 @media (min-width: 900px) {
   .adv-board .adv-section[data-tab] {
     display: block;
+  }
+
+  .adv-page:is([data-active-tab="proposed"], [data-active-tab="itinerary"], [data-active-tab="idea"]) .adv-board .adv-section--guides,
+  .adv-page[data-active-tab="guides"] .adv-board .adv-section[data-tab]:not([data-tab="guides"]),
+  .adv-page[data-active-tab="achievements"] .adv-board .adv-section[data-tab]:not([data-tab="achievements"]) {
+    display: none;
   }
 }
 

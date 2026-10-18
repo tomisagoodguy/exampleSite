@@ -361,6 +361,9 @@ function setupDayDragAndDrop(mount: HTMLElement, onReorder: (dayKey: string, ord
   });
 }
 
+const IDEA_PAGE_SIZE = 40;
+let ideaLimit = IDEA_PAGE_SIZE;
+
 export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
   const ideas = allPlaces.filter(p => p.status === 'idea');
   const proposed = allPlaces.filter(p => p.status === 'proposed');
@@ -371,10 +374,18 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
   const itineraryMount = document.getElementById('adv-section-itinerary');
 
   if (ideaMount) {
+    // 願望清單動輒數百筆，分批顯示，避免一次塞進整串 DOM、手機要滑很久
+    const shownIdeas = ideas.slice(0, ideaLimit);
+    const rest = ideas.length - shownIdeas.length;
     ideaMount.innerHTML = ideas.length
-      ? ideas.map(ideaRow).join('')
+      ? shownIdeas.map(ideaRow).join('') +
+        (rest > 0 ? `<button type="button" class="adv-more-btn" data-more-ideas>顯示更多（還有 ${rest} 筆）</button>` : '')
       : `<p class="adv-empty">目前沒有這個分類的願望清單項目</p>`;
-    bindActions(ideaMount, ideas, actions);
+    bindActions(ideaMount, shownIdeas, actions);
+    ideaMount.querySelector('[data-more-ideas]')?.addEventListener('click', () => {
+      ideaLimit += IDEA_PAGE_SIZE * 2;
+      renderSections(allPlaces, actions);
+    });
   }
 
   if (proposedMount) {
@@ -830,7 +841,11 @@ function achievementCardHTML(a: Achievement, placeById: Map<number, PlaceEntry>)
   `;
 }
 
-/** 成就分頁：稱號 + 徽章進度 + 分類篩選 + 成就卡片 */
+const PLACE_NEARNESS: Record<string, number> = { confirmed: 3, proposed: 2, idea: 1 };
+const ACH_PREVIEW = 9;
+let achExpanded = false;
+
+/** 成就分頁：稱號 + 徽章進度（兼分類篩選）+ 成就卡片 */
 export function renderAchievements(
   all: Achievement[],
   searched: Achievement[],
@@ -842,9 +857,7 @@ export function renderAchievements(
 ) {
   const mount = document.getElementById('adv-section-achievements');
   const summary = document.getElementById('adv-ach-summary');
-  const bar = document.getElementById('adv-ach-filter');
-  if (!mount || !summary || !bar) return;
-  bindHorizontalWheel(bar);
+  if (!mount || !summary) return;
 
   const placeById = new Map(allPlaces.map((p) => [p.id, p]));
   const isUnlocked = (a: Achievement) => achievementUnlock(a, placeById) !== null;
@@ -860,41 +873,51 @@ export function renderAchievements(
       <span class="adv-ach-rank-count">${total} / ${all.length}</span>
     </div>
     <div class="adv-ach-progress"><span style="width:${all.length ? (total / all.length) * 100 : 0}%"></span></div>
-    <div class="adv-ach-badges">
+    <div class="adv-ach-badges" role="group" aria-label="依分類篩選成就（再點一次看全部）">
       ${cats.map(([key, cfg]) => {
         const got = all.filter((a) => a.category === key && isUnlocked(a)).length;
         const earned = got >= cfg.badge.threshold;
-        return `<div class="adv-ach-badge ${earned ? 'is-earned' : ''}" style="--cat-color:${cfg.color}" title="解鎖 ${cfg.badge.threshold} 項${cfg.label}成就">
+        const active = filter === key;
+        return `<button type="button" class="adv-ach-badge ${earned ? 'is-earned' : ''} ${active ? 'is-active' : ''}" data-ach-filter="${key}" aria-pressed="${active}" style="--cat-color:${cfg.color}" title="${cfg.label}：解鎖 ${cfg.badge.threshold} 項得徽章，點一下只看這類">
           <span class="adv-ach-badge-icon">${cfg.emoji}</span>
           <span class="adv-ach-badge-name">${cfg.badge.name}</span>
           <span class="adv-ach-badge-count">${Math.min(got, cfg.badge.threshold)}/${cfg.badge.threshold}</span>
-        </div>`;
+        </button>`;
       }).join('')}
     </div>
   `;
-
-  const options: [AchievementFilter, string][] = [['all', '全部'], ...cats.map(([k, c]) => [k, `${c.emoji} ${c.label}`] as [AchievementFilter, string])];
-  bar.innerHTML = options.map(([value, label]) => {
-    const inCat = searched.filter((a) => value === 'all' || a.category === value);
-    return `<button class="adv-guide-season ${value === filter ? 'is-active' : ''}" data-ach-filter="${value}" aria-pressed="${value === filter}">${label}<span class="adv-guide-season-count">${inCat.filter(isUnlocked).length}/${inCat.length}</span></button>`;
-  }).join('');
-  bar.querySelectorAll<HTMLElement>('[data-ach-filter]').forEach((btn) => {
-    btn.addEventListener('click', () => onFilterChange(btn.dataset.achFilter as AchievementFilter));
+  summary.querySelectorAll<HTMLElement>('[data-ach-filter]').forEach((btn) => {
+    const key = btn.dataset.achFilter as AchievementFilter;
+    btn.addEventListener('click', () => onFilterChange(filter === key ? 'all' : key));
   });
 
-  // 未解鎖排前面，同一分類內維持原本順序
+  // 進度優先：未解鎖的依「離完成多近」排序（連結地點已排進行程 > 提案中 > 在願望清單 > 沒有地點），再依難度由易到難
+  const nearness = (a: Achievement) =>
+    Math.max(0, ...a.place_ids.map((id) => PLACE_NEARNESS[placeById.get(id)?.status || ''] || 0));
   const order = cats.map(([k]) => k);
   const shown = searched
     .filter((a) => filter === 'all' || a.category === filter)
     .sort((x, y) =>
       Number(isUnlocked(x)) - Number(isUnlocked(y)) ||
+      nearness(y) - nearness(x) ||
+      x.difficulty - y.difficulty ||
       order.indexOf(x.category) - order.indexOf(y.category) ||
       x.sort_order - y.sort_order
     );
 
-  mount.innerHTML = shown.length
-    ? shown.map((a) => achievementCardHTML(a, placeById)).join('')
+  // 「全部」且沒在搜尋時只先列最接近完成的幾項，其餘收合
+  const collapsible = filter === 'all' && searched.length === all.length && !achExpanded;
+  const visible = collapsible ? shown.slice(0, ACH_PREVIEW) : shown;
+  const hiddenCount = shown.length - visible.length;
+
+  mount.innerHTML = visible.length
+    ? visible.map((a) => achievementCardHTML(a, placeById)).join('') +
+      (hiddenCount > 0 ? `<button type="button" class="adv-more-btn" data-ach-more>顯示全部 ${shown.length} 項成就</button>` : '')
     : `<p class="adv-empty">沒有符合的成就</p>`;
+  mount.querySelector('[data-ach-more]')?.addEventListener('click', () => {
+    achExpanded = true;
+    onFilterChange(filter);
+  });
 
   mount.querySelectorAll<HTMLElement>('[data-ach-action]').forEach((btn) => {
     const a = shown.find((x) => x.id === parseInt(btn.dataset.achId || '0'));

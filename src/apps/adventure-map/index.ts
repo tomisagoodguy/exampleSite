@@ -194,20 +194,33 @@ class DatingMapApp {
     );
   }
 
-  /** 手機版底部分頁列：一次只顯示一段清單，感覺像原生 App 而非長長的網頁 */
+  /**
+   * 分頁狀態（手機底部分頁列＋桌面主題切換共用）：寫在 #adv-app-root[data-active-tab]。
+   * 手機一次顯示一段清單；桌面的「規劃看板」是提案／行程／願望三欄併排，懶人包與成就各自獨立一頁。
+   */
   private setupTabBar() {
     const tabbar = document.getElementById('adv-tabbar');
     if (!tabbar) return;
 
     const root = document.getElementById('adv-app-root');
     const board = document.getElementById('adv-board');
+    const deskbar = document.getElementById('adv-deskbar');
+    const PLAN_TABS = ['proposed', 'itinerary', 'idea'];
+    let lastPlanTab = 'proposed';
 
     const setActive = (tab: string) => {
+      if (PLAN_TABS.includes(tab)) lastPlanTab = tab;
+      const deskTab = PLAN_TABS.includes(tab) ? 'plan' : tab;
       document.querySelectorAll('.adv-section[data-tab]').forEach((el) => {
         el.classList.toggle('adv-section--active', (el as HTMLElement).dataset.tab === tab);
       });
       tabbar.querySelectorAll('.adv-tab').forEach((btn) => {
         btn.classList.toggle('adv-tab--active', (btn as HTMLElement).dataset.tabTarget === tab);
+      });
+      deskbar?.querySelectorAll<HTMLElement>('.adv-deskbar__btn').forEach((btn) => {
+        const active = btn.dataset.deskTarget === deskTab;
+        btn.classList.toggle('adv-deskbar__btn--active', active);
+        btn.setAttribute('aria-pressed', String(active));
       });
       if (root) root.dataset.activeTab = tab;
       // 已經捲過看板頂端才拉回看板開頭；還在上方就不動，避免每次換頁都重看一次 Hero
@@ -219,6 +232,13 @@ class DatingMapApp {
 
     tabbar.querySelectorAll('.adv-tab').forEach((btn) => {
       btn.addEventListener('click', () => setActive((btn as HTMLElement).dataset.tabTarget || 'proposed'));
+    });
+
+    deskbar?.querySelectorAll<HTMLElement>('.adv-deskbar__btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.deskTarget || 'plan';
+        setActive(target === 'plan' ? lastPlanTab : target);
+      });
     });
 
     // 空狀態裡的「去某分頁」按鈕
