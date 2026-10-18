@@ -8,7 +8,8 @@ import {
   AttrFilter,
   renderSections,
   renderGuides,
-  GuideSeasonFilter,
+  GuideFilter,
+  GUIDE_FILTER_ALL,
   renderAchievements,
   achievementUnlock,
   AchievementFilter,
@@ -40,6 +41,7 @@ import {
   updatePlace,
   setPlaceAttrs,
   deletePlace,
+  resetToIdea,
   toggleLike,
   getStoredPassphrase,
   storePassphrase,
@@ -57,7 +59,7 @@ import {
 class DatingMapApp {
   private allPlaces: PlaceEntry[] = [];
   private guides: Guide[] = [];
-  private currentGuideSeason: GuideSeasonFilter = 'all';
+  private currentGuideFilter: GuideFilter = GUIDE_FILTER_ALL;
   private achievements: Achievement[] = [];
   private currentAchFilter: AchievementFilter = 'all';
   private currentCat: string = 'all';
@@ -352,13 +354,14 @@ class DatingMapApp {
       onReschedule: (p) => this.reschedulePlace(p),
       onReorder: (dayKey, orderedIds) => this.reorderDay(dayKey, orderedIds),
       onShare: (p) => this.sharePlace(p),
+      onBulkReset: (places, scope) => this.bulkReset(places, scope),
     });
     renderGuides(
       this.filterGuides(),
       this.allPlaces,
-      this.currentGuideSeason,
-      (season) => {
-        this.currentGuideSeason = season;
+      this.currentGuideFilter,
+      (filter) => {
+        this.currentGuideFilter = filter;
         this.renderAll();
       },
       (g) => this.applyGuide(g)
@@ -674,6 +677,21 @@ class DatingMapApp {
     );
     if (saved) {
       showToast(status === 'confirmed' ? '定案了！期待這次約會 🎉' : '已回到願望清單');
+      await this.refresh();
+    }
+  }
+
+  /** 討論到一半放棄重來：地點不刪，只退回願望清單並清掉日期 */
+  private async bulkReset(places: PlaceEntry[], scope: string) {
+    if (!places.length) return;
+    const confirmed = await openConfirmModal(
+      `把${scope}的 ${places.length} 個地點全部退回願望清單？日期與排序會清掉，地點本身不會刪除。`
+    );
+    if (!confirmed) return;
+
+    const count = await this.withPassphrase((pw) => resetToIdea(pw, places.map((p) => p.id)));
+    if (count !== null) {
+      showToast(`已退回 ${count} 個地點到願望清單`);
       await this.refresh();
     }
   }

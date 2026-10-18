@@ -90,10 +90,17 @@ export interface Guide {
   tags: string[];
   /** 適合的季節，空陣列代表全年皆宜 */
   seasons: Season[];
+  /** 場景，可複選；空陣列代表都不算（例如農遊） */
+  scenes: Scene[];
+  duration: GuideDuration | null;
+  /** 同一趟多日旅行的各天共用同一個 key，篩選時整趟一起出現 */
+  trip_key: string | null;
   stops: GuideStop[];
 }
 
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
+export type Scene = 'mountain' | 'sea' | 'city';
+export type GuideDuration = 'half' | 'day' | 'multi';
 
 export async function fetchGuides(): Promise<Guide[]> {
   const { data, error } = await supabase
@@ -105,6 +112,7 @@ export async function fetchGuides(): Promise<Guide[]> {
   return ((data || []) as Guide[]).map((g) => ({
     ...g,
     seasons: g.seasons || [],
+    scenes: g.scenes || [],
     stops: [...(g.stops || [])].sort((a, b) => a.seq - b.seq),
   }));
 }
@@ -247,6 +255,17 @@ export async function updatePlace(payload: UpdatePayload): Promise<PlaceEntry> {
 
   if (error) throw error;
   return data as PlaceEntry;
+}
+
+/** 一次把多筆提案／定案退回願望清單（清掉日期與排序），已去過的不動；回傳實際退回筆數 */
+export async function resetToIdea(passphrase: string, ids: number[]): Promise<number> {
+  const { data, error } = await supabase.rpc('dating_map_reset_to_idea', {
+    p_passphrase: passphrase,
+    p_ids: ids,
+  });
+
+  if (error) throw error;
+  return data as number;
 }
 
 /** 地區／雨天可去另走一支 RPC，避免改 dating_map_update 的參數簽章 */

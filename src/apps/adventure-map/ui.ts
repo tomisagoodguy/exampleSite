@@ -11,7 +11,7 @@ import {
   ACHIEVEMENT_TITLES,
   REGION_INFO,
 } from './data';
-import { IDENTITIES, Identity, Guide, GuideStop, Season, Achievement } from './supabase';
+import { IDENTITIES, Identity, Guide, GuideStop, Season, Scene, GuideDuration, Achievement } from './supabase';
 import { speechSupported, speak, stopSpeech, currentSpeech, setSpeechListener, SpeechState } from './voice';
 import { PosterData, PosterStop, drawPoster, drawGantt, ganttAvailable, ensurePosterFonts, exportPng } from './poster';
 
@@ -145,6 +145,8 @@ export interface CardActions {
   onReschedule: (place: PlaceEntry) => void;
   onReorder: (dayKey: string, orderedIds: number[]) => void;
   onShare: (place: PlaceEntry) => void;
+  /** 一次退回願望清單；scope 是給確認視窗看的說明，例如「提案中」「10/25 的行程」 */
+  onBulkReset: (places: PlaceEntry[], scope: string) => void;
 }
 
 export function navQuery(place: PlaceEntry): string {
@@ -283,6 +285,12 @@ function bindActions(mount: HTMLElement, places: PlaceEntry[], actions: CardActi
 const UNSCHEDULED_KEY = '__unscheduled__';
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
 
+/** 只有 2 筆以上才出現；1 筆時卡片上的單筆按鈕就夠了 */
+function bulkResetBar(section: 'proposed' | 'itinerary', count: number, label: string): string {
+  if (count < 2) return '';
+  return `<div class="adv-bulk-bar"><button type="button" class="adv-day-poster" data-bulk-reset="${section}">🧹 ${label}（${count}）</button></div>`;
+}
+
 function dayLabel(dayKey: string): string {
   if (dayKey === UNSCHEDULED_KEY) return '📌 未排日期';
   const d = new Date(`${dayKey}T00:00:00`);
@@ -390,21 +398,29 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
 
   if (proposedMount) {
     proposedMount.innerHTML = proposed.length
-      ? proposed.map(proposedCard).join('')
+      ? bulkResetBar('proposed', proposed.length, '全部退回願望清單') + proposed.map(proposedCard).join('')
       : `<div class="adv-empty">還沒有人提案，按「＋ 新增提案」或從願望清單挑一個<br>
           <button type="button" class="adv-empty__action" data-goto-tab="idea">💭 去願望清單挑一個 →</button></div>`;
     bindActions(proposedMount, proposed, actions);
+    proposedMount.querySelector('[data-bulk-reset="proposed"]')?.addEventListener('click', () => {
+      actions.onBulkReset(proposed, '提案中');
+    });
   }
 
   if (itineraryMount) {
     if (itinerary.length) {
       const groups = groupItineraryByDay(itinerary);
-      itineraryMount.innerHTML = groups
+      // 已去過（done）是紀錄，不在退回範圍
+      const pending = (places: PlaceEntry[]) => places.filter((p) => p.status === 'confirmed');
+      itineraryMount.innerHTML = bulkResetBar('itinerary', pending(itinerary).length, '清空還沒去的行程') + groups
         .map(([dayKey, places]) => `
           <div class="adv-day-group">
             <div class="adv-day-header">
               <span>${dayLabel(dayKey)}</span>
-              <button class="adv-day-poster" data-day-poster="${dayKey}" title="把這天的行程做成海報">🎨 海報</button>
+              <span class="adv-day-tools">
+                ${pending(places).length ? `<button class="adv-day-poster" data-day-reset="${dayKey}" title="這天還沒去的地點全部退回願望清單">↩️ 退回</button>` : ''}
+                <button class="adv-day-poster" data-day-poster="${dayKey}" title="把這天的行程做成海報">🎨 海報</button>
+              </span>
             </div>
             <div class="adv-day-cards" data-day="${dayKey}">
               ${places.map((p, i) => itineraryCard(p, i + 1, places.length)).join('')}
@@ -416,6 +432,13 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
       itineraryMount.querySelectorAll<HTMLElement>('[data-day-poster]').forEach((btn) => {
         const group = groups.find(([key]) => key === btn.dataset.dayPoster);
         if (group) btn.addEventListener('click', () => openPosterModal(dayPosterData(group[0], group[1])));
+      });
+      itineraryMount.querySelectorAll<HTMLElement>('[data-day-reset]').forEach((btn) => {
+        const group = groups.find(([key]) => key === btn.dataset.dayReset);
+        if (group) btn.addEventListener('click', () => actions.onBulkReset(pending(group[1]), dayLabel(group[0])));
+      });
+      itineraryMount.querySelector('[data-bulk-reset="itinerary"]')?.addEventListener('click', () => {
+        actions.onBulkReset(pending(itinerary), '行程中還沒去的地點');
       });
       setupDayDragAndDrop(itineraryMount, actions.onReorder);
     } else {
@@ -499,7 +522,7 @@ function guideStopHTML(stop: GuideStop, place: PlaceEntry | undefined, index: nu
   `;
 }
 
-function guideCardHTML(guide: Guide, placeById: Map<number, PlaceEntry>): string {
+function guideCardHTML(guide: Guide, placeById: Map<number, PlaceEntry>, tripDay: string): string {
   const located = guide.stops.filter((s) => s.place_id != null && hasCoords(placeById.get(s.place_id))).length;
   const chain = guide.stops.map((s) => esc(s.label)).join('<span class="adv-guide-chain-arrow">→</span>');
   const routeUrl = guideRouteUrl(guide, placeById);
@@ -511,7 +534,10 @@ function guideCardHTML(guide: Guide, placeById: Map<number, PlaceEntry>): string
         ${guide.summary ? `<div class="adv-guide-summary">${esc(guide.summary)}</div>` : ''}
         <div class="adv-guide-chain">${chain}</div>
         <div class="adv-guide-meta">
+          ${tripDay ? `<span class="adv-guide-tag adv-guide-tag--season">${tripDay}</span>` : ''}
           ${guide.region ? `<span class="adv-guide-tag">📍 ${esc(guide.region)}</span>` : ''}
+          ${guide.scenes.length ? `<span class="adv-guide-tag">${guide.scenes.map((s) => SCENE_LABEL[s]).join(' ')}</span>` : ''}
+          ${guide.duration && !tripDay ? `<span class="adv-guide-tag">${DURATION_LABEL[guide.duration]}</span>` : ''}
           ${guide.seasons.length ? `<span class="adv-guide-tag adv-guide-tag--season">${guide.seasons.map((s) => SEASON_LABEL[s]).join(' ')}</span>` : ''}
           ${guide.tags.map((t) => `<span class="adv-guide-tag">#${esc(t)}</span>`).join('')}
           <span class="adv-guide-count">${guide.stops.length} 站 · ${located} 站有座標</span>
@@ -575,39 +601,81 @@ const SEASON_LABEL: Record<Season, string> = {
   winter: '❄️ 冬',
 };
 
-/** 'all' = 不篩選；'anytime' = 只看全年皆宜（seasons 為空）的懶人包 */
-export type GuideSeasonFilter = 'all' | 'anytime' | Season;
+const SCENE_LABEL: Record<Scene, string> = {
+  mountain: '⛰️ 山',
+  sea: '🌊 海',
+  city: '🏙️ 城鎮',
+};
 
-function matchSeason(guide: Guide, filter: GuideSeasonFilter): boolean {
-  if (filter === 'all') return true;
-  if (filter === 'anytime') return guide.seasons.length === 0;
-  return guide.seasons.includes(filter);
+const DURATION_LABEL: Record<GuideDuration, string> = {
+  half: '⏱️ 半日',
+  day: '☀️ 一日',
+  multi: '🧳 多日',
+};
+
+/** 三組條件各自 'all' = 不篩選；季節的 'anytime' = 只看全年皆宜（seasons 為空） */
+export interface GuideFilter {
+  season: 'all' | 'anytime' | Season;
+  scene: 'all' | Scene;
+  duration: 'all' | GuideDuration;
 }
 
-function renderSeasonBar(
-  guides: Guide[],
-  current: GuideSeasonFilter,
-  onChange: (filter: GuideSeasonFilter) => void
-) {
+export const GUIDE_FILTER_ALL: GuideFilter = { season: 'all', scene: 'all', duration: 'all' };
+
+function matchOwn(guide: Guide, f: GuideFilter): boolean {
+  if (f.season === 'anytime' && guide.seasons.length) return false;
+  if (f.season !== 'all' && f.season !== 'anytime' && !guide.seasons.includes(f.season)) return false;
+  if (f.scene !== 'all' && !guide.scenes.includes(f.scene)) return false;
+  if (f.duration !== 'all' && guide.duration !== f.duration) return false;
+  return true;
+}
+
+/** 多日旅行（同 trip_key）只要其中一天符合，整趟都留下，避免篩「海」只剩 Day 1 */
+function filterGuideList(guides: Guide[], f: GuideFilter): Guide[] {
+  const tripHit = new Set(guides.filter((g) => g.trip_key && matchOwn(g, f)).map((g) => g.trip_key));
+  return guides.filter((g) => (g.trip_key ? tripHit.has(g.trip_key) : matchOwn(g, f)));
+}
+
+/** 同一趟旅行的第幾天，例如「第 2／3 天」 */
+function tripDayLabel(guide: Guide, all: Guide[]): string {
+  if (!guide.trip_key) return '';
+  const days = all.filter((g) => g.trip_key === guide.trip_key);
+  return `🧳 第 ${days.indexOf(guide) + 1}／${days.length} 天`;
+}
+
+/** 季節｜場景｜天數 擠在同一條橫捲列，手機首屏不多佔兩排；再點一次已選的按鈕即取消 */
+function renderGuideFilterBar(guides: Guide[], current: GuideFilter, onChange: (next: GuideFilter) => void) {
   const bar = document.getElementById('adv-guide-seasons');
   if (!bar) return;
   bindHorizontalWheel(bar);
 
-  const options: [GuideSeasonFilter, string][] = [
-    ['all', '全部'],
-    ...(Object.entries(SEASON_LABEL) as [Season, string][]),
-    ['anytime', '全年皆宜'],
-  ];
+  type Key = keyof GuideFilter;
+  const chip = (key: Key, value: string, label: string) => {
+    const active = current[key] === value;
+    const count = filterGuideList(guides, { ...current, [key]: value } as GuideFilter).length;
+    return `<button class="adv-guide-season ${active ? 'is-active' : ''}" data-gf-key="${key}" data-gf-value="${value}" aria-pressed="${active}">${label}<span class="adv-guide-season-count">${count}</span></button>`;
+  };
+  const sep = '<span class="adv-guide-filter-sep" aria-hidden="true"></span>';
+  const noneActive = current.season === 'all' && current.scene === 'all' && current.duration === 'all';
 
-  bar.innerHTML = options
-    .map(([value, label]) => {
-      const count = guides.filter((g) => matchSeason(g, value)).length;
-      return `<button class="adv-guide-season ${value === current ? 'is-active' : ''}" data-season="${value}" aria-pressed="${value === current}">${label}<span class="adv-guide-season-count">${count}</span></button>`;
-    })
-    .join('');
+  bar.innerHTML = [
+    `<button class="adv-guide-season ${noneActive ? 'is-active' : ''}" data-gf-reset aria-pressed="${noneActive}">全部<span class="adv-guide-season-count">${guides.length}</span></button>`,
+    sep,
+    ...(Object.entries(SEASON_LABEL) as [Season, string][]).map(([v, l]) => chip('season', v, l)),
+    chip('season', 'anytime', '全年皆宜'),
+    sep,
+    ...(Object.entries(SCENE_LABEL) as [Scene, string][]).map(([v, l]) => chip('scene', v, l)),
+    sep,
+    ...(Object.entries(DURATION_LABEL) as [GuideDuration, string][]).map(([v, l]) => chip('duration', v, l)),
+  ].join('');
 
-  bar.querySelectorAll<HTMLElement>('[data-season]').forEach((btn) => {
-    btn.addEventListener('click', () => onChange(btn.dataset.season as GuideSeasonFilter));
+  bar.querySelector('[data-gf-reset]')?.addEventListener('click', () => onChange(GUIDE_FILTER_ALL));
+  bar.querySelectorAll<HTMLElement>('[data-gf-key]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.gfKey as Key;
+      const value = btn.dataset.gfValue as string;
+      onChange({ ...current, [key]: current[key] === value ? 'all' : value } as GuideFilter);
+    });
   });
 }
 
@@ -615,15 +683,15 @@ function renderSeasonBar(
 export function renderGuides(
   searchedGuides: Guide[],
   allPlaces: PlaceEntry[],
-  season: GuideSeasonFilter,
-  onSeasonChange: (filter: GuideSeasonFilter) => void,
+  filter: GuideFilter,
+  onFilterChange: (next: GuideFilter) => void,
   onApply: (guide: Guide) => void
 ) {
   const mount = document.getElementById('adv-section-guides');
   if (!mount) return;
 
-  renderSeasonBar(searchedGuides, season, onSeasonChange);
-  const guides = searchedGuides.filter((g) => matchSeason(g, season));
+  renderGuideFilterBar(searchedGuides, filter, onFilterChange);
+  const guides = filterGuideList(searchedGuides, filter);
 
   const placeById = new Map(allPlaces.map((p) => [p.id, p]));
   const openIds = new Set(
@@ -631,7 +699,7 @@ export function renderGuides(
   );
 
   mount.innerHTML = guides.length
-    ? guides.map((g) => guideCardHTML(g, placeById)).join('')
+    ? guides.map((g) => guideCardHTML(g, placeById, tripDayLabel(g, searchedGuides))).join('')
     : `<p class="adv-empty">沒有符合的懶人包</p>`;
 
   // 重新渲染（例如即時同步）時保留使用者已展開的卡片

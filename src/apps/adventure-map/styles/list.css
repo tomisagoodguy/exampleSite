@@ -263,6 +263,18 @@ body.dark-mode .adv-row-list {
   cursor: pointer;
 }
 
+.adv-day-tools {
+  display: inline-flex;
+  gap: 6px;
+}
+
+/* 提案中／行程頂部的一鍵退回 */
+.adv-bulk-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
 .adv-day-poster:hover {
   color: var(--adv-terracotta);
   border-color: var(--adv-terracotta);
@@ -534,6 +546,15 @@ body.dark-mode .adv-row-list {
   color: #fff;
   background: var(--adv-plum);
   border-color: transparent;
+}
+
+/* 懶人包篩選列：季節｜場景｜天數之間的分隔線 */
+.adv-guide-filter-sep {
+  flex-shrink: 0;
+  align-self: stretch;
+  width: 1px;
+  margin: 4px 2px;
+  background: rgba(0, 0, 0, 0.12);
 }
 
 /* 地點的地區／雨天篩選沿用懶人包季節列的按鈕樣式，只補上與分類列一致的外框 */
