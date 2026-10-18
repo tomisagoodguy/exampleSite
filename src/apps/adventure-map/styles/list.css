@@ -455,6 +455,13 @@ body.dark-mode .adv-row-list {
   border-color: transparent;
 }
 
+/* 地點的地區／雨天篩選沿用懶人包季節列的按鈕樣式，只補上與分類列一致的外框 */
+.adv-attr-bar {
+  padding: 8px 16px;
+  background: var(--adv-cream-dark);
+  border-bottom: 1px solid var(--adv-glass-border);
+}
+
 .adv-guide-season-count {
   font-size: 0.66rem;
   opacity: 0.7;

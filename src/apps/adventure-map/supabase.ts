@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { PlaceEntry, PlaceStatus } from '../../shared/types';
+import { PlaceEntry, PlaceStatus, Region } from '../../shared/types';
 
 const url = (window as any).DATING_MAP_SUPABASE_URL as string;
 const key = (window as any).DATING_MAP_SUPABASE_KEY as string;
@@ -177,6 +177,23 @@ export async function updatePlace(payload: UpdatePayload): Promise<PlaceEntry> {
     p_category: payload.category ?? null,
     p_sort_order: payload.sort_order ?? null,
     p_proposed_by: payload.proposed_by ?? null,
+  });
+
+  if (error) throw error;
+  return data as PlaceEntry;
+}
+
+/** 地區／雨天可去另走一支 RPC，避免改 dating_map_update 的參數簽章 */
+export async function setPlaceAttrs(
+  passphrase: string,
+  id: number,
+  attrs: { region?: Region; is_indoor?: boolean }
+): Promise<PlaceEntry> {
+  const { data, error } = await supabase.rpc('dating_map_set_attrs', {
+    p_passphrase: passphrase,
+    p_id: id,
+    p_region: attrs.region ?? null,
+    p_is_indoor: attrs.is_indoor ?? null,
   });
 
   if (error) throw error;

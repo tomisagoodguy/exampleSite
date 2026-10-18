@@ -3,6 +3,8 @@ import './styles/list.css';
 import { CATEGORY_CONFIG, colorToFade, filterPlaces } from './data';
 import {
   renderFilterBar,
+  renderAttrBar,
+  AttrFilter,
   renderSections,
   renderGuides,
   GuideSeasonFilter,
@@ -27,6 +29,7 @@ import {
   Guide,
   proposePlace,
   updatePlace,
+  setPlaceAttrs,
   deletePlace,
   toggleLike,
   getStoredPassphrase,
@@ -47,6 +50,7 @@ class DatingMapApp {
   private guides: Guide[] = [];
   private currentGuideSeason: GuideSeasonFilter = 'all';
   private currentCat: string = 'all';
+  private currentAttr: AttrFilter = { region: 'all', rainOnly: false };
   private currentSearch: string = '';
   private identity: Identity | null = null;
   private refreshTimer: number | null = null;
@@ -265,12 +269,21 @@ class DatingMapApp {
   }
 
   private renderAll() {
-    const filtered = filterPlaces(this.allPlaces, this.currentCat, this.currentSearch);
+    const { region, rainOnly } = this.currentAttr;
+    const filtered = filterPlaces(this.allPlaces, this.currentCat, this.currentSearch, region, rainOnly);
 
     renderFilterBar(this.allPlaces, this.currentCat, (cat) => {
       this.currentCat = cat;
       this.renderAll();
     });
+    renderAttrBar(
+      filterPlaces(this.allPlaces, this.currentCat, this.currentSearch),
+      this.currentAttr,
+      (next) => {
+        this.currentAttr = next;
+        this.renderAll();
+      }
+    );
     renderSections(filtered, {
       onGo: (p) => this.goIdea(p),
       onConfirm: (p) => this.confirmPlace(p),
@@ -658,19 +671,27 @@ class DatingMapApp {
       address: place.address || place.mrt_station,
       note: place.note,
       proposedBy: place.proposed_by,
+      region: place.region,
+      isIndoor: place.is_indoor,
     }, 'edit');
     if (!result) return;
 
-    const saved = await this.withPassphrase((pw) =>
-      updatePlace({
+    const attrsChanged =
+      (result.region !== undefined && result.region !== place.region) ||
+      (result.isIndoor !== undefined && result.isIndoor !== place.is_indoor);
+
+    const saved = await this.withPassphrase(async (pw) => {
+      const updated = await updatePlace({
         passphrase: pw,
         id: place.id,
         name: result.name,
         category: result.category,
         address: result.address,
         note: result.note,
-      })
-    );
+      });
+      if (!attrsChanged) return updated;
+      return setPlaceAttrs(pw, place.id, { region: result.region, is_indoor: result.isIndoor });
+    });
 
     if (saved) {
       showToast('已更新');

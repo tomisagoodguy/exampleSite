@@ -1,4 +1,4 @@
-import { PlaceEntry } from '../../shared/types';
+import { PlaceEntry, Region } from '../../shared/types';
 
 export interface CategoryConfig {
   color: string;
@@ -36,17 +36,30 @@ export const STATUS_LABEL: Record<string, string> = {
   done: '🏁 已去過',
 };
 
+/** 宣告順序即地區篩選列的顯示順序（大致由北往南、再到東部） */
+export const REGION_LABEL: Record<Region, string> = {
+  north: '北北基',
+  tzm: '桃竹苗',
+  taichung: '台中',
+  central_south: '中南部',
+  east: '宜花東',
+};
+
 export function filterPlaces(
   places: PlaceEntry[],
   category: string,
-  search: string = ''
+  search: string = '',
+  region: Region | 'all' = 'all',
+  rainOnly: boolean = false
 ): PlaceEntry[] {
   const q = search.trim().toLowerCase();
   return places.filter(p => {
     const matchCat = category === 'all' || p.category === category;
+    const matchRegion = region === 'all' || p.region === region;
+    const matchRain = !rainOnly || p.is_indoor === true;
     const matchSearch = !q || [p.name, p.address, p.mrt_station, p.note].some(
       v => v && v.toLowerCase().includes(q)
     );
-    return matchCat && matchSearch;
+    return matchCat && matchRegion && matchRain && matchSearch;
   });
 }

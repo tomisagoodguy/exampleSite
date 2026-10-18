@@ -5,6 +5,9 @@ export interface Visit {
 
 export type PlaceStatus = 'idea' | 'proposed' | 'confirmed' | 'done';
 
+/** 破關地圖地區：north 北北基 / tzm 桃竹苗 / taichung 台中 / central_south 中南部 / east 宜花東 */
+export type Region = 'north' | 'tzm' | 'taichung' | 'central_south' | 'east';
+
 export interface PlaceEntry {
   id: number;
   name: string;
@@ -26,6 +29,8 @@ export interface PlaceEntry {
   added?: string;
   rating?: number;
   seasons?: string[];
+  region?: Region | null;
+  is_indoor?: boolean | null;
   visits?: Visit[];
   photos?: string[];
   done_note?: string; // Legacy support

@@ -1,5 +1,5 @@
-import { PlaceEntry } from '../../shared/types';
-import { CATEGORY_CONFIG, CategoryConfig, colorToFade } from './data';
+import { PlaceEntry, Region } from '../../shared/types';
+import { CATEGORY_CONFIG, CategoryConfig, colorToFade, REGION_LABEL } from './data';
 import { IDENTITIES, Identity, Guide, GuideStop, Season } from './supabase';
 
 /** 依實際出現在資料中的分類，動態產生篩選 chips */
@@ -50,6 +50,44 @@ export function renderFilterBar(
       mount.scrollLeft += e.deltaY;
     }, { passive: false });
   }
+}
+
+export interface AttrFilter {
+  region: Region | 'all';
+  rainOnly: boolean;
+}
+
+/** 地區 + 雨天可去：屬性篩選，可與分類 chips 疊加；計數以「已套用另一個屬性」後的地點計算 */
+export function renderAttrBar(
+  places: PlaceEntry[],
+  current: AttrFilter,
+  onChange: (next: AttrFilter) => void
+) {
+  const bar = document.getElementById('adv-attr-mount');
+  if (!bar) return;
+
+  const forRegion = current.rainOnly ? places.filter(p => p.is_indoor === true) : places;
+  const forRain = current.region === 'all' ? places : places.filter(p => p.region === current.region);
+  const regions = (Object.entries(REGION_LABEL) as [Region, string][])
+    .map(([key, label]) => ({ key, label, count: forRegion.filter(p => p.region === key).length }))
+    .filter(r => r.count > 0);
+
+  const btn = (attrs: string, active: boolean, label: string, count: number) =>
+    `<button class="adv-guide-season ${active ? 'is-active' : ''}" ${attrs} aria-pressed="${active}">${label}<span class="adv-guide-season-count">${count}</span></button>`;
+
+  // 雨天切換放最前面：手機上地區按鈕會超出畫面，最常用的不能被擠到看不到的地方
+  bar.innerHTML = [
+    btn('data-rain', current.rainOnly, '☔ 雨天可去', forRain.filter(p => p.is_indoor === true).length),
+    btn('data-region="all"', current.region === 'all', '全部地區', forRegion.length),
+    ...regions.map(r => btn(`data-region="${r.key}"`, current.region === r.key, r.label, r.count)),
+  ].join('');
+
+  bar.querySelectorAll<HTMLElement>('[data-region]').forEach(el => {
+    el.addEventListener('click', () => onChange({ ...current, region: el.dataset.region as Region | 'all' }));
+  });
+  bar.querySelector('[data-rain]')?.addEventListener('click', () => {
+    onChange({ ...current, rainOnly: !current.rainOnly });
+  });
 }
 
 export interface CardActions {
@@ -809,23 +847,42 @@ export interface ProposeFormResult {
   address: string;
   note: string;
   proposedBy: string;
+  /** 只有編輯模式會帶；新增時由資料庫 trigger 依座標與分類給預設值 */
+  region?: Region;
+  isIndoor?: boolean;
 }
 
 export function openProposeModal(
-  defaults: Partial<{ name: string; category: string; address: string; note: string; proposedBy: string }>,
+  defaults: Partial<{
+    name: string; category: string; address: string; note: string; proposedBy: string;
+    region: Region | null; isIndoor: boolean | null;
+  }>,
   mode: 'create' | 'edit' = 'create'
 ): Promise<ProposeFormResult | null> {
   return new Promise((resolve) => {
     const categoryOptions = Object.entries(CATEGORY_CONFIG)
       .map(([key, cfg]) => `<option value="${key}" ${defaults.category === key ? 'selected' : ''}>${cfg.label}</option>`)
       .join('');
+    const regionOptions = [
+      defaults.region ? '' : '<option value="" selected>未設定</option>',
+      ...(Object.entries(REGION_LABEL) as [Region, string][]).map(
+        ([key, label]) => `<option value="${key}" ${defaults.region === key ? 'selected' : ''}>${label}</option>`
+      ),
+    ].join('');
+    const attrFields = mode === 'edit' ? `
+      <label>地區</label>
+      <select id="adv-pf-region">${regionOptions}</select>
+      <label style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="adv-pf-indoor" style="width:auto;" ${defaults.isIndoor ? 'checked' : ''} />
+        ☔ 雨天可去（室內）
+      </label>` : '';
 
     const { root, close } = openModal(`
       <h3>${mode === 'edit' ? '修改地點' : '新增約會提案'}</h3>
       <label>地點名稱</label>
       <input type="text" id="adv-pf-name" value="${defaults.name || ''}" />
       <label>分類</label>
-      <select id="adv-pf-category">${categoryOptions}</select>
+      <select id="adv-pf-category">${categoryOptions}</select>${attrFields}
       <label>地址 / 捷運站</label>
       <input type="text" id="adv-pf-address" value="${defaults.address || ''}" placeholder="方便導航跟約時間" />
       <label>備註（為什麼想去 / 想約什麼時候）</label>
@@ -858,8 +915,15 @@ export function openProposeModal(
         return;
       }
 
+      const regionEl = root.querySelector('#adv-pf-region') as HTMLSelectElement | null;
+      const indoorEl = root.querySelector('#adv-pf-indoor') as HTMLInputElement | null;
+
       close();
-      resolve({ name, category, address, note, proposedBy });
+      resolve({
+        name, category, address, note, proposedBy,
+        region: (regionEl?.value || undefined) as Region | undefined,
+        isIndoor: indoorEl ? indoorEl.checked : undefined,
+      });
     });
   });
 }
