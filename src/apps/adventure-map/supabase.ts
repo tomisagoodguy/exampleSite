@@ -154,6 +154,7 @@ export interface UpdatePayload {
   name?: string;
   category?: string;
   sort_order?: number;
+  proposed_by?: string;
 }
 
 export async function updatePlace(payload: UpdatePayload): Promise<PlaceEntry> {
@@ -170,6 +171,7 @@ export async function updatePlace(payload: UpdatePayload): Promise<PlaceEntry> {
     p_name: payload.name ?? null,
     p_category: payload.category ?? null,
     p_sort_order: payload.sort_order ?? null,
+    p_proposed_by: payload.proposed_by ?? null,
   });
 
   if (error) throw error;
