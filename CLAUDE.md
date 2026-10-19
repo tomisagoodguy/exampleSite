@@ -83,6 +83,8 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 2. `src/apps/adventure-map/supabase.ts` — 建立 Supabase client，提供 `fetchPlaces` / `proposePlace` / `updatePlace` / `deletePlace` / `toggleLike` / `fetchCategories` / `upsertCategory` / `deleteCategory`，並用 `subscribeToPlaces` / `subscribeToCategories` 做即時同步（Realtime）
 3. `src/apps/adventure-map/index.ts` — 組合資料存取與 `ui.ts` 的面板渲染
 
+**進站要密碼（讀取也鎖）**：`dating_map_*` 六張表的 SELECT policy 都是 `(select dating_map_request_authorized())`，只認 header `x-dating-map-pass`（與寫入 RPC 同一組密碼，`dating_map_check_passphrase` 比對）。前端 `index.ts` `unlock()` 先驗密碼、`setReadPassphrase` 後由 `supabase.ts` 的自訂 `fetch` 每次帶上；沒帶 header 的查詢回 `[]` 而不是錯誤。用 curl／SQL 以外的方式驗資料時記得加這個 header。Realtime 收不到被鎖的表，改訂閱只記表名與時間的 `dating_map_sync`（statement trigger `dating_map_touch_sync` 寫入），收到後再重新讀取；新增要即時同步的表要補 trigger。
+
 新增/修改地點是**資料庫操作**（透過破關地圖頁面上的表單），不是改 JSON 檔。
 
 **地點分類與屬性**（`dating_map_places`，2026-10-18 由 19 類整併）：

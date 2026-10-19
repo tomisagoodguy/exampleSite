@@ -35,7 +35,6 @@ import {
   Guide,
   fetchAchievements,
   setAchievement,
-  subscribeToAchievements,
   Achievement,
   proposePlace,
   updatePlace,
@@ -50,11 +49,12 @@ import {
   getStoredIdentity,
   storeIdentity,
   Identity,
-  subscribeToPlaces,
   fetchCategories,
   upsertCategory,
   deleteCategory,
-  subscribeToCategories,
+  subscribeToChanges,
+  setReadPassphrase,
+  verifyPassphrase,
 } from './supabase';
 
 class DatingMapApp {
@@ -78,6 +78,7 @@ class DatingMapApp {
     this.identity = getStoredIdentity();
     this.updateIdentityBadge();
 
+    await this.unlock();
     await this.loadCategories();
 
     try {
@@ -102,6 +103,55 @@ class DatingMapApp {
     this.setupBackToTop();
     this.setupPullToRefresh();
     this.setupIntro();
+  }
+
+  /** 進站先驗密碼（記在 localStorage，驗過一次之後自動帶入）；沒通過就停在鎖定畫面，不讀任何資料 */
+  private async unlock(): Promise<void> {
+    let pw = getStoredPassphrase();
+    let errorMsg: string | undefined;
+
+    for (;;) {
+      if (!pw) {
+        pw = await openPassphraseModal(errorMsg);
+        if (!pw) {
+          await this.waitForUnlockClick();
+          errorMsg = undefined;
+          continue;
+        }
+      }
+
+      try {
+        if (await verifyPassphrase(pw)) {
+          storePassphrase(pw);
+          setReadPassphrase(pw);
+          return;
+        }
+        clearStoredPassphrase();
+        errorMsg = '密碼錯誤，請再試一次';
+      } catch (err) {
+        console.error('驗證密碼失敗', err);
+        errorMsg = '連線失敗，請稍後再試';
+      }
+      pw = null;
+    }
+  }
+
+  /** 取消輸入密碼後顯示的鎖定提示，按下按鈕才重新跳出密碼框 */
+  private waitForUnlockClick(): Promise<void> {
+    return new Promise((resolve) => {
+      const lock = document.createElement('div');
+      lock.className = 'adv-locked';
+      lock.innerHTML = `
+        <div class="adv-locked-icon" aria-hidden="true">🔒</div>
+        <p>破關地圖需要密碼才能查看</p>
+        <button type="button" class="adv-modal-btn adv-modal-btn--primary">輸入密碼</button>
+      `;
+      document.body.appendChild(lock);
+      lock.querySelector('button')?.addEventListener('click', () => {
+        lock.remove();
+        resolve();
+      });
+    });
   }
 
   /** 首次造訪說明流程用的三段式看板，看過一次後用 localStorage 記住不再顯示 */
@@ -286,11 +336,13 @@ class DatingMapApp {
   }
 
   private setupRealtime() {
-    subscribeToPlaces(() => this.scheduleRealtimeRefresh());
-    subscribeToAchievements(() => this.scheduleRealtimeRefresh());
-    subscribeToCategories(async () => {
-      await this.loadCategories();
-      this.renderAll();
+    subscribeToChanges(async (table) => {
+      if (table === 'dating_map_categories') {
+        await this.loadCategories();
+        this.renderAll();
+        return;
+      }
+      this.scheduleRealtimeRefresh();
     });
   }
 

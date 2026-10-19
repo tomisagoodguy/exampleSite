@@ -772,6 +772,31 @@ body.dark-mode {
 
 
 /* ─── Modal ─── */
+/* 取消輸入密碼後的鎖定畫面，蓋住底下空的看板 */
+.adv-locked {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--adv-cream);
+  color: var(--adv-brown);
+  text-align: center;
+}
+
+.adv-locked-icon {
+  font-size: 3rem;
+}
+
+.adv-locked p {
+  margin: 0;
+  color: var(--adv-brown-light);
+}
+
 .adv-modal-backdrop {
   position: fixed;
   inset: 0;

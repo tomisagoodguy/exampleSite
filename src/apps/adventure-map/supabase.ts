@@ -5,7 +5,28 @@ import type { AchievementCategory } from './data';
 const url = (window as any).DATING_MAP_SUPABASE_URL as string;
 const key = (window as any).DATING_MAP_SUPABASE_KEY as string;
 
-export const supabase = createClient(url, key);
+/** 讀取也要密碼：RLS 依 x-dating-map-pass header 判斷，登入前查詢一律拿到空結果 */
+let readPassphrase: string | null = null;
+
+export function setReadPassphrase(value: string | null) {
+  readPassphrase = value;
+}
+
+export const supabase = createClient(url, key, {
+  global: {
+    fetch: (input, init) => {
+      const headers = new Headers(init?.headers);
+      if (readPassphrase) headers.set('x-dating-map-pass', readPassphrase);
+      return fetch(input, { ...init, headers });
+    },
+  },
+});
+
+export async function verifyPassphrase(passphrase: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('dating_map_check_passphrase', { p_passphrase: passphrase });
+  if (error) throw error;
+  return data === true;
+}
 
 export const IDENTITIES = ['小黃', '阿康'] as const;
 export type Identity = (typeof IDENTITIES)[number];
@@ -161,21 +182,6 @@ export async function setAchievement(
 
   if (error) throw error;
   return data as Achievement;
-}
-
-export function subscribeToAchievements(onChange: () => void): () => void {
-  const channel = supabase
-    .channel('dating_map_achievements_changes')
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'dating_map_achievements' },
-      () => onChange()
-    )
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
 }
 
 export interface ProposePayload {
@@ -351,28 +357,17 @@ export async function deleteCategory(passphrase: string, key: string): Promise<v
   if (error) throw error;
 }
 
-export function subscribeToPlaces(onChange: () => void): () => void {
+/**
+ * 資料表本身鎖了密碼，Realtime 收不到它們的變動；改訂閱只記「哪張表剛變過」的 dating_map_sync，
+ * 收到後再帶密碼重新讀取。table 是被改的資料表名稱。
+ */
+export function subscribeToChanges(onChange: (table: string) => void): () => void {
   const channel = supabase
-    .channel('dating_map_places_changes')
+    .channel('dating_map_sync_changes')
     .on(
       'postgres_changes',
-      { event: '*', schema: 'public', table: 'dating_map_places' },
-      () => onChange()
-    )
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}
-
-export function subscribeToCategories(onChange: () => void): () => void {
-  const channel = supabase
-    .channel('dating_map_categories_changes')
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'dating_map_categories' },
-      () => onChange()
+      { event: '*', schema: 'public', table: 'dating_map_sync' },
+      (payload) => onChange(String((payload.new as { tbl?: string })?.tbl ?? ''))
     )
     .subscribe();
 
