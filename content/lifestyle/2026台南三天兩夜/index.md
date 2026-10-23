@@ -47,8 +47,10 @@ trip:
 - 住宿：榮興金鬱金香酒店
 - 小提醒：台江的腳踏車如果不能甲地租乙地還，就改騎機車直接到四草，不然會趕不上遊船
 - 午餐想換或想加（都在金得附近）：金得隔壁的[永樂米糕](https://maps.google.com/?cid=3780769801444068592)（14:00 收）、有早午餐的[花樓咖啡](https://maps.google.com/?cid=15396764963176642688)、赤崁樓旁的[握咖啡 OH! Café](https://maps.google.com/?cid=1516326489061151501)、買伴手禮的[漢菓方](https://maps.google.com/?cid=11146334952110752288)（Day 2 回市區時已關，只有今天順路）、友愛街的甜湯豆花[純薏仁](https://maps.google.com/?cid=970340426009164344)；走遠一點約 1 公里有孔廟旁的早午餐[四四拍 44Bit](https://maps.google.com/?cid=5894409529864702315)、大埔街的底片相機店[又又美 FotoShop](https://maps.google.com/?cid=11923642219772103542)
-- 國華街上還有：割包配四神湯的[阿松割包](https://www.google.com/maps/search/?api=1&query=阿松割包+台南市中西區國華街三段181號)（週四休）、隔兩間的[一味品碗粿魚羹](https://www.google.com/maps/search/?api=1&query=一味品碗粿魚羹+台南市中西區國華街三段177號)、正興街口的霜淇淋[蜷尾家 甘味処](https://www.google.com/maps/search/?api=1&query=蜷尾家+甘味処+台南市中西區國華街三段51-2號)（週末約下午 3 點收）；友愛街的[Barista Ray Coffee](https://www.google.com/maps/search/?api=1&query=Barista+Ray+Coffee+台南市中西區友愛街22號)跟 Super Ray 不是同一家
-- 逛完赤崁樓想喝點、吃宵夜：武廟對面的[義豐阿川冬瓜茶](https://www.google.com/maps/search/?api=1&query=義豐阿川冬瓜茶+台南市中西區永福路二段216號)、保安路開到很晚的[阿鳳浮水虱目魚羹](https://www.google.com/maps/search/?api=1&query=阿鳳浮水虱目魚羹+台南市中西區保安路59號)
+- 國華街上還有：割包配四神湯的[阿松割包](https://www.google.com/maps/search/?api=1&query=阿松割包+台南市中西區國華街三段181號)（週四休）、隔兩間的[一味品碗粿魚羹](https://www.google.com/maps/search/?api=1&query=一味品碗粿魚羹+台南市中西區國華街三段177號)、正興街口的霜淇淋[蜷尾家 甘味処](https://www.google.com/maps/search/?api=1&query=蜷尾家+甘味処+台南市中西區國華街三段51-2號)（週末約下午 3 點收）；友愛街的[Barista Ray Coffee](https://www.google.com/maps/search/?api=1&query=Barista+Ray+Coffee+台南市中西區友愛街22號)跟 Super Ray 不是同一家；國華街北段的[邱家小卷米粉](https://www.google.com/maps/search/?api=1&query=邱家小卷米粉+台南市中西區國華街三段253號)（17:00 收）、府前路的抹茶店[万茶川](https://www.google.com/maps/search/?api=1&query=万茶川+台南市中西區府前路一段357號)
+- 赤崁樓附近走路順便看：武廟往南一個路口的[全美戲院](https://www.google.com/maps/search/?api=1&query=全美戲院+台南市中西區永福路二段187號)（手繪電影看板）、[臺南公會堂（吳園）](https://www.google.com/maps/search/?api=1&query=臺南公會堂+吳園)（晚上 8 點左右關）、走 10 分鐘的[林百貨](https://www.google.com/maps/search/?api=1&query=林百貨+台南市中西區忠義路二段63號)（週末開到 9 點，頂樓有神社）
+- 晚餐後騎回市區可以沿[安平運河](https://www.google.com/maps/search/?api=1&query=安平運河)走
+- 逛完赤崁樓想喝點、吃宵夜：武廟對面的[義豐阿川冬瓜茶](https://www.google.com/maps/search/?api=1&query=義豐阿川冬瓜茶+台南市中西區永福路二段216號)、保安路開到很晚的[阿鳳浮水虱目魚羹](https://www.google.com/maps/search/?api=1&query=阿鳳浮水虱目魚羹+台南市中西區保安路59號)、孔廟對面的[莉莉水果店](https://www.google.com/maps/search/?api=1&query=莉莉水果店+台南市中西區府前路一段199號)
 - 晚餐備案：[四季恬鑫溫體牛肉鍋（民生店）](https://maps.google.com/?cid=12811471908355663562)，從漁光島直接回市區吃，飯後走路回飯店
 {{< /day >}}
 
@@ -64,9 +66,11 @@ trip:
 
 - 住宿：榮興金鬱金香酒店
 - 小提醒：週日奇美人多，先上網買票；吃得下的話，週日花園夜市也有開
-- 早餐想走路的話：[友愛牛肉湯](https://maps.google.com/?cid=10943059576834574977)一早就開，或[永樂米糕](https://maps.google.com/?cid=3780769801444068592)（8:45 開，吃完還趕得上奇美開門）；國華街的[阿松割包](https://www.google.com/maps/search/?api=1&query=阿松割包+台南市中西區國華街三段181號)、[一味品碗粿魚羹](https://www.google.com/maps/search/?api=1&query=一味品碗粿魚羹+台南市中西區國華街三段177號)，保安路的[醇涎坊鍋燒意麵](https://www.google.com/maps/search/?api=1&query=醇涎坊古早味鍋燒意麵+台南市中西區保安路53號)也都一早就開
+- 早餐想走路的話：[友愛牛肉湯](https://maps.google.com/?cid=10943059576834574977)一早就開，或[永樂米糕](https://maps.google.com/?cid=3780769801444068592)（8:45 開，吃完還趕得上奇美開門）；國華街的[阿松割包](https://www.google.com/maps/search/?api=1&query=阿松割包+台南市中西區國華街三段181號)、[一味品碗粿魚羹](https://www.google.com/maps/search/?api=1&query=一味品碗粿魚羹+台南市中西區國華街三段177號)，保安路的[醇涎坊鍋燒意麵](https://www.google.com/maps/search/?api=1&query=醇涎坊古早味鍋燒意麵+台南市中西區保安路53號)也都一早就開；[永樂牛肉湯](https://www.google.com/maps/search/?api=1&query=永樂牛肉湯+台南市中西區國華街三段175號)半夜就開、賣完就收
 - 不想連吃兩天火鍋：晚餐直接回國華街吃[水仙宮三兄弟魚湯](https://maps.google.com/?cid=15537011181326603959)（晚上 7 點半收）、中正路的[度小月擔仔麵原始店](https://www.google.com/maps/search/?api=1&query=度小月擔仔麵+原始店+台南市中西區中正路16號)（開到 8 點），或回市區路上的[開元紅燒魠魚羹](https://www.google.com/maps/search/?api=1&query=開元紅燒魠魚羹+台南市北區開元路307號)（7 點收）；想吃[林聰明沙鍋魚頭](https://www.google.com/maps/search/?api=1&query=林聰明沙鍋魚頭+三井+Outlet+台南)要從十鼓往南騎約 6 公里到三井 Outlet，吃完回市區還有 11 公里左右
+- 想少騎一點：離十鼓約 3 公里的[阿裕牛肉涮涮鍋二店](https://www.google.com/maps/search/?api=1&query=阿裕牛肉涮涮鍋+二店+仁德)，不能訂位、用餐限 75 分鐘，週末一開店就要到
 - 飯後甜點：回市區會經過南紡購物中心，裡面有[同記安平豆花](https://www.google.com/maps/search/?api=1&query=同記安平豆花+南紡購物中心)；國華街西市場裡有八寶冰[江水號](https://www.google.com/maps/search/?api=1&query=江水號+台南市中西區國華街三段26號)
+- 國華街走路順便看：北邊的[普濟殿](https://www.google.com/maps/search/?api=1&query=普濟殿+台南市中西區普濟街79號)（香蕉、鳳梨彩繪壁畫），再往西 10 分鐘是清代城門[兌悅門](https://www.google.com/maps/search/?api=1&query=兌悅門)
 {{< /day >}}
 
 {{< day date="11/9" weekday="一" place="神學院 → 山上水道 → 虎頭埤 → 魚羊炒飯" imgs="" >}}
@@ -99,3 +103,6 @@ trip:
 
 另外還要：奇美博物館上網買週日門票、確認機車行和汽車行的取還車時間、帶機車與汽車駕照正本。
 
+## 下次在市區走一整天
+
+這次白天都在市區外，這些白天才開的地方留給下次：[台南市消防史料館](https://www.google.com/maps/search/?api=1&query=台南市消防史料館)（原臺南合同廳舍，塔樓能不能上去要先查）、[鷲嶺食肆（原鶯料理）](https://www.google.com/maps/search/?api=1&query=鷲嶺食肆+鶯料理)、[舊來發餅舖](https://www.google.com/maps/search/?api=1&query=舊來發餅舖+台南市北區自強街15號)（椪餅手作體驗要先打電話）、安平的[英商德記洋行](https://www.google.com/maps/search/?api=1&query=英商德記洋行)，還有換旗袍拍的古典濕版攝影。
