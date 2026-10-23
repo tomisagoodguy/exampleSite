@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>台南三日｜破關地圖</title>
+<style>
+  :root { --bg: #f2f5f5; --card: #fff; --ink: #1c2930; --muted: #5a6a72; --line: #d3dcdf; --accent: #11717c; --alert: #b93a27; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #10171b; --card: #172126; --ink: #e5edef; --muted: #98a9b1; --line: #2a373d; --accent: #52c1cc; --alert: #ff8069; color-scheme: dark; } }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--ink);
+    font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; padding: 0 16px; }
+  .lock { width: 100%; max-width: 340px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 24px; display: grid; gap: 14px; }
+  h1 { margin: 0; font-size: 20px; }
+  p { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.6; }
+  input { font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
+  button { font: inherit; font-weight: 700; padding: 10px; border: 0; border-radius: 8px; background: var(--accent); color: var(--card); cursor: pointer; }
+  button:disabled { opacity: .6; cursor: wait; }
+  .err { color: var(--alert); }
+  a { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<form class="lock" id="lock" hidden>
+  <h1>🔒 台南三日行程</h1>
+  <p>這頁跟破關地圖用同一組密碼。在地圖登入過的話會自動帶入。</p>
+  <input id="pw" type="password" autocomplete="current-password" placeholder="通關密碼" required>
+  <button id="go" type="submit">打開行程</button>
+  <p class="err" id="err" hidden></p>
+  <a href="/adventure-map/">← 回破關地圖</a>
+</form>
+<p id="loading">載入中…</p>
+<script>
+// 行程內容存在 Supabase dating_map_docs，RLS 只認 x-dating-map-pass header；這頁本身不含任何行程資料
+(function () {
+  var SUPABASE_URL = 'https://zvomerdcsxvuymnpuvxk.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_xAprCS1COLD7ePcF08buGw_LHfh6d9q';
+  var SLUG = 'tainan-2026';
+  var PASSPHRASE_KEY = 'dating_map_passphrase'; // 與破關地圖 supabase.ts 共用
+
+  var form = document.getElementById('lock');
+  var input = document.getElementById('pw');
+  var btn = document.getElementById('go');
+  var err = document.getElementById('err');
+  var loading = document.getElementById('loading');
+
+  function stored() {
+    try { return localStorage.getItem(PASSPHRASE_KEY); } catch (e) { return null; }
+  }
+  function remember(pw) {
+    try { localStorage.setItem(PASSPHRASE_KEY, pw); } catch (e) { /* 無痕模式存不了，下次再輸入即可 */ }
+  }
+  function showLock(message) {
+    loading.hidden = true;
+    form.hidden = false;
+    err.hidden = !message;
+    err.textContent = message || '';
+    btn.disabled = false;
+    input.focus();
+  }
+
+  // 回傳 HTML 字串；密碼不對時 RLS 會回空陣列，回傳 null
+  function fetchDoc(pw) {
+    var url = SUPABASE_URL + '/rest/v1/dating_map_docs?slug=eq.' + SLUG + '&select=html';
+    return fetch(url, { headers: { apikey: SUPABASE_KEY, 'x-dating-map-pass': pw } }).then(function (res) {
+      if (!res.ok) throw new Error('讀取失敗（HTTP ' + res.status + '），請稍後再試');
+      return res.json();
+    }).then(function (rows) {
+      return rows.length ? rows[0].html : null;
+    });
+  }
+
+  function render(html) {
+    document.open();
+    document.write('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' +
+      '<meta name="robots" content="noindex, nofollow">' +
+      '<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>' +
+      html + '</html>');
+    document.close();
+    if (location.hash) {
+      var target = document.getElementById(location.hash.slice(1));
+      if (target) target.scrollIntoView();
+    }
+  }
+
+  function open(pw, fromStorage) {
+    return fetchDoc(pw).then(function (html) {
+      if (html) { remember(pw); render(html); return; }
+      showLock(fromStorage ? '' : '密碼不對，再試一次');
+    }).catch(function (e) {
+      showLock(e.message);
+    });
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var pw = input.value.trim();
+    if (!pw) return;
+    btn.disabled = true;
+    err.hidden = true;
+    open(pw, false);
+  });
+
+  var saved = stored();
+  if (saved) open(saved, true); else showLock('');
+})();
+</script>
+</body>
+</html>
