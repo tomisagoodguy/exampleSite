@@ -151,6 +151,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - 美食地圖（卡片「🗺️ 行程附近美食」）以這趟懶人包各站為中心：行程站＝`source_url` 等於 `/adventure-map/<slug>/` 的懶人包（依 `sort_order` 第幾條＝Day 幾），其餘地點算離最近一站的直線距離，預設「吃＋咖啡甜點、1 公里內」，可切 500 公尺／2 公里／不限與清單模式。所以這趟的懶人包要填這個 `source_url`（卡片上會顯示成「🔗 原文」），沒填就只剩全區地點、沒有距離
 - 地圖上按「❤️ 想去」走原本的 `dating_map_toggle_like`，跟清單卡片的按讚是同一個欄位 `liked_by`
 - **介紹頁每一站的「🍴 附近還有什麼吃的」**：`html` 裡每站 `<h3>` 後面放 `<div class="near" data-near="地點id,…">`（沒有地點的站，例如飯店，用 `data-near-latlng="lat,lng"`），頁尾 `<script src="/adventure-map/trip-near.js" defer>`。`static/adventure-map/trip-near.js` 用同一組密碼即時讀 `dating_map_places`，列出 500 公尺內的 `food` / `cafe`（排除頁面上已是行程站的店），沒有就提示最近一家（3 公里內）。改 `html` 時別把這些 placeholder 弄掉；用 SQL `replace()` 前先確認目標字串只出現一次
+- **改 `html` 不要用 `regexp_replace` 搭 `.*?`**：Postgres 的正規表示式由第一個量詞決定整條的貪婪性，`'\s*<div class="notice">.*?</div>'` 因為開頭的 `\s*` 變成貪婪，一路刪到最後一個 `</div>`，曾把整頁行程刪光（`dating_map_docs` 沒有歷史版本）。改用完整字串的 `replace()`，改完用 `<li class="stop` 數量等指標核對
 
 **一鍵退回**：「提案中」頂部與「行程」頂部／每天標題有退回按鈕（2 筆以上才出現頂部按鈕），走 RPC `dating_map_reset_to_idea(p_passphrase, p_ids)`（`resetToIdea`）：把 `proposed` / `confirmed` 改回 `idea` 並清掉 `visit_date`、`sort_order`，**`done` 不動、地點不刪**。按鈕只作用於目前篩選後看得到的地點。
 
