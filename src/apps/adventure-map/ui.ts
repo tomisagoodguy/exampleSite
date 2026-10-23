@@ -1107,29 +1107,41 @@ export function renderAchievements(
   });
 }
 
-function tripCardHTML(trip: Trip): string {
+function tripCardHTML(trip: Trip, placeCount: number): string {
   return `
-    <a class="adv-card adv-trip-card" href="/adventure-map/${encodeURIComponent(trip.slug)}/">
+    <div class="adv-card adv-trip-card">
       <span class="adv-trip-emoji" aria-hidden="true">${esc(trip.emoji) || '✈️'}</span>
       <div class="adv-trip-body">
         <div class="adv-guide-title">${esc(trip.title)}</div>
         ${trip.date_text ? `<div class="adv-trip-date">${esc(trip.date_text)}</div>` : ''}
         ${trip.summary ? `<div class="adv-guide-summary">${esc(trip.summary)}</div>` : ''}
         ${trip.tags.length ? `<div class="adv-guide-meta">${trip.tags.map((t) => `<span class="adv-guide-tag">#${esc(t)}</span>`).join('')}</div>` : ''}
-        <span class="adv-trip-open">打開完整行程 →</span>
+        <div class="adv-card-actions">
+          <a class="adv-card-btn adv-card-btn--primary" href="/adventure-map/${encodeURIComponent(trip.slug)}/">📖 完整行程</a>
+          ${placeCount ? `<button type="button" class="adv-card-btn" data-trip-map="${esc(trip.slug)}">🗺️ 美食地圖・${placeCount} 個點</button>` : ''}
+        </div>
       </div>
-    </a>
+    </div>
   `;
 }
 
-/** 旅行分頁：每趟旅行一張卡片，點了開那趟的完整介紹頁 */
-export function renderTrips(all: Trip[], searched: Trip[]) {
+/** 旅行分頁：每趟旅行一張卡片，可開完整介紹頁，或開該地區存過的地點地圖 */
+export function renderTrips(
+  all: Trip[],
+  searched: Trip[],
+  placeCount: (trip: Trip) => number,
+  onOpenMap: (trip: Trip) => void
+) {
   const mount = document.getElementById('adv-section-trips');
   if (!mount) return;
 
   mount.innerHTML = searched.length
-    ? searched.map(tripCardHTML).join('')
+    ? searched.map((t) => tripCardHTML(t, placeCount(t))).join('')
     : `<p class="adv-empty">${all.length ? '沒有符合的旅行' : '還沒有旅行介紹頁'}</p>`;
+  mount.querySelectorAll<HTMLElement>('[data-trip-map]').forEach((btn) => {
+    const trip = searched.find((t) => t.slug === btn.dataset.tripMap);
+    if (trip) btn.addEventListener('click', () => onOpenMap(trip));
+  });
 
   document.querySelectorAll('.adv-section-count[data-section="trips"]').forEach((el) => {
     el.textContent = `${all.length}`;

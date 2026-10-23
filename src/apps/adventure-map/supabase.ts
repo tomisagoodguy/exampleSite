@@ -174,12 +174,14 @@ export interface Trip {
   date_text: string | null;
   emoji: string | null;
   tags: string[];
+  /** 旅行地圖顯示 area 以此開頭的地點（例如「台南市」）；null 就不顯示地圖按鈕 */
+  area_prefix: string | null;
 }
 
 export async function fetchTrips(): Promise<Trip[]> {
   const { data, error } = await supabase
     .from('dating_map_docs')
-    .select('slug, title, summary, date_text, emoji, tags')
+    .select('slug, title, summary, date_text, emoji, tags, area_prefix')
     .order('sort_order', { ascending: true, nullsFirst: false });
 
   if (error) throw error;

@@ -37,6 +37,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > `hugo server` 開著時跑 `yarn build`，livereload 會重新整理頁面，Playwright 先前抓到的 DOM 元素全部失效；rebuild 後要重新 navigate 再測。
 >
+> `hugo server` 是 Fast Render 模式：改了 `layouts/` 或 `yarn build` 換掉 bundle 後，**已開過的頁面不會重新產生**（curl 拿到的還是舊 HTML）。`touch` 該頁的內容檔（破關地圖是 `content/adventure-map/_index.md`）再看，或起 server 時加 `--disableFastRender`。`hugo server` 開著時 `yarn build` 偶爾會因檔案被鎖而失敗，再跑一次即可。
+>
 > 換 port 一定要同時給 `--baseURL`：`list.html` 用 `absURL` 載 bundle，會指向 `localhost:1313`，跨 port 被 CORS 擋下，地圖整頁空白、沒有任何卡片。
 >
 > 1313 已在跑**不代表 baseURL 是 1313**（可能是別的 session 用其他 baseURL 起的，曾指向 1414 導致整頁無樣式）。測試前先 `curl -s http://localhost:1313/adventure-map/ | grep -o 'href="[^"]*css[^"]*"'` 看 bundle 指向哪個 port，不對就自己開另一個 port＋`--baseURL`。
@@ -135,6 +137,20 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - 前端寫入只走 RPC `dating_map_set_achievement`（`p_done=false` 清除手動紀錄）；新增成就、調整連結目前用 SQL 直接寫
 - 分類徽章門檻與稱號定義在 `data.ts` 的 `ACHIEVEMENT_CATEGORY` / `ACHIEVEMENT_TITLES`；新增成就分類要同時改這裡與資料表的 CHECK 約束
 
+**旅行介紹頁**（「✈️ 旅行」分頁，一趟一張卡片）存在 `dating_map_docs`：
+
+| 欄位 | 內容 |
+| --- | --- |
+| `slug` | 主鍵，也是網址 `/adventure-map/<slug>/` |
+| `title` / `date_text` / `summary` / `emoji` / `tags` / `sort_order` | 卡片顯示用 |
+| `area_prefix` | 美食地圖顯示 `dating_map_places.area` 以此開頭的地點（例如 `台南市`）；`null` 就不出現地圖按鈕 |
+| `html` | 完整介紹頁 HTML（含自己的 `<style>`／`<script>`），只在 slug 頁讀取，卡片不讀 |
+
+- **讀取要密碼**：RLS 與其他 `dating_map_*` 表相同。`static/adventure-map/<slug>/index.html` 只是載入頁，**本身不含行程資料**；它沿用 localStorage `dating_map_passphrase`，以 `x-dating-map-pass` 讀出 `html` 後用 `document.write` 換掉整頁。**不要把行程 HTML 直接放進 `static/`**：那是公開檔，密碼擋不到，裡面有飯店和日期
+- 新增一趟旅行：SQL 寫入一列（目前前端沒有編輯介面），再把 `static/adventure-map/tainan-2026/` 複製成新的 slug 資料夾（載入頁從網址最後一段取 slug，不用改內容）
+- 美食地圖的「只看這趟行程排到的點」＝`source_url` 等於 `/adventure-map/<slug>/` 的懶人包各站；所以這趟的懶人包要填這個 `source_url`（卡片上會顯示成「🔗 原文」）
+- 地圖上按「❤️ 想去」走原本的 `dating_map_toggle_like`，跟清單卡片的按讚是同一個欄位 `liked_by`
+
 **一鍵退回**：「提案中」頂部與「行程」頂部／每天標題有退回按鈕（2 筆以上才出現頂部按鈕），走 RPC `dating_map_reset_to_idea(p_passphrase, p_ids)`（`resetToIdea`）：把 `proposed` / `confirmed` 改回 `idea` 並清掉 `visit_date`、`sort_order`，**`done` 不動、地點不刪**。按鈕只作用於目前篩選後看得到的地點。
 
 **自動補座標**：頁面上「新增提案」與「修改地點」（原本無座標或地址有改）送出前，`geocode.ts` 會先用地址、再用店名查 ArcGIS `findAddressCandidates`，**分數 ≥ 90 且落在台灣範圍內**才寫入 `lat` / `lng`（`region` 由 trigger 跟著重算）；查不到照常存檔，toast 會提示「找不到座標」。門牌、公園、商圈命中率高，小店名與「捷運○○站」多半查不到，需事後用下方「補座標」方式處理。
@@ -146,7 +162,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | `src/apps/adventure-map/index.html` | `static/js/adventure-map.bundle.js` + `static/css/adventure-map.bundle.css` |
 | 共用 JS chunks | `static/assets/` |
 
-> 破關地圖目前**沒有地圖圖層**（已無 Leaflet / MarkerCluster 引用），是純清單看板；`lat` / `lng` 目前主要用於 `region` 判定。
+> 破關地圖主畫面是純清單看板，**唯一的地圖是「✈️ 旅行」卡片的「🗺️ 美食地圖」**（`tripmap.ts`，Leaflet `circleMarker`，沒用 MarkerCluster）；`lat` / `lng` 另用於 `region` 判定。底圖用 Esri `World_Light_Gray_Base`（免金鑰）：OSM 預設圖磚滿是廟宇、店家圖示會蓋過標記，CARTO 已改成要 API key（顯示「API KEY REQUIRED」），也不要疊 `World_Light_Gray_Reference`（大比例尺時區名會放大成整片模糊字）。
 
 ### layouts/ 覆寫規則
 
@@ -179,6 +195,7 @@ src/
 │   ├── geocode.ts          # 提案／編輯時以 ArcGIS 自動補座標
 │   ├── voice.ts            # 懶人包語音導覽（Web Speech API，逐段朗讀＋目前站狀態）
 │   ├── poster.ts           # 行程海報：Canvas 繪卷海報／時程甘特＋匯出 PNG（不畫地圖圖磚，避免 canvas tainted）
+│   ├── tripmap.ts          # 旅行美食地圖：Leaflet 全螢幕地圖，依分類／行政區／誰想去篩選，可直接按想去
 │   ├── ui.ts               # 面板 UI 邏輯（面板、懶人包時間軸、成就徽章、Modal、Toast）
 │   └── index.ts            # 入口，組合各模組
 └── shared/
@@ -241,7 +258,7 @@ pipe 左右必須有空格，separator 使用 `---`：
 
 - **大量匯入資料後要用真實數量看 UI**：願望清單曾因 `.adv-row-list { overflow: hidden }` 蓋掉 `.adv-card-list` 的捲動，300+ 筆時桌面版被裁掉；資料寫入成功 ≠ 畫面可用
 - **用 Playwright 測 UI 前先看篩選列**：「☔ 雨天可去」、地區、分類篩選若被開著，行程／清單可能被濾成空的（例如唯一一筆定案地點非室內就消失），別誤判成功能壞掉
-- **分頁狀態在 `#adv-app-root[data-active-tab]`**（`index.ts` `setupTabBar`，手機底部 `#adv-tabbar` 與桌面 `#adv-deskbar` 共用）：桌面「規劃看板」＝提案／行程／願望三欄，懶人包與成就各自獨立一頁。懶人包、成就只吃搜尋，不吃分類／地區／雨天篩選，CSS 會在這兩頁藏起 `#adv-filter-mount` / `#adv-attr-mount` / `#adv-region-mount`。新增分頁時要決定它屬於哪一組、吃不吃這些篩選，並同步 `map.css`；開場分頁由 `defaultTab()` 選第一個有內容的
+- **分頁狀態在 `#adv-app-root[data-active-tab]`**（`index.ts` `setupTabBar`，手機底部 `#adv-tabbar` 與桌面 `#adv-deskbar` 共用）：桌面「規劃看板」＝提案／行程／願望三欄，懶人包、成就、旅行各自獨立一頁。這三頁只吃搜尋，不吃分類／地區／雨天篩選，CSS 會在這三頁藏起 `#adv-filter-mount` / `#adv-attr-mount` / `#adv-region-mount`。新增分頁時要決定它屬於哪一組、吃不吃這些篩選，並同步 `map.css`；開場分頁由 `defaultTab()` 選第一個有內容的
 - **願望清單區域預設收合**（`<details>`，展開後才產生地點列；組內 12 筆以內自動全開）、**成就預設只列最接近完成的 9 項**（`ACH_PREVIEW`，依連結地點狀態 confirmed > proposed > idea 再依難度排序）；成就分類篩選就是徽章本身（再點一次回全部），沒有另外的 chip 列。用 Playwright 數卡片時要先展開區域、點「顯示全部」
 - **驗證正式站要繞過快取**：HTML 本身也快取 10 分鐘；用 `curl` 看 `Age` / `X-Cache` 標頭，瀏覽器測試前先清快取（Ctrl + Shift + R）
 - **補座標**：用**店名**查 → Google Maps MCP `maps_search_places`（Places 可用，小店命中率高）；已有**門牌地址** → ArcGIS `findAddressCandidates`（`Addr_type=PointAddress` 很準）。Google Maps MCP 的 Geocoding 未啟用；ArcGIS／Nominatim 拿店名查多半查不到或落點錯，結果都要用台北／台中經緯度框與行政區核對
@@ -254,5 +271,5 @@ pipe 左右必須有空格，separator 使用 `---`：
 
 ## Active Status
 
-- **最後更新**：2026-10-18
+- **最後更新**：2026-10-23
 - **已知問題**：無

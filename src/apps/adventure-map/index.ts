@@ -30,6 +30,7 @@ import {
 } from './ui';
 import { PlaceEntry } from '../../shared/types';
 import { geocodePlace, lookupArea } from './geocode';
+import { openTripMap } from './tripmap';
 import {
   fetchPlaces,
   fetchGuides,
@@ -435,7 +436,43 @@ class DatingMapApp {
       (a) => this.unlockAchievement(a),
       (a) => this.undoAchievement(a)
     );
-    renderTrips(this.trips, this.filterTrips());
+    renderTrips(
+      this.trips,
+      this.filterTrips(),
+      (t) => this.tripPlaces(t).length,
+      (t) => this.openTripMap(t)
+    );
+  }
+
+  /** 這趟旅行地區裡存過、有座標的地點（依 Trip.area_prefix 比對 area） */
+  private tripPlaces(trip: Trip): PlaceEntry[] {
+    const prefix = trip.area_prefix;
+    if (!prefix) return [];
+    return this.allPlaces.filter((p) => p.area?.startsWith(prefix) && p.lat != null && p.lng != null);
+  }
+
+  private openTripMap(trip: Trip) {
+    // 懶人包的「🔗 原文」指到這趟的介紹頁，就算這趟行程排到的點
+    const url = `/adventure-map/${trip.slug}/`;
+    const routeIds = new Set(
+      this.guides
+        .filter((g) => g.source_url === url)
+        .flatMap((g) => g.stops.map((s) => s.place_id).filter((id): id is number => id != null))
+    );
+    openTripMap({
+      trip,
+      places: this.tripPlaces(trip),
+      routeIds,
+      onToggleLike: async (place) => {
+        const identity = await this.ensureIdentity();
+        if (!identity) return null;
+        const saved = await this.withPassphrase((pw) => toggleLike(pw, place.id, identity));
+        if (!saved) return null;
+        this.allPlaces = this.allPlaces.map((p) => (p.id === saved.id ? { ...p, liked_by: saved.liked_by } : p));
+        this.renderAll();
+        return saved;
+      },
+    });
   }
 
   private async loadTrips() {

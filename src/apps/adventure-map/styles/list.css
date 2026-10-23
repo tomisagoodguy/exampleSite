@@ -514,24 +514,15 @@ body.dark-mode .adv-row-list {
   border-left-color: var(--adv-plum);
 }
 
-/* ─── 旅行：一趟一張卡片，整張可點 ─── */
+/* ─── 旅行：一趟一張卡片，可開完整行程頁或美食地圖 ─── */
 .adv-trip-card {
   display: flex;
   gap: 14px;
   padding: 14px;
-  color: inherit;
+}
+
+.adv-trip-card .adv-card-actions a {
   text-decoration: none;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.adv-trip-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(92, 61, 46, 0.12);
-}
-
-.adv-trip-card:focus-visible {
-  outline: 2px solid var(--adv-terracotta);
-  outline-offset: 2px;
 }
 
 .adv-trip-emoji {
@@ -551,16 +542,185 @@ body.dark-mode .adv-row-list {
   color: var(--adv-terracotta);
 }
 
-.adv-trip-open {
-  justify-self: start;
-  margin-top: 6px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--adv-terracotta);
+/* ─── 旅行美食地圖（全螢幕，Leaflet） ─── */
+body.adv-tripmap-open {
+  overflow: hidden;
 }
 
-.adv-trip-card:hover .adv-trip-open {
-  text-decoration: underline;
+.adv-tripmap {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: var(--adv-cream);
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+
+.adv-tripmap__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--adv-glass-border);
+}
+
+.adv-tripmap__title {
+  min-width: 0;
+  display: grid;
+  color: var(--adv-brown);
+}
+
+.adv-tripmap__title strong {
+  font-size: 0.98rem;
+}
+
+.adv-tripmap__count {
+  font-size: 0.74rem;
+  color: var(--adv-brown-light);
+}
+
+.adv-tripmap__close {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid var(--adv-glass-border);
+  background: var(--adv-glass);
+  color: var(--adv-brown);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.adv-tripmap__filters {
+  display: grid;
+  gap: 6px;
+  padding: 8px 14px 10px;
+  border-bottom: 1px solid var(--adv-glass-border);
+}
+
+/* 手機一列擠不下就橫向捲動，不換行，地圖才保得住高度 */
+.adv-tripmap__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.adv-tripmap__row::-webkit-scrollbar {
+  display: none;
+}
+
+.adv-tripmap__chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 100px;
+  border: 1.5px solid var(--adv-glass-border);
+  background: var(--adv-glass);
+  color: var(--adv-brown);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adv-tripmap__chip i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--chip);
+}
+
+.adv-tripmap__chip[aria-pressed="true"] {
+  background: var(--adv-brown);
+  border-color: var(--adv-brown);
+  color: #fff;
+}
+
+.adv-tripmap__chip:focus-visible,
+.adv-tripmap__close:focus-visible,
+.adv-tripmap__select:focus-visible {
+  outline: 2px solid var(--adv-terracotta);
+  outline-offset: 2px;
+}
+
+.adv-tripmap__select {
+  flex: none;
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1.5px solid var(--adv-glass-border);
+  background: var(--adv-glass);
+  color: var(--adv-brown);
+}
+
+.adv-tripmap__check {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: var(--adv-brown);
+  white-space: nowrap;
+}
+
+.adv-tripmap__map {
+  flex: 1;
+  min-height: 0;
+}
+
+.adv-tripmap__pop {
+  display: grid;
+  gap: 4px;
+  font-family: 'Noto Sans TC', sans-serif;
+  color: #3b2a20;
+}
+
+.adv-tripmap__pop strong {
+  font-size: 0.95rem;
+}
+
+.adv-tripmap__pop p {
+  margin: 2px 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.adv-tripmap__pop-meta,
+.adv-tripmap__pop-likes {
+  font-size: 0.74rem;
+  color: #7a6052;
+}
+
+.adv-tripmap__pop-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.adv-tripmap__pop-actions button,
+.adv-tripmap__pop-actions a {
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 100px;
+  border: 1.5px solid #c47b5a;
+  background: #fff;
+  color: #c47b5a;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.adv-tripmap__pop-actions button:disabled {
+  opacity: 0.5;
+  cursor: wait;
 }
 
 .adv-guide-head {
