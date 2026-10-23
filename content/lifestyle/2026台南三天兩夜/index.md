@@ -48,7 +48,8 @@ trip:
 - 小提醒：台江的腳踏車如果不能甲地租乙地還，就改騎機車直接到四草，不然會趕不上遊船
 - 午餐想換或想加（都在金得附近）：金得隔壁的[永樂米糕](https://maps.google.com/?cid=3780769801444068592)（14:00 收）、有早午餐的[花樓咖啡](https://maps.google.com/?cid=15396764963176642688)、赤崁樓旁的[握咖啡 OH! Café](https://maps.google.com/?cid=1516326489061151501)、買伴手禮的[漢菓方](https://maps.google.com/?cid=11146334952110752288)（Day 2 回市區時已關，只有今天順路）、友愛街的甜湯豆花[純薏仁](https://maps.google.com/?cid=970340426009164344)；走遠一點約 1 公里有孔廟旁的早午餐[四四拍 44Bit](https://maps.google.com/?cid=5894409529864702315)、大埔街的底片相機店[又又美 FotoShop](https://maps.google.com/?cid=11923642219772103542)
 - 國華街上還有：割包配四神湯的[阿松割包](https://www.google.com/maps/search/?api=1&query=阿松割包+台南市中西區國華街三段181號)（週四休）、隔兩間的[一味品碗粿魚羹](https://www.google.com/maps/search/?api=1&query=一味品碗粿魚羹+台南市中西區國華街三段177號)、正興街口的霜淇淋[蜷尾家 甘味処](https://www.google.com/maps/search/?api=1&query=蜷尾家+甘味処+台南市中西區國華街三段51-2號)（週末約下午 3 點收）；友愛街的[Barista Ray Coffee](https://www.google.com/maps/search/?api=1&query=Barista+Ray+Coffee+台南市中西區友愛街22號)跟 Super Ray 不是同一家；國華街北段的[邱家小卷米粉](https://www.google.com/maps/search/?api=1&query=邱家小卷米粉+台南市中西區國華街三段253號)（17:00 收）、府前路的抹茶店[万茶川](https://www.google.com/maps/search/?api=1&query=万茶川+台南市中西區府前路一段357號)
-- 赤崁樓附近走路順便看：武廟往南一個路口的[全美戲院](https://www.google.com/maps/search/?api=1&query=全美戲院+台南市中西區永福路二段187號)（手繪電影看板）、[臺南公會堂（吳園）](https://www.google.com/maps/search/?api=1&query=臺南公會堂+吳園)（晚上 8 點左右關）、走 10 分鐘的[林百貨](https://www.google.com/maps/search/?api=1&query=林百貨+台南市中西區忠義路二段63號)（週末開到 9 點，頂樓有神社）
+- 赤崁樓附近走路順便看：武廟往南一個路口的[全美戲院](https://www.google.com/maps/search/?api=1&query=全美戲院+台南市中西區永福路二段187號)（手繪電影看板）、[臺南公會堂（吳園）](https://www.google.com/maps/search/?api=1&query=臺南公會堂+吳園)（晚上 8 點左右關）、走 10 分鐘的[林百貨](https://www.google.com/maps/search/?api=1&query=林百貨+台南市中西區忠義路二段63號)（週末開到 9 點，頂樓有神社）；白天才開、晚上多半已關的：[舊來發餅舖](https://www.google.com/maps/search/?api=1&query=舊來發餅舖+台南市北區自強街15號)（椪餅手作體驗要先打電話）、[台南市消防史料館](https://www.google.com/maps/search/?api=1&query=台南市消防史料館)（塔樓能不能上去要先查）、林百貨後面的[鷲嶺食肆（原鶯料理）](https://www.google.com/maps/search/?api=1&query=鷲嶺食肆+鶯料理)
+- 從安順鹽場往漁光島會經過安平：[英商德記洋行](https://www.google.com/maps/search/?api=1&query=英商德記洋行)（下午 5 點半關，趕夕陽可能來不及）
 - 晚餐後騎回市區可以沿[安平運河](https://www.google.com/maps/search/?api=1&query=安平運河)走
 - 逛完赤崁樓想喝點、吃宵夜：武廟對面的[義豐阿川冬瓜茶](https://www.google.com/maps/search/?api=1&query=義豐阿川冬瓜茶+台南市中西區永福路二段216號)、保安路開到很晚的[阿鳳浮水虱目魚羹](https://www.google.com/maps/search/?api=1&query=阿鳳浮水虱目魚羹+台南市中西區保安路59號)、孔廟對面的[莉莉水果店](https://www.google.com/maps/search/?api=1&query=莉莉水果店+台南市中西區府前路一段199號)
 - 晚餐備案：[四季恬鑫溫體牛肉鍋（民生店）](https://maps.google.com/?cid=12811471908355663562)，從漁光島直接回市區吃，飯後走路回飯店
@@ -102,7 +103,3 @@ trip:
 | 魚羊炒飯：午餐最後點餐時間 | 0909-339-261 |
 
 另外還要：奇美博物館上網買週日門票、確認機車行和汽車行的取還車時間、帶機車與汽車駕照正本。
-
-## 下次在市區走一整天
-
-這次白天都在市區外，這些白天才開的地方留給下次：[台南市消防史料館](https://www.google.com/maps/search/?api=1&query=台南市消防史料館)（原臺南合同廳舍，塔樓能不能上去要先查）、[鷲嶺食肆（原鶯料理）](https://www.google.com/maps/search/?api=1&query=鷲嶺食肆+鶯料理)、[舊來發餅舖](https://www.google.com/maps/search/?api=1&query=舊來發餅舖+台南市北區自強街15號)（椪餅手作體驗要先打電話）、安平的[英商德記洋行](https://www.google.com/maps/search/?api=1&query=英商德記洋行)，還有換旗袍拍的古典濕版攝影。
