@@ -152,6 +152,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - 地圖上按「❤️ 想去」走原本的 `dating_map_toggle_like`，跟清單卡片的按讚是同一個欄位 `liked_by`
 - **介紹頁每一站的「🍴 附近吃的／👀 附近可以逛的」**：`html` 裡每站 `<h3>` 後面放 `<div class="near" data-near="地點id,…">`（沒有地點的站，例如飯店，用 `data-near-latlng="lat,lng"`），頁尾 `<script src="/adventure-map/trip-near.js" defer>`。`static/adventure-map/trip-near.js` 用同一組密碼即時讀 `dating_map_places`，分兩組列出 500 公尺內的 `food` / `cafe`，以及 `museum` / `walk` / `shop` / `diy` / `scenery`（排除行程站與帶 `data-place-id` 的備案）；吃的沒有就提示最近一家（3 公里內），逛的沒有就不顯示。改 `html` 時別把這些 placeholder 弄掉；用 SQL `replace()` 前先確認目標字串只出現一次
 - **備案框**（每站的 `<div class="alt">`）：手寫推薦的店／景點，每個 `<li data-place-id="地點id">`。**只要在當天行程附近就列，不要因營業時間跟行程對不上就移到「下次再去」**，在說明裡標清楚幾點關、晚上是否已關，讓兩人當天自己換
+- **介紹頁頂部的示意地圖與深淺色**（台南這趟的 `html` 內建，新增旅行時照抄）：SVG 示意圖用 `PTS`（等距投影座標）／`ROUTES`（每天的點順序）畫，路線用 `getTotalLength()` 設 `--len` 做逐段畫出的動畫，每段中點一個箭頭；「▶ 再播一次」重畫。頁首「🌙 夜間」按鈕寫 `document.documentElement.dataset.theme` 並存 localStorage `trip-theme`（各旅行頁共用），`html` 最開頭有一行先套用，避免閃色；配色 token 照 `:root` / `@media (prefers-color-scheme: dark) :root:not([data-theme="light"])` / `:root[data-theme="dark"]` 三段寫
 - **改 `html` 不要用 `regexp_replace` 搭 `.*?`**：Postgres 的正規表示式由第一個量詞決定整條的貪婪性，`'\s*<div class="notice">.*?</div>'` 因為開頭的 `\s*` 變成貪婪，一路刪到最後一個 `</div>`，曾把整頁行程刪光（`dating_map_docs` 沒有歷史版本）。改用完整字串的 `replace()`，改完用 `<li class="stop` 數量等指標核對
 
 **一鍵退回**：「提案中」頂部與「行程」頂部／每天標題有退回按鈕（2 筆以上才出現頂部按鈕），走 RPC `dating_map_reset_to_idea(p_passphrase, p_ids)`（`resetToIdea`）：把 `proposed` / `confirmed` 改回 `idea` 並清掉 `visit_date`、`sort_order`，**`done` 不動、地點不刪**。按鈕只作用於目前篩選後看得到的地點。
