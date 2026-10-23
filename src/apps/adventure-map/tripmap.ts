@@ -65,7 +65,10 @@ type LikeFilter = 'all' | Identity | 'both' | 'none';
 export interface TripStop {
   placeId: number;
   label: string;
+  /** 第幾條路線（懶人包順序），分線、編號、配色用 */
   day: number;
+  /** 畫面上顯示的天數，例如「Day 2」；同一天兩條路線時是「Day 3 A」 */
+  dayLabel: string;
   /** 時段（早上、下午…），沒寫就沿用前一站 */
   period: string | null;
   lat: number;
@@ -111,6 +114,7 @@ export function openTripMap(opts: TripMapOptions): void {
   const byId = new Map(places.map((p) => [p.id, p]));
   const stops = opts.stops;
   const days = [...new Set(stops.map((s) => s.day))].sort((a, b) => a - b);
+  const dayLabelOf = (d: number) => stops.find((s) => s.day === d)?.dayLabel ?? `Day ${d}`;
   const stopIds = new Set(stops.map((s) => s.placeId));
   const others = places.filter((p) => !stopIds.has(p.id));
   const hasStops = stops.length > 0;
@@ -154,7 +158,7 @@ export function openTripMap(opts: TripMapOptions): void {
       ${hasStops ? `
       <div class="adv-tripmap__row" role="group" aria-label="看哪一天">
         <button type="button" class="adv-tripmap__chip" data-day="0">全部天數</button>
-        ${days.map((d) => `<button type="button" class="adv-tripmap__chip" data-day="${d}" style="--chip:${dayColor(d)}"><i></i>Day ${d}</button>`).join('')}
+        ${days.map((d) => `<button type="button" class="adv-tripmap__chip" data-day="${d}" style="--chip:${dayColor(d)}"><i></i>${esc(dayLabelOf(d))}</button>`).join('')}
         <button type="button" class="adv-tripmap__chip adv-tripmap__play" data-play>▶ 播放路線</button>
       </div>` : ''}
       <div class="adv-tripmap__row" role="group" aria-label="地圖上顯示什麼">
@@ -228,12 +232,12 @@ export function openTripMap(opts: TripMapOptions): void {
     return true;
   };
 
-  const stopTitle = (s: TripStop) => `Day ${s.day} 第 ${stopNo(s)} 站${s.period ? `・${s.period}` : ''}`;
+  const stopTitle = (s: TripStop) => `${s.dayLabel} 第 ${stopNo(s)} 站${s.period ? `・${s.period}` : ''}`;
   const nearText = (p: PlaceEntry) => {
     const stop = stops.find((s) => s.placeId === p.id);
     if (stop) return `⭐ ${stopTitle(stop)}`;
     const n = nearestOf(p);
-    return n ? `離 Day ${n.stop.day}「${n.stop.label}」${formatDistance(n.meters)}` : '';
+    return n ? `離 ${n.stop.dayLabel}「${n.stop.label}」${formatDistance(n.meters)}` : '';
   };
   const likesText = (p: PlaceEntry) => {
     const likes = p.liked_by || [];
@@ -444,7 +448,7 @@ export function openTripMap(opts: TripMapOptions): void {
 
   const updateCount = (eat: number, see: number) => {
     const parts = [
-      day ? `Day ${day}` : '',
+      day ? dayLabelOf(day) : '',
       layers.stops && hasStops ? `⭐ ${activeStops().length} 站` : '',
       layers.eat ? `🍴 ${eat}` : '',
       layers.see ? `👀 ${see}` : '',

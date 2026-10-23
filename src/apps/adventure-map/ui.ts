@@ -13,6 +13,7 @@ import {
   IDEA_TIER,
   IdeaTier,
   ideaTier,
+  guideDay,
 } from './data';
 import { IDENTITIES, Identity, Guide, GuideStop, Season, Scene, GuideDuration, Achievement, Trip } from './supabase';
 import { speechSupported, speak, stopSpeech, currentSpeech, setSpeechListener, SpeechState } from './voice';
@@ -745,11 +746,13 @@ function filterGuideList(guides: Guide[], f: GuideFilter): Guide[] {
   return guides.filter((g) => (g.trip_key ? tripHit.has(g.trip_key) : matchOwn(g, f)));
 }
 
-/** 同一趟旅行的第幾天，例如「第 2／3 天」 */
+/** 同一趟旅行的第幾天，例如「第 2／3 天」；同一天有兩條路線時是「第 3／3 天・路線 A」 */
 function tripDayLabel(guide: Guide, all: Guide[]): string {
   if (!guide.trip_key) return '';
   const days = all.filter((g) => g.trip_key === guide.trip_key);
-  return `🧳 第 ${days.indexOf(guide) + 1}／${days.length} 天`;
+  const nums = days.map((g, i) => guideDay(g.title)?.day ?? i + 1);
+  const route = guideDay(guide.title)?.route;
+  return `🧳 第 ${nums[days.indexOf(guide)]}／${new Set(nums).size} 天${route ? `・路線 ${route}` : ''}`;
 }
 
 /** 季節｜場景｜天數 擠在同一條橫捲列，手機首屏不多佔兩排；再點一次已選的按鈕即取消 */

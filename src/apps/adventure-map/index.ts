@@ -1,6 +1,6 @@
 import './styles/map.css';
 import './styles/list.css';
-import { CATEGORY_CONFIG, colorToFade, filterPlaces } from './data';
+import { CATEGORY_CONFIG, colorToFade, filterPlaces, guideDay } from './data';
 import {
   renderFilterBar,
   renderAttrBar,
@@ -452,19 +452,22 @@ class DatingMapApp {
   }
 
   private openTripMap(trip: Trip) {
-    // 懶人包的「🔗 原文」指到這趟的介紹頁，就是這趟的各天；懶人包已依 sort_order 排好，第幾條＝第幾天
+    // 懶人包的「🔗 原文」指到這趟的介紹頁，就是這趟的各天；懶人包已依 sort_order 排好，
+    // 每條各自一條路線（day），顯示的天數取標題的「Day 3 路線 A」，沒寫就是第幾條
     const url = `/adventure-map/${trip.slug}/`;
     const placeById = new Map(this.allPlaces.map((p) => [p.id, p]));
     const stops: TripStop[] = this.guides
       .filter((g) => g.source_url === url)
       .flatMap((g, i) => {
+        const parsed = guideDay(g.title);
+        const dayLabel = parsed ? `Day ${parsed.day}${parsed.route ? ` ${parsed.route}` : ''}` : `Day ${i + 1}`;
         // 時段只寫在換時段的那站，後面的站沿用
         let period: string | null = null;
         return g.stops.flatMap((s) => {
           period = s.time_text || period;
           const p = s.place_id != null ? placeById.get(s.place_id) : undefined;
           return p && p.lat != null && p.lng != null
-            ? [{ placeId: p.id, label: s.label, day: i + 1, period, lat: p.lat, lng: p.lng }]
+            ? [{ placeId: p.id, label: s.label, day: i + 1, dayLabel, period, lat: p.lat, lng: p.lng }]
             : [];
         });
       });

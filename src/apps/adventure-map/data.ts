@@ -169,3 +169,12 @@ export function filterPlaces(
     return matchCat && matchRegion && matchRain && matchSearch;
   });
 }
+
+/**
+ * 多日旅行的懶人包是第幾天：標題寫「Day 3」就照寫的，同一天可以有「Day 3 路線 A／B」兩條讓當天挑；
+ * 標題沒寫就回 null，呼叫端照 sort_order 第幾條算
+ */
+export function guideDay(title: string): { day: number; route: string } | null {
+  const m = /Day\s*(\d+)(?:\s*路線\s*([A-Z]))?/.exec(title);
+  return m ? { day: Number(m[1]), route: m[2] || '' } : null;
+}
