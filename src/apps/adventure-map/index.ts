@@ -30,7 +30,7 @@ import {
 } from './ui';
 import { PlaceEntry } from '../../shared/types';
 import { geocodePlace, lookupArea } from './geocode';
-import { openTripMap } from './tripmap';
+import { openTripMap, TripStop } from './tripmap';
 import {
   fetchPlaces,
   fetchGuides,
@@ -452,17 +452,23 @@ class DatingMapApp {
   }
 
   private openTripMap(trip: Trip) {
-    // 懶人包的「🔗 原文」指到這趟的介紹頁，就算這趟行程排到的點
+    // 懶人包的「🔗 原文」指到這趟的介紹頁，就是這趟的各天；懶人包已依 sort_order 排好，第幾條＝第幾天
     const url = `/adventure-map/${trip.slug}/`;
-    const routeIds = new Set(
-      this.guides
-        .filter((g) => g.source_url === url)
-        .flatMap((g) => g.stops.map((s) => s.place_id).filter((id): id is number => id != null))
-    );
+    const placeById = new Map(this.allPlaces.map((p) => [p.id, p]));
+    const stops: TripStop[] = this.guides
+      .filter((g) => g.source_url === url)
+      .flatMap((g, i) =>
+        g.stops.flatMap((s) => {
+          const p = s.place_id != null ? placeById.get(s.place_id) : undefined;
+          return p && p.lat != null && p.lng != null
+            ? [{ placeId: p.id, label: s.label, day: i + 1, lat: p.lat, lng: p.lng }]
+            : [];
+        })
+      );
     openTripMap({
       trip,
       places: this.tripPlaces(trip),
-      routeIds,
+      stops,
       onToggleLike: async (place) => {
         const identity = await this.ensureIdentity();
         if (!identity) return null;

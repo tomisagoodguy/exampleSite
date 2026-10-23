@@ -581,6 +581,67 @@ body.adv-tripmap-open {
   color: var(--adv-brown-light);
 }
 
+.adv-tripmap__head-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adv-tripmap__label {
+  flex: none;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--adv-brown-light);
+}
+
+.adv-tripmap__list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 14px 20px;
+}
+
+.adv-tripmap__item {
+  display: grid;
+  gap: 6px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--adv-glass-border);
+}
+
+.adv-tripmap__item-main {
+  display: grid;
+  gap: 2px;
+}
+
+.adv-tripmap__item-main strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.92rem;
+  color: var(--adv-brown);
+}
+
+.adv-tripmap__item-main strong i {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--chip);
+}
+
+.adv-tripmap__item-note {
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--adv-brown-light);
+}
+
+.adv-tripmap__pop-near {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #c47b5a;
+}
+
 .adv-tripmap__close {
   flex: none;
   width: 40px;

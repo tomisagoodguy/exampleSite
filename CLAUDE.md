@@ -148,7 +148,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 
 - **讀取要密碼**：RLS 與其他 `dating_map_*` 表相同。`static/adventure-map/<slug>/index.html` 只是載入頁，**本身不含行程資料**；它沿用 localStorage `dating_map_passphrase`，以 `x-dating-map-pass` 讀出 `html` 後用 `document.write` 換掉整頁。**不要把行程 HTML 直接放進 `static/`**：那是公開檔，密碼擋不到，裡面有飯店和日期
 - 新增一趟旅行：SQL 寫入一列（目前前端沒有編輯介面），再把 `static/adventure-map/tainan-2026/` 複製成新的 slug 資料夾（載入頁從網址最後一段取 slug，不用改內容）
-- 美食地圖的「只看這趟行程排到的點」＝`source_url` 等於 `/adventure-map/<slug>/` 的懶人包各站；所以這趟的懶人包要填這個 `source_url`（卡片上會顯示成「🔗 原文」）
+- 美食地圖（卡片「🗺️ 行程附近美食」）以這趟懶人包各站為中心：行程站＝`source_url` 等於 `/adventure-map/<slug>/` 的懶人包（依 `sort_order` 第幾條＝Day 幾），其餘地點算離最近一站的直線距離，預設「吃＋咖啡甜點、1 公里內」，可切 500 公尺／2 公里／不限與清單模式。所以這趟的懶人包要填這個 `source_url`（卡片上會顯示成「🔗 原文」），沒填就只剩全區地點、沒有距離
 - 地圖上按「❤️ 想去」走原本的 `dating_map_toggle_like`，跟清單卡片的按讚是同一個欄位 `liked_by`
 
 **一鍵退回**：「提案中」頂部與「行程」頂部／每天標題有退回按鈕（2 筆以上才出現頂部按鈕），走 RPC `dating_map_reset_to_idea(p_passphrase, p_ids)`（`resetToIdea`）：把 `proposed` / `confirmed` 改回 `idea` 並清掉 `visit_date`、`sort_order`，**`done` 不動、地點不刪**。按鈕只作用於目前篩選後看得到的地點。
