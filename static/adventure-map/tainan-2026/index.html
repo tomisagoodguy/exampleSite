@@ -77,7 +77,9 @@
       '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' +
       '<meta name="robots" content="noindex, nofollow">' +
       '<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>' +
-      html + '</html>');
+      html +
+      // 每趟旅行共用的「存 PDF／文字檔」按鈕，放在載入頁才不用改資料庫裡的 html
+      '<script src="/adventure-map/trip-export.js"><\/script></html>');
     document.close();
     if (location.hash) {
       var target = document.getElementById(location.hash.slice(1));
