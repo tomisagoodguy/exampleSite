@@ -62,11 +62,12 @@
     .then(function (places) {
       var byId = {};
       places.forEach(function (p) { byId[p.id] = p; });
-      // 頁面上已經是行程站的店不用再推薦
+      // 頁面上已經是行程站或寫在備案裡（data-place-id）的店不用再推薦
       var onPage = {};
       slots.forEach(function (el) {
         (el.dataset.near || '').split(',').forEach(function (id) { if (id) onPage[id] = true; });
       });
+      document.querySelectorAll('[data-place-id]').forEach(function (el) { onPage[el.dataset.placeId] = true; });
       var eats = places.filter(function (p) { return EAT[p.category] && !onPage[p.id]; });
 
       slots.forEach(function (el) {
