@@ -782,6 +782,39 @@ body.adv-tripmap-open {
   text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff;
 }
 
+/* 行程地圖資訊卡的配色：跟著破關地圖的深色模式切換 */
+.adv-tripmap {
+  --tm-card: #fff;
+  --tm-ink: #3b2a20;
+  --tm-muted: #7a6052;
+  --tm-line: #e5d9cf;
+}
+
+body.dark-mode .adv-tripmap {
+  --tm-card: #241c15;
+  --tm-ink: #ecdcc8;
+  --tm-muted: #bba187;
+  --tm-line: rgba(196, 168, 130, 0.28);
+}
+
+body.dark-mode .adv-tripmap__card {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .adv-tripmap .leaflet-popup-content-wrapper,
+body.dark-mode .adv-tripmap .leaflet-popup-tip {
+  background: var(--tm-card);
+  color: var(--tm-ink);
+}
+
+body.dark-mode .adv-tripmap__arrow span {
+  text-shadow: 0 0 2px #000, 0 0 2px #000, 0 0 3px #000;
+}
+
+body.dark-mode .adv-tripmap__num span {
+  border-color: #241c15;
+}
+
 /* 點行程站跳出的附近資訊卡：手機貼底，桌面放右上 */
 .adv-tripmap__card {
   position: absolute;
@@ -796,10 +829,10 @@ body.adv-tripmap-open {
   gap: 10px;
   padding: 12px 14px 14px;
   border-radius: 14px;
-  background: #fff;
+  background: var(--tm-card);
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
   font-family: 'Noto Sans TC', sans-serif;
-  color: #3b2a20;
+  color: var(--tm-ink);
 }
 
 @media (min-width: 720px) {
@@ -844,7 +877,7 @@ body.adv-tripmap-open {
 .adv-tripmap__card-sect strong small {
   font-size: 0.74rem;
   font-weight: 400;
-  color: #7a6052;
+  color: var(--tm-muted);
 }
 
 .adv-tripmap__card-close {
@@ -852,9 +885,9 @@ body.adv-tripmap-open {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 1px solid #e5d9cf;
-  background: #fff;
-  color: #3b2a20;
+  border: 1px solid var(--tm-line);
+  background: var(--tm-card);
+  color: var(--tm-ink);
   cursor: pointer;
 }
 
@@ -862,7 +895,7 @@ body.adv-tripmap-open {
   margin: 0;
   font-size: 0.76rem;
   line-height: 1.5;
-  color: #7a6052;
+  color: var(--tm-muted);
 }
 
 .adv-tripmap__card-sect {
@@ -891,9 +924,9 @@ body.adv-tripmap-open {
   font-size: 0.76rem;
   padding: 4px 10px;
   border-radius: 100px;
-  border: 1.5px solid #e5d9cf;
-  background: #fff;
-  color: #3b2a20;
+  border: 1.5px solid var(--tm-line);
+  background: var(--tm-card);
+  color: var(--tm-ink);
   cursor: pointer;
 }
 
@@ -905,7 +938,7 @@ body.adv-tripmap-open {
 }
 
 .adv-tripmap__near-chip small {
-  color: #7a6052;
+  color: var(--tm-muted);
 }
 
 .adv-tripmap__near-chip:hover {
@@ -922,7 +955,7 @@ body.adv-tripmap-open {
   display: grid;
   gap: 4px;
   font-family: 'Noto Sans TC', sans-serif;
-  color: #3b2a20;
+  color: var(--tm-ink);
 }
 
 .adv-tripmap__pop strong {
@@ -938,7 +971,7 @@ body.adv-tripmap-open {
 .adv-tripmap__pop-meta,
 .adv-tripmap__pop-likes {
   font-size: 0.74rem;
-  color: #7a6052;
+  color: var(--tm-muted);
 }
 
 .adv-tripmap__pop-actions {
@@ -956,7 +989,7 @@ body.adv-tripmap-open {
   padding: 5px 10px;
   border-radius: 100px;
   border: 1.5px solid #c47b5a;
-  background: #fff;
+  background: var(--tm-card);
   color: #c47b5a;
   text-decoration: none;
   cursor: pointer;

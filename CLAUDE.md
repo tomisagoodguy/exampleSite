@@ -165,7 +165,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | `src/apps/adventure-map/index.html` | `static/js/adventure-map.bundle.js` + `static/css/adventure-map.bundle.css` |
 | 共用 JS chunks | `static/assets/` |
 
-> 破關地圖主畫面是純清單看板，**唯一的地圖是「✈️ 旅行」卡片的「🗺️ 行程地圖」**（`tripmap.ts`，Leaflet `circleMarker`＋編號 `divIcon`，沒用 MarkerCluster）；`lat` / `lng` 另用於 `region` 判定。底圖用 Esri `World_Light_Gray_Base`（免金鑰）：OSM 預設圖磚滿是廟宇、店家圖示會蓋過標記，CARTO 已改成要 API key（顯示「API KEY REQUIRED」），也不要疊 `World_Light_Gray_Reference`（大比例尺時區名會放大成整片模糊字）。
+> 破關地圖主畫面是純清單看板，**唯一的地圖是「✈️ 旅行」卡片的「🗺️ 行程地圖」**（`tripmap.ts`，Leaflet `circleMarker`＋編號 `divIcon`，沒用 MarkerCluster）；`lat` / `lng` 另用於 `region` 判定。底圖用 Esri `World_Light_Gray_Base`（免金鑰；`body.dark-mode` 時換 `World_Dark_Gray_Base`，路線改用亮一階的每日配色，資訊卡／彈窗用 `.adv-tripmap` 上的 `--tm-*` 變數切深淺）：OSM 預設圖磚滿是廟宇、店家圖示會蓋過標記，CARTO 已改成要 API key（顯示「API KEY REQUIRED」），也不要疊 `World_Light_Gray_Reference`（大比例尺時區名會放大成整片模糊字）。
 
 ### layouts/ 覆寫規則
 
