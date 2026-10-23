@@ -1118,7 +1118,7 @@ function tripCardHTML(trip: Trip, placeCount: number): string {
         ${trip.tags.length ? `<div class="adv-guide-meta">${trip.tags.map((t) => `<span class="adv-guide-tag">#${esc(t)}</span>`).join('')}</div>` : ''}
         <div class="adv-card-actions">
           <a class="adv-card-btn adv-card-btn--primary" href="/adventure-map/${encodeURIComponent(trip.slug)}/">📖 完整行程</a>
-          ${placeCount ? `<button type="button" class="adv-card-btn" data-trip-map="${esc(trip.slug)}">🗺️ 行程附近美食</button>` : ''}
+          ${placeCount ? `<button type="button" class="adv-card-btn" data-trip-map="${esc(trip.slug)}">🗺️ 行程地圖</button>` : ''}
         </div>
       </div>
     </div>

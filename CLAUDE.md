@@ -143,12 +143,12 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | --- | --- |
 | `slug` | 主鍵，也是網址 `/adventure-map/<slug>/` |
 | `title` / `date_text` / `summary` / `emoji` / `tags` / `sort_order` | 卡片顯示用 |
-| `area_prefix` | 美食地圖顯示 `dating_map_places.area` 以此開頭的地點（例如 `台南市`）；`null` 就不出現地圖按鈕 |
+| `area_prefix` | 行程地圖顯示 `dating_map_places.area` 以此開頭的地點（例如 `台南市`）；`null` 就不出現地圖按鈕 |
 | `html` | 完整介紹頁 HTML（含自己的 `<style>`／`<script>`），只在 slug 頁讀取，卡片不讀 |
 
 - **讀取要密碼**：RLS 與其他 `dating_map_*` 表相同。`static/adventure-map/<slug>/index.html` 只是載入頁，**本身不含行程資料**；它沿用 localStorage `dating_map_passphrase`，以 `x-dating-map-pass` 讀出 `html` 後用 `document.write` 換掉整頁。**不要把行程 HTML 直接放進 `static/`**：那是公開檔，密碼擋不到，裡面有飯店和日期
 - 新增一趟旅行：SQL 寫入一列（目前前端沒有編輯介面），再把 `static/adventure-map/tainan-2026/` 複製成新的 slug 資料夾（載入頁從網址最後一段取 slug，不用改內容）
-- 美食地圖（卡片「🗺️ 行程附近美食」）以這趟懶人包各站為中心：行程站＝`source_url` 等於 `/adventure-map/<slug>/` 的懶人包（依 `sort_order` 第幾條＝Day 幾），其餘地點算離最近一站的直線距離，預設「吃＋咖啡甜點、1 公里內」，可切 500 公尺／2 公里／不限與清單模式。所以這趟的懶人包要填這個 `source_url`（卡片上會顯示成「🔗 原文」），沒填就只剩全區地點、沒有距離
+- 行程地圖（卡片「🗺️ 行程地圖」，`tripmap.ts`）以這趟懶人包各站為中心：行程站＝`source_url` 等於 `/adventure-map/<slug>/` 的懶人包（依 `sort_order` 第幾條＝Day 幾），每天一色、依站序編號並畫有箭頭的路線，「▶ 播放路線」逐段畫出並跳出各站資訊卡；點行程站看 500 公尺內的「🍴 吃的／👀 可以逛的」；圖層分 ⭐ 行程站（含住宿）／🍴 food・cafe／👀 museum・walk・shop・diy・scenery；「📍 我在哪」用瀏覽器定位。時段取懶人包 `time_text`，沒寫就沿用前一站。老城區靠太近的編號會在畫面上自動左右攤開（改 marker 的 `margin-left`，不是內層 transform，否則點擊範圍不跟著移）。所以這趟的懶人包要填這個 `source_url`（卡片上會顯示成「🔗 原文」），沒填就只剩全區地點、沒有距離
 - 地圖上按「❤️ 想去」走原本的 `dating_map_toggle_like`，跟清單卡片的按讚是同一個欄位 `liked_by`
 - **介紹頁每一站的「🍴 附近吃的／👀 附近可以逛的」**：`html` 裡每站 `<h3>` 後面放 `<div class="near" data-near="地點id,…">`（沒有地點的站，例如飯店，用 `data-near-latlng="lat,lng"`），頁尾 `<script src="/adventure-map/trip-near.js" defer>`。`static/adventure-map/trip-near.js` 用同一組密碼即時讀 `dating_map_places`，分兩組列出 500 公尺內的 `food` / `cafe`，以及 `museum` / `walk` / `shop` / `diy` / `scenery`（排除行程站與帶 `data-place-id` 的備案）；吃的沒有就提示最近一家（3 公里內），逛的沒有就不顯示。改 `html` 時別把這些 placeholder 弄掉；用 SQL `replace()` 前先確認目標字串只出現一次
 - **備案框**（每站的 `<div class="alt">`）：手寫推薦的店／景點，每個 `<li data-place-id="地點id">`。**只要在當天行程附近就列，不要因營業時間跟行程對不上就移到「下次再去」**，在說明裡標清楚幾點關、晚上是否已關，讓兩人當天自己換
@@ -165,7 +165,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | `src/apps/adventure-map/index.html` | `static/js/adventure-map.bundle.js` + `static/css/adventure-map.bundle.css` |
 | 共用 JS chunks | `static/assets/` |
 
-> 破關地圖主畫面是純清單看板，**唯一的地圖是「✈️ 旅行」卡片的「🗺️ 美食地圖」**（`tripmap.ts`，Leaflet `circleMarker`，沒用 MarkerCluster）；`lat` / `lng` 另用於 `region` 判定。底圖用 Esri `World_Light_Gray_Base`（免金鑰）：OSM 預設圖磚滿是廟宇、店家圖示會蓋過標記，CARTO 已改成要 API key（顯示「API KEY REQUIRED」），也不要疊 `World_Light_Gray_Reference`（大比例尺時區名會放大成整片模糊字）。
+> 破關地圖主畫面是純清單看板，**唯一的地圖是「✈️ 旅行」卡片的「🗺️ 行程地圖」**（`tripmap.ts`，Leaflet `circleMarker`＋編號 `divIcon`，沒用 MarkerCluster）；`lat` / `lng` 另用於 `region` 判定。底圖用 Esri `World_Light_Gray_Base`（免金鑰）：OSM 預設圖磚滿是廟宇、店家圖示會蓋過標記，CARTO 已改成要 API key（顯示「API KEY REQUIRED」），也不要疊 `World_Light_Gray_Reference`（大比例尺時區名會放大成整片模糊字）。
 
 ### layouts/ 覆寫規則
 
@@ -198,7 +198,7 @@ src/
 │   ├── geocode.ts          # 提案／編輯時以 ArcGIS 自動補座標
 │   ├── voice.ts            # 懶人包語音導覽（Web Speech API，逐段朗讀＋目前站狀態）
 │   ├── poster.ts           # 行程海報：Canvas 繪卷海報／時程甘特＋匯出 PNG（不畫地圖圖磚，避免 canvas tainted）
-│   ├── tripmap.ts          # 旅行美食地圖：Leaflet 全螢幕地圖，依分類／行政區／誰想去篩選，可直接按想去
+│   ├── tripmap.ts          # 旅行行程地圖：分天編號路線＋箭頭、播放動畫、吃的／逛的圖層、站點附近資訊卡、定位
 │   ├── ui.ts               # 面板 UI 邏輯（面板、懶人包時間軸、成就徽章、Modal、Toast）
 │   └── index.ts            # 入口，組合各模組
 └── shared/
