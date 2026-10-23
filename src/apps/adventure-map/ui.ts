@@ -14,7 +14,7 @@ import {
   IdeaTier,
   ideaTier,
 } from './data';
-import { IDENTITIES, Identity, Guide, GuideStop, Season, Scene, GuideDuration, Achievement } from './supabase';
+import { IDENTITIES, Identity, Guide, GuideStop, Season, Scene, GuideDuration, Achievement, Trip } from './supabase';
 import { speechSupported, speak, stopSpeech, currentSpeech, setSpeechListener, SpeechState } from './voice';
 import { PosterData, PosterStop, drawPoster, drawGantt, ganttAvailable, ensurePosterFonts, exportPng } from './poster';
 
@@ -1104,6 +1104,35 @@ export function renderAchievements(
 
   document.querySelectorAll('.adv-section-count[data-section="achievements"]').forEach((el) => {
     el.textContent = `${total}`;
+  });
+}
+
+function tripCardHTML(trip: Trip): string {
+  return `
+    <a class="adv-card adv-trip-card" href="/adventure-map/${encodeURIComponent(trip.slug)}/">
+      <span class="adv-trip-emoji" aria-hidden="true">${esc(trip.emoji) || '✈️'}</span>
+      <div class="adv-trip-body">
+        <div class="adv-guide-title">${esc(trip.title)}</div>
+        ${trip.date_text ? `<div class="adv-trip-date">${esc(trip.date_text)}</div>` : ''}
+        ${trip.summary ? `<div class="adv-guide-summary">${esc(trip.summary)}</div>` : ''}
+        ${trip.tags.length ? `<div class="adv-guide-meta">${trip.tags.map((t) => `<span class="adv-guide-tag">#${esc(t)}</span>`).join('')}</div>` : ''}
+        <span class="adv-trip-open">打開完整行程 →</span>
+      </div>
+    </a>
+  `;
+}
+
+/** 旅行分頁：每趟旅行一張卡片，點了開那趟的完整介紹頁 */
+export function renderTrips(all: Trip[], searched: Trip[]) {
+  const mount = document.getElementById('adv-section-trips');
+  if (!mount) return;
+
+  mount.innerHTML = searched.length
+    ? searched.map(tripCardHTML).join('')
+    : `<p class="adv-empty">${all.length ? '沒有符合的旅行' : '還沒有旅行介紹頁'}</p>`;
+
+  document.querySelectorAll('.adv-section-count[data-section="trips"]').forEach((el) => {
+    el.textContent = `${all.length}`;
   });
 }
 

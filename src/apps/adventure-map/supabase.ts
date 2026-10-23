@@ -166,6 +166,26 @@ export async function fetchAchievements(): Promise<Achievement[]> {
   );
 }
 
+/** 「✈️ 旅行」分頁的旅行介紹頁；卡片只讀摘要欄位，完整 HTML 由 /adventure-map/<slug>/ 的載入頁另外讀 */
+export interface Trip {
+  slug: string;
+  title: string;
+  summary: string | null;
+  date_text: string | null;
+  emoji: string | null;
+  tags: string[];
+}
+
+export async function fetchTrips(): Promise<Trip[]> {
+  const { data, error } = await supabase
+    .from('dating_map_docs')
+    .select('slug, title, summary, date_text, emoji, tags')
+    .order('sort_order', { ascending: true, nullsFirst: false });
+
+  if (error) throw error;
+  return ((data || []) as Trip[]).map((t) => ({ ...t, tags: t.tags || [] }));
+}
+
 export async function setAchievement(
   passphrase: string,
   id: number,

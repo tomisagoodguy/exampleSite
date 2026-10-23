@@ -554,9 +554,10 @@ body.dark-mode {
 
 }
 
-/* 懶人包、成就不吃分類／地區／雨天篩選，切到這兩頁就收起來（手機、桌面都適用），只留它們自己的篩選 */
+/* 懶人包、成就、旅行不吃分類／地區／雨天篩選，切到這幾頁就收起來（手機、桌面都適用），只留它們自己的篩選 */
 .adv-page[data-active-tab="guides"] :is(#adv-filter-mount, #adv-attr-mount, #adv-region-mount),
-.adv-page[data-active-tab="achievements"] :is(#adv-filter-mount, #adv-attr-mount, #adv-region-mount) {
+.adv-page[data-active-tab="achievements"] :is(#adv-filter-mount, #adv-attr-mount, #adv-region-mount),
+.adv-page[data-active-tab="trips"] :is(#adv-filter-mount, #adv-attr-mount, #adv-region-mount) {
   display: none !important;
 }
 
@@ -635,7 +636,8 @@ body.dark-mode {
 
   .adv-page:is([data-active-tab="proposed"], [data-active-tab="itinerary"], [data-active-tab="idea"]) .adv-board .adv-section--guides,
   .adv-page[data-active-tab="guides"] .adv-board .adv-section[data-tab]:not([data-tab="guides"]),
-  .adv-page[data-active-tab="achievements"] .adv-board .adv-section[data-tab]:not([data-tab="achievements"]) {
+  .adv-page[data-active-tab="achievements"] .adv-board .adv-section[data-tab]:not([data-tab="achievements"]),
+  .adv-page[data-active-tab="trips"] .adv-board .adv-section[data-tab]:not([data-tab="trips"]) {
     display: none;
   }
 }

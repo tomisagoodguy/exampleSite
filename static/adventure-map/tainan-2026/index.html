@@ -35,7 +35,8 @@
 (function () {
   var SUPABASE_URL = 'https://zvomerdcsxvuymnpuvxk.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_xAprCS1COLD7ePcF08buGw_LHfh6d9q';
-  var SLUG = 'tainan-2026';
+  // slug 取自網址最後一段（/adventure-map/<slug>/），新增旅行時複製這個資料夾改名即可
+  var SLUG = location.pathname.split('/').filter(Boolean).pop() || 'tainan-2026';
   var PASSPHRASE_KEY = 'dating_map_passphrase'; // 與破關地圖 supabase.ts 共用
 
   var form = document.getElementById('lock');

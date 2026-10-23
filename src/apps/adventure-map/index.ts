@@ -13,6 +13,7 @@ import {
   renderAchievements,
   achievementUnlock,
   AchievementFilter,
+  renderTrips,
   openPassphraseModal,
   openProposeModal,
   openMarkDoneModal,
@@ -36,6 +37,8 @@ import {
   fetchAchievements,
   setAchievement,
   Achievement,
+  fetchTrips,
+  Trip,
   proposePlace,
   updatePlace,
   setPlaceAttrs,
@@ -63,6 +66,7 @@ class DatingMapApp {
   private currentGuideFilter: GuideFilter = GUIDE_FILTER_ALL;
   private achievements: Achievement[] = [];
   private currentAchFilter: AchievementFilter = 'all';
+  private trips: Trip[] = [];
   private currentCat: string = 'all';
   private currentAttr: AttrFilter = { region: 'all', rainOnly: false };
   private currentSearch: string = '';
@@ -88,7 +92,7 @@ class DatingMapApp {
       showToast('資料讀取失敗，稍後再試試');
       this.allPlaces = [];
     }
-    await Promise.all([this.loadGuides(), this.loadAchievements()]);
+    await Promise.all([this.loadGuides(), this.loadAchievements(), this.loadTrips()]);
 
     this.renderAll();
     this.setupFab();
@@ -249,7 +253,7 @@ class DatingMapApp {
 
   /**
    * 分頁狀態（手機底部分頁列＋桌面主題切換共用）：寫在 #adv-app-root[data-active-tab]。
-   * 手機一次顯示一段清單；桌面的「規劃看板」是提案／行程／願望三欄併排，懶人包與成就各自獨立一頁。
+   * 手機一次顯示一段清單；桌面的「規劃看板」是提案／行程／願望三欄併排，懶人包、成就、旅行各自獨立一頁。
    */
   private setupTabBar() {
     const tabbar = document.getElementById('adv-tabbar');
@@ -430,6 +434,25 @@ class DatingMapApp {
       },
       (a) => this.unlockAchievement(a),
       (a) => this.undoAchievement(a)
+    );
+    renderTrips(this.trips, this.filterTrips());
+  }
+
+  private async loadTrips() {
+    try {
+      this.trips = await fetchTrips();
+    } catch (err) {
+      console.error('讀取旅行介紹頁失敗', err);
+      this.trips = [];
+    }
+  }
+
+  /** 旅行分頁跟懶人包一樣只吃搜尋：比對標題、日期、摘要與標籤 */
+  private filterTrips(): Trip[] {
+    const q = this.currentSearch.trim().toLowerCase();
+    if (!q) return this.trips;
+    return this.trips.filter((t) =>
+      [t.title, t.date_text, t.summary, ...t.tags].some((s) => (s || '').toLowerCase().includes(q))
     );
   }
 
@@ -920,7 +943,7 @@ class DatingMapApp {
     } catch (err) {
       console.error(err);
     }
-    await Promise.all([this.loadGuides(), this.loadAchievements()]);
+    await Promise.all([this.loadGuides(), this.loadAchievements(), this.loadTrips()]);
     this.renderAll();
   }
 }
