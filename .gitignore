@@ -14,3 +14,7 @@ dist/
 .gemini/
 .antigravity/
 .playwright-mcp/
+
+# 照片收件匣：原圖只留在本機，壓縮後的版本才進 static/adventure-map/photos/
+photos-inbox/*
+!photos-inbox/README.md
