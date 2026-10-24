@@ -186,7 +186,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | `src/apps/adventure-map/index.html` | `static/js/adventure-map.bundle.js` + `static/css/adventure-map.bundle.css` |
 | 共用 JS chunks | `static/assets/` |
 
-> 破關地圖主畫面是純清單看板，**唯一的地圖是「✈️ 旅行」卡片的「🗺️ 行程地圖」**（`tripmap.ts`，Leaflet `circleMarker`＋編號 `divIcon`，沒用 MarkerCluster）；`lat` / `lng` 另用於 `region` 判定。底圖用 Esri `World_Light_Gray_Base`（免金鑰；破關地圖只用淺色，不跟站台夜間模式切換）：OSM 預設圖磚滿是廟宇、店家圖示會蓋過標記，CARTO 已改成要 API key（顯示「API KEY REQUIRED」），也不要疊 `World_Light_Gray_Reference`（大比例尺時區名會放大成整片模糊字）。
+> 破關地圖主畫面是純清單看板，**唯一的地圖是「✈️ 旅行」卡片的「🗺️ 行程地圖」**（`tripmap.ts`，Leaflet `circleMarker`＋編號 `divIcon`，沒用 MarkerCluster）；`lat` / `lng` 另用於 `region` 判定。底圖用 Esri `World_Light_Gray_Base`（免金鑰；行程地圖浮層 `.adv-tripmap` 固定用白天 token，系統深色時也不切深色底圖）：OSM 預設圖磚滿是廟宇、店家圖示會蓋過標記，CARTO 已改成要 API key（顯示「API KEY REQUIRED」），也不要疊 `World_Light_Gray_Reference`（大比例尺時區名會放大成整片模糊字）。
 
 ### layouts/ 覆寫規則
 
@@ -291,19 +291,24 @@ pipe 左右必須有空格，separator 使用 `---`：
 | 使用 Hugo 0.88+ 新功能 | 確認 Netlify 上 0.87.0 相容 |
 | 移除 `list.html` 裡 bundle 網址的 `?v={{ $assetVersion }}` | 保留：GitHub Pages 對 CSS/JS 設 `max-age=600` 且 bundle 檔名固定，拿掉後部署完瀏覽器會吃舊版 |
 
-### 全站樣式（2026-10-24 統一為日系繪本風，只用淺色）
+### 全站樣式（2026-10-24 統一為日系繪本風，跟系統深淺色切換）
 
 - 主站覆寫層在 `static/css/custom.css` **最後一段**「日系繪本風（全站）」，token 是 `--pb-*`（色值與破關地圖 `--adv-*` 相同）；靠 cascade 蓋掉上方舊的玻璃／3D／漸層樣式，新元件直接用 `--pb-*`，不要再引用 `--accent-*`
 - Huninn 由 `layouts/partials/head.html` 的 Google Fonts 載入，Huninn 只有一種字重，標題不要靠 `font-weight: 700` 做層次
-- **沒有夜間模式**：`.theme-switch-wrapper` 被藏起來（開關在 `themes/` 裡，不能改），`static/js/theme-switch.js` 只負責清掉 `dark-mode` class；`custom.css` 上方殘留的 `body.dark-mode` 規則不會再生效
-- 旅遊筆記版型 `layouts/travel/single.html` 的 `<style>` 自帶同一組色（`.tv` 內的變數），圖表配色也在該檔
+- **夜晚繪本＝系統深色時自動切換，沒有手動開關**：`--pb-*` 在 `@media (prefers-color-scheme: dark)` 換成深靛底、月光米白框，元件不另寫深色規則；主題 liva-hugo 的 `--primary-text-color` 等變數也接到 `--pb-*`
+  - 平塗底（黃、珊瑚、水色、若竹）上的字用 `--pb-on-flat`（兩種主題都是墨灰），不要用 `--pb-ink`（夜晚是米白）；按鈕改 `--pb-btn-fg`；偏移實色陰影用 `--pb-drop`；標題螢光筆底線用 `--pb-mark*`
+  - 新寫的樣式**不要寫死顏色**（`#fff` 底、`#333` 字），一律用 token，否則深色時會變成深字配深底；`custom.css` 上方舊規則的寫死色已換成 token
+  - 舊的 `dark-mode` class 已停用：主題 `initTheme()` 會在系統深色時加上它（配的是舊玻璃風深色樣式，半套），`assets/js/index.ts` 覆寫主題同名入口，呼叫前把 `localStorage.theme` 設成 `light`。`.theme-switch-wrapper` 仍藏著；`static/js/theme-switch.js` 沒有任何頁面載入
+  - 驗證用 Playwright `color_scheme="dark"` 截圖；**新增 `assets/` 下的檔案要重開 `hugo server`**，否則還是用主題的版本
+- 旅遊筆記版型 `layouts/travel/single.html` 的 `<style>` 自帶同一組色（`.tv` 內的變數，含夜晚值與 `--on-flat` / `--drop`），圖表文字與格線在執行時讀 `.tv` 的 token
 
 ### 破關地圖樣式（2026-10-24 改為日系繪本風）
 
 - 與台南旅行介紹頁同一套：Huninn 字型（`list.html` 由 Google Fonts 載入）、和紙白 `--adv-paper`、墨灰 `--adv-ink` 2–3px 框、大圓角、珊瑚／山吹黃／水色／若竹綠平塗；token 全在 `map.css` 的 `:root`
-- **只用淺色**：站台夜間模式的 `body.dark-mode` 會把 h1–h6 塗白、連結塗藍（`!important`），`map.css` 開頭已擋回；新增彈窗類元件若掛在 `body` 底下，要補進那組選擇器
-- 平塗色太淺不能當文字色，小字強調用 `--adv-coral-deep` / `--adv-green` / `--adv-yellow-deep`；淺底按鈕文字一律 `--adv-ink`，不要 `#fff`
-- 卡片的分類色是右下平塗陰影（`box-shadow: 4px 4px 0 var(--cat-color)`），桌面 `.adv-card-list` 右下留了內距避免被捲動容器裁掉
+- **夜晚繪本**：`map.css` 的 `@media (prefers-color-scheme: dark)` 只換 `--adv-*` token；行程地圖浮層 `.adv-tripmap` 重新宣告白天 token（底圖是淺灰）。海報、旅行介紹頁（`dating_map_docs.html`）仍只有淺色
+- 平塗色太淺不能當文字色，小字強調用 `--adv-coral-deep` / `--adv-green` / `--adv-yellow-deep`；**平塗底（黃、珊瑚、水色、若竹）上的文字一律 `--adv-on-flat`**（夜晚 `--adv-ink` 是米白，放在黃底上看不見），不要 `#fff`；偏移實色陰影用 `--adv-drop`
+- 卡片的分類色是右下平塗陰影（`color-mix` 把 `--cat-color` 混入 `--adv-cat-lift` 比例的墨色，夜晚提亮深色分類），桌面 `.adv-card-list` 右下留了內距避免被捲動容器裁掉
+- `list.html` 的 Hero SVG 插圖用 `style="fill:var(--adv-…)"` 上色（SVG 屬性不吃 `var()`）
 
 ### 破關地圖常見錯誤
 
@@ -324,5 +329,5 @@ pipe 左右必須有空格，separator 使用 `---`：
 
 ## Active Status
 
-- **最後更新**：2026-10-24
+- **最後更新**：2026-10-24（加入夜晚繪本深色模式）
 - **已知問題**：無

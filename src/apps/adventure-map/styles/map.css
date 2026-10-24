@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
    破關地圖 — Dating Plan (Mobile-First List)
    Design: 日系繪本風（與旅行介紹頁同一套）：和紙白底、墨灰粗框、大圓角、
-   珊瑚粉／山吹黃／水色／若竹綠四色平塗，只用淺色
+   珊瑚粉／山吹黃／水色／若竹綠四色平塗；系統深色時換成夜晚繪本（深靛底、月光米白框）
    ═══════════════════════════════════════════════════════════════ */
 
 /* ─── Design Tokens ─── */
@@ -26,10 +26,70 @@
   --adv-yellow-deep:  #B8860B;
   --adv-blue:         #2F7A99;
   --adv-danger:       #C0392B;
-  --adv-shadow:       0 4px 0 var(--adv-ink);
-  --adv-shadow-lg:    6px 6px 0 var(--adv-ink);
+  /* 平塗底（珊瑚／黃／水色／若竹／分類色）上的字，夜晚也維持墨灰 */
+  --adv-on-flat:      #3E3A39;
+  /* 偏移實色陰影；夜晚改深夜藍，米白陰影會像光暈 */
+  --adv-drop:         #3E3A39;
+  /* 分類色混入多少墨色：夜晚把深色分類（住宿）提亮，才不會融進夜空 */
+  --adv-cat-lift:     0%;
+  --adv-shadow:       0 4px 0 var(--adv-drop);
+  --adv-shadow-lg:    6px 6px 0 var(--adv-drop);
   --adv-r:            22px;
   --adv-font:         "Huninn", "PingFang TC", "Microsoft JhengHei", sans-serif;
+}
+
+/* 夜晚繪本：只換顏色 token，元件不另寫深色規則 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --adv-paper:        #1F2440;
+    --adv-washi:        #262C4D;
+    --adv-card:         #2A3154;
+    --adv-chip:         #343C63;
+    --adv-ink:          #F3E9D2;
+    --adv-muted:        #C2BBD2;
+    --adv-soft:         #3A4270;
+    --adv-line:         #4A5280;
+    --adv-coral:        #E58E81;
+    --adv-coral-l:      #4A3446;
+    --adv-yellow:       #E8C468;
+    --adv-water:        #7FB3CC;
+    --adv-water-l:      #2B3E5C;
+    --adv-bamboo:       #94BE82;
+    --adv-coral-deep:   #F4A898;
+    --adv-green:        #A6D191;
+    --adv-yellow-deep:  #F0CF7A;
+    --adv-blue:         #8CC6E0;
+    --adv-danger:       #FF8A7A;
+    --adv-drop:         #0E1124;
+    --adv-cat-lift:     30%;
+    color-scheme: dark;
+  }
+}
+
+/* 行程地圖的底圖是淺灰，整個浮層固定用白天色 */
+.adv-tripmap {
+  --adv-paper:        #FFFCF6;
+  --adv-washi:        #FDF3DF;
+  --adv-card:         #FFFFFF;
+  --adv-chip:         #F7F0E4;
+  --adv-ink:          #3E3A39;
+  --adv-muted:        #6E6662;
+  --adv-soft:         #E6DCCD;
+  --adv-line:         #D9CFC2;
+  --adv-coral:        #F2A497;
+  --adv-coral-l:      #FBE0DA;
+  --adv-yellow:       #F6D27A;
+  --adv-water:        #A8D3E6;
+  --adv-water-l:      #E1F0F6;
+  --adv-bamboo:       #B9DAA5;
+  --adv-coral-deep:   #B4533F;
+  --adv-green:        #4E8A3A;
+  --adv-yellow-deep:  #B8860B;
+  --adv-blue:         #2F7A99;
+  --adv-danger:       #C0392B;
+  --adv-drop:         #3E3A39;
+  --adv-cat-lift:     0%;
+  color-scheme: light;
 }
 
 
@@ -38,14 +98,13 @@
   background-color: var(--adv-paper);
   color: var(--adv-ink);
   font-family: var(--adv-font);
-  color-scheme: light;
   min-height: 100vh;
   padding-bottom: 110px;
   max-width: 640px;
   margin: 0 auto;
 }
 
-/* 只用淺色：站台夜間模式把 body 塗黑、h1–h6 塗白、連結塗藍（都是 !important），在破關地圖裡擋回來 */
+/* 站台舊的 dark-mode class 會用 !important 把 body 塗黑、h1–h6 塗白、連結塗藍；夜晚配色改由 token 處理，這裡擋回來 */
 body.adv-shell-body,
 body.adv-shell-body.dark-mode {
   background: var(--adv-paper) !important;
@@ -264,6 +323,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
 
 .adv-identity-badge:hover {
   background: var(--adv-water);
+  color: var(--adv-on-flat);
 }
 
 .adv-hero__next-trip-btn {
@@ -277,7 +337,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   border-radius: 999px;
   background: var(--adv-yellow);
   border: 3px solid var(--adv-ink);
-  color: var(--adv-ink);
+  color: var(--adv-on-flat);
   font-family: var(--adv-font);
   font-size: 1rem;
   cursor: pointer;
@@ -287,7 +347,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
 
 .adv-hero__next-trip-btn:active {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 var(--adv-ink);
+  box-shadow: 0 1px 0 var(--adv-drop);
 }
 
 .adv-next-trip-hero {
@@ -350,6 +410,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
 
 .adv-pull-refresh--ready {
   background: var(--adv-yellow);
+  color: var(--adv-on-flat);
 }
 
 .adv-pull-refresh--spinning .adv-pull-refresh__icon {
@@ -419,7 +480,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   color: var(--adv-ink);
   font-size: 1.1rem;
   cursor: pointer;
-  box-shadow: 0 3px 0 var(--adv-ink);
+  box-shadow: 0 3px 0 var(--adv-drop);
   opacity: 0;
   transform: translateY(8px);
   pointer-events: none;
@@ -510,6 +571,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
 .adv-chip--active,
 .adv-chip--active:hover {
   background: var(--adv-yellow);
+  color: var(--adv-on-flat);
 }
 
 
@@ -602,7 +664,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   }
 
   .adv-flow__step[aria-current="true"] {
-    box-shadow: 0 3px 0 var(--adv-ink);
+    box-shadow: 0 3px 0 var(--adv-drop);
     transform: translateY(-2px);
   }
 
@@ -667,7 +729,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
 }
 
 @keyframes adv-bump {
-  35% { transform: scale(1.6); background: var(--adv-yellow); }
+  35% { transform: scale(1.6); background: var(--adv-yellow); color: var(--adv-on-flat); }
 }
 
 .adv-stamp {
@@ -678,7 +740,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   padding: 0 8px;
   border: 3px solid var(--adv-coral-deep);
   border-radius: 10px;
-  background: rgb(255 252 246 / 0.88);
+  background: color-mix(in srgb, var(--adv-paper) 88%, transparent);
   color: var(--adv-coral-deep);
   font-family: var(--adv-font);
   font-size: 1.1rem;
@@ -760,18 +822,19 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
 
 .adv-pk-trigger {
   font-size: 0.82rem;
-  color: var(--adv-ink);
+  color: var(--adv-on-flat);
   background: var(--adv-coral);
   border: 2px solid var(--adv-ink);
   border-radius: 999px;
   padding: 2px 12px;
   cursor: pointer;
   font-family: var(--adv-font);
-  box-shadow: 0 2px 0 var(--adv-ink);
+  box-shadow: 0 2px 0 var(--adv-drop);
 }
 
 .adv-pk-trigger:hover {
   background: var(--adv-yellow);
+  color: var(--adv-on-flat);
 }
 
 /* ─── PK 淘汰賽 ─── */
@@ -798,14 +861,14 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   cursor: pointer;
   font-family: inherit;
   color: var(--adv-ink);
-  box-shadow: 4px 4px 0 var(--cat-color, var(--adv-coral));
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--cat-color, var(--adv-coral)), var(--adv-ink) var(--adv-cat-lift));
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .adv-pk-card:hover,
 .adv-pk-card:active {
   transform: translateY(-3px);
-  box-shadow: 4px 7px 0 var(--cat-color, var(--adv-coral));
+  box-shadow: 4px 7px 0 color-mix(in srgb, var(--cat-color, var(--adv-coral)), var(--adv-ink) var(--adv-cat-lift));
 }
 
 .adv-pk-card-name {
@@ -820,7 +883,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   align-self: center;
   font-family: var(--adv-font);
   font-size: 1rem;
-  color: var(--adv-ink);
+  color: var(--adv-on-flat);
   background: var(--adv-yellow);
   border: 2px solid var(--adv-ink);
   border-radius: 999px;
@@ -926,6 +989,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   .adv-deskbar__btn--active,
   .adv-deskbar__btn--active:hover {
     background: var(--adv-yellow);
+    color: var(--adv-on-flat);
     box-shadow: var(--adv-shadow);
     transform: translateY(-3px);
   }
@@ -944,11 +1008,11 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
     border-radius: 999px;
     border: 2px solid var(--adv-ink);
     background: var(--adv-yellow);
-    color: var(--adv-ink);
+    color: var(--adv-on-flat);
     font-family: var(--adv-font);
     font-size: 0.88rem;
     cursor: pointer;
-    box-shadow: 0 3px 0 var(--adv-ink);
+    box-shadow: 0 3px 0 var(--adv-drop);
   }
 }
 
@@ -981,7 +1045,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   border-radius: 999px;
   border: 3px solid var(--adv-ink);
   background: var(--adv-coral);
-  color: var(--adv-ink);
+  color: var(--adv-on-flat);
   font-family: var(--adv-font);
   font-size: 1rem;
   cursor: pointer;
@@ -991,12 +1055,13 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
 
 .adv-fab:hover {
   background: var(--adv-yellow);
+  color: var(--adv-on-flat);
   transform: translateX(-50%) translateY(-2px);
 }
 
 .adv-fab:active {
   transform: translateX(-50%) translateY(3px);
-  box-shadow: 0 1px 0 var(--adv-ink);
+  box-shadow: 0 1px 0 var(--adv-drop);
 }
 
 @media (min-width: 900px) {
@@ -1087,7 +1152,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   }
 
   .adv-tab--active {
-    color: var(--adv-ink);
+    color: var(--adv-on-flat);
     background: var(--adv-yellow);
     border-color: var(--adv-ink);
   }
@@ -1101,7 +1166,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
     padding: 0 4px;
     border-radius: 999px;
     background: var(--adv-coral);
-    color: var(--adv-ink);
+    color: var(--adv-on-flat);
     font-size: 0.62rem;
     line-height: 14px;
     border: 2px solid var(--adv-ink);
@@ -1146,7 +1211,6 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   justify-content: center;
   padding: 0;
   font-family: var(--adv-font);
-  color-scheme: light;
 }
 
 .adv-modal {
@@ -1258,16 +1322,17 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   cursor: pointer;
   font-family: var(--adv-font);
   color: var(--adv-ink);
-  box-shadow: 0 3px 0 var(--adv-ink);
+  box-shadow: 0 3px 0 var(--adv-drop);
 }
 
 .adv-modal-btn:active {
   transform: translateY(2px);
-  box-shadow: 0 1px 0 var(--adv-ink);
+  box-shadow: 0 1px 0 var(--adv-drop);
 }
 
 .adv-modal-btn--primary {
   background: var(--adv-coral);
+  color: var(--adv-on-flat);
 }
 
 .adv-modal-btn--ghost {
@@ -1515,7 +1580,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
 
 .adv-swipe-btn:active {
   transform: translateY(3px) scale(0.95);
-  box-shadow: 0 1px 0 var(--adv-ink);
+  box-shadow: 0 1px 0 var(--adv-drop);
 }
 
 .adv-swipe-btn--nope {
@@ -1525,7 +1590,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
 
 .adv-swipe-btn--like {
   background: var(--adv-bamboo);
-  color: var(--adv-ink);
+  color: var(--adv-on-flat);
 }
 
 .adv-swipe-empty {

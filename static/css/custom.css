@@ -34,7 +34,7 @@ body.dark-mode .btn-link {
 /* Hero Section Styles */
 .hero-section {
   background: linear-gradient(135deg, #ffffff 0%, #f7f3ee 100%) !important;
-  color: #1e293b !important;
+  color: var(--pb-ink) !important;
   padding: 100px 20px;
   text-align: center;
   margin-bottom: 50px;
@@ -62,13 +62,13 @@ body.dark-mode .btn-link {
   font-weight: 800;
   margin-bottom: 1.5rem;
   letter-spacing: -0.02em;
-  color: #1e293b !important;
+  color: var(--pb-ink) !important;
   text-shadow: none;
 }
 
 .hero-subtitle {
   font-size: 1.25rem;
-  color: #64748b !important;
+  color: var(--pb-muted) !important;
   margin-bottom: 2.5rem;
   max-width: 700px;
   margin-left: auto;
@@ -112,7 +112,7 @@ body.dark-mode .btn-link {
 .hero-btn-secondary {
   background-color: transparent;
   border-color: rgba(30, 41, 59, 0.3);
-  color: #1e293b;
+  color: var(--pb-ink);
 }
 
 .hero-btn-secondary:hover {
@@ -171,7 +171,7 @@ body.dark-mode .btn-link {
   font-family: 'Outfit', sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--pb-ink);
   margin-bottom: 12px;
 }
 
@@ -181,7 +181,7 @@ body.dark-mode .btn-link {
   border-radius: 16px !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
-  background: #ffffff;
+  background: var(--pb-card);
 }
 
 .card:hover {
@@ -353,7 +353,7 @@ body.dark-mode .btn-link {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--pb-card);
   border: 4px solid var(--accent-blue);
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
   transition: all 0.3s ease;
@@ -379,7 +379,7 @@ body.dark-mode .btn-link {
 
 /* Skills */
 .skill-category {
-  background: #fff;
+  background: var(--pb-card);
   padding: 25px;
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
@@ -393,7 +393,7 @@ body.dark-mode .btn-link {
 }
 
 .skill-title i {
-  color: #3b71ca;
+  color: var(--pb-blue);
   margin-right: 10px;
 }
 
@@ -407,11 +407,11 @@ body.dark-mode .btn-link {
 }
 
 .skill-tags li {
-  background: #f8f9fa;
+  background: var(--pb-chip);
   padding: 8px 15px;
   border-radius: 20px;
   font-size: 0.9rem;
-  color: #555;
+  color: var(--pb-muted);
   transition: all 0.3s ease;
 }
 
@@ -423,7 +423,7 @@ body.dark-mode .btn-link {
 
 /* GitHub Projects */
 .github-project-card {
-  background: #fff;
+  background: var(--pb-card);
   padding: 25px;
   border-radius: 10px;
   border: 1px solid #e9ecef;
@@ -440,7 +440,7 @@ body.dark-mode .btn-link {
   display: flex;
   align-items: center;
   font-weight: 700;
-  color: #333;
+  color: var(--pb-ink);
   margin-bottom: 10px;
 }
 
@@ -450,7 +450,7 @@ body.dark-mode .btn-link {
 }
 
 .project-description {
-  color: #666;
+  color: var(--pb-muted);
   font-size: 0.95rem;
   margin: 0;
 }
@@ -768,7 +768,7 @@ html {
 }
 
 .card-style {
-  background: #fff;
+  background: var(--pb-card);
   border: 1px solid #e1e4e8;
   border-radius: 8px;
   padding: 15px;
@@ -792,7 +792,7 @@ html {
 
 .featured-post-slider .slick-dots li.slick-active button:before {
   opacity: 1;
-  color: #3b71ca;
+  color: var(--pb-blue);
 }
 
 /* Dark Mode Support for Slider */
@@ -858,7 +858,7 @@ body.dark-mode .featured-post-content h3 a {
 }
 
 .recipe-content tr:nth-of-type(even) {
-  background-color: #f8f9fa;
+  background-color: var(--pb-chip);
 }
 
 .recipe-content h4 {
@@ -866,7 +866,7 @@ body.dark-mode .featured-post-content h3 a {
   margin-bottom: 15px;
   padding-left: 15px;
   border-left: 5px solid #3b71ca;
-  color: #333;
+  color: var(--pb-ink);
   font-weight: 700;
 }
 
@@ -945,7 +945,7 @@ body.dark-mode .recipe-content h4 {
 }
 
 .navigation .navbar {
-  background: #ffffff !important;
+  background: var(--pb-card) !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: 20px;
@@ -971,7 +971,7 @@ body.dark-mode .navigation .navbar {
   padding: 8px 16px !important;
   transition: all 0.3s ease !important;
   border-radius: 10px;
-  color: #1e293b !important;
+  color: var(--pb-ink) !important;
 }
 
 body.dark-mode .nav-link {
@@ -1003,7 +1003,7 @@ body.scrolled .navigation {
 body.scrolled .navigation .navbar {
   padding: 8px 24px !important;
   box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15);
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: color-mix(in srgb, var(--pb-card) 95%, transparent) !important;
   border-color: rgba(0, 0, 0, 0.1) !important;
 }
 
@@ -1036,7 +1036,7 @@ body.dark-mode.scrolled .navigation .navbar {
   .dropdown:hover .dropdown-menu {
     display: block;
     margin-top: 5px;
-    background: rgba(255, 255, 255, 0.95);
+    background: color-mix(in srgb, var(--pb-card) 95%, transparent);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 16px;
@@ -1080,7 +1080,7 @@ body.dark-mode.scrolled .navigation .navbar {
 }
 
 .sticky-sidebar .nav-link:hover {
-  color: #3b71ca !important;
+  color: var(--pb-blue) !important;
   background-color: rgba(59, 113, 202, 0.15);
   /* Increased opacity from 0.08 */
   border-left-color: #3b71ca;
@@ -1117,7 +1117,7 @@ body.dark-mode .sticky-sidebar .nav-link:hover {
    old cyberpunk reset blocks + their keyframes were dead and have been removed. */
 .hero-subtitle {
   font-family: inherit;
-  color: #64748b !important;
+  color: var(--pb-muted) !important;
   line-height: 1.8;
   margin: 0 auto 2rem auto;
   max-width: 800px;
@@ -1145,7 +1145,7 @@ body.dark-mode .sticky-sidebar .nav-link:hover {
    white text-fill from the old dark hero → invisible on cream background) */
 @media (max-width: 768px) {
   .hero-subtitle {
-    color: #64748b !important;
+    color: var(--pb-muted) !important;
     -webkit-text-fill-color: #64748b;
     background-clip: initial;
     -webkit-background-clip: initial;
@@ -1178,14 +1178,14 @@ body.dark-mode .sticky-sidebar .nav-link:hover {
   border-top: 1px solid rgba(59, 113, 202, 0.2);
   /* Subtle divider */
   position: relative;
-  color: #555 !important;
+  color: var(--pb-muted) !important;
   /* Darker text for light mode */
   animation: gridScroll 4s linear infinite;
 }
 
 /* Footer Headings */
 .footer-section h6 {
-  color: #333;
+  color: var(--pb-ink);
   /* Dark title */
   font-family: 'Courier New', monospace;
   letter-spacing: 1px;
@@ -1219,7 +1219,7 @@ body.dark-mode .sticky-sidebar .nav-link:hover {
 }
 
 .footer-section a {
-  color: #666 !important;
+  color: var(--pb-muted) !important;
   transition: all 0.3s ease;
   text-decoration: none;
   display: flex;
@@ -1231,7 +1231,7 @@ body.dark-mode .sticky-sidebar .nav-link:hover {
 }
 
 .footer-section a:hover {
-  color: #3b71ca !important;
+  color: var(--pb-blue) !important;
   background: rgba(59, 113, 202, 0.05);
   /* Lighter hover bg */
   border-color: rgba(59, 113, 202, 0.2);
@@ -1240,7 +1240,7 @@ body.dark-mode .sticky-sidebar .nav-link:hover {
 }
 
 .footer-section i {
-  color: #3b71ca;
+  color: var(--pb-blue);
   /* Tech blue icons */
   margin-right: 12px;
   transition: all 0.3s ease;
@@ -1539,8 +1539,8 @@ input:checked+.slider .moon-icon {
   right: 5px;
   display: none;
   border: 1px solid #ddd;
-  background-color: #fff;
-  color: #333;
+  background-color: var(--pb-card);
+  color: var(--pb-ink);
   border-radius: 4px;
   padding: 4px 8px;
   cursor: pointer;
@@ -1554,7 +1554,7 @@ pre:hover .copy-button {
 }
 
 .copy-button:hover {
-  background-color: #f0f0f0;
+  background-color: var(--pb-chip);
   border-color: #ccc;
 }
 
@@ -1577,8 +1577,8 @@ pre {
    Article Content: Premium Canvas System
    -------------------------- */
 .post-content {
-  background: #ffffff;
-  color: #334155;
+  background: var(--pb-card);
+  color: var(--pb-ink);
   font-family: 'Inter', sans-serif;
   font-size: 1.15rem;
   line-height: 1.85;
@@ -1637,7 +1637,7 @@ pre {
 /* Mobile Responsive Navigation (Glassmorphism) */
 @media (max-width: 991px) {
   .navigation .navbar-collapse {
-    background: rgba(255, 255, 255, 0.85);
+    background: color-mix(in srgb, var(--pb-card) 85%, transparent);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-radius: 24px;
@@ -1691,7 +1691,7 @@ body.dark-mode .post-content {
 .post-content h4 {
   font-family: 'Outfit', sans-serif;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--pb-ink);
   margin-top: 2.5rem;
   margin-bottom: 1.25rem;
   letter-spacing: -0.02em;
@@ -1729,7 +1729,7 @@ body.dark-mode .post-content h2 {
 
 /* Blockquotes */
 .post-content blockquote {
-  background: #f8fafc;
+  background: var(--pb-chip);
   border-left: 4px solid var(--accent-blue);
   padding: 24px 32px;
   margin: 32px 0;
@@ -1743,7 +1743,7 @@ body.dark-mode .post-content blockquote {
 .post-content blockquote p {
   font-style: italic;
   font-size: 1.2rem;
-  color: #475569 !important;
+  color: var(--pb-muted) !important;
   margin-bottom: 0 !important;
 }
 
@@ -1778,7 +1778,7 @@ body.dark-mode .post-content blockquote p {
   text-transform: uppercase;
   font-size: 0.85rem;
   letter-spacing: 0.1em;
-  color: #64748b;
+  color: var(--pb-muted);
   margin-bottom: 16px;
   display: flex;
   align-items: center;
@@ -1807,7 +1807,7 @@ body.dark-mode .post-content blockquote p {
 .toc-content a {
   font-family: 'Inter', sans-serif;
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--pb-muted);
   text-decoration: none;
   display: block;
   padding: 6px 0;
@@ -1849,14 +1849,14 @@ body.dark-mode .post-content blockquote p {
 .post-navigation span {
   font-size: 0.75rem;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--pb-muted);
   letter-spacing: 0.05em;
 }
 
 .post-navigation h5 {
   font-family: 'Outfit', sans-serif;
   margin-top: 8px;
-  color: #1e293b;
+  color: var(--pb-ink);
   font-weight: 700;
 }
 
@@ -1870,7 +1870,7 @@ body.dark-mode .post-navigation h5 {
 .toc-content a {
   display: block;
   padding: 5px 0;
-  color: #666;
+  color: var(--pb-muted);
   text-decoration: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-left: 3px solid transparent;
@@ -1988,7 +1988,7 @@ pre:hover .copy-button,
   z-index: 20;
   top: 50%;
   transform: translateY(-50%);
-  background: #ffffff !important;
+  background: var(--pb-card) !important;
   border: 1px solid #e5e7eb !important;
   border-radius: 50% !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
@@ -2072,7 +2072,7 @@ body.dark-mode .lifestyle-slider .slick-arrow {
   z-index: 20;
   top: 50%;
   transform: translateY(-50%);
-  background: #ffffff !important;
+  background: var(--pb-card) !important;
   border: 1px solid #e5e7eb !important;
   border-radius: 50% !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
@@ -2334,7 +2334,7 @@ body.dark-mode .newsletter-form input {
 /* --- Fix Search Input in Dark Mode --- */
 /* The input field in the overlay */
 #search-query {
-  color: #333;
+  color: var(--pb-ink);
   /* Default dark text for light mode */
 }
 
@@ -2359,13 +2359,13 @@ button.search-btn {
   font-size: 1.2rem;
   padding: 10px;
   cursor: pointer;
-  color: #333;
+  color: var(--pb-ink);
   /* Default text color */
   transition: color 0.3s ease;
 }
 
 button.search-btn:hover {
-  color: #3b71ca;
+  color: var(--pb-blue);
 }
 
 /* Dark mode visibility */
@@ -2450,7 +2450,7 @@ body.dark-mode .search-wrapper {
   /* Make it a visible circular button */
   width: 50px;
   height: 50px;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: color-mix(in srgb, var(--pb-card) 20%, transparent);
   border-radius: 50%;
   display: flex !important;
   align-items: center;
@@ -2489,7 +2489,7 @@ body.search-open {
 .search-result-card {
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27);
   overflow: hidden;
-  background: #fff;
+  background: var(--pb-card);
   border-radius: 12px !important;
 }
 
@@ -2590,7 +2590,7 @@ body.dark-mode .search-result-card {
 }
 
 .hover-blue:hover {
-  color: #3b71ca !important;
+  color: var(--pb-blue) !important;
   text-decoration: none;
 }
 
@@ -2666,7 +2666,7 @@ body.dark-mode .search-result-card {
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--pb-muted);
   letter-spacing: 0.05em;
   margin-bottom: 8px;
   display: block;
@@ -2716,7 +2716,7 @@ body.dark-mode .search-result-card {
   top: 6px;
   width: 12px;
   height: 12px;
-  background: #ffffff;
+  background: var(--pb-card);
   border: 3px solid var(--accent-blue);
   border-radius: 50%;
   z-index: 1;
@@ -2874,7 +2874,7 @@ body.dark-mode .card-text {
    -------------------------- */
 
 .link-premium-card {
-  background: rgba(255, 255, 255, 0.4);
+  background: color-mix(in srgb, var(--pb-card) 40%, transparent);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   /* Maximum Softness: Pill Shape */
@@ -2898,7 +2898,7 @@ body.dark-mode .card-text {
 
 .link-premium-card:hover {
   transform: translateY(-5px) scale(1.01);
-  background: rgba(255, 255, 255, 0.8);
+  background: color-mix(in srgb, var(--pb-card) 80%, transparent);
   box-shadow:
     0 30px 60px -12px rgba(var(--primary-color-rgb), 0.12),
     inset 0 0 30px rgba(255, 255, 255, 1);
@@ -2910,7 +2910,7 @@ body.dark-mode .card-text {
   height: 65px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: #ffffff;
+  background: var(--pb-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3026,7 +3026,7 @@ body.dark-mode .link-card-visual {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #aaa;
+  color: var(--pb-muted);
 }
 
 .links-sidenav {
@@ -3047,19 +3047,19 @@ body.dark-mode .link-card-visual {
   cursor: pointer;
   text-align: left;
   transition: background 0.18s, transform 0.18s;
-  color: #444;
+  color: var(--pb-ink);
   font-size: 0.875rem;
 }
 
 .sidenav-btn:hover {
   background: rgba(59, 113, 202, 0.07);
   transform: translateX(3px);
-  color: #3b71ca;
+  color: var(--pb-blue);
 }
 
 .sidenav-btn.active {
   background: rgba(59, 113, 202, 0.12);
-  color: #3b71ca;
+  color: var(--pb-blue);
   font-weight: 600;
 }
 
@@ -3083,13 +3083,13 @@ body.dark-mode .link-card-visual {
   background: rgba(0, 0, 0, 0.07);
   border-radius: 10px;
   padding: 1px 6px;
-  color: #888;
+  color: var(--pb-muted);
   flex-shrink: 0;
 }
 
 .sidenav-btn.active .sidenav-count {
   background: rgba(59, 113, 202, 0.15);
-  color: #3b71ca;
+  color: var(--pb-blue);
 }
 
 body.dark-mode .sidenav-btn { color: #ccc; }
@@ -3127,7 +3127,7 @@ body.dark-mode .sidenav-count { background: rgba(255,255,255,0.08); color: #aaa;
 .lk-cat-count {
   font-size: 0.72rem;
   background: rgba(0,0,0,0.07);
-  color: #888;
+  color: var(--pb-muted);
   border-radius: 10px;
   padding: 2px 7px;
   font-weight: 500;
@@ -3135,7 +3135,7 @@ body.dark-mode .sidenav-count { background: rgba(255,255,255,0.08); color: #aaa;
 
 .lk-cat-toggle {
   font-size: 0.9rem;
-  color: #aaa;
+  color: var(--pb-muted);
   margin-left: auto;
 }
 
@@ -3179,7 +3179,7 @@ body.dark-mode .lk-cat-count  { background: rgba(255,255,255,0.1); color: #aaa; 
 .lk-row-name {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--pb-ink);
   white-space: nowrap;
   padding: 0 12px 0 14px;
   flex-shrink: 0;
@@ -3190,7 +3190,7 @@ body.dark-mode .lk-cat-count  { background: rgba(255,255,255,0.1); color: #aaa; 
 
 .lk-row-desc {
   font-size: 0.78rem;
-  color: #999;
+  color: var(--pb-muted);
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -3201,7 +3201,7 @@ body.dark-mode .lk-cat-count  { background: rgba(255,255,255,0.1); color: #aaa; 
 
 .lk-row-arrow {
   font-size: 0.85rem;
-  color: #bbb;
+  color: var(--pb-muted);
   padding: 0 14px;
   flex-shrink: 0;
   opacity: 0;
@@ -3210,10 +3210,10 @@ body.dark-mode .lk-cat-count  { background: rgba(255,255,255,0.1); color: #aaa; 
 
 .lk-row:hover .lk-row-arrow {
   opacity: 1;
-  color: #3b71ca;
+  color: var(--pb-blue);
 }
 
-.lk-row:hover .lk-row-name { color: #3b71ca; }
+.lk-row:hover .lk-row-name { color: var(--pb-blue); }
 
 /* dark mode rows */
 body.dark-mode .lk-row { border-color: rgba(255,255,255,0.06); }
@@ -3245,7 +3245,7 @@ body.dark-mode .lk-row:hover .lk-row-arrow { color: #64b5f6; }
   padding: 5px 12px;
   border-radius: 0 6px 6px 0;
   font-size: 0.82rem;
-  color: #555;
+  color: var(--pb-muted);
 }
 
 body.dark-mode .search-status-pill { color: #ccc; background: rgba(100,181,246,0.08); border-color: #64b5f6; }
@@ -3306,7 +3306,7 @@ body.dark-mode .sub-links .nav-link {
 .category-group[data-color='primary']:hover .category-link {
   background-color: rgba(59, 113, 202, 0.1);
   border-left: 4px solid #3b71ca;
-  color: #3b71ca;
+  color: var(--pb-blue);
   /* Hover 時變色 */
 }
 
@@ -3348,7 +3348,7 @@ body.dark-mode .sub-links .nav-link {
 }
 
 .sidebar-nav .hover-primary:hover {
-  color: #3b71ca !important;
+  color: var(--pb-blue) !important;
 }
 
 .sidebar-nav .hover-success:hover {
@@ -3483,7 +3483,7 @@ body.dark-mode .slick-dots li.slick-active button:before {
   border-radius: 12px;
   border: 1px solid transparent;
   background: transparent;
-  color: #64748b;
+  color: var(--pb-muted);
   font-weight: 600;
   text-align: left;
   transition: all 0.3s ease;
@@ -3592,7 +3592,7 @@ body.dark-mode .slick-dots li.slick-active button:before {
   height: 140px;
   overflow: hidden;
   position: relative;
-  background: #f8fafc;
+  background: var(--pb-chip);
 }
 
 .card-thumb {
@@ -3634,7 +3634,7 @@ body.dark-mode .slick-dots li.slick-active button:before {
 .action-btn-circle {
   width: 45px;
   height: 45px;
-  background: #ffffff;
+  background: var(--pb-card);
   color: var(--accent-blue);
   border-radius: 50%;
   display: flex;
@@ -3664,7 +3664,7 @@ body.dark-mode .slick-dots li.slick-active button:before {
 
 .card-desc {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--pb-muted);
   line-height: 1.6;
   margin: 0;
   opacity: 0.8;
@@ -3852,7 +3852,8 @@ body.dark-mode .btn-read-more-red    { background-color: #c82333; }
 /* ═══════════════════════════════════════════════════════════════
    日系繪本風（全站，2026-10-24）
    與破關地圖、旅行介紹頁同一套：Huninn 字型、和紙白底、墨灰粗框、
-   大圓角、珊瑚粉／山吹黃／水色／若竹綠四色平塗、偏移實色陰影。只用淺色。
+   大圓角、珊瑚粉／山吹黃／水色／若竹綠四色平塗、偏移實色陰影。
+   系統深色時換成夜晚繪本（深靛底、月光米白框），只換 token。
    放在檔案最後，用 cascade 蓋掉上方的玻璃／3D／漸層樣式。
    ═══════════════════════════════════════════════════════════════ */
 :root {
@@ -3876,11 +3877,19 @@ body.dark-mode .btn-read-more-red    { background-color: #c82333; }
   --pb-green: #4E8A3A;
   --pb-yellow-deep: #9A6F0A;
   --pb-blue: #2F7A99;
+  /* 平塗底（珊瑚／黃／水色／若竹）上的字，夜晚也維持墨灰 */
+  --pb-on-flat: #3E3A39;
+  /* 偏移實色陰影；夜晚改深夜藍 */
+  --pb-drop: #3E3A39;
+  /* 標題的螢光筆底線；夜晚用暗一階，米白字才讀得到 */
+  --pb-mark: #F6D27A;
+  --pb-mark-green: #B9DAA5;
+  --pb-mark-blue: #A8D3E6;
   --pb-r: 22px;
   --pb-r-sm: 14px;
   --pb-border: 2.5px solid var(--pb-ink);
-  --pb-shadow: 4px 4px 0 var(--pb-ink);
-  --pb-shadow-lg: 6px 6px 0 var(--pb-ink);
+  --pb-shadow: 4px 4px 0 var(--pb-drop);
+  --pb-shadow-lg: 6px 6px 0 var(--pb-drop);
   --pb-font: "Huninn", "PingFang TC", "Microsoft JhengHei", sans-serif;
 
   /* 讓上方仍引用舊 token 的元件一起換色 */
@@ -3891,16 +3900,50 @@ body.dark-mode .btn-read-more-red    { background-color: #c82333; }
   --filter-bg: var(--pb-chip);
   --filter-btn-bg: var(--pb-card);
   --filter-btn-active: var(--pb-ink);
+  /* 主題 liva-hugo 的變數（style.scss 用它們上色），接到繪本 token 才會跟著深淺色換 */
+  --primary-bg-color: var(--pb-paper);
+  --secondary-bg-color: var(--pb-card);
+  --primary-text-color: var(--pb-ink);
+  --secondary-text-color: var(--pb-muted);
+  --widget-title-color: var(--pb-ink);
+  --footer-bg-color: var(--pb-washi);
+  --footer-text-color: var(--pb-muted);
+  --border-color: var(--pb-line);
+  color-scheme: light;
 }
 
-/* ─── 只用淺色：夜間開關藏起來（theme-switch.js 也不再加 dark-mode） ─── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --pb-paper: #1F2440;
+    --pb-washi: #262C4D;
+    --pb-card: #2A3154;
+    --pb-chip: #343C63;
+    --pb-ink: #F3E9D2;
+    --pb-muted: #C2BBD2;
+    --pb-line: #4A5280;
+    --pb-coral: #E58E81;
+    --pb-coral-l: #4A3446;
+    --pb-yellow: #E8C468;
+    --pb-yellow-l: #4A4330;
+    --pb-water: #7FB3CC;
+    --pb-water-l: #2B3E5C;
+    --pb-bamboo: #94BE82;
+    --pb-bamboo-l: #33473A;
+    --pb-coral-deep: #F4A898;
+    --pb-green: #A6D191;
+    --pb-yellow-deep: #F0CF7A;
+    --pb-blue: #8CC6E0;
+    --pb-drop: #0E1124;
+    --pb-mark: #6A5A2E;
+    --pb-mark-green: #3F5A3A;
+    --pb-mark-blue: #2F5068;
+    color-scheme: dark;
+  }
+}
+
+/* ─── 夜間開關藏起來：深淺色跟系統走（assets/js/index.ts 不再呼叫主題的 initTheme） ─── */
 .theme-switch-wrapper {
   display: none !important;
-}
-
-html,
-body {
-  color-scheme: light;
 }
 
 body {
@@ -3955,7 +3998,7 @@ a:hover,
 
 ::selection {
   background: var(--pb-yellow);
-  color: var(--pb-ink);
+  color: var(--pb-on-flat);
 }
 
 /* ─── 導覽列 ─── */
@@ -4068,7 +4111,7 @@ body.scrolled .navigation .navbar {
   font-weight: 400;
   border-left: 0 !important;
   padding-left: 0 !important;
-  background: linear-gradient(transparent 62%, var(--pb-yellow) 62%, var(--pb-yellow) 92%, transparent 92%);
+  background: linear-gradient(transparent 62%, var(--pb-mark) 62%, var(--pb-mark) 92%, transparent 92%);
   display: inline;
 }
 
@@ -4077,8 +4120,8 @@ body.scrolled .navigation .navbar {
   display: none !important;
 }
 
-.section-title.text-success { background-image: linear-gradient(transparent 62%, var(--pb-bamboo) 62%, var(--pb-bamboo) 92%, transparent 92%); }
-.section-title.text-primary { background-image: linear-gradient(transparent 62%, var(--pb-water) 62%, var(--pb-water) 92%, transparent 92%); }
+.section-title.text-success { background-image: linear-gradient(transparent 62%, var(--pb-mark-green) 62%, var(--pb-mark-green) 92%, transparent 92%); }
+.section-title.text-primary { background-image: linear-gradient(transparent 62%, var(--pb-mark-blue) 62%, var(--pb-mark-blue) 92%, transparent 92%); }
 .section-title.text-danger { background-image: linear-gradient(transparent 62%, var(--pb-coral-l) 62%, var(--pb-coral-l) 92%, transparent 92%); }
 
 .section-title-sub {
@@ -4173,7 +4216,7 @@ body.scrolled .navigation .navbar {
 .slick-slider .slick-arrow {
   background: var(--pb-card) !important;
   border: var(--pb-border) !important;
-  box-shadow: 0 3px 0 var(--pb-ink) !important;
+  box-shadow: 0 3px 0 var(--pb-drop) !important;
 }
 
 .slick-slider .slick-arrow::before {
@@ -4202,7 +4245,7 @@ body.scrolled .navigation .navbar {
 a.badge:hover,
 .profile-tag:hover {
   background: var(--pb-yellow) !important;
-  color: var(--pb-ink) !important;
+  color: var(--pb-on-flat) !important;
 }
 
 /* ─── 按鈕：平塗＋墨框＋下壓陰影 ─── */
@@ -4214,8 +4257,8 @@ a.badge:hover,
 #go-to-bottom {
   border: var(--pb-border) !important;
   border-radius: 999px !important;
-  color: var(--pb-ink) !important;
-  box-shadow: 0 3px 0 var(--pb-ink) !important;
+  color: var(--pb-btn-fg, var(--pb-ink)) !important;
+  box-shadow: 0 3px 0 var(--pb-drop) !important;
   transform-style: flat;
   transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
 }
@@ -4227,15 +4270,15 @@ a.badge:hover,
 #return-to-top:hover,
 #go-to-bottom:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 0 var(--pb-ink) !important;
-  color: var(--pb-ink) !important;
+  box-shadow: 0 5px 0 var(--pb-drop) !important;
+  color: var(--pb-btn-fg, var(--pb-ink)) !important;
 }
 
 .btn:not(.btn-link):active,
 .hero-btn:active,
 .btn-read-more:active {
   transform: translateY(2px);
-  box-shadow: 0 1px 0 var(--pb-ink) !important;
+  box-shadow: 0 1px 0 var(--pb-drop) !important;
 }
 
 .btn-link {
@@ -4248,6 +4291,7 @@ a.badge:hover,
 #return-to-top,
 #go-to-bottom {
   background: var(--pb-yellow) !important;
+  --pb-btn-fg: var(--pb-on-flat);
 }
 
 .btn-outline-primary,
@@ -4256,15 +4300,15 @@ a.badge:hover,
   background: var(--pb-card) !important;
 }
 
-.btn-read-more-green { background: var(--pb-bamboo) !important; }
-.btn-read-more-red { background: var(--pb-coral) !important; }
-.btn-read-more-orange { background: var(--pb-yellow) !important; }
+.btn-read-more-green { background: var(--pb-bamboo) !important; --pb-btn-fg: var(--pb-on-flat); }
+.btn-read-more-red { background: var(--pb-coral) !important; --pb-btn-fg: var(--pb-on-flat); }
+.btn-read-more-orange { background: var(--pb-yellow) !important; --pb-btn-fg: var(--pb-on-flat); }
 
 #return-to-top i,
 #go-to-bottom i,
 #return-to-top::before,
 #go-to-bottom::before {
-  color: var(--pb-ink) !important;
+  color: var(--pb-on-flat) !important;
 }
 
 .page-item.disabled .page-link {
@@ -4327,7 +4371,7 @@ a.badge:hover,
   display: inline-block;
   padding: 0 6px;
   margin-top: 2.2rem;
-  background: linear-gradient(transparent 60%, var(--pb-yellow) 60%, var(--pb-yellow) 92%, transparent 92%);
+  background: linear-gradient(transparent 60%, var(--pb-mark) 60%, var(--pb-mark) 92%, transparent 92%);
   border: 0 !important;
 }
 
@@ -4422,7 +4466,7 @@ a.badge:hover,
 .copy-button {
   font-family: var(--pb-font);
   background: var(--pb-yellow) !important;
-  color: var(--pb-ink) !important;
+  color: var(--pb-on-flat) !important;
   border: 2px solid var(--pb-ink) !important;
   border-radius: 999px !important;
 }
@@ -4440,6 +4484,13 @@ a.badge:hover,
 
 .post-meta .border-primary {
   border-color: var(--pb-coral) !important;
+}
+
+/* 文章底部「相關文章／最新文章」分頁：Bootstrap 的 active 是寫死的白底 */
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+  background: var(--pb-card);
+  border-color: var(--pb-line) var(--pb-line) var(--pb-card);
 }
 
 /* 上一篇／下一篇、相關文章 */
@@ -4532,7 +4583,7 @@ a.badge:hover,
 .card-icon-box {
   border: 2px solid var(--pb-ink) !important;
   border-radius: 14px !important;
-  color: var(--pb-ink) !important;
+  color: var(--pb-on-flat) !important;
 }
 
 .premium-card.professional .card-icon-box { background: var(--pb-yellow) !important; }
@@ -4540,14 +4591,17 @@ a.badge:hover,
 .premium-card.lifestyle .card-icon-box { background: var(--pb-coral) !important; }
 .contact-card .card-icon-box { background: var(--pb-bamboo) !important; }
 
-.card-icon-box i,
+.card-icon-box i {
+  color: var(--pb-on-flat) !important;
+}
+
 .card-tag {
   color: var(--pb-ink) !important;
 }
 
 .timeline-year {
   background: var(--pb-yellow) !important;
-  color: var(--pb-ink) !important;
+  color: var(--pb-on-flat) !important;
   border: 2px solid var(--pb-ink) !important;
 }
 

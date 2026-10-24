@@ -26,3 +26,6 @@ photos-inbox/**/處理失敗.txt
 
 # Obsidian 外掛本體（第三方 release 檔）不進版控，換電腦要重裝；啟用清單 community-plugins.json 仍追蹤
 .obsidian/plugins/
+
+# Hugo js.Build 自動產生
+assets/jsconfig.json

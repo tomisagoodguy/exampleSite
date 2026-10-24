@@ -2380,7 +2380,7 @@ export function showToast(message: string) {
   el.textContent = message;
   el.style.cssText = `
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    background: var(--adv-ink); color: #fff; padding: 10px 20px; border-radius: 100px;
+    background: var(--adv-ink); color: var(--adv-paper); padding: 10px 20px; border-radius: 100px;
     font-size: 0.85rem; font-weight: 600; z-index: 10001; box-shadow: 0 8px 20px rgba(0,0,0,0.25);
     max-width: 90vw; text-align: center;
   `;
