@@ -1547,49 +1547,89 @@ button.adv-ach-badge:hover {
   font-variant-numeric: tabular-nums;
 }
 
+/* 成就牆一筆一列橫放：手機上標題在上、內容在下；桌面左標題、右內容 */
 .adv-ach-wall-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  align-items: start;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
 .adv-ach-trophy {
   border-radius: 12px;
   border: 1.5px solid var(--cat-color);
-  background: color-mix(in srgb, var(--cat-color) 10%, var(--adv-glass));
+  border-left-width: 5px;
+  background: color-mix(in srgb, var(--cat-color) 8%, var(--adv-glass));
 }
 
 .adv-ach-trophy-head {
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto auto;
-  column-gap: 8px;
+  column-gap: 10px;
   align-items: center;
-  padding: 8px 10px;
+  padding: 10px 12px 0;
 }
 
 .adv-ach-trophy-emoji {
   grid-row: 1 / 3;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   line-height: 1;
 }
 
 .adv-ach-trophy-title {
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--adv-brown);
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 .adv-ach-trophy-date {
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   color: var(--adv-brown-light);
   font-variant-numeric: tabular-nums;
 }
 
+/* 內容直接貼在列上，不再套一層卡片框，字也放大 */
 .adv-ach-trophy .adv-ach-card {
-  margin: 0 6px 6px;
+  margin: 0;
+  padding: 4px 12px 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.adv-ach-trophy .adv-ach-desc {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--adv-brown);
+}
+
+.adv-ach-trophy .adv-ach-unlocked {
+  font-size: 0.85rem;
+}
+
+.adv-ach-trophy .adv-ach-place {
+  font-size: 0.82rem;
+}
+
+@media (min-width: 900px) {
+  .adv-ach-trophy {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    align-items: start;
+  }
+
+  .adv-ach-trophy-head {
+    padding: 14px 16px;
+    border-right: 1px dashed var(--adv-glass-border);
+    align-self: stretch;
+    align-content: start;
+  }
+
+  .adv-ach-trophy .adv-ach-card {
+    padding: 8px 16px 14px;
+  }
 }
 
 /* 標題、表情已在磁磚上，卡片內不重複 */
