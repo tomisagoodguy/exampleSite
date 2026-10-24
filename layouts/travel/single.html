@@ -246,6 +246,7 @@
 .travel-day__gallery figure{margin:0;border-radius:16px;overflow:hidden;position:relative;background:var(--chip);border:var(--bd)}
 .travel-day__gallery img{width:100%;height:178px;object-fit:cover;display:block;transition:transform .5s ease}
 .travel-day__gallery figure:hover img{transform:scale(1.05)}
+.travel-day__gallery figcaption{position:relative;padding:6px 12px;font-size:.8rem;line-height:1.5;color:var(--ink-soft);background:var(--card);border-top:2px solid var(--ink)}
 
 /* ===== 路線長卷（day 內含 stop 的文章）：拿掉卡片框，左側虛線是路，站點與照片交錯 ===== */
 .tv .travel-day--route{background:none;border:0;box-shadow:none;border-radius:0;padding:0;margin:64px 0 0}
@@ -277,6 +278,7 @@
   .travel-stop--side .travel-strip{grid-column:2;grid-row:2;margin-right:0}
   .travel-stop--side .travel-stop__body p:first-child{margin-top:0}
 }
+.travel-stop__hero figcaption{padding:8px 14px;font-size:.86rem;color:var(--ink-soft);background:var(--card);border-top:2px solid var(--ink)}
 
 .travel-strip{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;padding:4px 4px 14px 2px;margin-right:-22px;scrollbar-width:thin;scrollbar-color:var(--line) transparent;-webkit-overflow-scrolling:touch}
 .travel-strip:empty{display:none}
@@ -284,6 +286,7 @@
 .travel-strip a{display:block;border:var(--bd);border-radius:14px;overflow:hidden;background:var(--chip)}
 .travel-strip img{display:block;height:170px;width:auto;transition:transform .4s ease}
 .travel-strip a:hover img{transform:scale(1.04)}
+.travel-strip figcaption{width:0;min-width:100%;font-size:.76rem;color:var(--muted);margin-top:6px;line-height:1.5}
 
 /* 底部路線列：讀到哪一站亮到哪一站（導覽列固定在頂端，所以放底部） */
 .tv-route{position:fixed;left:50%;bottom:14px;z-index:900;width:min(760px,calc(100% - 24px));transform:translate(-50%,calc(100% + 24px));transition:transform .35s ease;background:var(--card);border:var(--bd);border-radius:999px;box-shadow:var(--sh);font-family:"Huninn","PingFang TC","Microsoft JhengHei",sans-serif}

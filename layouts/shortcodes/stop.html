@@ -3,7 +3,7 @@
         imgs="D2-03_xxx.jpg|說明;D2-01_xxx.jpg|說明" >}}
 這一站的敘述（markdown）...
 {{< /stop >}}
-第一張照片是大圖，其餘排成可橫向滑動的底片條；點照片開燈箱。說明不顯示在照片上，只放 alt 與燈箱標題。
+第一張照片是大圖，其餘排成可橫向滑動的底片條；點照片開燈箱。
 大圖是直拍時，桌面版改成左圖右文（travel-stop--side）。
 輸出不能有空行：外層 day 會把它當 Markdown 裡的 HTML 區塊，空行會截斷區塊。
 */ -}}
@@ -28,13 +28,13 @@
 <div class="travel-stop__main">
 <div class="travel-stop__body">{{ .Page.RenderString (dict "display" "block") .Inner | replaceRE "\n\n+" "\n" | safeHTML }}</div>
 {{- if $items }}{{ with index $items 0 }}
-<figure class="travel-stop__hero{{ if $tall }} is-tall{{ end }}"><a class="venobox" data-gall="{{ $gall }}" href="{{ .img.RelPermalink }}" title="{{ .cap }}"><img loading="lazy" src="{{ .img.RelPermalink }}" width="{{ .img.Width }}" height="{{ .img.Height }}" alt="{{ .cap | default .file }}"></a></figure>
+<figure class="travel-stop__hero{{ if $tall }} is-tall{{ end }}"><a class="venobox" data-gall="{{ $gall }}" href="{{ .img.RelPermalink }}" title="{{ .cap }}"><img loading="lazy" src="{{ .img.RelPermalink }}" width="{{ .img.Width }}" height="{{ .img.Height }}" alt="{{ .cap | default .file }}"></a>{{ with .cap }}<figcaption>{{ . }}</figcaption>{{ end }}</figure>
 {{- end }}{{ end }}
 {{- if gt (len $items) 1 }}
 <div class="travel-strip">
 {{- range after 1 $items -}}
 {{- $t := .img.Resize "x400" }}
-<figure><a class="venobox" data-gall="{{ $gall }}" href="{{ .img.RelPermalink }}" title="{{ .cap }}"><img loading="lazy" src="{{ $t.RelPermalink }}" width="{{ $t.Width }}" height="{{ $t.Height }}" alt="{{ .cap | default .file }}"></a></figure>
+<figure><a class="venobox" data-gall="{{ $gall }}" href="{{ .img.RelPermalink }}" title="{{ .cap }}"><img loading="lazy" src="{{ $t.RelPermalink }}" width="{{ $t.Width }}" height="{{ $t.Height }}" alt="{{ .cap | default .file }}"></a>{{ with .cap }}<figcaption>{{ . }}</figcaption>{{ end }}</figure>
 {{- end }}
 </div>
 {{- end }}
