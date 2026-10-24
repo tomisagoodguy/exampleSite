@@ -285,6 +285,7 @@ pipe 左右必須有空格，separator 使用 `---`：
 - **SQL 寫入新資料列不要指定 `id`**：`id` 是 `GENERATED ALWAYS` identity；曾因手動指定 id 匯入導致序列落後 200 號、前端提案撞 PK。若又不同步，用 `select setval(pg_get_serial_sequence('<表>','id'), (select max(id) from <表>))` 校正
 - **匯入地點不要用舊分類 key**：`outdoor`、`indoor`、`night_market`、`park`、`temple`、`oldshop`、`shopping`、`hiking`、`daytrip`、`indoor_sport` 已廢除，寫入後篩選列會直接顯示英文 key。匯入後用 `select category, count(*) from dating_map_places group by 1` 確認只剩上表的合法值
 - **Google Maps 短網址**：`maps.app.goo.gl` 轉址後的 `q=` 參數帶完整地址（如「永康街6巷5號」），取出地址查門牌比直接解析座標可靠
+- **不知道密碼也能測 UI**：Playwright 用 `add_init_script` 預設 localStorage `dating_map_passphrase`（順便設 `dating_map_identity`、`adv-intro-dismissed`），再 `page.route('**/rest/v1/**')` 回假資料（`rpc/dating_map_check_passphrase` 回 `true`，各表回 JSON 陣列），`**/realtime/**` 直接 abort；用 `uv run --with playwright python -I` 跑獨立腳本
 
 ---
 
