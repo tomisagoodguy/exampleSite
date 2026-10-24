@@ -85,8 +85,28 @@ weight = 1
 
 [[menu.main]]
 name = "廚藝與生活"
+identifier = "lifestyle"
 URL = "lifestyle/"
 weight = 2
+hasChildren = true
+
+[[menu.main]]
+name = "全部"
+URL = "lifestyle/"
+parent = "lifestyle"
+weight = 1
+
+[[menu.main]]
+name = "料理筆記"
+URL = "categories/食譜筆記/"
+parent = "lifestyle"
+weight = 2
+
+[[menu.main]]
+name = "旅遊筆記"
+URL = "categories/旅遊筆記/"
+parent = "lifestyle"
+weight = 3
 
 
 [[menu.main]]
