@@ -320,6 +320,7 @@ pipe 左右必須有空格，separator 使用 `---`：
 - **驗證正式站要繞過快取**：HTML 本身也快取 10 分鐘；用 `curl` 看 `Age` / `X-Cache` 標頭，瀏覽器測試前先清快取（Ctrl + Shift + R）
 - **補座標**：用**店名**查 → Google Maps MCP `maps_search_places`（Places 可用，小店命中率高）；已有**門牌地址** → ArcGIS `findAddressCandidates`（`Addr_type=PointAddress` 很準）。Google Maps MCP 的 Geocoding 未啟用；ArcGIS／Nominatim 拿店名查多半查不到或落點錯，結果都要用台北／台中經緯度框與行政區核對
 - **大批景點補座標（全台、上百筆）**：Google Maps MCP 連續大量查詢會把配額用盡（回 `API quota exceeded`），後續改 ArcGIS（`countryCode=TWN`、`langCode=zh`，景點／山／瀑布命中率高）→ 查不到再用 Nominatim（`countrycodes=tw`，每秒 1 次）。**要用 Python `urllib` 呼叫**，Git Bash 的 `curl --data-urlencode` 會把中文編碼成 cp950 而查無結果。同名景點很多（火炎山、北回歸線標誌、金剛大道、白沙灣），每筆都要核對縣市／鄉鎮。**ArcGIS 分數 100 也會錯**：曾把傳藝中心定位到高雄、莒光樓到高雄同名地、Xpark 偏 4 公里；`Addr_type=Locality`（只命中鄉鎮）的結果一律改用 Google Places 重查
+- **大批匯入前先跑檢查**：把待匯入地點整理成 JSON 陣列（每筆必填 `source`，說不出來源＝推測），`uv run scripts/check-places.py places.json --reverse --db --out ok.json`。BLOCK（無來源、舊分類、指定 id、座標出界、`Locality`、area 格式／臺字、region 與 area 不符、反查縣市不符）就修正後重跑，只把 `ok.json` 用 SQL 寫入；WARN 是疑似重複或缺 area／region，人看過再決定。腳本只檢查不寫入，欄位格式寫在檔頭 docstring
 - **SQL 寫入新資料列不要指定 `id`**：`id` 是 `GENERATED ALWAYS` identity；曾因手動指定 id 匯入導致序列落後 200 號、前端提案撞 PK。若又不同步，用 `select setval(pg_get_serial_sequence('<表>','id'), (select max(id) from <表>))` 校正
 - **匯入地點不要用舊分類 key**：`outdoor`、`indoor`、`night_market`、`park`、`temple`、`oldshop`、`shopping`、`hiking`、`daytrip`、`indoor_sport` 已廢除，寫入後篩選列會直接顯示英文 key。匯入後用 `select category, count(*) from dating_map_places group by 1` 確認只剩上表的合法值
 - **Google Maps 短網址**：`maps.app.goo.gl` 轉址後的 `q=` 參數帶完整地址（如「永康街6巷5號」），取出地址查門牌比直接解析座標可靠
