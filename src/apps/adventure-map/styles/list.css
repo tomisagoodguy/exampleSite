@@ -1911,9 +1911,11 @@ button.adv-ach-place small {
   cursor: pointer;
 }
 
-/* 桌面願望清單欄只有約 370px，橫捲會把按鈕截一半，看起來像跑版；改成換行 */
+/* 桌面願望清單欄只有約 370px，橫捲會把按鈕截一半，看起來像跑版；改成換行。
+   懶人包篩選列在桌面也會比頁寬多出一截，被捲到一半時左邊的「全部」被截掉 */
 @media (min-width: 900px) {
-  #adv-idea-tiers {
+  #adv-idea-tiers,
+  #adv-guide-seasons {
     flex-wrap: wrap;
     overflow: visible;
   }
