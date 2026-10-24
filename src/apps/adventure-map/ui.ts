@@ -24,9 +24,13 @@ import { PosterData, PosterStop, drawPoster, drawGantt, ganttAvailable, ensurePo
 import { photoStripHTML } from './photos';
 import { renderCountyMap, countyOf } from './countymap';
 
-/** 依實際出現在資料中的分類，動態產生篩選 chips */
+/**
+ * 依實際出現在資料中的分類，動態產生篩選 chips
+ * counted 是套用搜尋／地區／雨天後的地點，用來算每個分類的數量（同地區列的做法）
+ */
 export function renderFilterBar(
   places: PlaceEntry[],
+  counted: PlaceEntry[],
   currentCat: string,
   onSelect: (cat: string) => void
 ) {
@@ -40,19 +44,22 @@ export function renderFilterBar(
     ...Array.from(used).filter(cat => !builtinOrder.includes(cat)),
   ];
 
-  const chipHTML = (cat: string, label: string, color?: string) => `
+  const counts = new Map<string, number>();
+  counted.forEach(p => counts.set(p.category, (counts.get(p.category) ?? 0) + 1));
+
+  const chipHTML = (cat: string, label: string, count: number, color?: string) => `
     <button class="adv-chip ${cat === currentCat ? 'adv-chip--active' : ''}"
             data-cat="${cat}"
             ${color ? `style="--cat-color:${color}"` : ''}>
-      ${label}
+      ${label}<span class="adv-chip__count">${count}</span>
     </button>
   `;
 
   mount.innerHTML = [
-    chipHTML('all', '全部'),
+    chipHTML('all', '全部', counted.length),
     ...usedCats.map(cat => {
       const config = CATEGORY_CONFIG[cat];
-      return chipHTML(cat, config ? config.label : cat, config?.color);
+      return chipHTML(cat, config ? config.label : cat, counts.get(cat) ?? 0, config?.color);
     }),
   ].join('');
 
@@ -206,21 +213,25 @@ function proposedCard(place: PlaceEntry): string {
     </button>
   `).join('');
 
+  // 平常只露出按讚與定案，其他操作收進「⋯」（同行程卡），七八張提案疊起來才不會一片按鈕
   return `
-    <div class="adv-card" style="--cat-color:${config?.color || '#999'}" data-place="${place.id}">
+    <div class="adv-card adv-card--proposed" style="--cat-color:${config?.color || '#999'}" data-place="${place.id}">
+      <button class="adv-card-more" data-action="toggle-actions" data-id="${place.id}" title="更多操作" aria-label="更多操作">⋯</button>
       <div class="adv-card-tag" style="background:${config?.color || '#999'}">${config?.label || place.category}</div>
       <div class="adv-card-name">${place.name}</div>
       ${metaLine(place) ? `<div class="adv-card-meta">${metaLine(place)}</div>` : ''}
       ${place.note ? `<p class="adv-card-note">${place.note}</p>` : ''}
       ${place.proposed_by ? `<div class="adv-card-by">${place.proposed_by} 提案</div>` : ''}
-      <div class="adv-like-row">${likeButtons}</div>
-      <div class="adv-card-actions">
+      <div class="adv-like-row">
+        ${likeButtons}
+        <button class="adv-card-btn adv-card-btn--primary adv-confirm-btn" data-action="confirm" data-id="${place.id}">✅ 定案</button>
+      </div>
+      <div class="adv-card-actions adv-card-actions--collapsible" id="adv-more-actions-${place.id}">
         <a class="adv-card-btn" href="https://www.google.com/maps?q=${navQuery(place)}" target="_blank" rel="noopener">🗺️ 導航</a>
         <button class="adv-card-btn adv-card-btn--ghost" data-action="share" data-id="${place.id}">🔗 分享</button>
         <button class="adv-card-btn adv-card-btn--ghost" data-action="edit" data-id="${place.id}">✏️ 修改</button>
-        <button class="adv-card-btn adv-card-btn--ghost" data-action="unpropose" data-id="${place.id}">回到願望清單</button>
+        <button class="adv-card-btn adv-card-btn--ghost" data-action="unpropose" data-id="${place.id}">↩️ 回到願望清單</button>
         <button class="adv-card-btn adv-card-btn--danger" data-action="delete" data-id="${place.id}">🗑 刪除</button>
-        <button class="adv-card-btn adv-card-btn--primary" data-action="confirm" data-id="${place.id}">✅ 定案</button>
       </div>
     </div>
   `;
@@ -246,7 +257,7 @@ function itineraryCard(place: PlaceEntry, position: number, dayTotal: number): s
       ${metaLine(place) ? `<div class="adv-card-meta">${metaLine(place)}</div>` : ''}
       ${place.note ? `<p class="adv-card-note">${place.note.replace(/\n/g, '<br>')}</p>` : ''}
       ${photoStripHTML([place.id])}
-      <div class="adv-card-actions adv-card-actions--collapsible" id="adv-itin-actions-${place.id}">
+      <div class="adv-card-actions adv-card-actions--collapsible" id="adv-more-actions-${place.id}">
         ${place.lat != null && place.lng != null
           ? `<a class="adv-card-btn adv-card-btn--icon" href="https://www.google.com/maps?q=${navQuery(place)}" target="_blank" rel="noopener" title="導航">🗺️</a>`
           : ''
@@ -286,7 +297,7 @@ function bindActions(mount: HTMLElement, places: PlaceEntry[], actions: CardActi
         if (detail) detail.hidden = !detail.hidden;
       }
       else if (action === 'toggle-actions') {
-        const row = document.getElementById(`adv-itin-actions-${place.id}`);
+        const row = document.getElementById(`adv-more-actions-${place.id}`);
         if (row) row.classList.toggle('adv-card-actions--open');
       }
     });
@@ -296,10 +307,10 @@ function bindActions(mount: HTMLElement, places: PlaceEntry[], actions: CardActi
 const UNSCHEDULED_KEY = '__unscheduled__';
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
 
-/** 只有 2 筆以上才出現；1 筆時卡片上的單筆按鈕就夠了 */
+/** 只有 2 筆以上才出現；1 筆時卡片上的單筆按鈕就夠了。一次動到整區，放在清單最下面、做成小字連結，不跟定案搶目光 */
 function bulkResetBar(section: 'proposed' | 'itinerary', count: number, label: string): string {
   if (count < 2) return '';
-  return `<div class="adv-bulk-bar"><button type="button" class="adv-day-poster" data-bulk-reset="${section}">🧹 ${label}（${count}）</button></div>`;
+  return `<div class="adv-bulk-bar"><button type="button" class="adv-bulk-link" data-bulk-reset="${section}">${label}（${count}）</button></div>`;
 }
 
 function dayLabel(dayKey: string): string {
@@ -554,7 +565,7 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
 
   if (proposedMount) {
     proposedMount.innerHTML = proposed.length
-      ? bulkResetBar('proposed', proposed.length, '全部退回願望清單') + proposed.map(proposedCard).join('')
+      ? proposed.map(proposedCard).join('') + bulkResetBar('proposed', proposed.length, '全部退回願望清單')
       : `<div class="adv-empty">還沒有人提案，按「＋ 新增提案」或從願望清單挑一個<br>
           <button type="button" class="adv-empty__action" data-goto-tab="idea">💭 去願望清單挑一個 →</button></div>`;
     bindActions(proposedMount, proposed, actions);
@@ -568,7 +579,7 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
       const groups = groupItineraryByDay(itinerary);
       // 已去過（done）是紀錄，不在退回範圍
       const pending = (places: PlaceEntry[]) => places.filter((p) => p.status === 'confirmed');
-      itineraryMount.innerHTML = bulkResetBar('itinerary', pending(itinerary).length, '清空還沒去的行程') + groups
+      itineraryMount.innerHTML = groups
         .map(([dayKey, places]) => `
           <div class="adv-day-group">
             <div class="adv-day-header">
@@ -583,7 +594,7 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
             </div>
           </div>
         `)
-        .join('');
+        .join('') + bulkResetBar('itinerary', pending(itinerary).length, '清空還沒去的行程');
       bindActions(itineraryMount, itinerary, actions);
       itineraryMount.querySelectorAll<HTMLElement>('[data-day-poster]').forEach((btn) => {
         const group = groups.find(([key]) => key === btn.dataset.dayPoster);

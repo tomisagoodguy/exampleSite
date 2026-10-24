@@ -123,6 +123,20 @@
   background: var(--adv-bamboo);
 }
 
+/* 提案卡：定案跟按讚同一列，其餘操作收在右上「⋯」；沒有拖曳把手，⋯ 靠右上角 */
+.adv-like-row .adv-confirm-btn {
+  flex-shrink: 0;
+  justify-content: center;
+}
+
+.adv-card--proposed .adv-card-more {
+  right: 6px;
+}
+
+.adv-card--proposed .adv-card-name {
+  padding-right: 24px;
+}
+
 /* ─── Compact row list (願望清單) ─── */
 .adv-row-list {
   gap: 0 !important;
@@ -334,11 +348,27 @@
   gap: 6px;
 }
 
-/* 提案中／行程頂部的一鍵退回 */
+/* 提案中／行程最下方的一鍵退回：小字連結，不做成按鈕 */
 .adv-bulk-bar {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 8px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.adv-bulk-link {
+  border: none;
+  background: transparent;
+  padding: 4px 8px;
+  color: var(--adv-muted);
+  font-family: var(--adv-font);
+  font-size: 0.76rem;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.adv-bulk-link:hover {
+  color: var(--adv-danger);
 }
 
 .adv-day-poster:hover {

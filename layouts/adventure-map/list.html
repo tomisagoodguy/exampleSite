@@ -89,6 +89,8 @@
     <button class="adv-intro__close" id="adv-intro-close" aria-label="關閉說明">知道了</button>
   </div>
 
+  {{/* 桌面：主題切換與搜尋框併成一列，省一排高度；手機只剩搜尋框 */}}
+  <div class="adv-topbar">
   {{/* ─── 桌面版主題切換：規劃看板／懶人包／成就分開看，不再一路往下疊（手機用底部分頁列） ─── */}}
   <nav class="adv-deskbar" id="adv-deskbar" aria-label="切換主題">
     <button class="adv-deskbar__btn" data-desk-target="plan">🗳️ 規劃看板</button>
@@ -100,6 +102,7 @@
   {{/* ─── 地點搜尋框 ─── */}}
   <div class="adv-search-wrap">
     <input type="search" id="adv-search-input" class="adv-search-input" placeholder="🔍 搜尋地點名稱、地址、捷運站…">
+  </div>
   </div>
 
   {{/* ─── 篩選 chips（依實際資料動態產生） ─── */}}

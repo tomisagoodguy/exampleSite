@@ -417,7 +417,7 @@ class DatingMapApp {
     const { region, rainOnly } = this.currentAttr;
     const filtered = filterPlaces(this.allPlaces, this.currentCat, this.currentSearch, region, rainOnly);
 
-    renderFilterBar(this.allPlaces, this.currentCat, (cat) => {
+    renderFilterBar(this.allPlaces, filterPlaces(this.allPlaces, 'all', this.currentSearch, region, rainOnly), this.currentCat, (cat) => {
       this.currentCat = cat;
       this.renderAll();
     });

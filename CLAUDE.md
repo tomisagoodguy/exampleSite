@@ -175,7 +175,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - **照片掛在使用者放的那個地點資料夾**，不要依照片內容改掛別處：通常是為了讓連結該地點的成就在成就牆出現照片
 - 地點卡片的照片只在「🧭 行程」分頁出現（已去過的地點都在那裡）；成就牆收集該成就所有連結地點的照片，只有已解鎖才顯示
 
-**一鍵退回**：「提案中」頂部與「行程」頂部／每天標題有退回按鈕（2 筆以上才出現頂部按鈕），走 RPC `dating_map_reset_to_idea(p_passphrase, p_ids)`（`resetToIdea`）：把 `proposed` / `confirmed` 改回 `idea` 並清掉 `visit_date`、`sort_order`，**`done` 不動、地點不刪**。按鈕只作用於目前篩選後看得到的地點。
+**一鍵退回**：「提案中」與「行程」清單**最下方**的小字連結（2 筆以上才出現），以及行程每天標題的「↩️ 退回」，走 RPC `dating_map_reset_to_idea(p_passphrase, p_ids)`（`resetToIdea`）：把 `proposed` / `confirmed` 改回 `idea` 並清掉 `visit_date`、`sort_order`，**`done` 不動、地點不刪**。按鈕只作用於目前篩選後看得到的地點。
 
 **自動補座標**：頁面上「新增提案」與「修改地點」（原本無座標或地址有改）送出前，`geocode.ts` 會先用地址、再用店名查 ArcGIS `findAddressCandidates`，**分數 ≥ 90 且落在台灣範圍內**才寫入 `lat` / `lng`（`region` 由 trigger 跟著重算）；查不到照常存檔，toast 會提示「找不到座標」。門牌、公園、商圈命中率高，小店名與「捷運○○站」多半查不到，需事後用下方「補座標」方式處理。
 
@@ -309,7 +309,7 @@ pipe 左右必須有空格，separator 使用 `---`：
 
 - **大量匯入資料後要用真實數量看 UI**：願望清單曾因 `.adv-row-list { overflow: hidden }` 蓋掉 `.adv-card-list` 的捲動，300+ 筆時桌面版被裁掉；資料寫入成功 ≠ 畫面可用
 - **用 Playwright 測 UI 前先看篩選列**：「☔ 雨天可去」、地區、分類篩選若被開著，行程／清單可能被濾成空的（例如唯一一筆定案地點非室內就消失），別誤判成功能壞掉
-- **分頁狀態在 `#adv-app-root[data-active-tab]`**（`index.ts` `setupTabBar`，手機底部 `#adv-tabbar` 與桌面 `#adv-deskbar` 共用）：桌面「規劃看板」＝左邊寬的願望清單＋右欄 `.adv-plan-col`（提案在上、行程在下，sticky、整欄一起捲），上方流程條 `#adv-flow`（願望 → 提案 → 行程，點了把那段捲進來）；手機分頁列前三個也依這個順序。懶人包、成就、旅行各自獨立一頁。這三頁只吃搜尋，不吃分類／地區／雨天篩選，CSS 會在這三頁藏起 `#adv-filter-mount` / `#adv-attr-mount` / `#adv-region-mount`。新增分頁時要決定它屬於哪一組、吃不吃這些篩選，並同步 `map.css`；開場分頁由 `defaultTab()` 選第一個有內容的
+- **分頁狀態在 `#adv-app-root[data-active-tab]`**（`index.ts` `setupTabBar`，手機底部 `#adv-tabbar` 與桌面 `#adv-deskbar` 共用）：桌面「規劃看板」＝左邊寬的願望清單＋右欄 `.adv-plan-col`（提案在上、行程在下，sticky、整欄一起捲；願望清單跟整頁捲，**畫面上只留右欄一個內捲**），上方流程條 `#adv-flow`（願望 → 提案 → 行程，點了把那段捲進來；數量只顯示在這裡，桌面版區塊標題的數量藏起來）。桌面 Hero 壓成一列、分頁按鈕與搜尋框同一列（`.adv-topbar`）；提案卡只露出按讚＋定案，其他操作收在右上「⋯」（與行程卡共用 `adv-more-actions-<id>`）；手機分頁列前三個也依這個順序。懶人包、成就、旅行各自獨立一頁。這三頁只吃搜尋，不吃分類／地區／雨天篩選，CSS 會在這三頁藏起 `#adv-filter-mount` / `#adv-attr-mount` / `#adv-region-mount`。新增分頁時要決定它屬於哪一組、吃不吃這些篩選，並同步 `map.css`；開場分頁由 `defaultTab()` 選第一個有內容的
 - **成就分頁三段**：儀表板（稱號、進度、已完成／今年／最近解鎖、徽章）→ 🏆 成就牆（已解鎖，依解鎖日新到舊，一筆一列橫放：桌面左標題右內容、手機上下排，描述、地點、心得與取消解鎖直接顯示，不用點開）→ 🎯 挑戰中（只列未解鎖）。已解鎖的**不會**出現在挑戰中清單
 - **願望清單區域預設收合**（`<details>`，展開後才產生地點列；組內 12 筆以內自動全開）、**挑戰中全部列出**（依連結地點狀態 confirmed > proposed > idea 再依難度排序）；成就分類篩選就是徽章本身（再點一次回全部），沒有另外的 chip 列。用 Playwright 數卡片時要先展開區域
 - **驗證正式站要繞過快取**：HTML 本身也快取 10 分鐘；用 `curl` 看 `Age` / `X-Cache` 標頭，瀏覽器測試前先清快取（Ctrl + Shift + R）

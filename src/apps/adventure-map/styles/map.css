@@ -134,6 +134,57 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   }
 }
 
+/* 桌面：Hero 壓成一列（標題｜行程鈕｜身份與分類），原本約 200px 高，清單第一屏只看得到幾列 */
+@media (min-width: 900px) {
+  .adv-hero {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+  }
+
+  .adv-hero .adv-hero__inner {
+    display: contents;
+  }
+
+  .adv-hero .adv-hero__text {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+
+  .adv-hero .adv-hero__title {
+    font-size: 1.9rem;
+    margin: 0;
+  }
+
+  /* 插圖在最右邊，按鈕排在它左邊，不疊在一起 */
+  .adv-hero .adv-hero__next-trip-btn {
+    order: 1;
+    width: auto;
+    margin: 0 0 0 auto;
+    padding: 7px 20px;
+    font-size: 0.95rem;
+  }
+
+  .adv-hero .adv-hero__actions {
+    order: 2;
+    flex-direction: row;
+    align-items: center;
+    margin-right: 150px;
+  }
+
+  .adv-hero .adv-hero__text,
+  .adv-hero .adv-hero__actions {
+    position: relative;
+    z-index: 1;
+  }
+
+  .adv-hero .adv-hero__art {
+    width: 170px;
+  }
+}
+
 /* 插圖墊在文字後面，不擋按鈕 */
 .adv-hero__art {
   position: absolute;
@@ -332,6 +383,27 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   color: var(--adv-muted);
 }
 
+/* 桌面：主題切換在左、搜尋框補滿右邊，同一列 */
+@media (min-width: 900px) {
+  .adv-topbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 16px 0;
+  }
+
+  .adv-topbar .adv-deskbar {
+    flex-shrink: 0;
+    padding: 0;
+  }
+
+  .adv-topbar .adv-search-wrap {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+  }
+}
+
 
 /* ─── 回到頂部按鈕 ─── */
 .adv-back-top {
@@ -414,14 +486,21 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   transition: background 0.15s ease;
 }
 
-/* 分類色點：保留各分類的識別色 */
+/* 分類色點：保留各分類的識別色；框線細一點，色塊才不會被墨線吃掉 */
 .adv-chip[style*="--cat-color"]::before {
   content: '';
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
   border-radius: 50%;
-  border: 2px solid var(--adv-ink);
+  border: 1.5px solid var(--adv-ink);
   background: var(--cat-color);
+}
+
+/* 數量：與地區列（.adv-guide-season-count）同樣是淡色小字 */
+.adv-chip__count {
+  font-size: 0.7rem;
+  opacity: 0.7;
 }
 
 .adv-chip:hover {
@@ -465,10 +544,24 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
     padding: 6px 4px 10px;
   }
 
-  /* 右欄整欄一起捲，裡面的清單不再各自限高 */
+  /* 右欄整欄一起捲，裡面的清單不再各自限高；捲到底不把滾輪傳給整頁 */
+  .adv-plan-col {
+    overscroll-behavior: contain;
+  }
+
   .adv-plan-col .adv-card-list {
     max-height: none;
     overflow: visible;
+  }
+
+  /* 願望清單跟著整頁捲（區域預設收合，不會太長），整個畫面只剩右欄一個內捲 */
+  .adv-section[data-tab="idea"] .adv-card-list {
+    max-height: none;
+  }
+
+  /* 數量已經在上方流程條，區塊標題不再重複 */
+  .adv-board .adv-section:is([data-tab="idea"], [data-tab="proposed"], [data-tab="itinerary"]) .adv-section-header .adv-section-count {
+    display: none;
   }
 
   .adv-page:is([data-active-tab="guides"], [data-active-tab="achievements"], [data-active-tab="trips"]) .adv-plan-col {
