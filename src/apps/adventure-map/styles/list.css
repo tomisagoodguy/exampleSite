@@ -1415,27 +1415,6 @@ button.adv-ach-badge.is-active {
   color: var(--adv-ink);
 }
 
-/* 清單「顯示更多」：願望清單分批、成就收合共用 */
-.adv-more-btn {
-  display: block;
-  width: 100%;
-  min-height: 44px;
-  margin: 8px 0 4px;
-  border: 2px dashed var(--adv-ink);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--adv-ink);
-  font-family: inherit;
-  font-size: 0.88rem;
-  cursor: pointer;
-  grid-column: 1 / -1;
-  transition: background 0.15s ease;
-}
-
-.adv-more-btn:hover {
-  background: var(--adv-yellow);
-}
-
 .adv-ach-badge.is-earned .adv-ach-badge-icon {
   filter: none;
   opacity: 1;
