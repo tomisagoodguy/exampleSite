@@ -277,6 +277,9 @@
     - title: "Luka's Notes"
       url: "https://luka.tw/about/"
       description: "Starbrugs 星巴哥技術週刊創辦人，程式柴 YouTube 經營者，分享程式教學與技術見解。"
+    - title: "當麻許不寫程式"
+      url: "https://dotblogs.com.tw/donmadotblog"
+      description: "點部落上的技術部落格，記錄 .NET、C# 等開發實務與工具心得。"
 - category: "資安防護"
   links:
     - title: "Lucas Futures Risk Scanner"
