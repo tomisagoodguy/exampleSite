@@ -1549,8 +1549,9 @@ button.adv-ach-badge:hover {
 
 .adv-ach-wall-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  align-items: start;
+  gap: 8px;
 }
 
 .adv-ach-trophy {
@@ -1559,25 +1560,13 @@ button.adv-ach-badge:hover {
   background: color-mix(in srgb, var(--cat-color) 10%, var(--adv-glass));
 }
 
-/* 點開的磁磚佔滿整列，下面接完整卡片 */
-.adv-ach-trophy[open] {
-  grid-column: 1 / -1;
-}
-
-.adv-ach-trophy summary {
+.adv-ach-trophy-head {
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto auto;
   column-gap: 8px;
   align-items: center;
-  min-height: 44px;
-  padding: 6px 10px;
-  list-style: none;
-  cursor: pointer;
-}
-
-.adv-ach-trophy summary::-webkit-details-marker {
-  display: none;
+  padding: 8px 10px;
 }
 
 .adv-ach-trophy-emoji {
@@ -1587,14 +1576,10 @@ button.adv-ach-badge:hover {
 }
 
 .adv-ach-trophy-title {
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   font-weight: 800;
   color: var(--adv-brown);
   line-height: 1.35;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
 }
 
 .adv-ach-trophy-date {

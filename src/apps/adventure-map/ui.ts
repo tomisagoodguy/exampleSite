@@ -1024,8 +1024,6 @@ function achievementCardHTML(a: Achievement, placeById: Map<number, PlaceEntry>)
 const PLACE_NEARNESS: Record<string, number> = { confirmed: 3, proposed: 2, idea: 1 };
 const ACH_PREVIEW = 9;
 let achExpanded = false;
-/** 成就牆上點開的磁磚，重新渲染（Realtime）時保持展開 */
-const openTrophies = new Set<number>();
 
 /** 成就分頁：稱號 + 徽章進度（兼分類篩選）+ 成就卡片 */
 export function renderAchievements(
@@ -1098,7 +1096,7 @@ export function renderAchievements(
   const shown = searched.filter((a) => filter === 'all' || a.category === filter);
   const unfiltered = filter === 'all' && searched.length === all.length;
 
-  // 成就牆：已解鎖的依解鎖日期新到舊，點開看完整卡片
+  // 成就牆：已解鎖的依解鎖日期新到舊，內容直接攤開
   const trophies = shown
     .filter(isUnlocked)
     .sort((x, y) => (unlockDate(y) || '0').localeCompare(unlockDate(x) || '0') || x.sort_order - y.sort_order);
@@ -1107,23 +1105,16 @@ export function renderAchievements(
     <div class="adv-ach-subhead">🏆 成就牆 <span class="adv-ach-subhead-count">${trophies.length}</span></div>
     ${trophies.length
       ? `<div class="adv-ach-wall-grid">${trophies.map((a) => `
-        <details class="adv-ach-trophy" data-ach-id="${a.id}" style="--cat-color:${ACHIEVEMENT_CATEGORY[a.category].color}" ${openTrophies.has(a.id) ? 'open' : ''}>
-          <summary>
+        <div class="adv-ach-trophy" style="--cat-color:${ACHIEVEMENT_CATEGORY[a.category].color}">
+          <div class="adv-ach-trophy-head">
             <span class="adv-ach-trophy-emoji" aria-hidden="true">${esc(a.emoji) || ACHIEVEMENT_CATEGORY[a.category].emoji}</span>
             <span class="adv-ach-trophy-title">${esc(a.title)}</span>
             <span class="adv-ach-trophy-date">${esc(unlockDate(a)) || '已完成'}</span>
-          </summary>
+          </div>
           ${achievementCardHTML(a, placeById)}
-        </details>`).join('')}</div>`
+        </div>`).join('')}</div>`
       : `<p class="adv-ach-wall-empty">完成第一個成就，就會掛到這面牆上</p>`}
   `;
-  wall.querySelectorAll<HTMLDetailsElement>('.adv-ach-trophy').forEach((el) => {
-    el.addEventListener('toggle', () => {
-      const id = parseInt(el.dataset.achId || '0');
-      if (el.open) openTrophies.add(id);
-      else openTrophies.delete(id);
-    });
-  });
 
   // 挑戰中：只列未解鎖的
   const todo = shown
