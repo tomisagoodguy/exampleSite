@@ -223,6 +223,7 @@ src/
 │   ├── countymap.ts        # 台灣縣市地圖選擇器（願望清單、懶人包的「🗺️ 地圖選」）
 │   ├── taiwan-shape.ts     # 縣市 SVG 路徑（scripts/build-taiwan-shape.py 產生）
 │   ├── photos.ts           # 回憶照片：讀 window.DATING_MAP_PHOTOS、卡片縮圖列、燈箱
+│   ├── fly.ts              # 換階段動畫：重畫前 captureCard、refresh 後 flyCard，卡片飛到新位置（看不到就飛進分頁按鈕／流程條），靠卡片上的 data-place 找新卡片
 │   ├── ui.ts               # 面板 UI 邏輯（面板、懶人包時間軸、成就徽章、Modal、Toast）
 │   └── index.ts            # 入口，組合各模組
 └── shared/
@@ -306,7 +307,7 @@ pipe 左右必須有空格，separator 使用 `---`：
 
 - **大量匯入資料後要用真實數量看 UI**：願望清單曾因 `.adv-row-list { overflow: hidden }` 蓋掉 `.adv-card-list` 的捲動，300+ 筆時桌面版被裁掉；資料寫入成功 ≠ 畫面可用
 - **用 Playwright 測 UI 前先看篩選列**：「☔ 雨天可去」、地區、分類篩選若被開著，行程／清單可能被濾成空的（例如唯一一筆定案地點非室內就消失），別誤判成功能壞掉
-- **分頁狀態在 `#adv-app-root[data-active-tab]`**（`index.ts` `setupTabBar`，手機底部 `#adv-tabbar` 與桌面 `#adv-deskbar` 共用）：桌面「規劃看板」＝提案／行程／願望三欄，懶人包、成就、旅行各自獨立一頁。這三頁只吃搜尋，不吃分類／地區／雨天篩選，CSS 會在這三頁藏起 `#adv-filter-mount` / `#adv-attr-mount` / `#adv-region-mount`。新增分頁時要決定它屬於哪一組、吃不吃這些篩選，並同步 `map.css`；開場分頁由 `defaultTab()` 選第一個有內容的
+- **分頁狀態在 `#adv-app-root[data-active-tab]`**（`index.ts` `setupTabBar`，手機底部 `#adv-tabbar` 與桌面 `#adv-deskbar` 共用）：桌面「規劃看板」＝左邊寬的願望清單＋右欄 `.adv-plan-col`（提案在上、行程在下，sticky、整欄一起捲），上方流程條 `#adv-flow`（願望 → 提案 → 行程，點了把那段捲進來）；手機分頁列前三個也依這個順序。懶人包、成就、旅行各自獨立一頁。這三頁只吃搜尋，不吃分類／地區／雨天篩選，CSS 會在這三頁藏起 `#adv-filter-mount` / `#adv-attr-mount` / `#adv-region-mount`。新增分頁時要決定它屬於哪一組、吃不吃這些篩選，並同步 `map.css`；開場分頁由 `defaultTab()` 選第一個有內容的
 - **成就分頁三段**：儀表板（稱號、進度、已完成／今年／最近解鎖、徽章）→ 🏆 成就牆（已解鎖，依解鎖日新到舊，一筆一列橫放：桌面左標題右內容、手機上下排，描述、地點、心得與取消解鎖直接顯示，不用點開）→ 🎯 挑戰中（只列未解鎖）。已解鎖的**不會**出現在挑戰中清單
 - **願望清單區域預設收合**（`<details>`，展開後才產生地點列；組內 12 筆以內自動全開）、**挑戰中全部列出**（依連結地點狀態 confirmed > proposed > idea 再依難度排序）；成就分類篩選就是徽章本身（再點一次回全部），沒有另外的 chip 列。用 Playwright 數卡片時要先展開區域
 - **驗證正式站要繞過快取**：HTML 本身也快取 10 分鐘；用 `curl` 看 `Age` / `X-Cache` 標頭，瀏覽器測試前先清快取（Ctrl + Shift + R）

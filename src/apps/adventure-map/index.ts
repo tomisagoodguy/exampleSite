@@ -35,6 +35,7 @@ import { PlaceEntry } from '../../shared/types';
 import { geocodePlace, lookupArea } from './geocode';
 import { openTripMap, TripStop } from './tripmap';
 import { setupPhotoViewer } from './photos';
+import { captureCard, flyCard } from './fly';
 import {
   fetchPlaces,
   fetchGuides,
@@ -265,7 +266,7 @@ class DatingMapApp {
 
   /**
    * 分頁狀態（手機底部分頁列＋桌面主題切換共用）：寫在 #adv-app-root[data-active-tab]。
-   * 手機一次顯示一段清單；桌面的「規劃看板」是提案／行程／願望三欄併排，懶人包、成就、旅行各自獨立一頁。
+   * 手機一次顯示一段清單；桌面的「規劃看板」是左邊願望清單＋右欄提案／行程，上方流程條可跳到各段；懶人包、成就、旅行各自獨立一頁。
    */
   private setupTabBar() {
     const tabbar = document.getElementById('adv-tabbar');
@@ -291,6 +292,9 @@ class DatingMapApp {
         btn.classList.toggle('adv-deskbar__btn--active', active);
         btn.setAttribute('aria-pressed', String(active));
       });
+      document.querySelectorAll<HTMLElement>('[data-flow-step]').forEach((btn) => {
+        btn.setAttribute('aria-current', String(btn.dataset.flowStep === tab));
+      });
       if (root) root.dataset.activeTab = tab;
       // 已經捲過看板頂端才拉回看板開頭；還在上方就不動，避免每次換頁都重看一次 Hero
       if (board) {
@@ -307,6 +311,21 @@ class DatingMapApp {
       btn.addEventListener('click', () => {
         const target = btn.dataset.deskTarget || 'plan';
         setActive(target === 'plan' ? lastPlanTab : target);
+      });
+    });
+
+    // 桌面流程條：三段都在畫面上，點了把那一段捲進來並閃一下
+    document.querySelectorAll<HTMLElement>('[data-flow-step]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.flowStep || 'idea';
+        setActive(tab);
+        const section = document.querySelector<HTMLElement>(`.adv-board .adv-section[data-tab="${tab}"]`);
+        if (!section) return;
+        const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        section.scrollIntoView({ block: 'nearest', behavior: smooth ? 'smooth' : 'auto' });
+        section.classList.remove('adv-flash');
+        void section.offsetWidth;
+        section.classList.add('adv-flash');
       });
     });
 
@@ -879,6 +898,7 @@ class DatingMapApp {
     const identity = await this.ensureIdentity();
     if (!identity) return;
 
+    const from = captureCard(idea.id);
     const saved = await this.withPassphrase(async (pw) => {
       await toggleLike(pw, idea.id, identity);
       return updatePlace({
@@ -892,16 +912,19 @@ class DatingMapApp {
     if (saved) {
       showToast(`${identity} 想去，已加入提案中！`);
       await this.refresh();
+      flyCard(from, idea.id, 'proposed');
     }
   }
 
   private async changeStatus(place: PlaceEntry, status: 'idea' | 'confirmed') {
+    const from = captureCard(place.id);
     const saved = await this.withPassphrase((pw) =>
       updatePlace({ passphrase: pw, id: place.id, status })
     );
     if (saved) {
       showToast(status === 'confirmed' ? '定案了！期待這次約會 🎉' : '已回到願望清單');
       await this.refresh();
+      flyCard(from, place.id, status === 'confirmed' ? 'itinerary' : 'idea');
     }
   }
 
@@ -933,6 +956,7 @@ class DatingMapApp {
     const date = await openScheduleModal('這次約會排哪一天？');
     if (date === null) return;
 
+    const from = captureCard(place.id);
     const saved = await this.withPassphrase((pw) =>
       updatePlace({
         passphrase: pw,
@@ -945,6 +969,7 @@ class DatingMapApp {
     if (saved) {
       showToast('定案了！期待這次約會 🎉');
       await this.refresh();
+      flyCard(from, place.id, 'itinerary');
     }
   }
 
@@ -1000,6 +1025,7 @@ class DatingMapApp {
       ? `${place.note}\n\n🏁 ${form.visitDate}：${form.note}`
       : form.note;
 
+    const from = captureCard(place.id);
     const saved = await this.withPassphrase((pw) =>
       updatePlace({
         passphrase: pw,
@@ -1018,6 +1044,7 @@ class DatingMapApp {
       );
       showToast(unlocked.length ? `恭喜破關！🏆 成就解鎖：${unlocked.map((a) => a.title).join('、')}` : '恭喜破關！🏆');
       await this.refresh();
+      flyCard(from, place.id, 'itinerary', true);
     }
   }
 

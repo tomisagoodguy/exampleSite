@@ -181,7 +181,7 @@ function ideaRow(place: PlaceEntry): string {
   const config = CATEGORY_CONFIG[place.category];
   const hasNote = Boolean(place.note);
   return `
-    <div class="adv-row-wrap">
+    <div class="adv-row-wrap" data-place="${place.id}">
       <div class="adv-row" style="--cat-color:${config?.color || '#999'}">
         <span class="adv-row-dot" title="${config?.label || place.category}"></span>
         <div class="adv-row-main" ${hasNote ? `data-action="expand" data-id="${place.id}"` : ''}>
@@ -207,7 +207,7 @@ function proposedCard(place: PlaceEntry): string {
   `).join('');
 
   return `
-    <div class="adv-card" style="--cat-color:${config?.color || '#999'}">
+    <div class="adv-card" style="--cat-color:${config?.color || '#999'}" data-place="${place.id}">
       <div class="adv-card-tag" style="background:${config?.color || '#999'}">${config?.label || place.category}</div>
       <div class="adv-card-name">${place.name}</div>
       ${metaLine(place) ? `<div class="adv-card-meta">${metaLine(place)}</div>` : ''}
@@ -234,7 +234,8 @@ function itineraryCard(place: PlaceEntry, position: number, dayTotal: number): s
     <div class="adv-card adv-card--draggable ${isDone ? 'adv-card--done' : ''}"
          style="--cat-color:${config?.color || '#999'}"
          draggable="true"
-         data-id="${place.id}">
+         data-id="${place.id}"
+         data-place="${place.id}">
       <span class="adv-drag-handle" title="拖曳排序">⠿</span>
       <button class="adv-card-more" data-action="toggle-actions" data-id="${place.id}" title="更多操作">⋯</button>
       <div class="adv-card-top-row">

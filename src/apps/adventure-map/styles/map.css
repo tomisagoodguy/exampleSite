@@ -440,15 +440,182 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   flex-direction: column;
 }
 
+/* 桌面：左邊寬的願望清單（數量最多、拿來逛），右欄是「我們的計畫」：提案在上、行程在下 */
 @media (min-width: 900px) {
   .adv-board {
     display: grid;
     /* minmax(0, …)：欄內有橫捲列（例如縣市地圖的按鈕列）時，不讓內容把欄撐寬 */
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
     align-items: start;
-    gap: 4px;
+    gap: 12px;
     padding: 8px 8px 0;
   }
+
+  /* top 要讓過站台固定在上方的導覽列（約 85px），否則黏住時標題被蓋掉 */
+  .adv-plan-col {
+    position: sticky;
+    top: 100px;
+    max-height: calc(100vh - 112px);
+    overflow-y: auto;
+    display: grid;
+    gap: 14px;
+    background: var(--adv-washi);
+    border: 3px solid var(--adv-ink);
+    border-radius: var(--adv-r);
+    padding: 6px 4px 10px;
+  }
+
+  /* 右欄整欄一起捲，裡面的清單不再各自限高 */
+  .adv-plan-col .adv-card-list {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .adv-page:is([data-active-tab="guides"], [data-active-tab="achievements"], [data-active-tab="trips"]) .adv-plan-col {
+    display: none;
+  }
+}
+
+/* ─── 桌面流程條：願望 → 提案 → 行程（手機由底部分頁列代替） ─── */
+.adv-flow {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .adv-page:is([data-active-tab="idea"], [data-active-tab="proposed"], [data-active-tab="itinerary"]) .adv-flow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px 2px;
+  }
+
+  .adv-flow__step {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 14px 4px 4px;
+    border: 2.5px solid var(--adv-ink);
+    border-radius: 999px;
+    background: var(--adv-card);
+    color: var(--adv-ink);
+    font-family: var(--adv-font);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .adv-flow__step:hover {
+    background: var(--adv-chip);
+  }
+
+  .adv-flow__step[aria-current="true"] {
+    box-shadow: 0 3px 0 var(--adv-ink);
+    transform: translateY(-2px);
+  }
+
+  .adv-flow__dot {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--adv-ink);
+    background: var(--step-color);
+    font-size: 1rem;
+  }
+
+  /* 虛線箭頭：地點往右一步步前進 */
+  .adv-flow__arrow {
+    flex: 0 1 56px;
+    min-width: 20px;
+    height: 0;
+    border-top: 3px dashed var(--adv-ink);
+    position: relative;
+  }
+
+  .adv-flow__arrow::after {
+    content: "";
+    position: absolute;
+    right: -2px;
+    top: -7px;
+    width: 9px;
+    height: 9px;
+    border-top: 3px solid var(--adv-ink);
+    border-right: 3px solid var(--adv-ink);
+    transform: rotate(45deg);
+  }
+}
+
+/* ─── 換階段動畫（fly.ts）：飛行中的替身、落地、數字跳動、去過印章、流程條點擊閃一下 ─── */
+.adv-ghost {
+  position: fixed !important;
+  z-index: 700;
+  margin: 0 !important;
+  pointer-events: none;
+  background: var(--adv-card);
+  border: 3px solid var(--adv-ink);
+  border-radius: 16px;
+  box-shadow: var(--adv-shadow-lg);
+  overflow: hidden;
+  transform-origin: center;
+}
+
+.adv-land {
+  animation: adv-land 0.35s ease;
+}
+
+@keyframes adv-land {
+  40% { transform: scale(1.04); }
+}
+
+.adv-bump {
+  display: inline-block;
+  animation: adv-bump 0.5s ease;
+}
+
+@keyframes adv-bump {
+  35% { transform: scale(1.6); background: var(--adv-yellow); }
+}
+
+.adv-stamp {
+  position: absolute;
+  right: 44px;
+  top: 10px;
+  z-index: 2;
+  padding: 0 8px;
+  border: 3px solid var(--adv-coral-deep);
+  border-radius: 10px;
+  background: rgb(255 252 246 / 0.88);
+  color: var(--adv-coral-deep);
+  font-family: var(--adv-font);
+  font-size: 1.1rem;
+  pointer-events: none;
+  transform: rotate(-12deg);
+  animation: adv-stamp 0.45s cubic-bezier(.3, 1.6, .5, 1) both, adv-stamp-out 0.4s ease 1.4s forwards;
+}
+
+@keyframes adv-stamp {
+  from { transform: rotate(-12deg) scale(2.6); opacity: 0; }
+  to { transform: rotate(-12deg) scale(1); opacity: 1; }
+}
+
+@keyframes adv-stamp-out {
+  to { opacity: 0; }
+}
+
+.adv-flash {
+  animation: adv-flash 0.9s ease;
+  border-radius: var(--adv-r);
+}
+
+@keyframes adv-flash {
+  30% { box-shadow: 0 0 0 5px var(--adv-yellow); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adv-land, .adv-bump, .adv-flash { animation: none; }
+  .adv-stamp { animation: none; }
+  .adv-flow__step { transition: none; }
 }
 
 /* ─── Sections ─── */
