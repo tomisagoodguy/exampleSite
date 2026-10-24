@@ -149,7 +149,8 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | `html` | 完整介紹頁 HTML（含自己的 `<style>`／`<script>`），只在 slug 頁讀取，卡片不讀 |
 
 - **讀取要密碼**：RLS 與其他 `dating_map_*` 表相同。`static/adventure-map/<slug>/index.html` 只是載入頁，**本身不含行程資料**；它沿用 localStorage `dating_map_passphrase`，以 `x-dating-map-pass` 讀出 `html` 後用 `document.write` 換掉整頁。**不要把行程 HTML 直接放進 `static/`**：那是公開檔，密碼擋不到，裡面有飯店和日期
-- 新增一趟旅行：SQL 寫入一列（目前前端沒有編輯介面），再把 `static/adventure-map/tainan-2026/` 複製成新的 slug 資料夾（載入頁從網址最後一段取 slug，不用改內容）
+- **網頁可新增／修改旅行卡片**（「✈️ 旅行」標題列「＋ 新增旅行」、卡片「✏️ 修改」，`ui.ts` `openTripModal`）：走 RPC `dating_map_save_doc`（`saveTrip`，`p_slug` 為 `null` 時新增，slug 自動產生成 `trip-YYMMDD-xxxx`），只存卡片欄位與 `area_prefix`，`html` 存空字串。`has_html`（generated 欄位）為 false 時卡片顯示「📝 介紹頁還沒寫」、沒有「📖 完整行程」，才有「🗑️ 刪除」（`dating_map_delete_doc` 會拒絕刪已有 `html` 的旅行）
+- 補介紹頁：用 SQL 寫入該列的 `html`（沿用網頁產生的 slug），再把 `static/adventure-map/tainan-2026/` 複製成同名 slug 資料夾（載入頁從網址最後一段取 slug，不用改內容）；沒複製資料夾，「📖 完整行程」會 404
 - **每趟旅行都有「📄 存 PDF／📝 文字檔」**（方便傳給別人或其他 AI）：`static/adventure-map/trip-export.js`，由載入頁在 `html` 後面引入，所以複製載入頁就自動有，**不用改資料庫的 `html`**。按鈕插在 `.topbar` 的夜間按鈕前（沒有 `.topbar` 就浮在右下角）；PDF 走瀏覽器列印，列印前自動切淺色、示意地圖切「全部」並跳過繪製動畫，每天換頁；文字檔是從 `.wrap` 轉出的 Markdown（含 Google 地圖連結與附近清單）。新旅行的 `html` 沿用 `.topbar` / `.seg button[data-day="0"]` / `#trip-map .route` 這些 class，匯出才會完整
 - 行程地圖（卡片「🗺️ 行程地圖」，`tripmap.ts`）以這趟懶人包各站為中心：行程站＝`source_url` 等於 `/adventure-map/<slug>/` 的懶人包（依 `sort_order` 第幾條＝Day 幾），每天一色、依站序編號並畫有箭頭的路線，「▶ 播放路線」逐段畫出並跳出各站資訊卡；點行程站看 500 公尺內的「🍴 吃的／👀 可以逛的」；圖層分 ⭐ 行程站（含住宿）／🍴 food・cafe／👀 museum・walk・shop・diy・scenery；「📍 我在哪」用瀏覽器定位。時段取懶人包 `time_text`，沒寫就沿用前一站。老城區靠太近的編號會在畫面上自動左右攤開（改 marker 的 `margin-left`，不是內層 transform，否則點擊範圍不跟著移）。所以這趟的懶人包要填這個 `source_url`（卡片上會顯示成「🔗 原文」），沒填就只剩全區地點、沒有距離
 - 地圖上按「❤️ 想去」走原本的 `dating_map_toggle_like`，跟清單卡片的按讚是同一個欄位 `liked_by`

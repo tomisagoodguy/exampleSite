@@ -17,7 +17,7 @@ import {
 } from './data';
 import {
   IDENTITIES, Identity, Guide, GuideStop, GuideInput, GuideStopInput, Season, Scene, GuideDuration,
-  Achievement, AchievementInput, Trip,
+  Achievement, AchievementInput, Trip, TripInput,
 } from './supabase';
 import { speechSupported, speak, stopSpeech, currentSpeech, setSpeechListener, SpeechState } from './voice';
 import { PosterData, PosterStop, drawPoster, drawGantt, ganttAvailable, ensurePosterFonts, exportPng } from './poster';
@@ -1178,6 +1178,7 @@ export function renderAchievements(
 }
 
 function tripCardHTML(trip: Trip, placeCount: number): string {
+  const slug = esc(trip.slug);
   return `
     <div class="adv-card adv-trip-card">
       <span class="adv-trip-emoji" aria-hidden="true">${esc(trip.emoji) || '✈️'}</span>
@@ -1185,14 +1186,25 @@ function tripCardHTML(trip: Trip, placeCount: number): string {
         <div class="adv-guide-title">${esc(trip.title)}</div>
         ${trip.date_text ? `<div class="adv-trip-date">${esc(trip.date_text)}</div>` : ''}
         ${trip.summary ? `<div class="adv-guide-summary">${esc(trip.summary)}</div>` : ''}
-        ${trip.tags.length ? `<div class="adv-guide-meta">${trip.tags.map((t) => `<span class="adv-guide-tag">#${esc(t)}</span>`).join('')}</div>` : ''}
+        ${trip.tags.length || trip.proposed_by ? `<div class="adv-guide-meta">${trip.tags.map((t) => `<span class="adv-guide-tag">#${esc(t)}</span>`).join('')}${trip.proposed_by ? `<span class="adv-guide-tag">🙋 ${esc(trip.proposed_by)} 提案</span>` : ''}</div>` : ''}
         <div class="adv-card-actions">
-          <a class="adv-card-btn adv-card-btn--primary" href="/adventure-map/${encodeURIComponent(trip.slug)}/">📖 完整行程</a>
-          ${placeCount ? `<button type="button" class="adv-card-btn" data-trip-map="${esc(trip.slug)}">🗺️ 行程地圖</button>` : ''}
+          ${trip.has_html
+            ? `<a class="adv-card-btn adv-card-btn--primary" href="/adventure-map/${encodeURIComponent(trip.slug)}/">📖 完整行程</a>`
+            : `<span class="adv-trip-pending">📝 介紹頁還沒寫</span>`}
+          ${placeCount ? `<button type="button" class="adv-card-btn" data-trip-action="map" data-trip-slug="${slug}">🗺️ 行程地圖</button>` : ''}
+          <button type="button" class="adv-card-btn adv-card-btn--ghost" data-trip-action="edit" data-trip-slug="${slug}">✏️ 修改</button>
+          ${trip.has_html ? '' : `<button type="button" class="adv-card-btn adv-card-btn--ghost" data-trip-action="delete" data-trip-slug="${slug}">🗑️ 刪除</button>`}
         </div>
       </div>
     </div>
   `;
+}
+
+export interface TripHandlers {
+  onOpenMap: (trip: Trip) => void;
+  onEdit: (trip: Trip) => void;
+  /** 只有還沒寫介紹頁的旅行有刪除按鈕 */
+  onDelete: (trip: Trip) => void;
 }
 
 /** 旅行分頁：每趟旅行一張卡片，可開完整介紹頁，或開該地區存過的地點地圖 */
@@ -1200,21 +1212,79 @@ export function renderTrips(
   all: Trip[],
   searched: Trip[],
   placeCount: (trip: Trip) => number,
-  onOpenMap: (trip: Trip) => void
+  handlers: TripHandlers
 ) {
   const mount = document.getElementById('adv-section-trips');
   if (!mount) return;
 
   mount.innerHTML = searched.length
     ? searched.map((t) => tripCardHTML(t, placeCount(t))).join('')
-    : `<p class="adv-empty">${all.length ? '沒有符合的旅行' : '還沒有旅行介紹頁'}</p>`;
-  mount.querySelectorAll<HTMLElement>('[data-trip-map]').forEach((btn) => {
-    const trip = searched.find((t) => t.slug === btn.dataset.tripMap);
-    if (trip) btn.addEventListener('click', () => onOpenMap(trip));
+    : `<p class="adv-empty">${all.length ? '沒有符合的旅行' : '還沒有旅行，按「＋ 新增旅行」開始'}</p>`;
+  mount.querySelectorAll<HTMLElement>('[data-trip-action]').forEach((btn) => {
+    const trip = searched.find((t) => t.slug === btn.dataset.tripSlug);
+    if (!trip) return;
+    const run = { map: handlers.onOpenMap, edit: handlers.onEdit, delete: handlers.onDelete }[
+      btn.dataset.tripAction as 'map' | 'edit' | 'delete'
+    ];
+    btn.addEventListener('click', () => run?.(trip));
   });
 
   document.querySelectorAll('.adv-section-count[data-section="trips"]').forEach((el) => {
     el.textContent = `${all.length}`;
+  });
+}
+
+/** 新增／修改旅行卡片；地圖範圍用縣市（area 開頭），選項取自已存地點的縣市 */
+export function openTripModal(allPlaces: PlaceEntry[], existing?: Trip): Promise<TripInput | null> {
+  return new Promise((resolve) => {
+    const counties = [...new Set(allPlaces.map((p) => p.area?.slice(0, 3)).filter((c): c is string => !!c))].sort();
+
+    const { root, close } = openModal(`
+      <h3>${existing ? '修改旅行' : '新增旅行'}</h3>
+      <label>名稱</label>
+      <input type="text" id="adv-tf-title" value="${esc(existing?.title)}" placeholder="例如：花蓮三日" />
+      <label>日期</label>
+      <input type="text" id="adv-tf-date" value="${esc(existing?.date_text)}" placeholder="例如：12/20–12/22，或「明年春天」" />
+      <label>圖示（emoji，可留空）</label>
+      <input type="text" id="adv-tf-emoji" value="${esc(existing?.emoji)}" placeholder="🏔️" />
+      <label>一句話介紹</label>
+      <textarea id="adv-tf-summary">${esc(existing?.summary)}</textarea>
+      <label>標籤（用空白或逗號分開）</label>
+      <input type="text" id="adv-tf-tags" value="${esc(existing?.tags.join(' '))}" placeholder="例如：海景 溫泉" />
+      <label>地圖範圍（縣市，可留空）</label>
+      <input type="text" id="adv-tf-area" list="adv-tf-areas" value="${esc(existing?.area_prefix)}" placeholder="例如：花蓮縣" />
+      <datalist id="adv-tf-areas">${counties.map((c) => `<option value="${esc(c)}"></option>`).join('')}</datalist>
+      <p class="adv-modal-hint">填了縣市，卡片就有「🗺️ 行程地圖」，顯示那裡存過的地點。完整介紹頁之後再補。</p>
+      <div class="adv-modal-error" id="adv-tf-error" style="display:none;"></div>
+      <div class="adv-modal-actions">
+        <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-tf-cancel">取消</button>
+        <button class="adv-modal-btn adv-modal-btn--primary" id="adv-tf-submit">${existing ? '儲存修改' : '新增'}</button>
+      </div>
+    `);
+
+    root.querySelector('#adv-tf-cancel')?.addEventListener('click', () => {
+      close();
+      resolve(null);
+    });
+    root.querySelector('#adv-tf-submit')?.addEventListener('click', () => {
+      const value = (id: string) => (root.querySelector(id) as HTMLInputElement).value.trim();
+      const title = value('#adv-tf-title');
+      if (!title) {
+        const errorEl = root.querySelector('#adv-tf-error') as HTMLElement;
+        errorEl.style.display = 'block';
+        errorEl.textContent = '名稱不能空白';
+        return;
+      }
+      close();
+      resolve({
+        title,
+        date_text: value('#adv-tf-date'),
+        emoji: value('#adv-tf-emoji'),
+        summary: value('#adv-tf-summary'),
+        tags: value('#adv-tf-tags').split(/[\s,，、#]+/).filter(Boolean),
+        area_prefix: value('#adv-tf-area').replace(/臺/g, '台'),
+      });
+    });
   });
 }
 

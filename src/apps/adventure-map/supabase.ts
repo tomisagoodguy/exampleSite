@@ -223,16 +223,57 @@ export interface Trip {
   tags: string[];
   /** 旅行地圖顯示 area 以此開頭的地點（例如「台南市」）；null 就不顯示地圖按鈕 */
   area_prefix: string | null;
+  /** 介紹頁 html 寫好了沒；網頁新增的旅行只有卡片，介紹頁之後用 SQL 補 */
+  has_html: boolean;
+  /** 從網頁新增的人；SQL 匯入的為 null */
+  proposed_by: string | null;
 }
 
 export async function fetchTrips(): Promise<Trip[]> {
   const { data, error } = await supabase
     .from('dating_map_docs')
-    .select('slug, title, summary, date_text, emoji, tags, area_prefix')
+    .select('slug, title, summary, date_text, emoji, tags, area_prefix, has_html, proposed_by')
     .order('sort_order', { ascending: true, nullsFirst: false });
 
   if (error) throw error;
   return ((data || []) as Trip[]).map((t) => ({ ...t, tags: t.tags || [] }));
+}
+
+export interface TripInput {
+  title: string;
+  date_text: string;
+  summary: string;
+  emoji: string;
+  tags: string[];
+  area_prefix: string;
+}
+
+/** 新增（slug 為 null，由資料庫產生）或修改旅行卡片；介紹頁 html 不經過這裡 */
+export async function saveTrip(passphrase: string, slug: string | null, input: TripInput, proposedBy: string | null): Promise<string> {
+  const { data, error } = await supabase.rpc('dating_map_save_doc', {
+    p_passphrase: passphrase,
+    p_slug: slug,
+    p_title: input.title,
+    p_summary: input.summary,
+    p_date_text: input.date_text,
+    p_emoji: input.emoji,
+    p_tags: input.tags,
+    p_area_prefix: input.area_prefix,
+    p_proposed_by: proposedBy,
+  });
+
+  if (error) throw error;
+  return data as string;
+}
+
+/** 刪除旅行；已寫好介紹頁的資料庫會拒絕（html 沒有歷史版本） */
+export async function deleteTrip(passphrase: string, slug: string): Promise<void> {
+  const { error } = await supabase.rpc('dating_map_delete_doc', {
+    p_passphrase: passphrase,
+    p_slug: slug,
+  });
+
+  if (error) throw error;
 }
 
 export async function setAchievement(

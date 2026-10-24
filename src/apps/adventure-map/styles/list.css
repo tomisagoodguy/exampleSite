@@ -555,6 +555,21 @@
   color: var(--adv-coral-deep);
 }
 
+.adv-trip-pending {
+  align-self: center;
+  font-size: 0.8rem;
+  color: var(--adv-ink);
+  opacity: 0.7;
+}
+
+.adv-modal-hint {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--adv-ink);
+  opacity: 0.75;
+}
+
 /* ─── 旅行行程地圖（全螢幕，Leaflet） ─── */
 body.adv-tripmap-open {
   overflow: hidden;

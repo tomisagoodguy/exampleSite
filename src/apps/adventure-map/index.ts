@@ -19,6 +19,7 @@ import {
   openMarkDoneModal,
   openAchievementModal,
   openGuideModal,
+  openTripModal,
   openIdentityModal,
   openConfirmModal,
   openScheduleModal,
@@ -44,6 +45,8 @@ import {
   deleteAchievement,
   saveGuide,
   deleteGuide,
+  saveTrip,
+  deleteTrip,
   Achievement,
   fetchTrips,
   Trip,
@@ -457,7 +460,11 @@ class DatingMapApp {
       this.trips,
       this.filterTrips(),
       (t) => this.tripPlaces(t).length,
-      (t) => this.openTripMap(t)
+      {
+        onOpenMap: (t) => this.openTripMap(t),
+        onEdit: (t) => this.editTrip(t),
+        onDelete: (t) => this.deleteTrip(t),
+      }
     );
   }
 
@@ -510,6 +517,30 @@ class DatingMapApp {
     } catch (err) {
       console.error('讀取旅行介紹頁失敗', err);
       this.trips = [];
+    }
+  }
+
+  /** 沒給 t 就是新增；只存卡片欄位，介紹頁 html 之後用 SQL 補 */
+  private async editTrip(t?: Trip) {
+    const input = await openTripModal(this.allPlaces, t);
+    if (!input) return;
+
+    const identity = t ? null : await this.ensureIdentity();
+    const saved = await this.withPassphrase((pw) => saveTrip(pw, t?.slug ?? null, input, identity));
+    if (saved) {
+      showToast(t ? '已儲存修改' : `✈️ 新增旅行：${input.title}`);
+      await this.refresh();
+    }
+  }
+
+  private async deleteTrip(t: Trip) {
+    const confirmed = await openConfirmModal(`要刪除旅行「${t.title}」嗎？連到這趟的懶人包與地點不受影響。`);
+    if (!confirmed) return;
+
+    const saved = await this.withPassphrase((pw) => deleteTrip(pw, t.slug).then(() => true));
+    if (saved) {
+      showToast('已刪除');
+      await this.refresh();
     }
   }
 
@@ -782,6 +813,7 @@ class DatingMapApp {
     const fab = document.getElementById('adv-fab');
     fab?.addEventListener('click', () => this.createProposal());
     document.getElementById('adv-guide-new')?.addEventListener('click', () => this.editGuide());
+    document.getElementById('adv-trip-new')?.addEventListener('click', () => this.editTrip());
   }
 
   private async withPassphrase<T>(action: (pw: string) => Promise<T>): Promise<T | null> {
