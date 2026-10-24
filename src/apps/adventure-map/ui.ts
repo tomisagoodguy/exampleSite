@@ -15,7 +15,10 @@ import {
   ideaTier,
   guideDay,
 } from './data';
-import { IDENTITIES, Identity, Guide, GuideStop, Season, Scene, GuideDuration, Achievement, Trip } from './supabase';
+import {
+  IDENTITIES, Identity, Guide, GuideStop, GuideInput, GuideStopInput, Season, Scene, GuideDuration,
+  Achievement, AchievementInput, Trip,
+} from './supabase';
 import { speechSupported, speak, stopSpeech, currentSpeech, setSpeechListener, SpeechState } from './voice';
 import { PosterData, PosterStop, drawPoster, drawGantt, ganttAvailable, ensurePosterFonts, exportPng } from './poster';
 import { photoStripHTML } from './photos';
@@ -652,6 +655,7 @@ function guideCardHTML(guide: Guide, placeById: Map<number, PlaceEntry>, tripDay
           ${guide.duration && !tripDay ? `<span class="adv-guide-tag">${DURATION_LABEL[guide.duration]}</span>` : ''}
           ${guide.seasons.length ? `<span class="adv-guide-tag adv-guide-tag--season">${guide.seasons.map((s) => SEASON_LABEL[s]).join(' ')}</span>` : ''}
           ${guide.tags.map((t) => `<span class="adv-guide-tag">#${esc(t)}</span>`).join('')}
+          ${guide.proposed_by ? `<span class="adv-guide-tag">🙋 ${esc(guide.proposed_by)} 提案</span>` : ''}
           <span class="adv-guide-count">${guide.stops.length} 站 · ${located} 站有座標</span>
         </div>
       </button>
@@ -665,6 +669,8 @@ function guideCardHTML(guide: Guide, placeById: Map<number, PlaceEntry>, tripDay
           ${routeUrl ? `<a class="adv-card-btn" href="${routeUrl}" target="_blank" rel="noopener">🗺️ 整條路線</a>` : ''}
           ${guide.source_url ? `<a class="adv-card-btn adv-card-btn--ghost" href="${esc(guide.source_url)}" target="_blank" rel="noopener">🔗 原文</a>` : ''}
           <button class="adv-card-btn adv-card-btn--primary" data-guide-action="apply" data-guide-id="${guide.id}">📅 照這個排行程</button>
+          <button class="adv-card-btn adv-card-btn--ghost" data-guide-action="edit" data-guide-id="${guide.id}">✏️ 修改</button>
+          <button class="adv-card-btn adv-card-btn--ghost" data-guide-action="delete" data-guide-id="${guide.id}">🗑️ 刪除</button>
         </div>
         ${guide.source ? `<div class="adv-guide-source">來源：${esc(guide.source)}</div>` : ''}
       </div>
@@ -793,13 +799,19 @@ function renderGuideFilterBar(guides: Guide[], current: GuideFilter, onChange: (
   });
 }
 
+export interface GuideHandlers {
+  onApply: (guide: Guide) => void;
+  onEdit: (guide: Guide) => void;
+  onDelete: (guide: Guide) => void;
+}
+
 /** 懶人包：別人怎麼排一日行程，每一站都對應到單一座標的地點 */
 export function renderGuides(
   searchedGuides: Guide[],
   allPlaces: PlaceEntry[],
   filter: GuideFilter,
   onFilterChange: (next: GuideFilter) => void,
-  onApply: (guide: Guide) => void
+  handlers: GuideHandlers
 ) {
   const mount = document.getElementById('adv-section-guides');
   if (!mount) return;
@@ -829,7 +841,15 @@ export function renderGuides(
 
     btn.addEventListener('click', () => {
       if (btn.dataset.guideAction === 'apply') {
-        onApply(guide);
+        handlers.onApply(guide);
+        return;
+      }
+      if (btn.dataset.guideAction === 'edit') {
+        handlers.onEdit(guide);
+        return;
+      }
+      if (btn.dataset.guideAction === 'delete') {
+        handlers.onDelete(guide);
         return;
       }
       if (btn.dataset.guideAction === 'poster') {
@@ -995,11 +1015,13 @@ function achievementCardHTML(a: Achievement, placeById: Map<number, PlaceEntry>)
       ? `✅ ${esc(unlock.date)}${a.done_by ? ` · ${esc(a.done_by)}` : ''}`
       : `🏁 去過「${esc(unlock.place?.name)}」${unlock.date ? ` · ${esc(unlock.date)}` : ''}`;
 
-  const action = !unlock
+  const action = (!unlock
     ? `<button class="adv-card-btn adv-card-btn--primary" data-ach-action="unlock" data-ach-id="${a.id}">🏆 我們完成了</button>`
     : unlock.via === 'manual'
       ? `<button class="adv-card-btn adv-card-btn--ghost" data-ach-action="undo" data-ach-id="${a.id}">取消解鎖</button>`
-      : '';
+      : '') +
+    `<button class="adv-card-btn adv-card-btn--ghost" data-ach-action="edit" data-ach-id="${a.id}">✏️ 修改</button>` +
+    `<button class="adv-card-btn adv-card-btn--danger" data-ach-action="delete" data-ach-id="${a.id}">🗑️ 刪除</button>`;
 
   return `
     <div class="adv-card adv-ach-card ${unlock ? 'is-unlocked' : ''}" style="--cat-color:${cfg.color}">
@@ -1019,12 +1041,20 @@ function achievementCardHTML(a: Achievement, placeById: Map<number, PlaceEntry>)
       ${unlockLine ? `<div class="adv-ach-unlocked">${unlockLine}</div>` : ''}
       ${a.done_note ? `<div class="adv-guide-stop-tip">📝 ${esc(a.done_note)}</div>` : ''}
       ${unlock ? photoStripHTML(a.place_ids) : ''}
-      ${action ? `<div class="adv-card-actions">${action}</div>` : ''}
+          <div class="adv-card-actions">${action}</div>
     </div>
   `;
 }
 
 const PLACE_NEARNESS: Record<string, number> = { confirmed: 3, proposed: 2, idea: 1 };
+
+export interface AchievementHandlers {
+  onUnlock: (a: Achievement) => void;
+  onUndo: (a: Achievement) => void;
+  onEdit: (a: Achievement) => void;
+  onDelete: (a: Achievement) => void;
+  onCreate: () => void;
+}
 
 /** 成就分頁：稱號 + 徽章進度（兼分類篩選）+ 成就卡片 */
 export function renderAchievements(
@@ -1033,8 +1063,7 @@ export function renderAchievements(
   allPlaces: PlaceEntry[],
   filter: AchievementFilter,
   onFilterChange: (filter: AchievementFilter) => void,
-  onUnlock: (a: Achievement) => void,
-  onUndo: (a: Achievement) => void
+  handlers: AchievementHandlers
 ) {
   const mount = document.getElementById('adv-section-achievements');
   const summary = document.getElementById('adv-ach-summary');
@@ -1126,7 +1155,9 @@ export function renderAchievements(
       order.indexOf(x.category) - order.indexOf(y.category) ||
       x.sort_order - y.sort_order
     );
-  todoHead.innerHTML = `🎯 挑戰中 <span class="adv-ach-subhead-count">${todo.length}</span>`;
+  todoHead.innerHTML = `🎯 挑戰中 <span class="adv-ach-subhead-count">${todo.length}</span>
+    <button type="button" class="adv-card-btn adv-card-btn--primary adv-ach-new-btn" id="adv-ach-new">＋ 新增成就</button>`;
+  todoHead.querySelector('#adv-ach-new')?.addEventListener('click', () => handlers.onCreate());
 
   mount.innerHTML = todo.length
     ? todo.map((a) => achievementCardHTML(a, placeById)).join('')
@@ -1135,7 +1166,10 @@ export function renderAchievements(
   [mount, wall].flatMap((el) => [...el.querySelectorAll<HTMLElement>('[data-ach-action]')]).forEach((btn) => {
     const a = shown.find((x) => x.id === parseInt(btn.dataset.achId || '0'));
     if (!a) return;
-    btn.addEventListener('click', () => (btn.dataset.achAction === 'unlock' ? onUnlock(a) : onUndo(a)));
+    const run = { unlock: handlers.onUnlock, undo: handlers.onUndo, edit: handlers.onEdit, delete: handlers.onDelete }[
+      btn.dataset.achAction as 'unlock' | 'undo' | 'edit' | 'delete'
+    ];
+    btn.addEventListener('click', () => run?.(a));
   });
 
   document.querySelectorAll('.adv-section-count[data-section="achievements"]').forEach((el) => {
@@ -1577,6 +1611,316 @@ export function openMarkDoneModal(title = '標記已去過'): Promise<{ visitDat
       const note = (root.querySelector('#adv-done-note') as HTMLTextAreaElement)?.value.trim();
       close();
       resolve({ visitDate, note });
+    });
+  });
+}
+
+/** 新增／修改成就；連結地點用名稱搜尋挑選，去過任一個就自動解鎖 */
+export function openAchievementModal(
+  allPlaces: PlaceEntry[],
+  existing?: Achievement
+): Promise<AchievementInput | null> {
+  return new Promise((resolve) => {
+    const placeById = new Map(allPlaces.map((p) => [p.id, p]));
+    const picked = (existing?.place_ids || []).filter((id) => placeById.has(id));
+    const category = existing?.category || 'nature';
+    const difficulty = existing?.difficulty || 2;
+
+    const categoryOptions = (Object.entries(ACHIEVEMENT_CATEGORY) as [AchievementCategory, AchievementCategoryConfig][])
+      .map(([key, cfg]) => `<option value="${key}" ${category === key ? 'selected' : ''}>${cfg.emoji} ${cfg.label}</option>`)
+      .join('');
+    const difficultyOptions = [1, 2, 3, 4, 5]
+      .map((n) => `<option value="${n}" ${difficulty === n ? 'selected' : ''}>${'★'.repeat(n)}${'☆'.repeat(5 - n)}</option>`)
+      .join('');
+
+    const { root, close } = openModal(`
+      <h3>${existing ? '修改成就' : '新增成就'}</h3>
+      <label>成就名稱</label>
+      <input type="text" id="adv-af-title" value="${esc(existing?.title)}" placeholder="例如：在合歡山看銀河" />
+      <label>分類</label>
+      <select id="adv-af-category">${categoryOptions}</select>
+      <label>圖示（emoji，可留空）</label>
+      <input type="text" id="adv-af-emoji" value="${esc(existing?.emoji)}" placeholder="🌌" />
+      <label>難度</label>
+      <select id="adv-af-difficulty">${difficultyOptions}</select>
+      <label>何時去</label>
+      <input type="text" id="adv-af-when" value="${esc(existing?.when_text)}" placeholder="例如：4–9 月新月前後" />
+      <label>說明</label>
+      <textarea id="adv-af-desc">${esc(existing?.description)}</textarea>
+      <label>連結地點（去過任一個就自動解鎖）</label>
+      <div class="adv-ach-picked" id="adv-af-picked"></div>
+      <input type="text" id="adv-af-search" placeholder="搜尋地點名稱" autocomplete="off" />
+      <div class="adv-ach-results" id="adv-af-results"></div>
+      <div class="adv-modal-error" id="adv-af-error" style="display:none;"></div>
+      <div class="adv-modal-actions">
+        <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-af-cancel">取消</button>
+        <button class="adv-modal-btn adv-modal-btn--primary" id="adv-af-submit">${existing ? '儲存修改' : '新增'}</button>
+      </div>
+    `);
+
+    const pickedEl = root.querySelector('#adv-af-picked') as HTMLElement;
+    const resultsEl = root.querySelector('#adv-af-results') as HTMLElement;
+    const searchEl = root.querySelector('#adv-af-search') as HTMLInputElement;
+
+    const renderPicked = () => {
+      pickedEl.innerHTML = picked
+        .map((id) => `<button type="button" class="adv-ach-place" data-unpick="${id}">${esc(placeById.get(id)?.name)} ✕</button>`)
+        .join('');
+    };
+    const renderResults = () => {
+      const q = searchEl.value.trim().toLowerCase();
+      const hits = q
+        ? allPlaces.filter((p) => !picked.includes(p.id) && p.name.toLowerCase().includes(q)).slice(0, 8)
+        : [];
+      resultsEl.innerHTML = hits
+        .map((p) => `<button type="button" class="adv-ach-place" data-pick="${p.id}">＋ ${esc(p.name)}${p.area ? ` <small>${esc(p.area)}</small>` : ''}</button>`)
+        .join('');
+    };
+
+    pickedEl.addEventListener('click', (e) => {
+      const id = Number((e.target as HTMLElement).closest<HTMLElement>('[data-unpick]')?.dataset.unpick);
+      if (!id) return;
+      picked.splice(picked.indexOf(id), 1);
+      renderPicked();
+      renderResults();
+    });
+    resultsEl.addEventListener('click', (e) => {
+      const id = Number((e.target as HTMLElement).closest<HTMLElement>('[data-pick]')?.dataset.pick);
+      if (!id) return;
+      picked.push(id);
+      searchEl.value = '';
+      renderPicked();
+      renderResults();
+      searchEl.focus();
+    });
+    searchEl.addEventListener('input', renderResults);
+    renderPicked();
+
+    root.querySelector('#adv-af-cancel')?.addEventListener('click', () => {
+      close();
+      resolve(null);
+    });
+    root.querySelector('#adv-af-submit')?.addEventListener('click', () => {
+      const value = (id: string) => (root.querySelector(id) as HTMLInputElement).value.trim();
+      const title = value('#adv-af-title');
+      if (!title) {
+        const errorEl = root.querySelector('#adv-af-error') as HTMLElement;
+        errorEl.style.display = 'block';
+        errorEl.textContent = '成就名稱不能空白';
+        return;
+      }
+      close();
+      resolve({
+        title,
+        category: value('#adv-af-category') as AchievementCategory,
+        emoji: value('#adv-af-emoji'),
+        difficulty: Number(value('#adv-af-difficulty')),
+        when_text: value('#adv-af-when'),
+        description: value('#adv-af-desc'),
+        place_ids: picked,
+      });
+    });
+  });
+}
+
+/** 提案／修改懶人包；每一站可連結一個地點（用名稱搜尋），沒連結就是「約在捷運站」這類步驟 */
+export function openGuideModal(
+  allPlaces: PlaceEntry[],
+  guides: Guide[],
+  existing?: Guide
+): Promise<GuideInput | null> {
+  return new Promise((resolve) => {
+    const placeById = new Map(allPlaces.map((p) => [p.id, p]));
+    const emptyStop = (): GuideStopInput => ({
+      place_id: null, label: '', time_text: null, transit: null, tip: null, must_try: null, cost: null,
+    });
+    const stops: GuideStopInput[] = existing?.stops.length
+      ? existing.stops.map(({ id: _id, seq: _seq, ...rest }) => ({ ...rest }))
+      : [emptyStop(), emptyStop()];
+    const seasons = new Set<Season>(existing?.seasons || []);
+    const scenes = new Set<Scene>(existing?.scenes || []);
+    let duration: GuideDuration | null = existing?.duration || null;
+
+    const regions = Array.from(new Set(guides.map((g) => g.region).filter((r): r is string => !!r)));
+    const toggles = (group: string, labels: Record<string, string>, active: (v: string) => boolean) =>
+      Object.entries(labels)
+        .map(([v, l]) => `<button type="button" class="adv-guide-season ${active(v) ? 'is-active' : ''}" data-gf-group="${group}" data-gf-value="${v}" aria-pressed="${active(v)}">${l}</button>`)
+        .join('');
+
+    const { root, close } = openModal(`
+      <h3>${existing ? '修改懶人包' : '提案懶人包'}</h3>
+      <label>標題</label>
+      <input type="text" id="adv-gf-title" value="${esc(existing?.title)}" placeholder="例如：淡水夕陽散步一日" />
+      <label>一句話介紹</label>
+      <textarea id="adv-gf-summary" rows="2">${esc(existing?.summary)}</textarea>
+      <label>地區</label>
+      <input type="text" id="adv-gf-region" value="${esc(existing?.region)}" placeholder="例如：台北" list="adv-gf-regions" />
+      <datalist id="adv-gf-regions">${regions.map((r) => `<option value="${esc(r)}"></option>`).join('')}</datalist>
+      <label>天數（必選）</label>
+      <div class="adv-gf-toggles">${toggles('duration', DURATION_LABEL, (v) => duration === v)}</div>
+      <label>場景（可複選，都不算就不選）</label>
+      <div class="adv-gf-toggles">${toggles('scene', SCENE_LABEL, (v) => scenes.has(v as Scene))}</div>
+      <label>季節（季節性明顯才選，不選＝全年皆宜）</label>
+      <div class="adv-gf-toggles">${toggles('season', SEASON_LABEL, (v) => seasons.has(v as Season))}</div>
+      <label>行程</label>
+      <div id="adv-gf-stops"></div>
+      <button type="button" class="adv-card-btn adv-gf-add" id="adv-gf-add">＋ 加一站</button>
+      <label>來源（可留空）</label>
+      <input type="text" id="adv-gf-source" value="${esc(existing?.source)}" placeholder="例如：Threads @某某" />
+      <input type="url" id="adv-gf-source-url" value="${esc(existing?.source_url)}" placeholder="原文網址" />
+      <div class="adv-modal-error" id="adv-gf-error" style="display:none;"></div>
+      <div class="adv-modal-actions">
+        <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-gf-cancel">取消</button>
+        <button class="adv-modal-btn adv-modal-btn--primary" id="adv-gf-submit">${existing ? '儲存修改' : '送出提案'}</button>
+      </div>
+    `);
+
+    const stopsEl = root.querySelector('#adv-gf-stops') as HTMLElement;
+    const TEXT_FIELDS = ['label', 'time_text', 'transit', 'must_try', 'cost', 'tip'] as const;
+
+    /** 重畫前先把輸入框的值收回 stops，避免加站／排序時打到一半的字消失 */
+    const collect = () => {
+      stopsEl.querySelectorAll<HTMLElement>('[data-stop]').forEach((el) => {
+        const stop = stops[Number(el.dataset.stop)];
+        TEXT_FIELDS.forEach((f) => {
+          const v = (el.querySelector(`[data-field="${f}"]`) as HTMLInputElement).value.trim();
+          if (f === 'label') stop.label = v;
+          else stop[f] = v || null;
+        });
+      });
+    };
+
+    const renderStops = () => {
+      stopsEl.innerHTML = stops.map((s, i) => {
+        const place = s.place_id != null ? placeById.get(s.place_id) : undefined;
+        const hasMore = !!(s.must_try || s.cost || s.tip);
+        return `
+          <div class="adv-gf-stop" data-stop="${i}">
+            <div class="adv-gf-stop-head">
+              <span class="adv-guide-stop-num">${i + 1}</span>
+              <input type="text" data-field="label" value="${esc(s.label)}" placeholder="這站做什麼／去哪" />
+              <button type="button" class="adv-gf-icon" data-stop-act="up" ${i === 0 ? 'disabled' : ''} title="往上移">↑</button>
+              <button type="button" class="adv-gf-icon" data-stop-act="down" ${i === stops.length - 1 ? 'disabled' : ''} title="往下移">↓</button>
+              <button type="button" class="adv-gf-icon" data-stop-act="remove" title="刪掉這站">✕</button>
+            </div>
+            ${place
+              ? `<div class="adv-ach-picked"><button type="button" class="adv-ach-place" data-stop-act="unlink">📍 ${esc(place.name)} ✕</button></div>`
+              : `<input type="text" class="adv-gf-search" placeholder="連結清單裡的地點（搜尋名稱，可不填）" autocomplete="off" />
+                 <div class="adv-ach-results"></div>`}
+            <div class="adv-gf-row">
+              <input type="text" data-field="time_text" value="${esc(s.time_text)}" placeholder="時間，例如 10:00–12:00" />
+              <input type="text" data-field="transit" value="${esc(s.transit)}" placeholder="怎麼到這站，例如 🚇 捷運 10 分" />
+            </div>
+            <details class="adv-gf-more" ${hasMore ? 'open' : ''}>
+              <summary>必點、花費、小提醒</summary>
+              <input type="text" data-field="must_try" value="${esc(s.must_try)}" placeholder="必點／必做" />
+              <input type="text" data-field="cost" value="${esc(s.cost)}" placeholder="大約花費，例如 門票 200 元" />
+              <input type="text" data-field="tip" value="${esc(s.tip)}" placeholder="小提醒" />
+            </details>
+          </div>`;
+      }).join('');
+    };
+
+    stopsEl.addEventListener('input', (e) => {
+      const input = e.target as HTMLInputElement;
+      if (!input.classList.contains('adv-gf-search')) return;
+      const q = input.value.trim().toLowerCase();
+      const hits = q ? allPlaces.filter((p) => p.name.toLowerCase().includes(q)).slice(0, 8) : [];
+      (input.nextElementSibling as HTMLElement).innerHTML = hits
+        .map((p) => `<button type="button" class="adv-ach-place" data-pick="${p.id}">＋ ${esc(p.name)}${p.area ? ` <small>${esc(p.area)}</small>` : ''}</button>`)
+        .join('');
+    });
+
+    stopsEl.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      const stopEl = target.closest<HTMLElement>('[data-stop]');
+      if (!stopEl) return;
+      const i = Number(stopEl.dataset.stop);
+      const pick = target.closest<HTMLElement>('[data-pick]');
+      const act = target.closest<HTMLElement>('[data-stop-act]')?.dataset.stopAct;
+      if (!pick && !act) return;
+
+      collect();
+      if (pick) {
+        const place = placeById.get(Number(pick.dataset.pick));
+        stops[i].place_id = place?.id ?? null;
+        if (!stops[i].label && place) stops[i].label = place.name;
+      } else if (act === 'unlink') {
+        stops[i].place_id = null;
+      } else if (act === 'remove') {
+        stops.splice(i, 1);
+        if (!stops.length) stops.push(emptyStop());
+      } else if (act === 'up' || act === 'down') {
+        const j = act === 'up' ? i - 1 : i + 1;
+        [stops[i], stops[j]] = [stops[j], stops[i]];
+      }
+      renderStops();
+    });
+
+    root.querySelector('#adv-gf-add')?.addEventListener('click', () => {
+      collect();
+      stops.push(emptyStop());
+      renderStops();
+      (stopsEl.querySelector('[data-stop]:last-child [data-field="label"]') as HTMLInputElement | null)?.focus();
+    });
+
+    root.querySelectorAll<HTMLElement>('[data-gf-group]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const value = btn.dataset.gfValue as string;
+        const group = btn.dataset.gfGroup;
+        if (group === 'duration') {
+          duration = value as GuideDuration;
+          root.querySelectorAll<HTMLElement>('[data-gf-group="duration"]').forEach((b) => {
+            b.classList.toggle('is-active', b === btn);
+            b.setAttribute('aria-pressed', `${b === btn}`);
+          });
+          return;
+        }
+        const set = (group === 'scene' ? scenes : seasons) as Set<string>;
+        if (set.has(value)) set.delete(value);
+        else set.add(value);
+        btn.classList.toggle('is-active', set.has(value));
+        btn.setAttribute('aria-pressed', `${set.has(value)}`);
+      });
+    });
+
+    renderStops();
+
+    root.querySelector('#adv-gf-cancel')?.addEventListener('click', () => {
+      close();
+      resolve(null);
+    });
+    root.querySelector('#adv-gf-submit')?.addEventListener('click', () => {
+      collect();
+      const value = (id: string) => (root.querySelector(id) as HTMLInputElement).value.trim();
+      const errorEl = root.querySelector('#adv-gf-error') as HTMLElement;
+      const fail = (msg: string) => {
+        errorEl.style.display = 'block';
+        errorEl.textContent = msg;
+      };
+
+      // 只連了地點沒寫字就用地點名稱；整站空白的直接略過
+      const filled = stops
+        .map((s) => ({ ...s, label: s.label || (s.place_id != null ? placeById.get(s.place_id)?.name || '' : '') }))
+        .filter((s) => s.label || s.time_text || s.transit || s.must_try || s.cost || s.tip);
+      const title = value('#adv-gf-title');
+      if (!title) return fail('標題不能空白');
+      if (!duration) return fail('請選天數（半日／一日／多日），不然篩選時找不到');
+      if (!filled.length) return fail('至少要有一站');
+      if (filled.some((s) => !s.label)) return fail('每一站都要寫做什麼或去哪');
+
+      close();
+      resolve({
+        title,
+        summary: value('#adv-gf-summary'),
+        region: value('#adv-gf-region'),
+        source: value('#adv-gf-source'),
+        source_url: value('#adv-gf-source-url'),
+        seasons: [...seasons],
+        scenes: [...scenes],
+        duration,
+        stops: filled,
+      });
     });
   });
 }

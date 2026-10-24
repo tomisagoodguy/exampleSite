@@ -121,7 +121,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - **同一天給兩條路線挑**：拆成兩條懶人包，標題寫「Day 3 路線 A：…」「Day 3 路線 B：…」（`data.ts` `guideDay()` 解析），卡片標「第 3／3 天・路線 A」，行程地圖各畫一條線、按鈕是「Day 3 A／B」；標題沒寫 `Day N` 的照 `sort_order` 第幾條算
 - 懶人包篩選列是季節｜場景｜天數擠在同一條橫捲列（`ui.ts` `renderGuideFilterBar`），三組可疊加，再點一次已選的按鈕即取消
 - 圖卡上「N 條步道各自獨立」這種清單不是一日路線，依區域拆成幾條、摘要註明「挑 1–2 條走」，避免「照這個排行程」把全部排進同一天
-- 兩張表只開放 `SELECT`（RLS），內容目前由 Supabase SQL 直接寫入，前端沒有編輯介面
+- 兩張表只開放 `SELECT`（RLS），寫入走 RPC：`dating_map_save_guide`（`saveGuide`，`p_id` 為 `null` 時新增，各站以 `p_stops` jsonb 陣列**整組換掉**，陣列順序＝`seq`）、`dating_map_delete_guide`（`deleteGuide`，各站 CASCADE）。入口是懶人包標題列「＋ 提案懶人包」與卡片展開後的「✏️ 修改／🗑️ 刪除」（`ui.ts` `openGuideModal`）；網頁提案會記 `proposed_by`（卡片顯示「🙋 誰 提案」）。表單沒有 `tags` / `trip_key` / `sort_order`，修改時 RPC 保留原值，多日旅行仍要用 SQL 補 `trip_key`
 - `must_try` / `cost` **只填來源原文有寫的**，不要自己估價；填了就別在 `tip` 重複同一句
 - 「🔊 聽導覽」用瀏覽器 Web Speech API（`voice.ts`）逐站朗讀，朗讀稿由 `ui.ts` 的 `guideSpeechSegments` 組出；emoji 會先濾掉、`→` 念成「到」
 - 「🎨 海報」的時程甘特由 `poster.ts` 的 `parseGanttRows` 解析 `time_text`：`10:00–12:30` 直接用、`09:00` 結束取下一站開始、`30–45 分`／`1.5 小時` 接在上一站後；「午餐」這類文字不畫長條。至少兩站解析得出時間才開放甘特，所以新寫入的 `time_text` 盡量用 `HH:MM` 或 `HH:MM–HH:MM`
@@ -135,7 +135,8 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | `dating_map_achievement_places` | 成就 ↔ 地點多對多連結（`achievement_id`, `place_id`） |
 
 - **解鎖規則（前端 `achievementUnlock` 判斷）**：`done_date` 有值（手動打勾），**或**任一連結地點 `status = 'done'`；所以地點標記「已去過」會自動解鎖成就，祭典這類沒有固定地點的只能手動
-- 前端寫入只走 RPC `dating_map_set_achievement`（`p_done=false` 清除手動紀錄）；新增成就、調整連結目前用 SQL 直接寫
+- 前端寫入走三支 RPC：`dating_map_set_achievement` 手動解鎖（`p_done=false` 清除手動紀錄）；`dating_map_save_achievement`（`saveAchievement`，`p_id` 為 `null` 時新增）存名稱、分類、emoji、難度、何時去、說明，並把連結地點**整組換成** `p_place_ids`；`dating_map_delete_achievement`（`deleteAchievement`）刪除成就，連結由 `ON DELETE CASCADE` 跟著刪，地點不動
+- 入口：「🎯 挑戰中」標題右側「＋ 新增成就」，以及每張成就卡片的「✏️ 修改／🗑️ 刪除」（成就牆也有）；表單是 `ui.ts` `openAchievementModal`，連結地點用名稱搜尋挑選
 - 分類徽章門檻與稱號定義在 `data.ts` 的 `ACHIEVEMENT_CATEGORY` / `ACHIEVEMENT_TITLES`；新增成就分類要同時改這裡與資料表的 CHECK 約束
 
 **旅行介紹頁**（「✈️ 旅行」分頁，一趟一張卡片）存在 `dating_map_docs`：

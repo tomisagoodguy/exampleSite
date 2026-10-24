@@ -17,6 +17,8 @@ import {
   openPassphraseModal,
   openProposeModal,
   openMarkDoneModal,
+  openAchievementModal,
+  openGuideModal,
   openIdentityModal,
   openConfirmModal,
   openScheduleModal,
@@ -38,6 +40,10 @@ import {
   Guide,
   fetchAchievements,
   setAchievement,
+  saveAchievement,
+  deleteAchievement,
+  saveGuide,
+  deleteGuide,
   Achievement,
   fetchTrips,
   Trip,
@@ -424,7 +430,11 @@ class DatingMapApp {
         this.currentGuideFilter = filter;
         this.renderAll();
       },
-      (g) => this.applyGuide(g)
+      {
+        onApply: (g) => this.applyGuide(g),
+        onEdit: (g) => this.editGuide(g),
+        onDelete: (g) => this.deleteGuide(g),
+      }
     );
     renderAchievements(
       this.achievements,
@@ -435,8 +445,13 @@ class DatingMapApp {
         this.currentAchFilter = filter;
         this.renderAll();
       },
-      (a) => this.unlockAchievement(a),
-      (a) => this.undoAchievement(a)
+      {
+        onUnlock: (a) => this.unlockAchievement(a),
+        onUndo: (a) => this.undoAchievement(a),
+        onEdit: (a) => this.editAchievement(a),
+        onDelete: (a) => this.deleteAchievement(a),
+        onCreate: () => this.editAchievement(),
+      }
     );
     renderTrips(
       this.trips,
@@ -551,12 +566,59 @@ class DatingMapApp {
     }
   }
 
+  /** 沒給 a 就是新增 */
+  private async editAchievement(a?: Achievement) {
+    const input = await openAchievementModal(this.allPlaces, a);
+    if (!input) return;
+
+    const saved = await this.withPassphrase((pw) => saveAchievement(pw, a?.id ?? null, input));
+    if (saved !== null) {
+      showToast(a ? '已儲存修改' : `🎯 新增成就：${input.title}`);
+      await this.refresh();
+    }
+  }
+
+  private async deleteAchievement(a: Achievement) {
+    const confirmed = await openConfirmModal(`要刪除成就「${a.title}」嗎？解鎖紀錄會一起刪掉，連結的地點不受影響。`);
+    if (!confirmed) return;
+
+    const saved = await this.withPassphrase((pw) => deleteAchievement(pw, a.id));
+    if (saved !== null) {
+      showToast('已刪除');
+      await this.refresh();
+    }
+  }
+
   private async loadGuides() {
     try {
       this.guides = await fetchGuides();
     } catch (err) {
       console.error('讀取懶人包失敗', err);
       this.guides = [];
+    }
+  }
+
+  /** 沒給 g 就是提案新的懶人包 */
+  private async editGuide(g?: Guide) {
+    const input = await openGuideModal(this.allPlaces, this.guides, g);
+    if (!input) return;
+
+    const identity = g ? null : await this.ensureIdentity();
+    const saved = await this.withPassphrase((pw) => saveGuide(pw, g?.id ?? null, input, identity).then(() => true));
+    if (saved) {
+      showToast(g ? '已儲存修改' : `📚 提案懶人包：${input.title}`);
+      await this.refresh();
+    }
+  }
+
+  private async deleteGuide(g: Guide) {
+    const confirmed = await openConfirmModal(`要刪除懶人包「${g.title}」嗎？各站一起刪掉，清單裡的地點不受影響。`);
+    if (!confirmed) return;
+
+    const saved = await this.withPassphrase((pw) => deleteGuide(pw, g.id).then(() => true));
+    if (saved) {
+      showToast('已刪除');
+      await this.refresh();
     }
   }
 
@@ -719,6 +781,7 @@ class DatingMapApp {
   private setupFab() {
     const fab = document.getElementById('adv-fab');
     fab?.addEventListener('click', () => this.createProposal());
+    document.getElementById('adv-guide-new')?.addEventListener('click', () => this.editGuide());
   }
 
   private async withPassphrase<T>(action: (pw: string) => Promise<T>): Promise<T | null> {

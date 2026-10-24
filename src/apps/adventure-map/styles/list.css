@@ -1555,6 +1555,119 @@ button.adv-ach-badge.is-active {
   font-variant-numeric: tabular-nums;
 }
 
+.adv-ach-new-btn {
+  margin-left: auto;
+}
+
+/* 成就表單的連結地點：已選的 chip（點了移除）＋搜尋結果（點了加入） */
+.adv-ach-picked,
+.adv-ach-results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.adv-ach-picked:empty,
+.adv-ach-results:empty {
+  display: none;
+}
+
+button.adv-ach-place {
+  font-family: inherit;
+  line-height: 1.8;
+  cursor: pointer;
+}
+
+button.adv-ach-place small {
+  color: var(--adv-muted);
+}
+
+/* 懶人包提案表單：每站一張小卡，站名列＋地點搜尋＋時間／交通，其他收在「必點、花費、小提醒」 */
+.adv-gf-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.adv-gf-stop {
+  border: 2px solid var(--adv-ink);
+  border-radius: 16px;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: var(--adv-paper);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.adv-gf-stop-head,
+.adv-gf-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.adv-gf-stop .adv-guide-stop-num {
+  --cat-color: var(--adv-coral);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adv-modal .adv-gf-stop-head input,
+.adv-modal .adv-gf-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.adv-gf-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--adv-ink);
+  background: var(--adv-card);
+  color: var(--adv-ink);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.adv-gf-icon:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.adv-gf-more summary {
+  font-size: 0.85rem;
+  color: var(--adv-muted);
+  cursor: pointer;
+}
+
+.adv-gf-more input {
+  margin-top: 6px;
+}
+
+.adv-gf-stop .adv-ach-picked,
+.adv-gf-stop .adv-ach-results {
+  margin-bottom: 0;
+}
+
+.adv-gf-add {
+  width: 100%;
+}
+
+.adv-guide-new-btn {
+  font-size: 0.85rem;
+}
+
+@media (max-width: 480px) {
+  .adv-gf-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 /* 成就牆一筆一列橫放：手機上標題在上、內容在下；桌面左標題、右內容 */
 .adv-ach-wall-grid {
   display: flex;

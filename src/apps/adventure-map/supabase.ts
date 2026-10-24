@@ -116,6 +116,8 @@ export interface Guide {
   duration: GuideDuration | null;
   /** 同一趟多日旅行的各天共用同一個 key，篩選時整趟一起出現 */
   trip_key: string | null;
+  /** 從網頁提案的人；SQL 匯入的為 null */
+  proposed_by: string | null;
   stops: GuideStop[];
 }
 
@@ -136,6 +138,51 @@ export async function fetchGuides(): Promise<Guide[]> {
     scenes: g.scenes || [],
     stops: [...(g.stops || [])].sort((a, b) => a.seq - b.seq),
   }));
+}
+
+export type GuideStopInput = Omit<GuideStop, 'id' | 'seq'>;
+
+export interface GuideInput {
+  title: string;
+  summary: string;
+  region: string;
+  source: string;
+  source_url: string;
+  seasons: Season[];
+  scenes: Scene[];
+  duration: GuideDuration;
+  /** 依陣列順序存成 seq 1, 2, 3… */
+  stops: GuideStopInput[];
+}
+
+/** 新增（id 為 null）或修改懶人包；各站整組換掉 */
+export async function saveGuide(passphrase: string, id: number | null, input: GuideInput, proposedBy: string | null): Promise<void> {
+  const { error } = await supabase.rpc('dating_map_save_guide', {
+    p_passphrase: passphrase,
+    p_id: id,
+    p_title: input.title,
+    p_summary: input.summary,
+    p_region: input.region,
+    p_source: input.source,
+    p_source_url: input.source_url,
+    p_seasons: input.seasons,
+    p_scenes: input.scenes,
+    p_duration: input.duration,
+    p_proposed_by: proposedBy,
+    p_stops: input.stops,
+  });
+
+  if (error) throw error;
+}
+
+/** 刪除懶人包；各站跟著刪，地點本身不動 */
+export async function deleteGuide(passphrase: string, id: number): Promise<void> {
+  const { error } = await supabase.rpc('dating_map_delete_guide', {
+    p_passphrase: passphrase,
+    p_id: id,
+  });
+
+  if (error) throw error;
 }
 
 /** 旅行成就；done_date 是手動解鎖，連結地點有任一 status='done' 也算解鎖（前端判斷） */
@@ -204,6 +251,43 @@ export async function setAchievement(
 
   if (error) throw error;
   return data as Achievement;
+}
+
+export interface AchievementInput {
+  category: AchievementCategory;
+  title: string;
+  emoji: string;
+  description: string;
+  difficulty: number;
+  when_text: string;
+  place_ids: number[];
+}
+
+/** 新增（id 為 null）或修改成就；連結地點整組換成 place_ids */
+export async function saveAchievement(passphrase: string, id: number | null, input: AchievementInput): Promise<void> {
+  const { error } = await supabase.rpc('dating_map_save_achievement', {
+    p_passphrase: passphrase,
+    p_id: id,
+    p_category: input.category,
+    p_title: input.title,
+    p_emoji: input.emoji,
+    p_description: input.description,
+    p_difficulty: input.difficulty,
+    p_when_text: input.when_text,
+    p_place_ids: input.place_ids,
+  });
+
+  if (error) throw error;
+}
+
+/** 刪除成就；連結會跟著刪，地點本身不動 */
+export async function deleteAchievement(passphrase: string, id: number): Promise<void> {
+  const { error } = await supabase.rpc('dating_map_delete_achievement', {
+    p_passphrase: passphrase,
+    p_id: id,
+  });
+
+  if (error) throw error;
 }
 
 export interface ProposePayload {
