@@ -1024,6 +1024,8 @@ function achievementCardHTML(a: Achievement, placeById: Map<number, PlaceEntry>)
 const PLACE_NEARNESS: Record<string, number> = { confirmed: 3, proposed: 2, idea: 1 };
 const ACH_PREVIEW = 9;
 let achExpanded = false;
+/** 成就牆上點開的磁磚，重新渲染（Realtime）時保持展開 */
+const openTrophies = new Set<number>();
 
 /** 成就分頁：稱號 + 徽章進度（兼分類篩選）+ 成就卡片 */
 export function renderAchievements(
@@ -1037,15 +1039,25 @@ export function renderAchievements(
 ) {
   const mount = document.getElementById('adv-section-achievements');
   const summary = document.getElementById('adv-ach-summary');
-  if (!mount || !summary) return;
+  const wall = document.getElementById('adv-ach-wall');
+  const todoHead = document.getElementById('adv-ach-todo-head');
+  if (!mount || !summary || !wall || !todoHead) return;
 
   const placeById = new Map(allPlaces.map((p) => [p.id, p]));
-  const isUnlocked = (a: Achievement) => achievementUnlock(a, placeById) !== null;
+  const unlockOf = new Map(all.map((a) => [a.id, achievementUnlock(a, placeById)]));
+  const isUnlocked = (a: Achievement) => unlockOf.get(a.id) != null;
+  const unlockDate = (a: Achievement) => unlockOf.get(a.id)?.date || '';
   const cats = Object.entries(ACHIEVEMENT_CATEGORY) as [AchievementCategory, AchievementCategoryConfig][];
 
-  // 稱號與徽章看全部成就，不受搜尋影響
-  const total = all.filter(isUnlocked).length;
+  // 稱號、統計與徽章看全部成就，不受搜尋影響
+  const unlockedAll = all.filter(isUnlocked);
+  const total = unlockedAll.length;
   const title = [...ACHIEVEMENT_TITLES].reverse().find((t) => total >= t.min)?.title || '';
+  const year = String(new Date().getFullYear());
+  const thisYear = unlockedAll.filter((a) => unlockDate(a).startsWith(year)).length;
+  const latest = unlockedAll
+    .filter((a) => unlockDate(a))
+    .sort((x, y) => unlockDate(y).localeCompare(unlockDate(x)))[0];
 
   summary.innerHTML = `
     <div class="adv-ach-rank">
@@ -1053,6 +1065,14 @@ export function renderAchievements(
       <span class="adv-ach-rank-count">${total} / ${all.length}</span>
     </div>
     <div class="adv-ach-progress"><span style="width:${all.length ? (total / all.length) * 100 : 0}%"></span></div>
+    <div class="adv-ach-stats">
+      <div class="adv-ach-stat"><b>${total}</b><span>已完成</span></div>
+      <div class="adv-ach-stat"><b>${thisYear}</b><span>${year} 年</span></div>
+      <div class="adv-ach-stat adv-ach-stat--latest">
+        <b>${latest ? `${esc(latest.emoji) || ACHIEVEMENT_CATEGORY[latest.category].emoji} ${esc(latest.title)}` : '—'}</b>
+        <span>${latest ? `最近解鎖 · ${esc(unlockDate(latest))}` : '最近解鎖'}</span>
+      </div>
+    </div>
     <div class="adv-ach-badges" role="group" aria-label="依分類篩選成就（再點一次看全部）">
       ${cats.map(([key, cfg]) => {
         const got = all.filter((a) => a.category === key && isUnlocked(a)).length;
@@ -1075,31 +1095,62 @@ export function renderAchievements(
   const nearness = (a: Achievement) =>
     Math.max(0, ...a.place_ids.map((id) => PLACE_NEARNESS[placeById.get(id)?.status || ''] || 0));
   const order = cats.map(([k]) => k);
-  const shown = searched
-    .filter((a) => filter === 'all' || a.category === filter)
+  const shown = searched.filter((a) => filter === 'all' || a.category === filter);
+  const unfiltered = filter === 'all' && searched.length === all.length;
+
+  // 成就牆：已解鎖的依解鎖日期新到舊，點開看完整卡片
+  const trophies = shown
+    .filter(isUnlocked)
+    .sort((x, y) => (unlockDate(y) || '0').localeCompare(unlockDate(x) || '0') || x.sort_order - y.sort_order);
+  wall.hidden = !trophies.length && !unfiltered;
+  wall.innerHTML = `
+    <div class="adv-ach-subhead">🏆 成就牆 <span class="adv-ach-subhead-count">${trophies.length}</span></div>
+    ${trophies.length
+      ? `<div class="adv-ach-wall-grid">${trophies.map((a) => `
+        <details class="adv-ach-trophy" data-ach-id="${a.id}" style="--cat-color:${ACHIEVEMENT_CATEGORY[a.category].color}" ${openTrophies.has(a.id) ? 'open' : ''}>
+          <summary>
+            <span class="adv-ach-trophy-emoji" aria-hidden="true">${esc(a.emoji) || ACHIEVEMENT_CATEGORY[a.category].emoji}</span>
+            <span class="adv-ach-trophy-title">${esc(a.title)}</span>
+            <span class="adv-ach-trophy-date">${esc(unlockDate(a)) || '已完成'}</span>
+          </summary>
+          ${achievementCardHTML(a, placeById)}
+        </details>`).join('')}</div>`
+      : `<p class="adv-ach-wall-empty">完成第一個成就，就會掛到這面牆上</p>`}
+  `;
+  wall.querySelectorAll<HTMLDetailsElement>('.adv-ach-trophy').forEach((el) => {
+    el.addEventListener('toggle', () => {
+      const id = parseInt(el.dataset.achId || '0');
+      if (el.open) openTrophies.add(id);
+      else openTrophies.delete(id);
+    });
+  });
+
+  // 挑戰中：只列未解鎖的
+  const todo = shown
+    .filter((a) => !isUnlocked(a))
     .sort((x, y) =>
-      Number(isUnlocked(x)) - Number(isUnlocked(y)) ||
       nearness(y) - nearness(x) ||
       x.difficulty - y.difficulty ||
       order.indexOf(x.category) - order.indexOf(y.category) ||
       x.sort_order - y.sort_order
     );
+  todoHead.innerHTML = `🎯 挑戰中 <span class="adv-ach-subhead-count">${todo.length}</span>`;
 
   // 「全部」且沒在搜尋時只先列最接近完成的幾項，其餘收合
-  const collapsible = filter === 'all' && searched.length === all.length && !achExpanded;
-  const visible = collapsible ? shown.slice(0, ACH_PREVIEW) : shown;
-  const hiddenCount = shown.length - visible.length;
+  const collapsible = unfiltered && !achExpanded;
+  const visible = collapsible ? todo.slice(0, ACH_PREVIEW) : todo;
+  const hiddenCount = todo.length - visible.length;
 
   mount.innerHTML = visible.length
     ? visible.map((a) => achievementCardHTML(a, placeById)).join('') +
-      (hiddenCount > 0 ? `<button type="button" class="adv-more-btn" data-ach-more>顯示全部 ${shown.length} 項成就</button>` : '')
-    : `<p class="adv-empty">沒有符合的成就</p>`;
+      (hiddenCount > 0 ? `<button type="button" class="adv-more-btn" data-ach-more>顯示全部 ${todo.length} 項挑戰</button>` : '')
+    : `<p class="adv-empty">${trophies.length ? '這裡的成就全部完成了 🎉' : '沒有符合的成就'}</p>`;
   mount.querySelector('[data-ach-more]')?.addEventListener('click', () => {
     achExpanded = true;
     onFilterChange(filter);
   });
 
-  mount.querySelectorAll<HTMLElement>('[data-ach-action]').forEach((btn) => {
+  [mount, wall].flatMap((el) => [...el.querySelectorAll<HTMLElement>('[data-ach-action]')]).forEach((btn) => {
     const a = shown.find((x) => x.id === parseInt(btn.dataset.achId || '0'));
     if (!a) return;
     btn.addEventListener('click', () => (btn.dataset.achAction === 'unlock' ? onUnlock(a) : onUndo(a)));
