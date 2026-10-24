@@ -40,7 +40,7 @@
 
 /* 夜晚繪本：只換顏色 token，元件不另寫深色規則 */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --adv-paper:        #1F2440;
     --adv-washi:        #262C4D;
     --adv-card:         #2A3154;
@@ -64,6 +64,32 @@
     --adv-cat-lift:     30%;
     color-scheme: dark;
   }
+}
+
+/* 導覽列開關選了夜晚（html[data-theme]，head.html 開頭依 localStorage 設定），值同上 */
+:root[data-theme="dark"] {
+  --adv-paper:        #1F2440;
+  --adv-washi:        #262C4D;
+  --adv-card:         #2A3154;
+  --adv-chip:         #343C63;
+  --adv-ink:          #F3E9D2;
+  --adv-muted:        #C2BBD2;
+  --adv-soft:         #3A4270;
+  --adv-line:         #4A5280;
+  --adv-coral:        #E58E81;
+  --adv-coral-l:      #4A3446;
+  --adv-yellow:       #E8C468;
+  --adv-water:        #7FB3CC;
+  --adv-water-l:      #2B3E5C;
+  --adv-bamboo:       #94BE82;
+  --adv-coral-deep:   #F4A898;
+  --adv-green:        #A6D191;
+  --adv-yellow-deep:  #F0CF7A;
+  --adv-blue:         #8CC6E0;
+  --adv-danger:       #FF8A7A;
+  --adv-drop:         #0E1124;
+  --adv-cat-lift:     30%;
+  color-scheme: dark;
 }
 
 /* 行程地圖的底圖是淺灰，整個浮層固定用白天色 */

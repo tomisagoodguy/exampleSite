@@ -1,5 +1,7 @@
 <head>
   <meta charset="utf-8">
+  {{/* 導覽列日夜開關的選擇：在 CSS 載入前套上，避免先閃一下另一種顏色；沒選過就跟系統走 */}}
+  <script>try{var t=localStorage.getItem('pb-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
   <title>{{ .Title }}{{ if not .IsHome }} | {{ .Site.Title }}{{ end }}</title>
 
   {{ "<!-- mobile responsive meta -->" | safeHTML }}

@@ -3913,7 +3913,7 @@ body.dark-mode .btn-read-more-red    { background-color: #c82333; }
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --pb-paper: #1F2440;
     --pb-washi: #262C4D;
     --pb-card: #2A3154;
@@ -3941,9 +3941,95 @@ body.dark-mode .btn-read-more-red    { background-color: #c82333; }
   }
 }
 
-/* ─── 夜間開關藏起來：深淺色跟系統走（assets/js/index.ts 不再呼叫主題的 initTheme） ─── */
+/* 導覽列開關選了夜晚（html[data-theme]，head.html 開頭依 localStorage 設定），值同上 */
+:root[data-theme="dark"] {
+  --pb-paper: #1F2440;
+  --pb-washi: #262C4D;
+  --pb-card: #2A3154;
+  --pb-chip: #343C63;
+  --pb-ink: #F3E9D2;
+  --pb-muted: #C2BBD2;
+  --pb-line: #4A5280;
+  --pb-coral: #E58E81;
+  --pb-coral-l: #4A3446;
+  --pb-yellow: #E8C468;
+  --pb-yellow-l: #4A4330;
+  --pb-water: #7FB3CC;
+  --pb-water-l: #2B3E5C;
+  --pb-bamboo: #94BE82;
+  --pb-bamboo-l: #33473A;
+  --pb-coral-deep: #F4A898;
+  --pb-green: #A6D191;
+  --pb-yellow-deep: #F0CF7A;
+  --pb-blue: #8CC6E0;
+  --pb-drop: #0E1124;
+  --pb-mark: #6A5A2E;
+  --pb-mark-green: #3F5A3A;
+  --pb-mark-blue: #2F5068;
+  color-scheme: dark;
+}
+
+/* ─── 日夜開關（主題 header 的 #checkbox，行為在 assets/js/index.ts）：
+   白天＝水色天空＋黃太陽鈕，夜晚＝深色夜空＋米白月亮鈕 ─── */
 .theme-switch-wrapper {
-  display: none !important;
+  display: flex;
+}
+
+/* 主題用 display:none 藏 checkbox，鍵盤就點不到；改成視覺隱藏 */
+.theme-switch input {
+  display: block !important;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+}
+
+/* 上方舊規則把 .slider 設成 relative，軌道會塌成一條線 */
+.theme-switch .slider {
+  position: absolute !important;
+  inset: 0;
+  background: var(--pb-water) !important;
+  border: 2.5px solid var(--pb-ink) !important;
+  box-shadow: 0 3px 0 var(--pb-drop) !important;
+}
+
+.theme-switch input:checked + .slider {
+  background: var(--pb-chip) !important;
+  border-color: var(--pb-ink) !important;
+}
+
+.theme-switch .slider:before {
+  box-sizing: border-box;
+  width: 20px !important;
+  height: 20px !important;
+  left: 3px !important;
+  bottom: 2px !important;
+  background: var(--pb-yellow) !important;
+  border: 2px solid var(--pb-on-flat);
+  box-shadow: none !important;
+}
+
+.theme-switch input:checked + .slider:before {
+  background: var(--pb-ink) !important;
+  transform: translateX(29px) !important;
+}
+
+.theme-switch .moon-icon {
+  color: var(--pb-on-flat) !important;
+  filter: none !important;
+  font-size: 13px !important;
+}
+
+.theme-switch .sun-icon {
+  color: var(--pb-yellow) !important;
+  text-shadow: none !important;
+  font-size: 13px !important;
+}
+
+.theme-switch input:focus-visible + .slider {
+  outline: 3px solid var(--pb-blue);
+  outline-offset: 2px;
 }
 
 body {

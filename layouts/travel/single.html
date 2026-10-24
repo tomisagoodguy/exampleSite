@@ -195,10 +195,13 @@
   color:var(--ink);background:var(--bg);font-family:"Huninn","PingFang TC","Microsoft JhengHei",sans-serif;font-variant-numeric:tabular-nums}
 /* 夜晚繪本：系統深色時只換 token；平塗底（黃、珊瑚…）上的字用 --on-flat 維持墨灰 */
 @media (prefers-color-scheme: dark){
-  .tv{--ink:#F3E9D2;--ink-soft:#DDD5C4;--muted:#C2BBD2;--line:#4A5280;--bg:#1F2440;--card:#2A3154;--washi:#262C4D;--chip:#343C63;
+  :root:not([data-theme="light"]) .tv{--ink:#F3E9D2;--ink-soft:#DDD5C4;--muted:#C2BBD2;--line:#4A5280;--bg:#1F2440;--card:#2A3154;--washi:#262C4D;--chip:#343C63;
     --coral:#E58E81;--coral-l:#4A3446;--coral-d:#F4A898;--yellow:#E8C468;--yellow-l:#4A4330;--water:#7FB3CC;--water-l:#2B3E5C;--bamboo:#94BE82;--bamboo-l:#33473A;--green:#A6D191;
     --drop:#0E1124;color-scheme:dark}
 }
+:root[data-theme="dark"] .tv{--ink:#F3E9D2;--ink-soft:#DDD5C4;--muted:#C2BBD2;--line:#4A5280;--bg:#1F2440;--card:#2A3154;--washi:#262C4D;--chip:#343C63;
+    --coral:#E58E81;--coral-l:#4A3446;--coral-d:#F4A898;--yellow:#E8C468;--yellow-l:#4A4330;--water:#7FB3CC;--water-l:#2B3E5C;--bamboo:#94BE82;--bamboo-l:#33473A;--green:#A6D191;
+    --drop:#0E1124;color-scheme:dark}
 .tv *{box-sizing:border-box}
 .tv h1,.tv h2,.tv h3,.tv .serif{font-family:"Huninn","PingFang TC","Microsoft JhengHei",sans-serif;font-weight:400}
 
