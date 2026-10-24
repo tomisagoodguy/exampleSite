@@ -1025,8 +1025,6 @@ function achievementCardHTML(a: Achievement, placeById: Map<number, PlaceEntry>)
 }
 
 const PLACE_NEARNESS: Record<string, number> = { confirmed: 3, proposed: 2, idea: 1 };
-const ACH_PREVIEW = 9;
-let achExpanded = false;
 
 /** 成就分頁：稱號 + 徽章進度（兼分類篩選）+ 成就卡片 */
 export function renderAchievements(
@@ -1130,19 +1128,9 @@ export function renderAchievements(
     );
   todoHead.innerHTML = `🎯 挑戰中 <span class="adv-ach-subhead-count">${todo.length}</span>`;
 
-  // 「全部」且沒在搜尋時只先列最接近完成的幾項，其餘收合
-  const collapsible = unfiltered && !achExpanded;
-  const visible = collapsible ? todo.slice(0, ACH_PREVIEW) : todo;
-  const hiddenCount = todo.length - visible.length;
-
-  mount.innerHTML = visible.length
-    ? visible.map((a) => achievementCardHTML(a, placeById)).join('') +
-      (hiddenCount > 0 ? `<button type="button" class="adv-more-btn" data-ach-more>顯示全部 ${todo.length} 項挑戰</button>` : '')
+  mount.innerHTML = todo.length
+    ? todo.map((a) => achievementCardHTML(a, placeById)).join('')
     : `<p class="adv-empty">${trophies.length ? '這裡的成就全部完成了 🎉' : '沒有符合的成就'}</p>`;
-  mount.querySelector('[data-ach-more]')?.addEventListener('click', () => {
-    achExpanded = true;
-    onFilterChange(filter);
-  });
 
   [mount, wall].flatMap((el) => [...el.querySelectorAll<HTMLElement>('[data-ach-action]')]).forEach((btn) => {
     const a = shown.find((x) => x.id === parseInt(btn.dataset.achId || '0'));

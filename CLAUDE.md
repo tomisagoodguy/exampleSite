@@ -164,11 +164,12 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 
 **回憶照片**（地點卡片＋成就牆的縮圖列，點開是燈箱）：照片**不走 Supabase**，是 repo 裡的公開檔，push 後跟網站一起部署。
 
-1. 原圖放進收件匣 `photos-inbox/<地點名稱>/`（說明寫同資料夾 `說明.txt`，每行「原檔名 說明」），執行 `uv run scripts/add-photos.py`；名稱查 id 要 `.env` 有 `DATING_MAP_PASSPHRASE`，同名多筆時資料夾改「`361 小油坑`」。處理完原圖移到 `photos-inbox/_done/`（整個收件匣除 README 外被 gitignore）。**自動化**：`scripts/install-photo-sync.ps1` 註冊工作排程「破關地圖照片同步」，每 5 分鐘跑 `sync-photos.ps1`（收件匣 2 分鐘沒變動才處理，只 commit `static/adventure-map/photos` 再 push，紀錄在 `logs/photo-sync.log`；`-DryRun` 不 commit）；失敗的資料夾裡會留 `處理失敗.txt` 寫原因。也可直接 `uv run scripts/add-photos.py <地點 id> <照片…> --caption "說明"`。兩種都會縮成長邊 1600px＋400px 縮圖 `NN.thumb.jpg`、**去掉 EXIF（含 GPS）**，放進 `static/adventure-map/photos/<地點 id>/`；支援 HEIC。地點 id 用 SQL 查 `dating_map_places`
+1. 原圖放進收件匣 `photos-inbox/<地點名稱>/`（說明寫同資料夾 `說明.txt`，每行「原檔名 說明」），照常 commit：pre-commit hook `.githooks/pre-commit`（需 `git config core.hooksPath .githooks`）會跑 `scripts/add-photos.py`，把壓縮版加進這次 commit、`git reset` 掉收件匣原圖，原圖移到 `photos-inbox/_done/`（gitignore）。收件匣**刻意不 gitignore**：新照片要顯示成變更，只放照片時才 commit 得出去（git 在 hook 之前就判斷有無變更）。名稱查 id 要 `.env` 有 `DATING_MAP_PASSPHRASE`，同名多筆時資料夾改「`361 小油坑`」，失敗原因寫在該資料夾 `處理失敗.txt`。也可直接 `uv run scripts/add-photos.py <地點 id> <照片…> --caption "說明"`。兩種都會縮成長邊 1600px＋400px 縮圖 `NN.thumb.jpg`、**去掉 EXIF（含 GPS）**，放進 `static/adventure-map/photos/<地點 id>/`；支援 HEIC。地點 id 用 SQL 查 `dating_map_places`
 2. 說明寫在同資料夾 `captions.txt`，每行「`01.jpg 說明`」，可直接改
 3. `layouts/adventure-map/list.html` 建置時用 `readDir` 掃資料夾注入 `window.DATING_MAP_PHOTOS`，`photos.ts` 負責顯示；沒有清單檔要維護，加檔案就會出現
 
 - **不要直接放手機原圖**：檔案 3–5 MB 會撐大 git 歷史（刪了也還在），且 EXIF 有 GPS
+- **照片掛在使用者放的那個地點資料夾**，不要依照片內容改掛別處：通常是為了讓連結該地點的成就在成就牆出現照片
 - 地點卡片的照片只在「🧭 行程」分頁出現（已去過的地點都在那裡）；成就牆收集該成就所有連結地點的照片，只有已解鎖才顯示
 
 **一鍵退回**：「提案中」頂部與「行程」頂部／每天標題有退回按鈕（2 筆以上才出現頂部按鈕），走 RPC `dating_map_reset_to_idea(p_passphrase, p_ids)`（`resetToIdea`）：把 `proposed` / `confirmed` 改回 `idea` 並清掉 `visit_date`、`sort_order`，**`done` 不動、地點不刪**。按鈕只作用於目前篩選後看得到的地點。
