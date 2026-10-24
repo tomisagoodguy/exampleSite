@@ -5,6 +5,31 @@
   window.DATING_MAP_SUPABASE_URL = "https://zvomerdcsxvuymnpuvxk.supabase.co";
   window.DATING_MAP_SUPABASE_KEY = "sb_publishable_xAprCS1COLD7ePcF08buGw_LHfh6d9q";
 </script>
+{{/* ─── 回憶照片：掃 static/adventure-map/photos/<地點 id>/ 的 .jpg（略過 .thumb.jpg 縮圖）與 captions.txt ─── */}}
+{{ $photoDir := "static/adventure-map/photos" }}
+{{ $photos := dict }}
+{{ if fileExists $photoDir }}
+  {{ range readDir $photoDir }}
+    {{ if .IsDir }}
+      {{ $dir := printf "%s/%s" $photoDir .Name }}
+      {{ $files := slice }}
+      {{ range readDir $dir }}
+        {{ $n := lower .Name }}
+        {{ if and (not .IsDir) (strings.HasSuffix $n ".jpg") (not (strings.HasSuffix $n ".thumb.jpg")) }}
+          {{ $files = $files | append .Name }}
+        {{ end }}
+      {{ end }}
+      {{ $captionFile := printf "%s/captions.txt" $dir }}
+      {{ $captions := "" }}
+      {{ if fileExists $captionFile }}{{ $captions = readFile $captionFile }}{{ end }}
+      {{ if $files }}{{ $photos = merge $photos (dict .Name (dict "files" $files "captions" $captions)) }}{{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+<script>
+  window.DATING_MAP_PHOTOS = {{ $photos | jsonify | safeJS }};
+  window.DATING_MAP_PHOTO_BASE = "{{ "adventure-map/photos/" | absURL }}";
+</script>
 {{/* bundle 檔名固定，GitHub Pages 會快取 10 分鐘；加建置時間當版本號，部署後瀏覽器才會抓新版 */}}
 {{ $assetVersion := now.Unix }}
 <link rel="stylesheet" href="{{ "css/adventure-map.bundle.css" | absURL }}?v={{ $assetVersion }}">

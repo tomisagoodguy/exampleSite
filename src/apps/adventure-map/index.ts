@@ -31,6 +31,7 @@ import {
 import { PlaceEntry } from '../../shared/types';
 import { geocodePlace, lookupArea } from './geocode';
 import { openTripMap, TripStop } from './tripmap';
+import { setupPhotoViewer } from './photos';
 import {
   fetchPlaces,
   fetchGuides,
@@ -108,6 +109,7 @@ class DatingMapApp {
     this.setupBackToTop();
     this.setupPullToRefresh();
     this.setupIntro();
+    setupPhotoViewer();
   }
 
   /** 進站先驗密碼（記在 localStorage，驗過一次之後自動帶入）；沒通過就停在鎖定畫面，不讀任何資料 */

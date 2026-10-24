@@ -162,6 +162,15 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
   - 示意圖用 `PTS`（等距投影座標）／`ROUTES`（每天的點順序）畫，墨灰粗線上疊當天顏色，用 `getTotalLength()` 設 `--len` 做逐段畫出的動畫；`prefers-reduced-motion` 時所有動畫關掉，路線直接畫完
 - **改 `html` 不要用 `regexp_replace` 搭 `.*?`**：Postgres 的正規表示式由第一個量詞決定整條的貪婪性，`'\s*<div class="notice">.*?</div>'` 因為開頭的 `\s*` 變成貪婪，一路刪到最後一個 `</div>`，曾把整頁行程刪光（`dating_map_docs` 沒有歷史版本）。改用完整字串的 `replace()`，改完用 `<li class="stop` 數量等指標核對
 
+**回憶照片**（地點卡片＋成就牆的縮圖列，點開是燈箱）：照片**不走 Supabase**，是 repo 裡的公開檔，push 後跟網站一起部署。
+
+1. `uv run scripts/add-photos.py <地點 id> <照片…>`（可加多個 `--caption "說明"`，依序對應），會縮成長邊 1600px＋400px 縮圖 `NN.thumb.jpg`、**去掉 EXIF（含 GPS）**，放進 `static/adventure-map/photos/<地點 id>/`；支援 HEIC。地點 id 用 SQL 查 `dating_map_places`
+2. 說明寫在同資料夾 `captions.txt`，每行「`01.jpg 說明`」，可直接改
+3. `layouts/adventure-map/list.html` 建置時用 `readDir` 掃資料夾注入 `window.DATING_MAP_PHOTOS`，`photos.ts` 負責顯示；沒有清單檔要維護，加檔案就會出現
+
+- **不要直接放手機原圖**：檔案 3–5 MB 會撐大 git 歷史（刪了也還在），且 EXIF 有 GPS
+- 地點卡片的照片只在「🧭 行程」分頁出現（已去過的地點都在那裡）；成就牆收集該成就所有連結地點的照片，只有已解鎖才顯示
+
 **一鍵退回**：「提案中」頂部與「行程」頂部／每天標題有退回按鈕（2 筆以上才出現頂部按鈕），走 RPC `dating_map_reset_to_idea(p_passphrase, p_ids)`（`resetToIdea`）：把 `proposed` / `confirmed` 改回 `idea` 並清掉 `visit_date`、`sort_order`，**`done` 不動、地點不刪**。按鈕只作用於目前篩選後看得到的地點。
 
 **自動補座標**：頁面上「新增提案」與「修改地點」（原本無座標或地址有改）送出前，`geocode.ts` 會先用地址、再用店名查 ArcGIS `findAddressCandidates`，**分數 ≥ 90 且落在台灣範圍內**才寫入 `lat` / `lng`（`region` 由 trigger 跟著重算）；查不到照常存檔，toast 會提示「找不到座標」。門牌、公園、商圈命中率高，小店名與「捷運○○站」多半查不到，需事後用下方「補座標」方式處理。
@@ -207,6 +216,7 @@ src/
 │   ├── voice.ts            # 懶人包語音導覽（Web Speech API，逐段朗讀＋目前站狀態）
 │   ├── poster.ts           # 行程海報：Canvas 繪卷海報／時程甘特＋匯出 PNG（不畫地圖圖磚，避免 canvas tainted）
 │   ├── tripmap.ts          # 旅行行程地圖：分天編號路線＋箭頭、播放動畫、吃的／逛的圖層、站點附近資訊卡、定位
+│   ├── photos.ts           # 回憶照片：讀 window.DATING_MAP_PHOTOS、卡片縮圖列、燈箱
 │   ├── ui.ts               # 面板 UI 邏輯（面板、懶人包時間軸、成就徽章、Modal、Toast）
 │   └── index.ts            # 入口，組合各模組
 └── shared/

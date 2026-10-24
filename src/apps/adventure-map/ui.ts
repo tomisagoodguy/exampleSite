@@ -18,6 +18,7 @@ import {
 import { IDENTITIES, Identity, Guide, GuideStop, Season, Scene, GuideDuration, Achievement, Trip } from './supabase';
 import { speechSupported, speak, stopSpeech, currentSpeech, setSpeechListener, SpeechState } from './voice';
 import { PosterData, PosterStop, drawPoster, drawGantt, ganttAvailable, ensurePosterFonts, exportPng } from './poster';
+import { photoStripHTML } from './photos';
 
 /** 依實際出現在資料中的分類，動態產生篩選 chips */
 export function renderFilterBar(
@@ -239,6 +240,7 @@ function itineraryCard(place: PlaceEntry, position: number, dayTotal: number): s
       <div class="adv-card-name">${place.name}${isDone ? ' 🏁' : ''}</div>
       ${metaLine(place) ? `<div class="adv-card-meta">${metaLine(place)}</div>` : ''}
       ${place.note ? `<p class="adv-card-note">${place.note.replace(/\n/g, '<br>')}</p>` : ''}
+      ${photoStripHTML([place.id])}
       <div class="adv-card-actions adv-card-actions--collapsible" id="adv-itin-actions-${place.id}">
         ${place.lat != null && place.lng != null
           ? `<a class="adv-card-btn adv-card-btn--icon" href="https://www.google.com/maps?q=${navQuery(place)}" target="_blank" rel="noopener" title="導航">🗺️</a>`
@@ -1016,6 +1018,7 @@ function achievementCardHTML(a: Achievement, placeById: Map<number, PlaceEntry>)
         </a>`).join('')}</div>` : ''}
       ${unlockLine ? `<div class="adv-ach-unlocked">${unlockLine}</div>` : ''}
       ${a.done_note ? `<div class="adv-guide-stop-tip">📝 ${esc(a.done_note)}</div>` : ''}
+      ${unlock ? photoStripHTML(a.place_ids) : ''}
       ${action ? `<div class="adv-card-actions">${action}</div>` : ''}
     </div>
   `;
