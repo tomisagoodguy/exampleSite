@@ -43,6 +43,7 @@ PHOTO_ROOT = ROOT / "static" / "adventure-map" / "photos"
 INBOX = ROOT / "photos-inbox"
 DONE = INBOX / "_done"
 INBOX_CAPTIONS = "說明.txt"
+FAILURE_NOTE = "處理失敗.txt"
 IMAGE_EXT = {".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp"}
 FULL_EDGE = 1600
 THUMB_EDGE = 400
@@ -127,14 +128,13 @@ def query_places(passphrase: str, name_filter: str) -> list[dict]:
         return json.load(res)
 
 
-def resolve_place(folder_name: str, passphrase: str | None) -> int | None:
-    """資料夾名稱 → 地點 id。開頭是數字就直接當 id；否則用名稱查資料庫，查不到或不只一筆回 None。"""
+def resolve_place(folder_name: str, passphrase: str | None) -> int | str:
+    """資料夾名稱 → 地點 id。開頭是數字就直接當 id；否則用名稱查資料庫。失敗時回傳原因文字。"""
     m = re.match(r"^(\d+)\b", folder_name)
     if m:
         return int(m.group(1))
     if not passphrase:
-        print("  ✗ 要用名稱查地點，請在 .env 設 DATING_MAP_PASSPHRASE=<破關地圖密碼>，或把資料夾改成「id 名稱」")
-        return None
+        return "要用名稱查地點，請在 .env 設 DATING_MAP_PASSPHRASE=<破關地圖密碼>，或把資料夾改成「id 名稱」"
     hits = query_places(passphrase, f"eq.{folder_name}")
     if not hits:
         hits = query_places(passphrase, f"ilike.*{folder_name}*")
@@ -142,12 +142,9 @@ def resolve_place(folder_name: str, passphrase: str | None) -> int | None:
         print(f"  → {hits[0]['name']}（id {hits[0]['id']}，{hits[0].get('area') or '無地區'}）")
         return int(hits[0]["id"])
     if not hits:
-        print("  ✗ 資料庫找不到這個地點，請確認名稱，或先在破關地圖新增")
-    else:
-        print("  ✗ 符合的地點不只一個，把資料夾改名成「id 名稱」：")
-        for h in hits[:10]:
-            print(f"      {h['id']} {h['name']}（{h.get('area') or '無地區'}）")
-    return None
+        return "資料庫找不到這個地點，請確認名稱，或先在破關地圖新增"
+    lines = [f"  {h['id']} {h['name']}（{h.get('area') or '無地區'}）" for h in hits[:10]]
+    return "符合的地點不只一個，把資料夾改名成「id 名稱」（例如「361 小油坑」）：\n" + "\n".join(lines)
 
 
 def read_inbox_captions(folder: Path) -> dict[str, str]:
@@ -191,9 +188,14 @@ def run_inbox() -> int:
         if not images:
             continue
         place_id = resolve_place(folder.name, passphrase)
-        if place_id is None:
+        failure = folder / FAILURE_NOTE
+        if isinstance(place_id, str):
+            # 寫進資料夾裡，打開收件匣就看得到為什麼沒處理
+            print("  ✗ " + place_id)
+            failure.write_text(place_id + "\n", encoding="utf-8")
             failed += 1
             continue
+        failure.unlink(missing_ok=True)
         captions = read_inbox_captions(folder)
         add_photos(place_id, images, [captions.get(p.name.lower(), "") for p in images])
         DONE.mkdir(exist_ok=True)

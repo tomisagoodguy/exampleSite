@@ -164,7 +164,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 
 **回憶照片**（地點卡片＋成就牆的縮圖列，點開是燈箱）：照片**不走 Supabase**，是 repo 裡的公開檔，push 後跟網站一起部署。
 
-1. 原圖放進收件匣 `photos-inbox/<地點名稱>/`（說明寫同資料夾 `說明.txt`，每行「原檔名 說明」），執行 `uv run scripts/add-photos.py`；名稱查 id 要 `.env` 有 `DATING_MAP_PASSPHRASE`，同名多筆時資料夾改「`361 小油坑`」。處理完原圖移到 `photos-inbox/_done/`（整個收件匣除 README 外被 gitignore）。也可直接 `uv run scripts/add-photos.py <地點 id> <照片…> --caption "說明"`。兩種都會縮成長邊 1600px＋400px 縮圖 `NN.thumb.jpg`、**去掉 EXIF（含 GPS）**，放進 `static/adventure-map/photos/<地點 id>/`；支援 HEIC。地點 id 用 SQL 查 `dating_map_places`
+1. 原圖放進收件匣 `photos-inbox/<地點名稱>/`（說明寫同資料夾 `說明.txt`，每行「原檔名 說明」），執行 `uv run scripts/add-photos.py`；名稱查 id 要 `.env` 有 `DATING_MAP_PASSPHRASE`，同名多筆時資料夾改「`361 小油坑`」。處理完原圖移到 `photos-inbox/_done/`（整個收件匣除 README 外被 gitignore）。**自動化**：`scripts/install-photo-sync.ps1` 註冊工作排程「破關地圖照片同步」，每 5 分鐘跑 `sync-photos.ps1`（收件匣 2 分鐘沒變動才處理，只 commit `static/adventure-map/photos` 再 push，紀錄在 `logs/photo-sync.log`；`-DryRun` 不 commit）；失敗的資料夾裡會留 `處理失敗.txt` 寫原因。也可直接 `uv run scripts/add-photos.py <地點 id> <照片…> --caption "說明"`。兩種都會縮成長邊 1600px＋400px 縮圖 `NN.thumb.jpg`、**去掉 EXIF（含 GPS）**，放進 `static/adventure-map/photos/<地點 id>/`；支援 HEIC。地點 id 用 SQL 查 `dating_map_places`
 2. 說明寫在同資料夾 `captions.txt`，每行「`01.jpg 說明`」，可直接改
 3. `layouts/adventure-map/list.html` 建置時用 `readDir` 掃資料夾注入 `window.DATING_MAP_PHOTOS`，`photos.ts` 負責顯示；沒有清單檔要維護，加檔案就會出現
 
