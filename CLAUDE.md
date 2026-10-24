@@ -157,7 +157,8 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - **台南這趟的版面＝之後每趟旅行的預設風格**（2026-10-24 改成日系繪本風，**只用淺色、沒有夜間按鈕**；Huninn 字型、和紙白 `#FFFCF6`、3px 墨灰 `#3E3A39` 框、大圓角、珊瑚粉／山吹黃／水色／若竹綠四色平塗，插圖是 `html` 內的 SVG，題材換成該目的地的地標、交通、風景）。新增旅行時複製台南的頭尾改內容即可；女友想去的點標 `💕 寶寶要去的`，文字裡也稱「寶寶」，不要寫「女友」：頂端固定 `<header class="topbar">`（匯出按鈕會插進來）→ 首頁插圖＋出發倒數 → `.datetabs` 日期切換 → 「路線示意圖」`<details id="mapbox">` → 三個 `section.day`。這些都在 `<!-- Day 1 -->` 前面的頁首與 `<footer>` 之後的腳本裡，**中間的行程內容沒動**，之後改版也照這樣只換頭尾，用 `replace()` 補細節
   - 日期切換只是對 `section.day` 加 `.is-off`（`display:none`），**不要改用 `hidden` 屬性**：`trip-export.js` 轉 Markdown 會跳過 `hidden` 元素，那幾天就不會出現在文字檔；列印時 CSS 會把三天全部攤開
   - 「必去」徽章由頁尾腳本自動加在 `.stop.key` 的 `<h3>` 前；交通標籤直接寫在 `html`：`<p class="rides"><span class="ride ride--moto">🛵 機車 1.2 公里</span></p>`（`moto`／`walk`／`taxi`／`bike`／`boat`／`train`），移動列寫在 `.stop.move` 的 `<h3>` 裡
-  - 待辦清單仍是 `#check .checks > li > span`，腳本執行時才包成可打勾的 checkbox，勾選狀態存 localStorage `trip-checks-tainan-2026`（只存在各自的裝置上）；電話 `.tel` 會轉成 `tel:` 連結
+  - **預約、訂位、要先問的事寫在對應的站裡**：`<p class="todo"><b>📞 出發前</b>訂位 11/7 17:45　<a class="tel" href="tel:062999199">06-299-9199</a></p>`（放在 `.rides` 後面）；寫在備案 `<li>` 裡的店就直接接在說明後面。「出發前待辦」**只放機車駕照、現金、回程車次**這種整趟共用的事
+  - 出發前待辦是 `#check .checks > li > span`，腳本執行時才包成可打勾的 checkbox，勾選狀態存 localStorage `trip-checks-tainan-2026`（只存在各自的裝置上）；`span.tel` 會轉成 `tel:` 連結
   - 示意圖用 `PTS`（等距投影座標）／`ROUTES`（每天的點順序）畫，墨灰粗線上疊當天顏色，用 `getTotalLength()` 設 `--len` 做逐段畫出的動畫；`prefers-reduced-motion` 時所有動畫關掉，路線直接畫完
 - **改 `html` 不要用 `regexp_replace` 搭 `.*?`**：Postgres 的正規表示式由第一個量詞決定整條的貪婪性，`'\s*<div class="notice">.*?</div>'` 因為開頭的 `\s*` 變成貪婪，一路刪到最後一個 `</div>`，曾把整頁行程刪光（`dating_map_docs` 沒有歷史版本）。改用完整字串的 `replace()`，改完用 `<li class="stop` 數量等指標核對
 
