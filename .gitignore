@@ -18,3 +18,8 @@ dist/
 # 照片收件匣：新照片要顯示成變更才能 commit；pre-commit hook 會換成壓縮版，原圖移到 _done/ 只留本機
 photos-inbox/_done/
 photos-inbox/**/處理失敗.txt
+
+# Obsidian：只追蹤 app.json / templates.json 等共用設定，視窗狀態與外掛個人資料不進版控
+.obsidian/workspace*.json
+.obsidian/plugins/*/data.json
+.trash/

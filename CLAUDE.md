@@ -268,6 +268,13 @@ pipe 左右必須有空格，separator 使用 `---`：
 | 鴨胸 | 3 塊 |
 ```
 
+### Obsidian 筆記庫（repo 根目錄＝vault）
+
+- 設定在 `.obsidian/app.json`（進版控）：Markdown 連結（非 `[[wikilink]]`）、相對路徑、附件放同資料夾，對齊 Hugo page bundle；`layouts/`、`src/`、`static/`、`themes/` 等程式目錄已從 Obsidian 排除
+- **收件匣 `notes-inbox/`**：剪藏、草稿先放這裡，不在 `content/` 底下所以 Hugo 不發布（repo 公開，GitHub 上看得到）；模板在 `notes-inbox/_templates/`
+- 使用者說「消化 notes-inbox」：整理成 `content/<分區>/<文章名稱>/index.md`，前置欄位照上方 Lifestyle 格式並加 `draft: true`，圖片搬進同資料夾，刪掉處理完的原稿；剪藏只留摘要與來源連結，不貼別人全文
+- ❌ 不要寫 `[[...]]` 或 `![[...]]`：Hugo 不轉換，會原樣顯示在頁面上
+
 ---
 
 ## 開發限制

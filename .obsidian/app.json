@@ -1,0 +1,23 @@
+{
+  "useMarkdownLinks": true,
+  "newLinkFormat": "relative",
+  "alwaysUpdateLinks": true,
+  "attachmentFolderPath": "./",
+  "newFileLocation": "folder",
+  "newFileFolderPath": "notes-inbox",
+  "userIgnoreFilters": [
+    "node_modules/",
+    "public/",
+    "resources/",
+    "themes/",
+    "static/",
+    "layouts/",
+    "src/",
+    "scripts/",
+    "logs/",
+    "openspec/",
+    "photos-inbox/",
+    ".agent/",
+    ".playwright-mcp/"
+  ]
+}
