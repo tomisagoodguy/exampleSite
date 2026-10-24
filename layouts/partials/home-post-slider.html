@@ -9,6 +9,7 @@
   - btnOutline    : 查看更多按鈕 class, e.g. "btn-outline-orange"
   - btnReadMore   : 繼續閱讀按鈕 class, e.g. "btn-read-more-orange"
   - topClass      : 標題列額外 class，第一個 section 傳空字串，其餘傳 "mt-5"
+  - links         : （選填）查看更多前的子分類捷徑，slice of dict "name" / "url"
 */}}
 
 {{ $section     := .section }}
@@ -29,8 +30,13 @@
     <span class="section-title-main">{{ $title }}</span>
     <span class="section-title-sub">{{ $subtitle }}</span>
   </h2>
-  <a href="{{ ($ctx.Site.GetPage "section" $section).RelPermalink }}"
-    class="btn btn-sm {{ $btnOutline }}">查看更多</a>
+  <div class="d-flex flex-wrap justify-content-end" style="gap: .5rem;">
+    {{ range .links }}
+    <a href="{{ .url | relURL }}" class="btn btn-sm {{ $btnOutline }}">{{ .name }}</a>
+    {{ end }}
+    <a href="{{ ($ctx.Site.GetPage "section" $section).RelPermalink }}"
+      class="btn btn-sm {{ $btnOutline }}">查看更多</a>
+  </div>
 </div>
 <div class="col-12">
   <div class="{{ $sliderClass }} reveal-on-scroll">

@@ -23,7 +23,7 @@
 
           {{ partial "home-post-slider.html" (dict "ctx" . "section" "automation" "title" "Python & 自動化實驗" "subtitle" "Dev Lab" "sliderClass" "automation-slider" "badge" "Dev Lab" "titleColor" "text-success" "btnOutline" "btn-outline-success" "btnReadMore" "btn-read-more-green" "topClass" "mt-5") }}
 
-          {{ partial "home-post-slider.html" (dict "ctx" . "section" "lifestyle" "title" "廚藝與生活" "subtitle" "Lifestyle" "sliderClass" "lifestyle-slider" "badge" "Lifestyle" "titleColor" "text-danger" "btnOutline" "btn-outline-danger" "btnReadMore" "btn-read-more-red" "topClass" "mt-5") }}
+          {{ partial "home-post-slider.html" (dict "ctx" . "section" "lifestyle" "title" "廚藝與生活" "subtitle" "Lifestyle" "sliderClass" "lifestyle-slider" "badge" "Lifestyle" "titleColor" "text-danger" "btnOutline" "btn-outline-danger" "btnReadMore" "btn-read-more-red" "topClass" "mt-5" "links" (slice (dict "name" "料理筆記" "url" "categories/食譜筆記/") (dict "name" "旅遊筆記" "url" "categories/旅遊筆記/"))) }}
 
         </div>
       </div>
