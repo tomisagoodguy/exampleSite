@@ -1,0 +1,16 @@
+#!/bin/sh
+# commit 時處理照片收件匣：photos-inbox/<地點>/ 的原圖壓縮成 static/adventure-map/photos/<id>/，
+# 原圖移到 photos-inbox/_done/（gitignore），這次 commit 只帶壓縮版
+# 啟用：git config core.hooksPath .githooks
+root=$(git rev-parse --show-toplevel)
+pending=$(find "$root/photos-inbox" -mindepth 1 -maxdepth 1 -type d ! -name _done 2>/dev/null)
+[ -z "$pending" ] && exit 0
+
+uv=$(command -v uv || echo "$HOME/.local/bin/uv")
+PYTHONIOENCODING=utf-8 "$uv" run "$root/scripts/add-photos.py" ||
+  echo "⚠️ 有照片資料夾沒處理，原因見該資料夾的 處理失敗.txt（那些原圖不會進這次 commit）"
+
+# 原圖一律不進 commit（處理失敗留在收件匣的也一樣），只留 README
+git reset -q -- "$root/photos-inbox"
+git add -- "$root/photos-inbox/README.md" "$root/static/adventure-map/photos"
+exit 0
