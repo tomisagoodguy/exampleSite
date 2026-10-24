@@ -1350,6 +1350,9 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   padding: 16px;
   background: rgba(30, 27, 26, 0.88);
   font-family: var(--adv-font);
+  overflow: hidden;
+  /* 捏合、拖曳由 photos.ts 處理，不讓瀏覽器縮放整頁 */
+  touch-action: none;
 }
 
 .adv-photo-viewer__figure {
@@ -1368,7 +1371,14 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   border: 3px solid var(--adv-paper);
   border-radius: 16px;
   object-fit: contain;
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-drag: none;
+  will-change: transform;
 }
+
+.adv-photo-viewer.is-zoomed .adv-photo-viewer__img { cursor: grab; }
+.adv-photo-viewer.is-zoomed .adv-photo-viewer__caption { visibility: hidden; }
 
 .adv-photo-viewer__caption {
   padding: 6px 14px;
@@ -1394,6 +1404,8 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   cursor: pointer;
 }
 
+.adv-photo-viewer__close,
+.adv-photo-viewer__nav { z-index: 1; } /* 放大後的照片不能蓋住按鈕 */
 .adv-photo-viewer__close { top: 16px; right: 16px; font-size: 1.1rem; }
 .adv-photo-viewer__nav { top: 50%; transform: translateY(-50%); }
 .adv-photo-viewer__nav--prev { left: 12px; }
