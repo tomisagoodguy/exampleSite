@@ -23,3 +23,6 @@ photos-inbox/**/處理失敗.txt
 .obsidian/workspace*.json
 .obsidian/plugins/*/data.json
 .trash/
+
+# Obsidian 外掛本體（第三方 release 檔）不進版控，換電腦要重裝；啟用清單 community-plugins.json 仍追蹤
+.obsidian/plugins/
