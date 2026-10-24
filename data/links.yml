@@ -6,6 +6,9 @@
     - title: "房地稅務試算 (HTML)"
       url: "/tools/property-tax.html"
       description: "互動式房地稅務試算工具，包含房地拆價、所得試算與稅額估算。"
+    - title: "我能領什麼補助"
+      url: "https://subsidy-check-tw.pages.dev/"
+      description: "點選手上有的文件，查可能申請的補助、要準備什麼、打電話怎麼問，不收集個資。"
 - category: "地政實務"
   links:
     - title: "財政部稅務入口網"
@@ -266,6 +269,9 @@
     - title: "臺灣通識網General Education TW-開放式課程GET"
       url: "https://www.youtube.com/@generaleducationtw-get1274/playlists"
       description: "臺灣通識網General Education TW-開放式課程GET"
+    - title: "婦產科藍彥博｜Dr. Blue OBGYN"
+      url: "https://drblueobgyn.com/"
+      description: "用白話、實證的方式，解說婦科與孕產的常見問題。"
 - category: "部落格與個人"
   links:
     - title: "max的每一天"
