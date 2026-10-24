@@ -248,6 +248,53 @@
 .travel-day__gallery figure:hover img{transform:scale(1.05)}
 .travel-day__gallery figcaption{position:absolute;left:8px;bottom:8px;max-width:calc(100% - 16px);padding:3px 10px;font-size:.78rem;color:var(--ink);background:var(--card);border:2px solid var(--ink);border-radius:999px}
 
+/* ===== 路線長卷（day 內含 stop 的文章）：拿掉卡片框，左側虛線是路，站點與照片交錯 ===== */
+.tv .travel-day--route{background:none;border:0;box-shadow:none;border-radius:0;padding:0;margin:64px 0 0}
+.tv .travel-day--route::before,.tv .travel-day--route::after{display:none}
+.travel-day--route .travel-day__head{border-bottom:0;padding-bottom:0;margin-bottom:0}
+.tv .travel-day--route .travel-day__place{font-size:1.65rem}
+.travel-day--route .travel-day__body{position:relative;margin:14px 0 0 12px;padding:6px 0 4px 34px;border-left:3px dashed var(--line)}
+.travel-day--route .travel-day__body>p{font-size:1.02rem}
+.travel-day,.travel-stop{scroll-margin-top:110px}
+
+.travel-ride{margin:10px 0 10px -52px;position:relative;z-index:1}
+.travel-ride span{display:inline-block;background:var(--water-l);border:2px solid var(--ink);border-radius:999px;padding:3px 14px;font-size:.84rem;color:var(--ink);box-shadow:0 2px 0 var(--ink)}
+
+.travel-stop{position:relative;margin:18px 0 40px}
+.tv .travel-stop__name{position:relative;font-size:1.22rem;color:var(--ink);margin:0 0 6px;line-height:1.6}
+.travel-stop__name::before{content:"";position:absolute;left:-45px;top:.42em;width:18px;height:18px;border-radius:50%;background:var(--coral);border:2.5px solid var(--ink)}
+.travel-stop__body p{line-height:1.95;color:var(--ink-soft);margin:.5em 0;font-size:1rem}
+.travel-stop__body ul{color:var(--ink-soft);margin:.4em 0;padding-left:1.3em}
+
+.travel-stop__hero{margin:16px 0 12px;border:var(--bd);border-radius:18px;overflow:hidden;background:var(--chip);box-shadow:var(--sh)}
+.travel-stop__hero img{display:block;width:100%;height:auto;max-height:540px;object-fit:cover}
+.travel-stop__hero.is-tall{max-width:min(100%,380px)}
+.travel-stop__hero.is-tall img{max-height:none}
+.travel-stop__hero figcaption{padding:8px 14px;font-size:.86rem;color:var(--ink-soft);background:var(--card);border-top:2px solid var(--ink)}
+
+.travel-strip{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;padding:4px 4px 14px 2px;margin-right:-22px;scrollbar-width:thin;scrollbar-color:var(--line) transparent;-webkit-overflow-scrolling:touch}
+.travel-strip:empty{display:none}
+.travel-strip figure{flex:0 0 auto;margin:0;scroll-snap-align:start}
+.travel-strip a{display:block;border:var(--bd);border-radius:14px;overflow:hidden;background:var(--chip)}
+.travel-strip img{display:block;height:170px;width:auto;transition:transform .4s ease}
+.travel-strip a:hover img{transform:scale(1.04)}
+.travel-strip figcaption{width:0;min-width:100%;font-size:.76rem;color:var(--muted);margin-top:6px;line-height:1.5}
+
+/* 底部路線列：讀到哪一站亮到哪一站（導覽列固定在頂端，所以放底部） */
+.tv-route{position:fixed;left:50%;bottom:14px;z-index:900;width:min(760px,calc(100% - 24px));transform:translate(-50%,calc(100% + 24px));transition:transform .35s ease;background:var(--card);border:var(--bd);border-radius:999px;box-shadow:var(--sh);font-family:"Huninn","PingFang TC","Microsoft JhengHei",sans-serif}
+.tv-route.is-on{transform:translate(-50%,0)}
+.tv-route__track{display:flex;align-items:center;gap:4px;overflow-x:auto;padding:8px 14px;scrollbar-width:none}
+.tv-route__track::-webkit-scrollbar{display:none}
+.tv-route button{flex:0 0 auto;border:0;background:none;font:inherit;color:var(--muted);font-size:.84rem;padding:4px 10px;border-radius:999px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tv-route button::before{content:"";width:9px;height:9px;border-radius:50%;border:2px solid var(--line);background:var(--card)}
+.tv-route button.is-past{color:var(--ink-soft)}
+.tv-route button.is-past::before{border-color:var(--ink);background:var(--ink)}
+.tv-route button.is-now{color:var(--ink);background:var(--coral-l);box-shadow:inset 0 0 0 2px var(--ink)}
+.tv-route button.is-now::before{border-color:var(--ink);background:var(--coral)}
+.tv-route .tv-route__date{flex:0 0 auto;font-size:.72rem;color:var(--ink);background:var(--yellow);border:2px solid var(--ink);border-radius:8px;padding:1px 7px;margin-left:6px}
+.tv-route .tv-route__date:first-child{margin-left:0}
+.tv-route__sep{flex:0 0 auto;width:14px;border-top:2px dashed var(--line)}
+
 /* ===== 花費儀表板 ===== */
 .dash{background:var(--card);border-radius:24px;padding:34px 30px;margin:54px 0;border:3px solid var(--ink);box-shadow:6px 6px 0 var(--ink)}
 .tv .dash__head h2{color:var(--ink);font-size:1.6rem;margin:0 0 4px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
@@ -319,10 +366,18 @@
   .travel-day__spend{margin-left:0;width:100%}
   .travel-day__gallery{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
   .travel-day__gallery img{height:130px}
+  .tv .travel-day--route{margin-top:48px}
+  .tv .travel-day--route .travel-day__place{font-size:1.35rem}
+  .travel-day--route .travel-day__body{margin-left:6px;padding-left:26px}
+  .travel-ride{margin-left:-40px}
+  .travel-stop__name::before{left:-37px}
+  .travel-strip img{height:140px}
+  .tv-route{left:12px;width:calc(100% - 88px);transform:translateY(calc(100% + 24px))}
+  .tv-route.is-on{transform:translateY(0)}
 }
 
 @media (prefers-reduced-motion: reduce){
-  .travel-day__gallery img,.tv-nav a{transition:none}
+  .travel-day__gallery img,.tv-nav a,.travel-strip img,.tv-route{transition:none}
 }
 </style>
 
@@ -376,6 +431,61 @@ document.addEventListener('DOMContentLoaded', function () {
           y: { grid: { color: GRID }, ticks: { color: TXT, callback: function(v){return '¥'+(v/1000)+'k';} } } } }
     });
   }
+});
+</script>
+<script defer>
+/* 底部路線列：有 stop 的文章才出現。沒有 stop 的天以當天地點當一站。 */
+document.addEventListener('DOMContentLoaded', function () {
+  var prose = document.querySelector('.tv-prose');
+  if (!prose || !prose.querySelector('.travel-stop')) return;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var nav = document.createElement('nav');
+  nav.className = 'tv-route';
+  nav.setAttribute('aria-label', '路線進度');
+  var track = document.createElement('div');
+  track.className = 'tv-route__track';
+  nav.appendChild(track);
+
+  var marks = [];
+  prose.querySelectorAll('.travel-day').forEach(function (day, i) {
+    if (i) { var sep = document.createElement('span'); sep.className = 'tv-route__sep'; track.appendChild(sep); }
+    var date = document.createElement('span');
+    date.className = 'tv-route__date';
+    date.textContent = day.dataset.date || '';
+    track.appendChild(date);
+    var stops = day.querySelectorAll('.travel-stop');
+    var targets = stops.length ? Array.prototype.slice.call(stops) : [day];
+    targets.forEach(function (el) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = el.dataset.stop || el.dataset.place || '';
+      b.addEventListener('click', function () { el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); });
+      track.appendChild(b);
+      marks.push({ el: el, btn: b });
+    });
+  });
+  prose.closest('.tv').appendChild(nav); // 掛在 .tv 底下才拿得到色票變數
+
+  var current = -1, ticking = false;
+  function update() {
+    ticking = false;
+    var vh = window.innerHeight, line = vh * 0.4;
+    var box = prose.getBoundingClientRect();
+    nav.classList.toggle('is-on', box.top < line && box.bottom > vh * 0.6);
+    var idx = 0;
+    for (var i = 0; i < marks.length; i++) { if (marks[i].el.getBoundingClientRect().top < line) idx = i; }
+    if (idx === current) return;
+    current = idx;
+    marks.forEach(function (m, i) {
+      m.btn.classList.toggle('is-past', i < idx);
+      m.btn.classList.toggle('is-now', i === idx);
+    });
+    var b = marks[idx].btn;
+    track.scrollTo({ left: b.offsetLeft - track.clientWidth / 2 + b.offsetWidth / 2, behavior: reduce ? 'auto' : 'smooth' });
+  }
+  window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  window.addEventListener('resize', update);
+  update();
 });
 </script>
 {{ end }}

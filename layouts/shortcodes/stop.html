@@ -1,0 +1,34 @@
+{{- /* 用法（放在 day 裡）：
+{{< stop name="國王湖" ride="🚌 約 38km"
+        imgs="D2-03_xxx.jpg|說明;D2-01_xxx.jpg|說明" >}}
+這一站的敘述（markdown）...
+{{< /stop >}}
+第一張照片是大圖，其餘排成可橫向滑動的底片條；點照片開燈箱。
+輸出不能有空行：外層 day 會把它當 Markdown 裡的 HTML 區塊，空行會截斷區塊。
+*/ -}}
+{{- $name := .Get "name" -}}
+{{- $gall := printf "stop-%d" .Ordinal -}}
+{{- with .Get "ride" }}<div class="travel-ride"><span>{{ . }}</span></div>{{ end -}}
+<section class="travel-stop" data-stop="{{ $name }}">
+<h3 class="travel-stop__name">{{ $name }}</h3>
+<div class="travel-stop__body">{{ .Page.RenderString (dict "display" "block") .Inner | replaceRE "\n\n+" "\n" | safeHTML }}</div>
+{{- with .Get "imgs" -}}
+{{- $first := true -}}
+{{- range split . ";" -}}
+{{- $parts := split (trim . " ") "|" -}}
+{{- $file := trim (index $parts 0) " " -}}
+{{- $cap := "" }}{{ if gt (len $parts) 1 }}{{ $cap = trim (index $parts 1) " " }}{{ end -}}
+{{- with $.Page.Resources.GetMatch $file -}}
+{{- if $first }}
+<figure class="travel-stop__hero{{ if gt .Height .Width }} is-tall{{ end }}"><a class="venobox" data-gall="{{ $gall }}" href="{{ .RelPermalink }}" title="{{ $cap }}"><img loading="lazy" src="{{ .RelPermalink }}" width="{{ .Width }}" height="{{ .Height }}" alt="{{ $cap | default $file }}"></a>{{ with $cap }}<figcaption>{{ . }}</figcaption>{{ end }}</figure>
+<div class="travel-strip">
+{{- $first = false -}}
+{{- else -}}
+{{- $t := .Resize "x400" }}
+<figure><a class="venobox" data-gall="{{ $gall }}" href="{{ .RelPermalink }}" title="{{ $cap }}"><img loading="lazy" src="{{ $t.RelPermalink }}" width="{{ $t.Width }}" height="{{ $t.Height }}" alt="{{ $cap | default $file }}"></a>{{ with $cap }}<figcaption>{{ . }}</figcaption>{{ end }}</figure>
+{{- end -}}
+{{- else }}<!-- 找不到圖片：{{ $file }} -->{{ end -}}
+{{- end -}}
+{{- if not $first }}</div>{{ end -}}
+{{- end }}
+</section>

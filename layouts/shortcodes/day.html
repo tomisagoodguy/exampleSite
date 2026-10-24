@@ -3,8 +3,10 @@
        imgs="新千歲機場.jpg|抵達新千歲機場;本次的租車.jpg|這趟的愛車" >}}
 敘述文字（markdown）...
 {{< /day >}}
+內含 {{< stop >}} 的文章改走「路線長卷」版型（travel-day--route），站點與照片交錯排列。
 */ -}}
-<section class="travel-day">
+{{- $route := in .Page.RawContent "{{< stop" -}}
+<section class="travel-day{{ if $route }} travel-day--route{{ end }}" data-place="{{ .Get "place" }}" data-date="{{ .Get "date" }}">
   <div class="travel-day__head">
     <span class="travel-day__date">{{ .Get "date" }}{{ with .Get "weekday" }}<small>星期{{ . }}</small>{{ end }}</span>
     <h2 class="travel-day__place">{{ .Get "place" }}</h2>
