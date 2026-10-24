@@ -259,6 +259,8 @@ tags:
 {{< figure src="..." >}}           # ❌ 禁止：此主題不支援
 ```
 
+- **照片說明一律放在照片外面（下方說明列），不要疊在照片上**，也不要刪掉說明。遊記 `day` / `stop` shortcode 的 `imgs="檔名|說明"` 會輸出成照片下方的 `figcaption`；新增照片版型時，`figcaption` 不用 `position:absolute` 疊在圖上，參考 `layouts/travel/single.html` 的 `.travel-day__gallery figcaption`
+
 ### Markdown 表格
 
 pipe 左右必須有空格，separator 使用 `---`：
