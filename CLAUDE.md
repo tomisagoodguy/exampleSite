@@ -276,6 +276,13 @@ pipe 左右必須有空格，separator 使用 `---`：
 | 使用 Hugo 0.88+ 新功能 | 確認 Netlify 上 0.87.0 相容 |
 | 移除 `list.html` 裡 bundle 網址的 `?v={{ $assetVersion }}` | 保留：GitHub Pages 對 CSS/JS 設 `max-age=600` 且 bundle 檔名固定，拿掉後部署完瀏覽器會吃舊版 |
 
+### 全站樣式（2026-10-24 統一為日系繪本風，只用淺色）
+
+- 主站覆寫層在 `static/css/custom.css` **最後一段**「日系繪本風（全站）」，token 是 `--pb-*`（色值與破關地圖 `--adv-*` 相同）；靠 cascade 蓋掉上方舊的玻璃／3D／漸層樣式，新元件直接用 `--pb-*`，不要再引用 `--accent-*`
+- Huninn 由 `layouts/partials/head.html` 的 Google Fonts 載入，Huninn 只有一種字重，標題不要靠 `font-weight: 700` 做層次
+- **沒有夜間模式**：`.theme-switch-wrapper` 被藏起來（開關在 `themes/` 裡，不能改），`static/js/theme-switch.js` 只負責清掉 `dark-mode` class；`custom.css` 上方殘留的 `body.dark-mode` 規則不會再生效
+- 旅遊筆記版型 `layouts/travel/single.html` 的 `<style>` 自帶同一組色（`.tv` 內的變數），圖表配色也在該檔
+
 ### 破關地圖樣式（2026-10-24 改為日系繪本風）
 
 - 與台南旅行介紹頁同一套：Huninn 字型（`list.html` 由 Google Fonts 載入）、和紙白 `--adv-paper`、墨灰 `--adv-ink` 2–3px 框、大圓角、珊瑚／山吹黃／水色／若竹綠平塗；token 全在 `map.css` 的 `:root`
@@ -302,5 +309,5 @@ pipe 左右必須有空格，separator 使用 `---`：
 
 ## Active Status
 
-- **最後更新**：2026-10-23
+- **最後更新**：2026-10-24
 - **已知問題**：無
