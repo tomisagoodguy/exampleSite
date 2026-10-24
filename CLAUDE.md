@@ -120,7 +120,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - **新增懶人包必填 `scenes` 與 `duration`**，否則篩選時永遠不會出現：`scenes text[]` 只接受 `mountain` 山／`sea` 海／`city` 城鎮（可複選，農遊這類都不算就留空）；`duration` 只接受 `half` 半日／`day` 一日／`multi` 多日
 - **多日旅行拆成每天一條**，各天填同一個 `trip_key`（例如 `hualien-3d`），`sort_order` 要連號；篩選時同趟只要一天符合就整趟顯示，卡片自動標「第 n／m 天」（依 `sort_order` 排）
 - **同一天給兩條路線挑**：拆成兩條懶人包，標題寫「Day 3 路線 A：…」「Day 3 路線 B：…」（`data.ts` `guideDay()` 解析），卡片標「第 3／3 天・路線 A」，行程地圖各畫一條線、按鈕是「Day 3 A／B」；標題沒寫 `Day N` 的照 `sort_order` 第幾條算
-- 懶人包篩選列是季節｜場景｜天數擠在同一條橫捲列（`ui.ts` `renderGuideFilterBar`），三組可疊加，再點一次已選的按鈕即取消
+- 懶人包篩選列是季節｜場景｜天數放在同一列（`ui.ts` `renderGuideFilterBar`），三組可疊加，再點一次已選的按鈕即取消。手機橫捲；桌面 ≥900px 改換行（`list.css` 與 `#adv-idea-tiers` 同一條 media query），橫捲會把頭尾按鈕截一半、看起來像跑版
 - 圖卡上「N 條步道各自獨立」這種清單不是一日路線，依區域拆成幾條、摘要註明「挑 1–2 條走」，避免「照這個排行程」把全部排進同一天
 - 兩張表只開放 `SELECT`（RLS），寫入走 RPC：`dating_map_save_guide`（`saveGuide`，`p_id` 為 `null` 時新增，各站以 `p_stops` jsonb 陣列**整組換掉**，陣列順序＝`seq`）、`dating_map_delete_guide`（`deleteGuide`，各站 CASCADE）。入口是懶人包標題列「＋ 提案懶人包」與卡片展開後的「✏️ 修改／🗑️ 刪除」（`ui.ts` `openGuideModal`）；網頁提案會記 `proposed_by`（卡片顯示「🙋 誰 提案」）。表單沒有 `tags` / `trip_key` / `sort_order`，修改時 RPC 保留原值，多日旅行仍要用 SQL 補 `trip_key`
 - `must_try` / `cost` **只填來源原文有寫的**，不要自己估價；填了就別在 `tip` 重複同一句
