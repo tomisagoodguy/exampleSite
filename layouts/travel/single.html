@@ -270,6 +270,14 @@
 .travel-stop__hero img{display:block;width:100%;height:auto;max-height:540px;object-fit:cover}
 .travel-stop__hero.is-tall{max-width:min(100%,380px)}
 .travel-stop__hero.is-tall img{max-height:none}
+/* 直拍大圖：桌面左圖右文，手機維持上下排 */
+@media(min-width:681px){
+  .travel-stop--side .travel-stop__main{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:26px;row-gap:14px;align-items:start;margin-top:12px}
+  .travel-stop--side .travel-stop__hero{grid-column:1;grid-row:1 / span 2;margin:0;max-width:none}
+  .travel-stop--side .travel-stop__body{grid-column:2;grid-row:1}
+  .travel-stop--side .travel-strip{grid-column:2;grid-row:2;margin-right:0}
+  .travel-stop--side .travel-stop__body p:first-child{margin-top:0}
+}
 .travel-stop__hero figcaption{padding:8px 14px;font-size:.86rem;color:var(--ink-soft);background:var(--card);border-top:2px solid var(--ink)}
 
 .travel-strip{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;padding:4px 4px 14px 2px;margin-right:-22px;scrollbar-width:thin;scrollbar-color:var(--line) transparent;-webkit-overflow-scrolling:touch}
