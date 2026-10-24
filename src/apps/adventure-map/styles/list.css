@@ -1835,3 +1835,132 @@ button.adv-ach-place small {
   .adv-intro__text { font-size: 0.9rem; }
   .adv-search-input { font-size: 0.95rem; }
 }
+
+/* ─── 台灣縣市地圖選擇器（願望清單、懶人包的「🗺️ 地圖選」） ─── */
+.adv-cmap-mount[hidden] {
+  display: none;
+}
+
+.adv-cmap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 16px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  background: var(--adv-water-l);
+  border: 3px solid var(--adv-ink);
+  border-radius: var(--adv-r);
+}
+
+.adv-cmap-svg {
+  flex: 0 1 260px;
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+  margin: 0 auto;
+  overflow: visible;
+}
+
+/* 地圖右側（窄的時候在下方）：目前選了哪裡＋縣市按鈕列 */
+.adv-cmap-side {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.adv-cmap-hint {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  color: var(--adv-muted);
+}
+
+.adv-cmap-hint b {
+  font-weight: inherit;
+  color: var(--adv-ink);
+  font-size: 0.95rem;
+}
+
+.adv-cmap-clear {
+  font-family: inherit;
+  font-size: 0.75rem;
+  color: var(--adv-ink);
+  background: var(--adv-card);
+  border: 2px solid var(--adv-ink);
+  border-radius: 999px;
+  padding: 1px 10px;
+  cursor: pointer;
+}
+
+/* 懶人包頁夠寬，縣市按鈕直接換行排開；願望清單欄太窄，換行會把清單推很遠，維持橫捲 */
+@media (min-width: 900px) {
+  #adv-guide-map .adv-cmap-chips {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}
+
+.adv-cmap-county {
+  stroke: var(--adv-ink);
+  stroke-width: 0.8;
+  stroke-linejoin: round;
+  fill: var(--adv-paper);
+  transition: fill 0.15s;
+}
+
+.adv-cmap-county.lv0 { stroke: var(--adv-line); }
+.adv-cmap-county.lv1 { fill: var(--adv-coral-l); }
+.adv-cmap-county.lv2 { fill: #F7C3B8; }
+.adv-cmap-county.lv3 { fill: var(--adv-coral); }
+
+.adv-cmap-county[data-county] {
+  cursor: pointer;
+}
+
+.adv-cmap-county[data-county]:hover,
+.adv-cmap-county[data-county]:focus-visible {
+  fill: var(--adv-yellow);
+  outline: none;
+}
+
+.adv-cmap-county.is-selected {
+  fill: var(--adv-yellow);
+  stroke-width: 1.8;
+}
+
+.adv-cmap-num {
+  font-family: var(--adv-font);
+  font-size: 9px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  fill: var(--adv-ink);
+  /* 和紙白描邊，小縣市擠在一起時數字還看得出來 */
+  paint-order: stroke;
+  stroke: var(--adv-paper);
+  stroke-width: 2.5px;
+  pointer-events: none;
+}
+
+.adv-cmap-num.is-selected {
+  font-size: 12px;
+}
+
+.adv-cmap-inset rect {
+  fill: transparent;
+  stroke: var(--adv-ink);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.adv-cmap-inset text {
+  font-family: var(--adv-font);
+  font-size: 8px;
+  fill: var(--adv-muted);
+}
+
+.adv-cmap-inset[data-county] {
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adv-cmap-county { transition: none; }
+}

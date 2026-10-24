@@ -104,6 +104,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - 新增時若沒給 `region` / `is_indoor`，trigger `dating_map_places_fill_attrs` 會依座標（`dating_map_guess_region` 矩形框，邊界附近不準）與分類補預設值；大批匯入應自行用 ArcGIS `reverseGeocode` 反查縣市後寫入
 - 前端修改這兩個欄位走獨立 RPC `dating_map_set_attrs`（`setPlaceAttrs`），沒有改 `dating_map_update` 的參數簽章
 - `area` 走 RPC `dating_map_set_area`（`setPlaceArea`）。座標一變，trigger `dating_map_places_clear_area` 會把它清空，所以前端在 `updatePlace` **之後**才寫回；`geocode.ts` `lookupArea` 先取地址開頭的「縣市＋鄉鎮區」，沒有再用 ArcGIS `reverseGeocode`（`featureTypes=Postal`，預設的 POI 會回「九份」這種聚落名；Postal 只給到縣時改用 `Locality`）。市中心有些點 ArcGIS 只回縣市，大批補資料時改用 Nominatim reverse（`zoom=14`）
+- **🗺️ 地圖選**（願望清單分組列最前面、懶人包篩選列「全部」右邊）：`countymap.ts` `renderCountyMap` 畫台灣縣市 SVG，依數量深淺上色，點縣市（或下方縣市按鈕列）選取、再點取消；縣市取 `area` 前三字。願望清單切到地圖選時取代出門成本分組，組內依鄉鎮區分；懶人包依各站地點的縣市篩，可與季節／場景／天數疊加，多日旅行一天命中就整趟留下。縣市形狀在 `taiwan-shape.ts`（`scripts/build-taiwan-shape.py` 由 taiwan-atlas 產生，勿手改；金門、馬祖平移放大到左上插圖框）
 - **願望清單分組**（`data.ts` `IDEA_TIER` / `ideaTier()`，以台北為起點）：🚇 下班就能去＝北北基有填捷運站，或在台北市／新北捷運沿線區且不是 `scenery`；🚗 週末一日＝北北基其他＋桃竹苗；🧳 排趟旅行＝其餘地區；💡 活動點子＝`region` 為 `null`。組內再依 `area` 收合（`ui.ts` `groupIdeas`）：🧳 依縣市分，超過 30 筆的縣市（台中）改依鄉鎮區；💡 依分類分
 
 **行程懶人包**（「📚 懶人包」分頁，別人分享的一日路線）存在兩張表：
@@ -219,6 +220,8 @@ src/
 │   ├── voice.ts            # 懶人包語音導覽（Web Speech API，逐段朗讀＋目前站狀態）
 │   ├── poster.ts           # 行程海報：Canvas 繪卷海報／時程甘特＋匯出 PNG（不畫地圖圖磚，避免 canvas tainted）
 │   ├── tripmap.ts          # 旅行行程地圖：分天編號路線＋箭頭、播放動畫、吃的／逛的圖層、站點附近資訊卡、定位
+│   ├── countymap.ts        # 台灣縣市地圖選擇器（願望清單、懶人包的「🗺️ 地圖選」）
+│   ├── taiwan-shape.ts     # 縣市 SVG 路徑（scripts/build-taiwan-shape.py 產生）
 │   ├── photos.ts           # 回憶照片：讀 window.DATING_MAP_PHOTOS、卡片縮圖列、燈箱
 │   ├── ui.ts               # 面板 UI 邏輯（面板、懶人包時間軸、成就徽章、Modal、Toast）
 │   └── index.ts            # 入口，組合各模組

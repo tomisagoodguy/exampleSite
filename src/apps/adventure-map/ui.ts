@@ -22,6 +22,7 @@ import {
 import { speechSupported, speak, stopSpeech, currentSpeech, setSpeechListener, SpeechState } from './voice';
 import { PosterData, PosterStop, drawPoster, drawGantt, ganttAvailable, ensurePosterFonts, exportPng } from './poster';
 import { photoStripHTML } from './photos';
+import { renderCountyMap, countyOf } from './countymap';
 
 /** 依實際出現在資料中的分類，動態產生篩選 chips */
 export function renderFilterBar(
@@ -379,6 +380,9 @@ function setupDayDragAndDrop(mount: HTMLElement, onReorder: (dayKey: string, ord
 }
 
 let ideaTierSel: IdeaTier = 'mrt';
+/** 願望清單的另一種選法：在台灣地圖上點縣市，取代出門成本分組 */
+let ideaMapOn = false;
+let ideaCounty: string | null = null;
 /** 記住展開的區域；Realtime 更新重繪時才不會整個收起來 */
 const openIdeaGroups = new Set<string>();
 /** 分組內地點不超過這個數（例如搜尋後）就全部展開，不必一個個點 */
@@ -397,7 +401,7 @@ const TRIP_SPLIT_COUNTY = 30;
  * 近的（捷運、週末）依鄉鎮區分組，一組約等於一次約會能逛完的範圍；
  * 旅行依縣市分組（排旅行是先決定去哪個縣）；活動點子沒有地點，改依分類
  */
-function groupIdeas(tier: IdeaTier, ideas: PlaceEntry[]): IdeaGroup[] {
+function groupIdeas(tier: IdeaTier | 'district', ideas: PlaceEntry[]): IdeaGroup[] {
   const countyCount = new Map<string, number>();
   ideas.forEach(p => p.area && countyCount.set(p.area.slice(0, 3), (countyCount.get(p.area.slice(0, 3)) ?? 0) + 1));
   const groups = new Map<string, IdeaGroup>();
@@ -432,11 +436,13 @@ function groupIdeas(tier: IdeaTier, ideas: PlaceEntry[]): IdeaGroup[] {
 
 /** 收合的區域不產生地點列，展開時才補上並綁定按鈕；幾百筆不會一次塞進 DOM */
 function renderIdeaGroups(mount: HTMLElement, ideas: PlaceEntry[], actions: CardActions) {
-  const groups = groupIdeas(ideaTierSel, ideas);
+  // 地圖選法已經選了縣市，組內直接依鄉鎮區分
+  const groups = groupIdeas(ideaMapOn ? 'district' : ideaTierSel, ideas);
   const openAll = ideas.length <= IDEA_OPEN_ALL;
+  const prefix = ideaMapOn ? 'map' : ideaTierSel;
   mount.innerHTML = groups
     .map(g => {
-      const id = `${ideaTierSel}:${g.key}`;
+      const id = `${prefix}:${g.key}`;
       return `
         <details class="adv-idea-group" data-group="${id}" ${openAll || openIdeaGroups.has(id) ? 'open' : ''}>
           <summary class="adv-idea-group-head">
@@ -469,6 +475,31 @@ function renderIdeaGroups(mount: HTMLElement, ideas: PlaceEntry[], actions: Card
   });
 }
 
+/** 地圖選法：台灣縣市地圖＋縣市按鈕列，回傳選定縣市的地點（還沒選就是空的） */
+function renderIdeaMap(ideas: PlaceEntry[], rerender: () => void): PlaceEntry[] {
+  const mount = document.getElementById('adv-idea-map');
+  if (!mount) return [];
+  mount.hidden = !ideaMapOn;
+  if (!ideaMapOn) {
+    mount.innerHTML = '';
+    return [];
+  }
+  const counts = new Map<string, number>();
+  ideas.forEach(p => {
+    const county = countyOf(p.area);
+    if (county) counts.set(county, (counts.get(county) ?? 0) + 1);
+  });
+  // 篩選後選定的縣市沒有地點了，就回到「還沒選」
+  if (ideaCounty && !counts.get(ideaCounty)) ideaCounty = null;
+  renderCountyMap(mount, counts, ideaCounty, '個', (county) => {
+    ideaCounty = county;
+    rerender();
+  });
+  const chips = mount.querySelector<HTMLElement>('.adv-cmap-chips');
+  if (chips) bindHorizontalWheel(chips);
+  return ideaCounty ? ideas.filter(p => countyOf(p.area) === ideaCounty) : [];
+}
+
 /** 願望清單分組按鈕；目前分組被篩選成空的時，自動跳到第一個有地點的分組 */
 function renderIdeaTiers(ideas: PlaceEntry[], rerender: () => void): PlaceEntry[] {
   const tiers = Object.keys(IDEA_TIER) as IdeaTier[];
@@ -479,21 +510,31 @@ function renderIdeaTiers(ideas: PlaceEntry[], rerender: () => void): PlaceEntry[
   const mount = document.getElementById('adv-idea-tiers');
   if (mount) {
     bindHorizontalWheel(mount);
-    mount.innerHTML = tiers
-      .filter(t => counts[t] > 0)
-      .map(t => {
-        const active = t === ideaTierSel;
-        return `<button class="adv-guide-season ${active ? 'is-active' : ''}" data-idea-tier="${t}" aria-pressed="${active}" title="${IDEA_TIER[t].hint}">${IDEA_TIER[t].label}<span class="adv-guide-season-count">${counts[t]}</span></button>`;
-      })
-      .join('');
+    // 地圖選法放最前面：分組按鈕在手機上會超出畫面，放後面就看不到
+    mount.innerHTML =
+      `<button class="adv-guide-season adv-cmap-toggle ${ideaMapOn ? 'is-active' : ''}" data-idea-map aria-pressed="${ideaMapOn}" title="在台灣地圖上點縣市挑地方">🗺️ 地圖選</button>
+      <span class="adv-guide-filter-sep" aria-hidden="true"></span>` +
+      tiers
+        .filter(t => counts[t] > 0)
+        .map(t => {
+          const active = !ideaMapOn && t === ideaTierSel;
+          return `<button class="adv-guide-season ${active ? 'is-active' : ''}" data-idea-tier="${t}" aria-pressed="${active}" title="${IDEA_TIER[t].hint}">${IDEA_TIER[t].label}<span class="adv-guide-season-count">${counts[t]}</span></button>`;
+        })
+        .join('');
     mount.querySelectorAll<HTMLElement>('[data-idea-tier]').forEach(el => {
       el.addEventListener('click', () => {
         ideaTierSel = el.dataset.ideaTier as IdeaTier;
+        ideaMapOn = false;
         rerender();
       });
     });
+    mount.querySelector('[data-idea-map]')?.addEventListener('click', () => {
+      ideaMapOn = !ideaMapOn;
+      rerender();
+    });
   }
-  return ideas.filter(p => ideaTier(p) === ideaTierSel);
+  const mapped = renderIdeaMap(ideas, rerender);
+  return ideaMapOn ? mapped : ideas.filter(p => ideaTier(p) === ideaTierSel);
 }
 
 export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
@@ -508,6 +549,7 @@ export function renderSections(allPlaces: PlaceEntry[], actions: CardActions) {
 
   if (ideaMount) {
     if (ideas.length) renderIdeaGroups(ideaMount, ideas, actions);
+    else if (ideaMapOn && !ideaCounty) ideaMount.innerHTML = `<p class="adv-empty">在上面的地圖點一個縣市，這裡就會列出那裡的地點</p>`;
     else ideaMount.innerHTML = `<p class="adv-empty">目前沒有這個分類的願望清單項目</p>`;
   }
 
@@ -763,6 +805,44 @@ function tripDayLabel(guide: Guide, all: Guide[]): string {
   return `🧳 第 ${nums[days.indexOf(guide)]}／${new Set(nums).size} 天${route ? `・路線 ${route}` : ''}`;
 }
 
+/** 懶人包的地圖選法：與季節／場景／天數疊加，依各站地點所在縣市篩選 */
+let guideMapOn = false;
+let guideCounty: string | null = null;
+
+/** 一條路線經過的縣市（由各站地點的 area 取） */
+function guideCounties(guide: Guide, placeById: Map<number, PlaceEntry>): Set<string> {
+  const counties = new Set<string>();
+  guide.stops.forEach((s) => {
+    const county = s.place_id != null ? countyOf(placeById.get(s.place_id)?.area) : null;
+    if (county) counties.add(county);
+  });
+  return counties;
+}
+
+/** 同 filterGuideList：多日旅行只要其中一天經過該縣市，整趟都留下 */
+function filterGuidesByCounty(guides: Guide[], county: string, placeById: Map<number, PlaceEntry>): Guide[] {
+  const hit = (g: Guide) => guideCounties(g, placeById).has(county);
+  const tripHit = new Set(guides.filter((g) => g.trip_key && hit(g)).map((g) => g.trip_key));
+  return guides.filter((g) => (g.trip_key ? tripHit.has(g.trip_key) : hit(g)));
+}
+
+function renderGuideMap(guides: Guide[], placeById: Map<number, PlaceEntry>, rerender: () => void) {
+  const mount = document.getElementById('adv-guide-map');
+  if (!mount) return;
+  mount.hidden = !guideMapOn;
+  if (!guideMapOn) {
+    mount.innerHTML = '';
+    return;
+  }
+  const counts = new Map<string, number>();
+  guides.forEach((g) => guideCounties(g, placeById).forEach((c) => counts.set(c, (counts.get(c) ?? 0) + 1)));
+  if (guideCounty && !counts.get(guideCounty)) guideCounty = null;
+  renderCountyMap(mount, counts, guideCounty, '條路線', (county) => {
+    guideCounty = county;
+    rerender();
+  });
+}
+
 /** 季節｜場景｜天數 擠在同一條橫捲列，手機首屏不多佔兩排；再點一次已選的按鈕即取消 */
 function renderGuideFilterBar(guides: Guide[], current: GuideFilter, onChange: (next: GuideFilter) => void) {
   const bar = document.getElementById('adv-guide-seasons');
@@ -780,6 +860,7 @@ function renderGuideFilterBar(guides: Guide[], current: GuideFilter, onChange: (
 
   bar.innerHTML = [
     `<button class="adv-guide-season ${noneActive ? 'is-active' : ''}" data-gf-reset aria-pressed="${noneActive}">全部<span class="adv-guide-season-count">${guides.length}</span></button>`,
+    `<button class="adv-guide-season adv-cmap-toggle ${guideMapOn ? 'is-active' : ''}" data-guide-map aria-pressed="${guideMapOn}" title="在台灣地圖上點縣市挑路線">🗺️ 地圖選</button>`,
     sep,
     ...(Object.entries(SEASON_LABEL) as [Season, string][]).map(([v, l]) => chip('season', v, l)),
     chip('season', 'anytime', '全年皆宜'),
@@ -790,6 +871,11 @@ function renderGuideFilterBar(guides: Guide[], current: GuideFilter, onChange: (
   ].join('');
 
   bar.querySelector('[data-gf-reset]')?.addEventListener('click', () => onChange(GUIDE_FILTER_ALL));
+  bar.querySelector('[data-guide-map]')?.addEventListener('click', () => {
+    guideMapOn = !guideMapOn;
+    if (!guideMapOn) guideCounty = null;
+    onChange(current);
+  });
   bar.querySelectorAll<HTMLElement>('[data-gf-key]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const key = btn.dataset.gfKey as Key;
@@ -817,9 +903,11 @@ export function renderGuides(
   if (!mount) return;
 
   renderGuideFilterBar(searchedGuides, filter, onFilterChange);
-  const guides = filterGuideList(searchedGuides, filter);
-
   const placeById = new Map(allPlaces.map((p) => [p.id, p]));
+  const filtered = filterGuideList(searchedGuides, filter);
+  renderGuideMap(filtered, placeById, () => onFilterChange(filter));
+  const guides = guideMapOn && guideCounty ? filterGuidesByCounty(filtered, guideCounty, placeById) : filtered;
+
   const openIds = new Set(
     Array.from(mount.querySelectorAll('.adv-guide-detail:not([hidden])')).map((el) => el.id)
   );

@@ -443,7 +443,8 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
 @media (min-width: 900px) {
   .adv-board {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    /* minmax(0, …)：欄內有橫捲列（例如縣市地圖的按鈕列）時，不讓內容把欄撐寬 */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     align-items: start;
     gap: 4px;
     padding: 8px 8px 0;
