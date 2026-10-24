@@ -3,6 +3,7 @@
        imgs="新千歲機場.jpg|抵達新千歲機場;本次的租車.jpg|這趟的愛車" >}}
 敘述文字（markdown）...
 {{< /day >}}
+說明只放進 alt，不顯示在照片上。
 內含 {{< stop >}} 的文章改走「路線長卷」版型（travel-day--route），站點與照片交錯排列。
 */ -}}
 {{- $route := in .Page.RawContent "{{< stop" -}}
@@ -27,7 +28,6 @@
       {{ if $img }}
       <figure>
         <img loading="lazy" src="{{ $img.RelPermalink }}" alt="{{ $cap | default $name }}">
-        {{ with $cap }}<figcaption>{{ . }}</figcaption>{{ end }}
       </figure>
       {{ else }}<!-- 找不到圖片：{{ $name }} -->{{ end }}
       {{ end }}
