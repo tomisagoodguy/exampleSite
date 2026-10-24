@@ -38,7 +38,7 @@ export function renderFilterBar(
   const chipHTML = (cat: string, label: string, color?: string) => `
     <button class="adv-chip ${cat === currentCat ? 'adv-chip--active' : ''}"
             data-cat="${cat}"
-            style="${color && cat === currentCat ? `background:${color};border-color:${color};` : ''}">
+            ${color ? `style="--cat-color:${color}"` : ''}>
       ${label}
     </button>
   `;
@@ -604,7 +604,7 @@ function guideRouteUrl(guide: Guide, placeById: Map<number, PlaceEntry>): string
 
 function guideStopHTML(stop: GuideStop, place: PlaceEntry | undefined, index: number): string {
   const config = place ? CATEGORY_CONFIG[place.category] : undefined;
-  const color = config?.color || 'var(--adv-brown-light)';
+  const color = config?.color || 'var(--adv-muted)';
   const meta = place ? metaLine(place) : '';
 
   return `
@@ -1203,7 +1203,7 @@ export function openNextTripModal(allPlaces: PlaceEntry[]): void {
   if (!confirmed.length) {
     body.innerHTML = `
       <h3>📅 最近行程</h3>
-      <p style="font-size:0.9rem;color:var(--adv-brown-light);margin:0 0 4px;">還沒有定案的行程，去「提案中」按 ✅ 定案吧！</p>
+      <p style="font-size:0.9rem;color:var(--adv-muted);margin:0 0 4px;">還沒有定案的行程，去「提案中」按 ✅ 定案吧！</p>
       <div class="adv-modal-actions">
         <button class="adv-modal-btn adv-modal-btn--primary" id="adv-next-trip-close">好</button>
       </div>
@@ -1229,7 +1229,7 @@ export function openNextTripModal(allPlaces: PlaceEntry[]): void {
       <a class="adv-card-btn adv-card-btn--primary" href="https://www.google.com/maps?q=${navQuery(next)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;">🗺️ 導航</a>
     </div>
     ${rest.length ? `
-      <p style="font-size:0.8rem;color:var(--adv-brown-light);margin:14px 0 6px;">之後還有 ${rest.length} 個定案行程</p>
+      <p style="font-size:0.8rem;color:var(--adv-muted);margin:14px 0 6px;">之後還有 ${rest.length} 個定案行程</p>
       <div class="adv-next-trip-list">
         ${rest.map(p => `<div class="adv-next-trip-row">${p.visit_date ? dayLabel(p.visit_date) : '📌 未排日期'} · ${p.name}</div>`).join('')}
       </div>
@@ -1290,7 +1290,7 @@ export function openIdentityModal(): Promise<Identity> {
 
     const { root, close } = openModal(`
       <h3>你是誰？</h3>
-      <p style="font-size:0.85rem;color:var(--adv-brown-light);margin:0 0 4px;">選一下，「我也想去」才知道要標記誰</p>
+      <p style="font-size:0.85rem;color:var(--adv-muted);margin:0 0 4px;">選一下，「我也想去」才知道要標記誰</p>
       <div class="adv-modal-actions">${buttonsHTML}</div>
     `);
 
@@ -1308,10 +1308,10 @@ export function openConfirmModal(message: string): Promise<boolean> {
   return new Promise((resolve) => {
     const { root, close } = openModal(`
       <h3>確定嗎？</h3>
-      <p style="font-size:0.9rem;color:var(--adv-brown);margin:0 0 4px;">${message}</p>
+      <p style="font-size:0.9rem;color:var(--adv-ink);margin:0 0 4px;">${message}</p>
       <div class="adv-modal-actions">
         <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-confirm-cancel">取消</button>
-        <button class="adv-modal-btn adv-modal-btn--primary" id="adv-confirm-ok" style="background:#C0392B;">確定刪除</button>
+        <button class="adv-modal-btn adv-modal-btn--primary" id="adv-confirm-ok" style="background:var(--adv-danger);color:#fff;">確定刪除</button>
       </div>
     `);
 
@@ -1447,7 +1447,7 @@ export function openPassphraseModal(errorMsg?: string): Promise<string | null> {
   return new Promise((resolve) => {
     const { root, close } = openModal(`
       <h3>輸入共用密碼</h3>
-      <p style="font-size:0.85rem;color:var(--adv-brown-light);margin:0 0 4px;">只有你們兩人知道的那組密碼</p>
+      <p style="font-size:0.85rem;color:var(--adv-muted);margin:0 0 4px;">只有你們兩人知道的那組密碼</p>
       <label>密碼</label>
       <input type="password" id="adv-pw-input" autocomplete="off" />
       ${errorMsg ? `<div class="adv-modal-error">${errorMsg}</div>` : ''}
@@ -1594,7 +1594,7 @@ export function openScheduleModal(title: string, defaultDate?: string): Promise<
   return new Promise((resolve) => {
     const { root, close } = openModal(`
       <h3>${title}</h3>
-      <p style="font-size:0.85rem;color:var(--adv-brown-light);margin:0 0 4px;">選哪一天去，之後可以在行程卡片上再拖曳排順序</p>
+      <p style="font-size:0.85rem;color:var(--adv-muted);margin:0 0 4px;">選哪一天去，之後可以在行程卡片上再拖曳排順序</p>
       <label>日期</label>
       <input type="date" id="adv-sch-date" value="${defaultDate || ''}" />
       <div class="adv-modal-actions">
@@ -1877,7 +1877,7 @@ export function showToast(message: string) {
   el.textContent = message;
   el.style.cssText = `
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    background: var(--adv-brown); color: #fff; padding: 10px 20px; border-radius: 100px;
+    background: var(--adv-ink); color: #fff; padding: 10px 20px; border-radius: 100px;
     font-size: 0.85rem; font-weight: 600; z-index: 10001; box-shadow: 0 8px 20px rgba(0,0,0,0.25);
     max-width: 90vw; text-align: center;
   `;

@@ -25,13 +25,9 @@ const MARKER_COLOR: Record<string, string> = {
 };
 const FALLBACK_COLOR = '#868e96';
 
-/** 每天的路線色；前三天和旅行介紹頁的三天配色一致，深色模式用介紹頁深色版的亮色，深灰底圖上才看得清楚 */
+/** 每天的路線色；前三天和旅行介紹頁的三天配色一致。破關地圖只用淺色，不跟站台夜間模式切換 */
 const DAY_COLORS = ['#11717c', '#a8620f', '#3a7536', '#7048e8', '#c2255c'];
-const DAY_COLORS_DARK = ['#52c1cc', '#e5a44c', '#85c47c', '#9775fa', '#f06595'];
-const dayColor = (day: number) => {
-  const colors = document.body.classList.contains('dark-mode') ? DAY_COLORS_DARK : DAY_COLORS;
-  return colors[(day - 1) % colors.length];
-};
+const dayColor = (day: number) => DAY_COLORS[(day - 1) % DAY_COLORS.length];
 
 /** 圖層：行程站（含住宿等其他）、吃的、可以逛的 */
 type LayerKey = 'stops' | 'eat' | 'see';
@@ -197,9 +193,8 @@ export function openTripMap(opts: TripMapOptions): void {
   const locateBtn = overlay.querySelector('[data-locate]') as HTMLButtonElement;
   const map = L.map(mapEl, { zoomControl: true, maxZoom: 17 }).setView([22.995, 120.2], 13);
   // 淺灰底圖（Esri，不用金鑰，路名已在底圖上）：OSM 預設圖磚滿是廟宇、店家圖示，我們的點會被淹沒；CARTO 已改成要金鑰。
-  // 不疊 World_Light_Gray_Reference：大比例尺時區名會被放大成整片模糊字。深色模式換同系列的深灰底圖
-  const basemap = document.body.classList.contains('dark-mode') ? 'World_Dark_Gray_Base' : 'World_Light_Gray_Base';
-  L.tileLayer(`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/${basemap}/MapServer/tile/{z}/{y}/{x}`, {
+  // 不疊 World_Light_Gray_Reference：大比例尺時區名會被放大成整片模糊字
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 17,
     maxNativeZoom: 16,
     attribution: 'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors',

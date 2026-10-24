@@ -5,8 +5,8 @@
   "start_url": "/adventure-map/",
   "scope": "/adventure-map/",
   "display": "standalone",
-  "background_color": "#FAF7F2",
-  "theme_color": "#5C3D2E",
+  "background_color": "#FFFCF6",
+  "theme_color": "#FFFCF6",
   "orientation": "portrait",
   "icons": [
     {
