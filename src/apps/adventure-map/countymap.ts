@@ -11,13 +11,15 @@ function fillLevel(count: number): number {
 /**
  * 台灣縣市地圖選擇器：點縣市＝選取，再點一次取消。
  * 金門、馬祖在左上角插圖框裡，點框也算；澎湖、新竹市、嘉義市這種小塊另有下方按鈕列可點。
+ * compact：窄欄（桌面願望清單）放不下 22 顆按鈕，改用下拉選單。
  */
 export function renderCountyMap(
   mount: HTMLElement,
   counts: Map<string, number>,
   selected: string | null,
   unit: string,
-  onSelect: (county: string | null) => void
+  onSelect: (county: string | null) => void,
+  compact = false
 ) {
   const insets = TAIWAN_INSETS.map((r) => {
     const n = counts.get(r.name) ?? 0;
@@ -42,14 +44,18 @@ export function renderCountyMap(
     .map((c) => `<text class="adv-cmap-num${c.name === selected ? ' is-selected' : ''}" x="${c.x}" y="${c.y}">${counts.get(c.name)}</text>`)
     .join('');
 
-  const chips = Array.from(counts.entries())
+  const ranked = Array.from(counts.entries())
     .filter(([, n]) => n > 0)
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-Hant'))
-    .map(([name, n]) => {
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-Hant'));
+  const picker = compact
+    ? `<select class="adv-cmap-select" aria-label="依縣市挑選">
+        <option value="">${selected ? '全部縣市' : '或從清單挑縣市…'}</option>
+        ${ranked.map(([name, n]) => `<option value="${name}" ${name === selected ? 'selected' : ''}>${name}（${n}）</option>`).join('')}
+      </select>`
+    : `<div class="adv-guide-seasons adv-cmap-chips" role="group" aria-label="依縣市挑選">${ranked.map(([name, n]) => {
       const active = name === selected;
       return `<button type="button" class="adv-guide-season ${active ? 'is-active' : ''}" data-county="${name}" aria-pressed="${active}">${name}<span class="adv-guide-season-count">${n}</span></button>`;
-    })
-    .join('');
+    }).join('')}</div>`;
 
   const hint = selected
     ? `<b>📍 ${selected}</b>　${counts.get(selected) ?? 0} ${unit}　<button type="button" class="adv-cmap-clear" data-county-clear>✕ 換一個</button>`
@@ -60,7 +66,7 @@ export function renderCountyMap(
       <svg class="adv-cmap-svg" viewBox="${TAIWAN_VIEWBOX}" role="group" aria-label="台灣縣市地圖">${insets}${shapes}${badges}</svg>
       <div class="adv-cmap-side">
         <p class="adv-cmap-hint">${hint}</p>
-        <div class="adv-guide-seasons adv-cmap-chips" role="group" aria-label="依縣市挑選">${chips}</div>
+        ${picker}
       </div>
     </div>`;
 
@@ -76,6 +82,9 @@ export function renderCountyMap(
     });
   });
   mount.querySelector('[data-county-clear]')?.addEventListener('click', () => onSelect(null));
+  mount.querySelector<HTMLSelectElement>('.adv-cmap-select')?.addEventListener('change', (e) => {
+    onSelect((e.target as HTMLSelectElement).value || null);
+  });
 }
 
 /** 「台北市大安區」→「台北市」；沒有區域回 null */

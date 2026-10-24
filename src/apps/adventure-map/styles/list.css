@@ -1899,6 +1899,26 @@ button.adv-ach-place small {
   }
 }
 
+.adv-cmap-select {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--adv-ink);
+  background: var(--adv-card);
+  border: 2px solid var(--adv-ink);
+  border-radius: 999px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+
+/* 桌面願望清單欄只有約 370px，橫捲會把按鈕截一半，看起來像跑版；改成換行 */
+@media (min-width: 900px) {
+  #adv-idea-tiers {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}
+
 .adv-cmap-county {
   stroke: var(--adv-ink);
   stroke-width: 0.8;

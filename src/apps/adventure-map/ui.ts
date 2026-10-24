@@ -494,9 +494,7 @@ function renderIdeaMap(ideas: PlaceEntry[], rerender: () => void): PlaceEntry[] 
   renderCountyMap(mount, counts, ideaCounty, '個', (county) => {
     ideaCounty = county;
     rerender();
-  });
-  const chips = mount.querySelector<HTMLElement>('.adv-cmap-chips');
-  if (chips) bindHorizontalWheel(chips);
+  }, true);
   return ideaCounty ? ideas.filter(p => countyOf(p.area) === ideaCounty) : [];
 }
 
