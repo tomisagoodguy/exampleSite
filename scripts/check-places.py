@@ -51,7 +51,8 @@ REVERSE_URL = (
 # 台灣本島＋澎金馬、綠島蘭嶼的外框
 TW_LAT = (21.8, 26.5)
 TW_LNG = (118.0, 122.1)
-AREA_RE = re.compile(r"^(.{2}[市縣])(.{1,3}?[區鄉鎮市])$")
+# (?!\1) 擋掉「台北市台北市」：ArcGIS 門牌結果的 City 欄位有時是縣市本身
+AREA_RE = re.compile(r"^(.{2}[市縣])(?!\1)(.{1,3}?[區鄉鎮市])$")
 LEGACY_CATEGORIES = {
     "outdoor",
     "indoor",
@@ -133,18 +134,30 @@ def load_passphrase() -> str | None:
 
 
 def fetch_existing(passphrase: str) -> list[dict]:
-    """讀出資料庫所有地點的 id、名稱、座標。沒帶對密碼時 RLS 會回空陣列，所以空的也當錯誤。"""
-    qs = urllib.parse.urlencode({"select": "id,name,lat,lng,area"})
-    req = urllib.request.Request(
-        f"{SUPABASE_URL}/rest/v1/dating_map_places?{qs}",
-        headers={
-            "apikey": SUPABASE_KEY,
-            "x-dating-map-pass": passphrase,
-            "Range": "0-9999",
-        },
-    )
-    with urllib.request.urlopen(req, timeout=30) as res:
-        rows = json.load(res)
+    """讀出資料庫所有地點的 id、名稱、座標。沒帶對密碼時 RLS 會回空陣列，所以空的也當錯誤。
+
+    Supabase 每次最多回 1000 筆（Range header 蓋不過），所以依 id 分頁讀到沒有為止。
+    """
+    rows: list[dict] = []
+    page = 1000
+    while True:
+        qs = urllib.parse.urlencode(
+            {
+                "select": "id,name,lat,lng,area",
+                "order": "id",
+                "offset": len(rows),
+                "limit": page,
+            }
+        )
+        req = urllib.request.Request(
+            f"{SUPABASE_URL}/rest/v1/dating_map_places?{qs}",
+            headers={"apikey": SUPABASE_KEY, "x-dating-map-pass": passphrase},
+        )
+        with urllib.request.urlopen(req, timeout=30) as res:
+            batch = json.load(res)
+        rows += batch
+        if len(batch) < page:
+            break
     if not rows:
         sys.exit("資料庫回傳 0 筆地點：密碼可能不對（沒帶對 header 時 RLS 回空陣列）")
     return rows
