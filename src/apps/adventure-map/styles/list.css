@@ -1902,6 +1902,33 @@ button.adv-ach-place small {
     min-height: 36px;
     padding: 4px 14px;
   }
+
+  /* 卡片操作鈕原本 24–30px 高，行程卡 🗑 緊鄰 🏁 容易按錯；Apple 建議至少 44pt */
+  .adv-card-btn,
+  .adv-like-btn,
+  .adv-day-poster {
+    min-height: 40px;
+  }
+
+  .adv-card-btn--icon {
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  .adv-card-actions--collapsible.adv-card-actions--open {
+    max-height: 240px;
+  }
+
+  /* 「⋯」只放大點擊範圍，點點的位置不變 */
+  .adv-card-more {
+    top: 0;
+    right: 24px;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 /* ─── 桌面字級：原本為手機調的 11–13px 在大螢幕偏小 ─── */
@@ -2103,6 +2130,13 @@ button.adv-ach-place small {
   cursor: pointer;
 }
 
+@media (pointer: coarse) {
+  .adv-ledger-month__nav {
+    width: 44px;
+    height: 44px;
+  }
+}
+
 .adv-ledger-month__today {
   margin-left: auto;
 }
@@ -2273,6 +2307,16 @@ button.adv-ach-place small {
   border-radius: 0 0 14px 14px;
   background: var(--adv-washi);
   font-size: 0.85rem;
+}
+
+.adv-ledger-pickhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: var(--adv-muted);
 }
 
 .adv-ledger-checklist__bar button:disabled {

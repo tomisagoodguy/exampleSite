@@ -44,7 +44,7 @@ import {
 import { PlaceEntry } from '../../shared/types';
 import { geocodePlace, lookupArea } from './geocode';
 import { openTripMap, TripStop } from './tripmap';
-import { renderLedger, openExpenseModal, openLedgerCategoryModal, openLedgerHistoryModal, LedgerState, currentMonth } from './ledger';
+import { renderLedger, endLedgerPick, openExpenseModal, openLedgerCategoryModal, openLedgerHistoryModal, LedgerState, currentMonth } from './ledger';
 import { setupPhotoViewer } from './photos';
 import { captureCard, flyCard } from './fly';
 import {
@@ -563,6 +563,7 @@ class DatingMapApp {
       onAdd: (preset) => this.addExpense(preset),
       onEdit: (e) => this.editExpense(e),
       onSetChecked: (ids, checked) => this.setExpenseChecked(ids, checked),
+      onDeleteMany: (ids) => this.deleteExpenses(ids),
       onStateChange: (state) => {
         this.ledgerState = state;
         this.renderAll();
@@ -683,6 +684,24 @@ class DatingMapApp {
     const { input } = result;
     const saved = await this.withPassphrase((pw) => saveExpense(pw, entry.id, input, null));
     if (saved !== null) await this.afterLedgerSave(input.spent_on.slice(0, 7), '已儲存修改');
+  }
+
+  /** 一筆一筆走原本的刪除 RPC，每筆都留改帳紀錄、可各自復原；中途失敗也重讀，畫面跟資料庫一致 */
+  private async deleteExpenses(ids: number[]) {
+    const confirmed = await openConfirmModal(`要刪除這 ${ids.length} 筆帳嗎？刪掉的可從「改帳紀錄」復原。`);
+    if (!confirmed) return;
+    endLedgerPick();
+    let done = 0;
+    await this.withPassphrase(async (pw) => {
+      for (const id of ids.slice(done)) {
+        await deleteExpense(pw, id);
+        done++;
+      }
+    });
+    await this.afterLedgerSave(
+      this.ledgerState.month,
+      done === ids.length ? `已刪除 ${done} 筆` : `只刪了 ${done}／${ids.length} 筆，其餘失敗`
+    );
   }
 
   private async setExpenseChecked(ids: number[], checked: boolean) {

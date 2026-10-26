@@ -37,6 +37,7 @@ export interface LedgerHandlers {
   onAdd: (preset?: Partial<LedgerInput>) => void;
   onEdit: (entry: LedgerEntry) => void;
   onSetChecked: (ids: number[], checked: boolean) => void;
+  onDeleteMany: (ids: number[]) => void;
   onStateChange: (state: LedgerState) => void;
   onSaveBalance: (input: { checked_on: string; bank: number; card_owed: number; note: string | null }) => void;
   onDeleteBalance: (id: number) => void;
@@ -197,7 +198,9 @@ export function renderLedger(
       + bankHTML(entries, balances)
     : view === 'review'
       ? reviewHTML(entries, month, placeById, tripBySlug)
-      : (isFuture ? '' : budgetRemindHTML(entries, month)) + listHTML(monthEntries, placeById, tripBySlug);
+      : picking && monthEntries.length
+        ? pickHTML(monthEntries)
+        : (isFuture ? '' : budgetRemindHTML(entries, month)) + listHTML(monthEntries, placeById, tripBySlug);
 
   mount.innerHTML = `
     <div class="adv-ledger-month">
@@ -232,13 +235,22 @@ export function renderLedger(
     const monthBtn = target.closest<HTMLElement>('[data-ledger-month]');
     if (monthBtn) {
       const delta = Number(monthBtn.dataset.ledgerMonth);
+      picking = false;
       handlers.onStateChange({ view, month: delta ? shiftMonth(month, delta) : currentMonth() });
       return;
     }
 
     const viewBtn = target.closest<HTMLElement>('[data-ledger-view]');
     if (viewBtn) {
+      picking = false;
       handlers.onStateChange({ month, view: viewBtn.dataset.ledgerView as LedgerView });
+      return;
+    }
+
+    const pickBtn = target.closest<HTMLElement>('[data-ledger-pick]');
+    if (pickBtn) {
+      picking = pickBtn.dataset.ledgerPick === 'on';
+      handlers.onStateChange({ month, view });
       return;
     }
 
@@ -265,7 +277,12 @@ export function renderLedger(
     if (checkBtn) {
       const list = checkBtn.closest('.adv-ledger-checklist');
       const ids = [...(list?.querySelectorAll<HTMLInputElement>('input[value]:checked') || [])].map((i) => Number(i.value));
-      if (ids.length) handlers.onSetChecked(ids, checkBtn.dataset.ledgerCheck === 'on');
+      if (!ids.length) return;
+      if (checkBtn.dataset.ledgerCheck === 'delete') {
+        handlers.onDeleteMany(ids);
+      } else {
+        handlers.onSetChecked(ids, checkBtn.dataset.ledgerCheck === 'on');
+      }
       return;
     }
 
@@ -377,6 +394,24 @@ function rowHTML(e: LedgerEntry, placeById: Map<number, PlaceEntry>, tripBySlug:
 
 const HISTORY_LINK = '<button type="button" class="adv-ledger-link" data-ledger-history>🕘 改帳紀錄（誰改了什麼、復原刪掉的帳）</button>';
 
+/** 流水的「選幾筆刪除」模式；換月份、換畫面、刪完都會關掉 */
+let picking = false;
+
+export function endLedgerPick() {
+  picking = false;
+}
+
+function pickHTML(monthEntries: LedgerEntry[]): string {
+  const sorted = [...monthEntries].sort((a, b) => b.spent_on.localeCompare(a.spent_on) || b.id - a.id);
+  return `
+    <div class="adv-ledger-pickhead">
+      <span>勾選要刪除的帳，刪掉的可從改帳紀錄復原</span>
+      <button type="button" class="adv-card-btn" data-ledger-pick="off">取消</button>
+    </div>
+    ${checklistHTML(sorted, 'delete', '🗑️ 刪除', '勾選要刪除的幾筆')}
+  `;
+}
+
 function listHTML(monthEntries: LedgerEntry[], placeById: Map<number, PlaceEntry>, tripBySlug: Map<string, Trip>): string {
   if (!monthEntries.length) return `<p class="adv-empty">這個月還沒有記帳，按「＋ 記一筆」開始</p>${HISTORY_LINK}`;
 
@@ -393,7 +428,7 @@ function listHTML(monthEntries: LedgerEntry[], placeById: Map<number, PlaceEntry
         ${list.map((e) => rowHTML(e, placeById, tripBySlug)).join('')}
       </div>
     `;
-  }).join('') + HISTORY_LINK;
+  }).join('') + '<button type="button" class="adv-ledger-link" data-ledger-pick="on">☑️ 一次選幾筆刪除</button>' + HISTORY_LINK;
 }
 
 // ───────────────────────── 預算 ─────────────────────────
@@ -523,7 +558,7 @@ function bankHTML(entries: LedgerEntry[], balances: LedgerBalance[]): string {
 
 function checklistHTML(
   list: LedgerEntry[],
-  action: 'on' | 'off',
+  action: 'on' | 'off' | 'delete',
   label = action === 'on' ? '✓ 標記已核對' : '取消核對',
   hint = '勾選對得上的那幾筆'
 ): string {
@@ -536,11 +571,11 @@ function checklistHTML(
           <span class="adv-ledger-check__date">${dayLabel(e.spent_on)}</span>
           <span class="adv-ledger-check__title">${entryIcon(e)} ${esc(entryTitle(e))}${e.paid_by ? ` <small>${esc(e.paid_by)}</small>` : ''}${
             e.orig_currency ? ` <small>🌏 ${origText(e)}（台幣是估的，照帳單改）</small>` : ''}</span>
-          <span class="adv-ledger-check__amt">${money(e.amount)}</span>
+          <span class="adv-ledger-check__amt">${entryAmount(e)}</span>
         </label>`).join('')}
       <div class="adv-ledger-checklist__bar">
         <span class="adv-ledger-checklist__status" data-hint="${hint}">${hint}</span>
-        <button type="button" class="adv-card-btn ${action === 'on' ? 'adv-card-btn--primary' : ''}" data-ledger-check="${action}" disabled>${label}</button>
+        <button type="button" class="adv-card-btn ${action === 'on' ? 'adv-card-btn--primary' : action === 'delete' ? 'adv-card-btn--danger' : ''}" data-ledger-check="${action}" disabled>${label}</button>
       </div>
     </div>
   `;
