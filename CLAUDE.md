@@ -172,18 +172,21 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | 欄位 | 合法值 | 說明 |
 | --- | --- | --- |
 | `kind` | `expense` 支出／`deposit` 入金／`adjust` 對帳調整 | 退款＝負數支出；調整可正可負 |
-| `category` | `food` 吃飯、`cafe` 咖啡甜點、`fun` 玩樂、`transport` 交通、`stay` 住宿、`daily` 生活用品、`gift` 一起送人、`other` 其他 | 只有支出有（CHECK 約束）；定義在 `data.ts` `LEDGER_CATEGORY`，宣告順序＝記帳按鈕順序 |
-| `method` | `card` 公帳卡／`account` 公帳帳戶／`own` 自己先墊 | 入金與調整固定 `account`；`own` 會列在回顧的「👛 自己先墊的」 |
+| `category` | 外鍵 → `dating_map_ledger_categories.key`（內建 `food` 吃飯、`cafe` 咖啡甜點、`fun` 玩樂、`transport` 交通、`stay` 住宿、`daily` 生活用品、`gift` 一起送人（預設隱藏）、`other` 其他；網頁新增的代號是 `c` + 8 碼） | 只有支出有 |
+| `method` | `card` 公帳卡／`account` 公帳帳戶／`own` 自己先墊 | 入金與調整固定 `account`；先墊的錢**月底回顧時**由阿康從公帳帳戶轉回 |
 | `paid_by` | `阿康`／`小黃` | 誰刷卡、誰入金（入金必填） |
 | `place_id` / `trip_slug` | → `dating_map_places` / `dating_map_docs` | 可空，刪地點或旅行時 `SET NULL`，帳不會消失 |
-| `checked` | boolean | 已跟信用卡帳單核對；RPC 改了日期、金額或付款方式會自動變回 `false` |
+| `checked` | boolean | `card`＝已跟信用卡帳單核對；`own`＝已從公帳轉回給先墊的人。RPC 改了日期、金額或付款方式會自動變回 `false` |
 
 - **「旅行」不是分類**：旅行中的吃住交通照樣歸 `food`／`stay`／`transport`，用 `trip_slug` 連到旅行，回顧才能同時回答「這月吃多少」和「這趟花多少」
-- **先建好、還沒打開的**：`gift` 在 `LEDGER_CATEGORY` 標 `hidden: true`（拿掉就會出現在記帳按鈕）；`is_special` ✨ 特別的日子由 `LEDGER_SHOW_SPECIAL` 控制。藏起來時修改舊帳會保留原值
+- **分類在網頁管理**（公帳標題列「⚙️ 分類」，`ledger.ts` `openLedgerCategoryModal`）：新增、改名、換 emoji／顏色、隱藏、排序。代號建立後不變，改名後舊帳自動顯示新名稱；**用過的分類只能隱藏**（`dating_map_delete_ledger_category` 會拒絕）。RPC：`dating_map_save_ledger_category`（`p_key` 為 `null` 時新增）、`dating_map_reorder_ledger_categories`、`dating_map_delete_ledger_category`。`data.ts` 的 `LEDGER_CATEGORY` 只是讀不到分類表時的備援，讀到後由 `applyLedgerCategories` 整組換掉；查分類一律用 `ledgerCategory(key)`（不認得的代號也有預設樣子）
+- `is_special` ✨ 特別的日子已建欄位，由 `data.ts` `LEDGER_SHOW_SPECIAL` 控制是否顯示；藏起來時修改舊帳會保留原值
+- 「✅ 核對」分兩段：👛 先墊待還（`own` 未勾，依誰墊的分組，轉帳後勾「已從公帳轉回」）→ 💳 對信用卡帳單
 - 公帳餘額＝入金＋調整−支出（銀行帳戶＋信用卡未繳合計），所以**繳卡費不記**，那只是帳戶轉到信用卡
 - 核對不分月份：列出所有 `method = 'card'` 且未核對的支出，依日期由舊到新，對著帳單勾；勾選時顯示已選合計
 - 寫入走 RPC：`dating_map_save_expense`（`saveExpense`，`p_id` 為 `null` 時新增）、`dating_map_delete_expense`、`dating_map_set_expense_checked`（一次多筆）。`fetchLedger` 會分頁讀完，一個月約百筆，幾年就超過 PostgREST 單次 1000 筆上限
-- 新增分類要同時改 `LEDGER_CATEGORY` 與資料表的 CHECK 約束
+- 結餘一律留在公帳累積；不夠時兩人補一樣的錢（阿康自己通知，系統不提醒）
+- 清單框（`.adv-ledger-checklist`）**不能加 `overflow: hidden`**：會變成 sticky 的參考框，底部勾選列就浮在清單中間蓋住項目
 
 **回憶照片**（地點卡片＋成就牆的縮圖列，點開是燈箱）：照片**不走 Supabase**，是 repo 裡的公開檔，push 後跟網站一起部署。
 

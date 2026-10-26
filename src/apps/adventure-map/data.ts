@@ -184,13 +184,23 @@ export const ACHIEVEMENT_BOOKS: Record<AchievementBook, { label: string; emoji: 
   },
 };
 
-export type LedgerCategory = 'food' | 'cafe' | 'fun' | 'transport' | 'stay' | 'daily' | 'gift' | 'other';
+/** 公帳分類代號：內建的是英文字，網頁新增的由資料庫產生 */
+export type LedgerCategory = string;
+
+export interface LedgerCategoryConfig {
+  emoji: string;
+  label: string;
+  color: string;
+  /** 記帳按鈕不出現，舊帳照常顯示 */
+  hidden?: boolean;
+}
 
 /**
- * 公帳支出分類，宣告順序＝記帳時按鈕順序；值要與 dating_map_ledger 的 CHECK 約束一致。
- * hidden 的分類資料庫已允許，只是記帳時先不出現（打開就把 hidden 拿掉）；舊帳仍照常顯示
+ * 公帳支出分類，以資料表 dating_map_ledger_categories 為準（網頁「⚙️ 分類」可新增、改名、隱藏、排序），
+ * 讀到後由 applyLedgerCategories 整組換掉；鍵的順序＝記帳按鈕順序。
+ * 這裡的值只是讀取失敗時的備援，跟資料表初始資料相同
  */
-export const LEDGER_CATEGORY: Record<LedgerCategory, { emoji: string; label: string; color: string; hidden?: boolean }> = {
+export const LEDGER_CATEGORY: Record<LedgerCategory, LedgerCategoryConfig> = {
   food:      { emoji: '🍜', label: '吃飯',     color: '#E07A5F' },
   cafe:      { emoji: '☕', label: '咖啡甜點', color: '#9C7456' },
   fun:       { emoji: '🎡', label: '玩樂',     color: '#E28AAE' },
@@ -200,6 +210,18 @@ export const LEDGER_CATEGORY: Record<LedgerCategory, { emoji: string; label: str
   gift:      { emoji: '🎁', label: '一起送人', color: '#D9A62E', hidden: true },
   other:     { emoji: '📦', label: '其他',     color: '#8E8A86' },
 };
+
+/** rows 已依 sort_order 排好；空陣列（表還沒建或讀不到）就保留備援值 */
+export function applyLedgerCategories(rows: ({ key: string } & LedgerCategoryConfig)[]) {
+  if (!rows.length) return;
+  for (const key of Object.keys(LEDGER_CATEGORY)) delete LEDGER_CATEGORY[key];
+  for (const { key, emoji, label, color, hidden } of rows) LEDGER_CATEGORY[key] = { emoji, label, color, hidden };
+}
+
+/** 已經刪掉或還沒讀到的分類代號也要能顯示 */
+export function ledgerCategory(key: string | null): LedgerCategoryConfig {
+  return (key && LEDGER_CATEGORY[key]) || { emoji: '📦', label: key || '其他', color: '#8E8A86' };
+}
 
 /** ✨ 特別的日子（紀念日等）：資料庫欄位 is_special 已建好，true 才在記帳表單與回顧出現 */
 export const LEDGER_SHOW_SPECIAL = false;

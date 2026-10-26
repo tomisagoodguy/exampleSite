@@ -8,6 +8,7 @@ import {
   ACHIEVEMENT_BOOKS,
   AchievementBook,
   AchievementCategory,
+  applyLedgerCategories,
 } from './data';
 import {
   renderFilterBar,
@@ -42,7 +43,7 @@ import {
 import { PlaceEntry } from '../../shared/types';
 import { geocodePlace, lookupArea } from './geocode';
 import { openTripMap, TripStop } from './tripmap';
-import { renderLedger, openExpenseModal, LedgerState, currentMonth } from './ledger';
+import { renderLedger, openExpenseModal, openLedgerCategoryModal, LedgerState, currentMonth } from './ledger';
 import { setupPhotoViewer } from './photos';
 import { captureCard, flyCard } from './fly';
 import {
@@ -85,6 +86,10 @@ import {
   setExpenseChecked,
   LedgerEntry,
   LedgerInput,
+  fetchLedgerCategories,
+  saveLedgerCategory,
+  deleteLedgerCategory,
+  reorderLedgerCategories,
 } from './supabase';
 
 /** 成就分頁上次看的冊子，只記在各自的裝置上 */
@@ -135,7 +140,7 @@ class DatingMapApp {
       showToast('資料讀取失敗，稍後再試試');
       this.allPlaces = [];
     }
-    await Promise.all([this.loadGuides(), this.loadAchievements(), this.loadTrips(), this.loadLedger()]);
+    await Promise.all([this.loadGuides(), this.loadAchievements(), this.loadTrips(), this.loadLedger(), this.loadLedgerCategories()]);
 
     this.renderAll();
     this.setupFab();
@@ -409,8 +414,8 @@ class DatingMapApp {
         return;
       }
       // 對方記了一筆只重讀公帳，不用整頁重抓
-      if (table === 'dating_map_ledger') {
-        await this.loadLedger();
+      if (table === 'dating_map_ledger' || table === 'dating_map_ledger_categories') {
+        await Promise.all([this.loadLedger(), this.loadLedgerCategories()]);
         this.renderAll();
         return;
       }
@@ -609,7 +614,36 @@ class DatingMapApp {
 
   private async setExpenseChecked(ids: number[], checked: boolean) {
     const ok = await this.withPassphrase((pw) => setExpenseChecked(pw, ids, checked).then(() => true));
-    if (ok) await this.afterLedgerSave(this.ledgerState.month, checked ? `✓ 已核對 ${ids.length} 筆` : `已取消核對 ${ids.length} 筆`);
+    if (ok) await this.afterLedgerSave(this.ledgerState.month, checked ? `✓ 已標記 ${ids.length} 筆` : `已取消 ${ids.length} 筆`);
+  }
+
+  /** 分類表還沒建（migration 未執行）時讀取會失敗，沿用 data.ts 的備援分類 */
+  private async loadLedgerCategories() {
+    try {
+      applyLedgerCategories(await fetchLedgerCategories());
+    } catch (err) {
+      console.error('讀取公帳分類失敗，使用預設分類', err);
+    }
+  }
+
+  private manageLedgerCategories() {
+    const usage = new Map<string, number>();
+    this.ledger.forEach((e) => e.category && usage.set(e.category, (usage.get(e.category) || 0) + 1));
+
+    // 成功就重讀分類並重畫頁面，管理視窗依新的 LEDGER_CATEGORY 重畫清單
+    const apply = async (task: (pw: string) => Promise<unknown>, failMsg: string): Promise<string | null> => {
+      const ok = await this.withPassphrase((pw) => task(pw).then(() => true));
+      if (!ok) return failMsg;
+      await this.loadLedgerCategories();
+      this.renderAll();
+      return null;
+    };
+
+    openLedgerCategoryModal(usage, {
+      save: (key, input) => apply((pw) => saveLedgerCategory(pw, key, input), '儲存失敗'),
+      remove: (key) => apply((pw) => deleteLedgerCategory(pw, key), '刪除失敗（用過的分類只能隱藏）'),
+      reorder: (keys) => apply((pw) => reorderLedgerCategories(pw, keys), '排序失敗'),
+    });
   }
 
   /** 這趟旅行地區裡存過、有座標的地點（依 Trip.area_prefix 比對 area） */
@@ -959,6 +993,7 @@ class DatingMapApp {
     document.getElementById('adv-guide-new')?.addEventListener('click', () => this.editGuide());
     document.getElementById('adv-trip-new')?.addEventListener('click', () => this.editTrip());
     document.getElementById('adv-ledger-new')?.addEventListener('click', () => this.addExpense());
+    document.getElementById('adv-ledger-cats')?.addEventListener('click', () => this.manageLedgerCategories());
   }
 
   private async withPassphrase<T>(action: (pw: string) => Promise<T>): Promise<T | null> {
@@ -1242,7 +1277,7 @@ class DatingMapApp {
     } catch (err) {
       console.error(err);
     }
-    await Promise.all([this.loadGuides(), this.loadAchievements(), this.loadTrips(), this.loadLedger()]);
+    await Promise.all([this.loadGuides(), this.loadAchievements(), this.loadTrips(), this.loadLedger(), this.loadLedgerCategories()]);
     this.renderAll();
   }
 }

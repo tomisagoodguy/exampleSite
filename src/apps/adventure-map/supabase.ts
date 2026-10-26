@@ -537,6 +537,64 @@ export async function deleteExpense(passphrase: string, id: number): Promise<voi
   if (error) throw error;
 }
 
+export interface LedgerCategoryRow {
+  key: string;
+  label: string;
+  emoji: string;
+  color: string;
+  hidden: boolean;
+}
+
+/** 依 sort_order 排好；表還沒建（migration 未執行）時回空陣列，前端沿用 data.ts 的備援分類 */
+export async function fetchLedgerCategories(): Promise<LedgerCategoryRow[]> {
+  const { data, error } = await supabase
+    .from('dating_map_ledger_categories')
+    .select('key, label, emoji, color, hidden')
+    .order('sort_order', { ascending: true });
+
+  if (error) throw error;
+  return (data || []) as LedgerCategoryRow[];
+}
+
+/** 新增（key 為 null，代號由資料庫產生）或修改；回傳代號 */
+export async function saveLedgerCategory(
+  passphrase: string,
+  key: string | null,
+  input: Omit<LedgerCategoryRow, 'key'>
+): Promise<string> {
+  const { data, error } = await supabase.rpc('dating_map_save_ledger_category', {
+    p_passphrase: passphrase,
+    p_key: key,
+    p_label: input.label,
+    p_emoji: input.emoji,
+    p_color: input.color,
+    p_hidden: input.hidden,
+  });
+
+  if (error) throw error;
+  return data as string;
+}
+
+/** 依陣列順序重排記帳按鈕 */
+export async function reorderLedgerCategories(passphrase: string, keys: string[]): Promise<void> {
+  const { error } = await supabase.rpc('dating_map_reorder_ledger_categories', {
+    p_passphrase: passphrase,
+    p_keys: keys,
+  });
+
+  if (error) throw error;
+}
+
+/** 已經有帳的分類資料庫會拒絕（訊息「只能隱藏」） */
+export async function deleteLedgerCategory(passphrase: string, key: string): Promise<void> {
+  const { error } = await supabase.rpc('dating_map_delete_ledger_category', {
+    p_passphrase: passphrase,
+    p_key: key,
+  });
+
+  if (error) throw error;
+}
+
 /** 對帳單時一次勾選（或取消）多筆 */
 export async function setExpenseChecked(passphrase: string, ids: number[], checked: boolean): Promise<void> {
   const { error } = await supabase.rpc('dating_map_set_expense_checked', {

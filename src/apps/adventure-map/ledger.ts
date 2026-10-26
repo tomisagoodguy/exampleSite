@@ -5,6 +5,8 @@ import {
   LEDGER_MONTHLY_DEPOSIT,
   LEDGER_SHOW_SPECIAL,
   LedgerCategory,
+  LedgerCategoryConfig,
+  ledgerCategory,
 } from './data';
 import { IDENTITIES, Identity, LedgerEntry, LedgerInput, LedgerKind, LedgerMethod, Trip } from './supabase';
 import { esc, openModal, showToast } from './ui';
@@ -73,7 +75,7 @@ function balanceAt(entries: LedgerEntry[], month: string): number {
 }
 
 function categoryOf(e: LedgerEntry) {
-  return e.category ? LEDGER_CATEGORY[e.category] : null;
+  return e.category ? ledgerCategory(e.category) : null;
 }
 
 function entryIcon(e: LedgerEntry): string {
@@ -112,6 +114,8 @@ export function renderLedger(
   const tripBySlug = new Map(trips.map((t) => [t.slug, t]));
   const monthEntries = entries.filter((e) => e.spent_on.startsWith(month));
   const unchecked = entries.filter((e) => e.kind === 'expense' && e.method === 'card' && !e.checked);
+  // 自己先墊的 checked＝已從公帳轉回給先墊的人，跟刷卡核對共用同一個欄位
+  const ownPending = entries.filter((e) => e.kind === 'expense' && e.method === 'own' && !e.checked);
   const isFuture = month > currentMonth();
 
   const viewChip = (v: LedgerView, label: string, count?: number) =>
@@ -125,7 +129,7 @@ export function renderLedger(
     : IDENTITIES.filter((id) => !monthEntries.some((e) => e.kind === 'deposit' && e.paid_by === id));
 
   const body = view === 'check'
-    ? checkHTML(unchecked, monthEntries.filter((e) => e.kind === 'expense' && e.method === 'card' && e.checked))
+    ? checkHTML(unchecked, monthEntries.filter((e) => e.kind === 'expense' && e.method === 'card' && e.checked), ownPending)
     : view === 'review'
       ? reviewHTML(entries, month, placeById, tripBySlug)
       : listHTML(monthEntries, placeById, tripBySlug);
@@ -149,7 +153,7 @@ export function renderLedger(
       </div>` : ''}
     <div class="adv-guide-seasons" role="group" aria-label="切換公帳畫面">
       ${viewChip('list', '📒 流水')}
-      ${viewChip('check', '✅ 核對', unchecked.length)}
+      ${viewChip('check', '✅ 核對', unchecked.length + ownPending.length)}
       ${viewChip('review', '📊 回顧')}
     </div>
     ${body}
@@ -213,8 +217,8 @@ export function renderLedger(
     }
     const picked = [...list.querySelectorAll<HTMLInputElement>('input[value]:checked')].map((i) => byId.get(Number(i.value)));
     const total = picked.reduce((s, e) => s + (e?.amount || 0), 0);
-    const status = list.querySelector('.adv-ledger-checklist__status');
-    if (status) status.textContent = picked.length ? `已選 ${picked.length} 筆，合計 ${money(total)}` : '勾選對得上的那幾筆';
+    const status = list.querySelector<HTMLElement>('.adv-ledger-checklist__status');
+    if (status) status.textContent = picked.length ? `已選 ${picked.length} 筆，合計 ${money(total)}` : status.dataset.hint || '';
     list.querySelector<HTMLButtonElement>('[data-ledger-check]')?.toggleAttribute('disabled', !picked.length);
   };
 }
@@ -230,7 +234,7 @@ function metaParts(e: LedgerEntry, placeById: Map<number, PlaceEntry>, tripBySlu
   const trip = e.trip_slug ? tripBySlug.get(e.trip_slug) : undefined;
   if (trip) parts.push(`✈️ ${esc(trip.title)}`);
   if (LEDGER_SHOW_SPECIAL && e.is_special) parts.push('✨ 特別的日子');
-  if (e.kind === 'expense' && e.method === 'card' && e.checked) parts.push('✓ 已核對');
+  if (e.kind === 'expense' && e.checked) parts.push(e.method === 'own' ? '✓ 已轉回' : '✓ 已核對');
   return parts;
 }
 
@@ -268,7 +272,12 @@ function listHTML(monthEntries: LedgerEntry[], placeById: Map<number, PlaceEntry
   }).join('');
 }
 
-function checklistHTML(list: LedgerEntry[], action: 'on' | 'off'): string {
+function checklistHTML(
+  list: LedgerEntry[],
+  action: 'on' | 'off',
+  label = action === 'on' ? '✓ 標記已核對' : '取消核對',
+  hint = '勾選對得上的那幾筆'
+): string {
   return `
     <div class="adv-ledger-checklist">
       <label class="adv-ledger-check adv-ledger-check--all"><input type="checkbox" data-ledger-all /> 全選</label>
@@ -280,17 +289,26 @@ function checklistHTML(list: LedgerEntry[], action: 'on' | 'off'): string {
           <span class="adv-ledger-check__amt">${money(e.amount)}</span>
         </label>`).join('')}
       <div class="adv-ledger-checklist__bar">
-        <span class="adv-ledger-checklist__status">勾選對得上的那幾筆</span>
-        <button type="button" class="adv-card-btn ${action === 'on' ? 'adv-card-btn--primary' : ''}" data-ledger-check="${action}" disabled>${action === 'on' ? '✓ 標記已核對' : '取消核對'}</button>
+        <span class="adv-ledger-checklist__status" data-hint="${hint}">${hint}</span>
+        <button type="button" class="adv-card-btn ${action === 'on' ? 'adv-card-btn--primary' : ''}" data-ledger-check="${action}" disabled>${label}</button>
       </div>
     </div>
   `;
 }
 
 /** 依日期由舊到新，跟帳單的順序一樣 */
-function checkHTML(unchecked: LedgerEntry[], checkedThisMonth: LedgerEntry[]): string {
+function checkHTML(unchecked: LedgerEntry[], checkedThisMonth: LedgerEntry[], ownPending: LedgerEntry[]): string {
   const byDate = (a: LedgerEntry, b: LedgerEntry) => a.spent_on.localeCompare(b.spent_on) || a.id - b.id;
+  // 先墊待還依誰墊的分開，月底回顧時照每個人的合計從公帳轉回
+  const ownByWho = IDENTITIES.map((who) => [who, ownPending.filter((e) => e.paid_by === who)] as const).filter(([, list]) => list.length);
   return `
+    ${ownByWho.length ? `
+      <div class="adv-ledger-subhead">👛 先墊待還（月底回顧時從公帳轉回）</div>
+      ${ownByWho.map(([who, list]) => `
+        <p class="adv-ledger-sub">${esc(who)} 先墊 ${list.length} 筆・合計 <b>${money(sum(list))}</b></p>
+        ${checklistHTML([...list].sort(byDate), 'on', '✓ 已從公帳轉回', '轉帳給對方後勾起來')}`).join('')}
+      <div class="adv-ledger-gap"></div>
+      <div class="adv-ledger-subhead">💳 對信用卡帳單</div>` : ''}
     <p class="adv-modal-hint adv-ledger-hint">打開信用卡帳單逐筆對：對得上就勾起來。帳單上有、這裡沒有的就是漏記，按「＋ 記一筆」補上；金額不同就點流水那筆改掉。</p>
     ${unchecked.length
       ? `<div class="adv-ledger-subhead">待核對 ${unchecked.length} 筆・合計 ${money(sum(unchecked))}</div>${checklistHTML([...unchecked].sort(byDate), 'on')}`
@@ -314,7 +332,8 @@ interface ReviewData {
   top: LedgerEntry[];
   places: { name: string; amount: number; count: number }[];
   trips: { title: string; amount: number }[];
-  own: { who: string; amount: number; count: number }[];
+  /** pending＝還沒從公帳轉回的金額 */
+  own: { who: string; amount: number; count: number; pending: number }[];
   special: number;
   deposited: number;
   balance: number;
@@ -329,7 +348,8 @@ function reviewData(
   const cur = expensesIn(entries, month);
   const last = expensesIn(entries, shiftMonth(month, -1));
 
-  const categories = (Object.keys(LEDGER_CATEGORY) as LedgerCategory[])
+  // 分類清單＋這個月實際出現的（避免已不在清單的分類漏算）
+  const categories = [...new Set([...Object.keys(LEDGER_CATEGORY), ...cur.map((e) => e.category).filter((k): k is string => !!k)])]
     .map((key) => {
       const mine = cur.filter((e) => e.category === key);
       return { key, amount: sum(mine), count: mine.length, lastAmount: sum(last.filter((e) => e.category === key)) };
@@ -361,7 +381,7 @@ function reviewData(
       .map(([slug, list]) => ({ title: tripBySlug.get(slug)?.title || slug, amount: sum(list) }))
       .sort((a, b) => b.amount - a.amount),
     own: group(cur.filter((e) => e.method === 'own'), (e) => e.paid_by || '沒填')
-      .map(([who, list]) => ({ who, amount: sum(list), count: list.length })),
+      .map(([who, list]) => ({ who, amount: sum(list), count: list.length, pending: sum(list.filter((e) => !e.checked)) })),
     special: sum(cur.filter((e) => e.is_special)),
     deposited: sum(entries.filter((e) => e.kind === 'deposit' && e.spent_on.startsWith(month))),
     balance: balanceAt(entries, month),
@@ -394,13 +414,13 @@ function reviewHTML(
     box('🧾 這個月', `
       <p class="adv-ledger-big">${money(d.total)}</p>
       <p class="adv-ledger-sub">${compareText(d.total, d.lastTotal)}・${d.count} 筆・${d.days} 天有花錢</p>
-      ${favorite && favorite.count > 1 ? `<p class="adv-ledger-sub">最常記的是 ${LEDGER_CATEGORY[favorite.key].emoji} ${LEDGER_CATEGORY[favorite.key].label} ×${favorite.count}</p>` : ''}
+      ${favorite && favorite.count > 1 ? `<p class="adv-ledger-sub">最常記的是 ${ledgerCategory(favorite.key).emoji} ${ledgerCategory(favorite.key).label} ×${favorite.count}</p>` : ''}
     `),
   ];
 
   if (d.categories.length) {
     parts.push(box('🍰 花在哪裡', `<div class="adv-ledger-bars">${d.categories.map((c) => {
-      const cfg = LEDGER_CATEGORY[c.key];
+      const cfg = ledgerCategory(c.key);
       const share = d.total ? Math.round((c.amount / d.total) * 100) : 0;
       const diff = c.amount - c.lastAmount;
       return `
@@ -436,8 +456,8 @@ function reviewHTML(
 
   if (d.own.length) {
     parts.push(box('👛 自己先墊的', `<ul class="adv-ledger-top">${d.own
-      .map((o) => `<li><span>${esc(o.who)} 先墊 ${o.count} 筆</span><b>${money(o.amount)}</b></li>`)
-      .join('')}</ul><p class="adv-ledger-sub">記得從公帳轉回給先墊的人</p>`));
+      .map((o) => `<li><span>${esc(o.who)} 先墊 ${o.count} 筆${o.pending ? `，還沒轉回 ${money(o.pending)}` : '，都轉回了'}</span><b>${money(o.amount)}</b></li>`)
+      .join('')}</ul>${d.own.some((o) => o.pending) ? '<p class="adv-ledger-sub">轉完到「✅ 核對」勾「已從公帳轉回」</p>' : ''}`));
   }
 
   parts.push(box('🐷 公帳', `
@@ -462,7 +482,7 @@ function copyReview(
     `💰 公帳回顧｜${monthLabel(month)}`,
     `花了 ${money(d.total)}，${compareText(d.total, d.lastTotal)}`,
     '',
-    ...d.categories.map((c) => `${LEDGER_CATEGORY[c.key].emoji} ${LEDGER_CATEGORY[c.key].label} ${money(c.amount)}（${d.total ? Math.round((c.amount / d.total) * 100) : 0}%）`),
+    ...d.categories.map((c) => `${ledgerCategory(c.key).emoji} ${ledgerCategory(c.key).label} ${money(c.amount)}（${d.total ? Math.round((c.amount / d.total) * 100) : 0}%）`),
   ];
   if (d.top.length) lines.push('', '最大的幾筆：', ...d.top.map((e, i) => `${i + 1}. ${entryTitle(e)} ${money(e.amount)}`));
   if (d.places.length) lines.push('', `去了：${d.places.map((p) => p.name).join('、')}`);
@@ -514,8 +534,9 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     }
 
     // 已經記在隱藏分類的舊帳要能看到原分類，不然修改時會被迫換掉
-    const categories = (Object.entries(LEDGER_CATEGORY) as [LedgerCategory, (typeof LEDGER_CATEGORY)[LedgerCategory]][])
-      .filter(([key, cfg]) => !cfg.hidden || key === category);
+    const categories = Object.entries(LEDGER_CATEGORY).filter(([key, cfg]) => !cfg.hidden || key === category);
+    // 舊帳的分類已不在清單（改名後重讀前、或被刪掉）也要留一顆按鈕，修改時才不會被迫換分類
+    if (category && !LEDGER_CATEGORY[category]) categories.push([category, ledgerCategory(category)]);
     const chip = (attr: string, value: string, label: string, active: boolean) =>
       `<button type="button" class="adv-guide-season ${active ? 'is-active' : ''}" ${attr}="${value}" aria-pressed="${active}">${label}</button>`;
 
@@ -729,4 +750,131 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     // 直接聚焦，不要包 setTimeout：iOS 只在使用者點擊的同一輪才肯叫出鍵盤
     if (!opts.existing) amountEl.focus();
   });
+}
+
+// ───────────────────────── 管理分類 ─────────────────────────
+
+export interface LedgerCategoryHandlers {
+  /** 回傳 null 代表成功，否則是要顯示的錯誤訊息；成功時呼叫端要先重讀分類再 resolve */
+  save: (key: string | null, input: Required<LedgerCategoryConfig>) => Promise<string | null>;
+  remove: (key: string) => Promise<string | null>;
+  reorder: (keys: string[]) => Promise<string | null>;
+}
+
+/**
+ * 新增、改名、換 emoji／顏色、隱藏、排序；代號建立後不變，所以改名後舊帳自動顯示新名稱。
+ * 已經有帳的分類不能刪（回顧與上月比較會亂掉），只能隱藏
+ */
+export function openLedgerCategoryModal(usage: Map<string, number>, handlers: LedgerCategoryHandlers): void {
+  const { root, close } = openModal(`
+    <h3>管理公帳分類</h3>
+    <p class="adv-modal-hint">隱藏的分類記帳時不會出現，以前記的帳照常顯示。用過的分類只能隱藏，不能刪。</p>
+    <div class="adv-lcat-list" id="adv-lcat-list"></div>
+    <label id="adv-lcat-form-title">新增分類</label>
+    <div class="adv-lcat-form">
+      <input type="text" id="adv-lcat-emoji" class="adv-lcat-form__emoji" placeholder="🧺" aria-label="emoji" />
+      <input type="text" id="adv-lcat-label" placeholder="名稱，例如：寵物" aria-label="名稱" />
+      <input type="color" id="adv-lcat-color" class="adv-cat-color" value="#8C6A55" aria-label="顏色" />
+    </div>
+    <div class="adv-modal-error" id="adv-lcat-error" style="display:none;"></div>
+    <div class="adv-modal-actions">
+      <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-lcat-close">關閉</button>
+      <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-lcat-cancel-edit" hidden>取消修改</button>
+      <button class="adv-modal-btn adv-modal-btn--primary" id="adv-lcat-submit">新增</button>
+    </div>
+  `);
+
+  const $ = <T extends HTMLElement>(sel: string) => root.querySelector(sel) as T;
+  const listEl = $<HTMLElement>('#adv-lcat-list');
+  const emojiEl = $<HTMLInputElement>('#adv-lcat-emoji');
+  const labelEl = $<HTMLInputElement>('#adv-lcat-label');
+  const colorEl = $<HTMLInputElement>('#adv-lcat-color');
+  const errorEl = $<HTMLElement>('#adv-lcat-error');
+  let editing: string | null = null;
+  let busy = false;
+
+  const showError = (msg: string | null) => {
+    errorEl.style.display = msg ? 'block' : 'none';
+    errorEl.textContent = msg || '';
+  };
+
+  const setEditing = (key: string | null) => {
+    editing = key;
+    const cfg = key ? LEDGER_CATEGORY[key] : null;
+    emojiEl.value = cfg?.emoji || '';
+    labelEl.value = cfg?.label || '';
+    colorEl.value = cfg?.color || '#8C6A55';
+    $('#adv-lcat-form-title').textContent = cfg ? `修改「${cfg.label}」` : '新增分類';
+    $('#adv-lcat-submit').textContent = cfg ? '儲存修改' : '新增';
+    $('#adv-lcat-cancel-edit').hidden = !cfg;
+    if (cfg) labelEl.focus();
+  };
+
+  const renderList = () => {
+    const keys = Object.keys(LEDGER_CATEGORY);
+    listEl.innerHTML = keys.map((key, i) => {
+      const cfg = LEDGER_CATEGORY[key];
+      const used = usage.get(key) || 0;
+      return `
+        <div class="adv-lcat-row ${cfg.hidden ? 'adv-lcat-row--hidden' : ''}" style="--cat-color:${esc(cfg.color)}">
+          <span class="adv-lcat-row__emoji" aria-hidden="true">${esc(cfg.emoji)}</span>
+          <span class="adv-lcat-row__label">${esc(cfg.label)}<small>${cfg.hidden ? '隱藏中・' : ''}${used ? `用了 ${used} 筆` : '還沒用過'}</small></span>
+          <button type="button" class="adv-lcat-btn" data-move="-1" data-key="${esc(key)}" ${i === 0 ? 'disabled' : ''} aria-label="往前">↑</button>
+          <button type="button" class="adv-lcat-btn" data-move="1" data-key="${esc(key)}" ${i === keys.length - 1 ? 'disabled' : ''} aria-label="往後">↓</button>
+          <button type="button" class="adv-lcat-btn" data-toggle="${esc(key)}" aria-label="${cfg.hidden ? '顯示' : '隱藏'}">${cfg.hidden ? '顯示' : '隱藏'}</button>
+          <button type="button" class="adv-lcat-btn" data-edit="${esc(key)}" aria-label="修改">✏️</button>
+          ${used ? '' : `<button type="button" class="adv-lcat-btn" data-del="${esc(key)}" aria-label="刪除">🗑️</button>`}
+        </div>`;
+    }).join('');
+  };
+
+  /** 每次只送一個請求，送完重畫清單 */
+  const run = async (task: () => Promise<string | null>) => {
+    if (busy) return false;
+    busy = true;
+    showError(null);
+    const err = await task();
+    busy = false;
+    showError(err);
+    renderList();
+    return !err;
+  };
+
+  listEl.addEventListener('click', async (ev) => {
+    const t = ev.target as HTMLElement;
+    const btn = t.closest<HTMLButtonElement>('button');
+    if (!btn || btn.disabled) return;
+    const keys = Object.keys(LEDGER_CATEGORY);
+
+    if (btn.dataset.move) {
+      const i = keys.indexOf(btn.dataset.key || '');
+      const j = i + Number(btn.dataset.move);
+      [keys[i], keys[j]] = [keys[j], keys[i]];
+      await run(() => handlers.reorder(keys));
+    } else if (btn.dataset.toggle) {
+      const key = btn.dataset.toggle;
+      const cfg = LEDGER_CATEGORY[key];
+      await run(() => handlers.save(key, { emoji: cfg.emoji, label: cfg.label, color: cfg.color, hidden: !cfg.hidden }));
+    } else if (btn.dataset.edit) {
+      setEditing(btn.dataset.edit);
+    } else if (btn.dataset.del) {
+      const key = btn.dataset.del;
+      if (editing === key) setEditing(null);
+      await run(() => handlers.remove(key));
+    }
+  });
+
+  $('#adv-lcat-submit').addEventListener('click', async () => {
+    const label = labelEl.value.trim();
+    if (!label) return showError('名稱不能空白');
+    const duplicate = Object.entries(LEDGER_CATEGORY).some(([k, c]) => c.label === label && k !== editing);
+    if (duplicate) return showError('已經有同名的分類');
+    const hidden = editing ? !!LEDGER_CATEGORY[editing]?.hidden : false;
+    const ok = await run(() => handlers.save(editing, { emoji: emojiEl.value.trim() || '🏷️', label, color: colorEl.value, hidden }));
+    if (ok) setEditing(null);
+  });
+  $('#adv-lcat-cancel-edit').addEventListener('click', () => setEditing(null));
+  $('#adv-lcat-close').addEventListener('click', close);
+
+  renderList();
 }

@@ -2215,7 +2215,7 @@ button.adv-ach-place small {
   border: 2px solid var(--adv-ink);
   border-radius: 16px;
   background: var(--adv-card);
-  overflow: hidden;
+  /* 不要 overflow: hidden：它會讓清單變成 sticky 的參考框，底部勾選列就不是貼著畫面而是浮在清單中間 */
 }
 
 .adv-ledger-check {
@@ -2270,6 +2270,7 @@ button.adv-ach-place small {
   justify-content: space-between;
   gap: 8px;
   padding: 10px 12px;
+  border-radius: 0 0 14px 14px;
   background: var(--adv-washi);
   font-size: 0.85rem;
 }
@@ -2476,4 +2477,82 @@ button.adv-ach-place small {
 /* 表單依種類切換欄位用 hidden；元件自己的 display 會蓋掉瀏覽器預設的 [hidden] */
 .adv-modal [hidden] {
   display: none !important;
+}
+
+.adv-ledger-gap {
+  height: 18px;
+}
+
+/* 管理公帳分類 */
+.adv-lcat-list {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.adv-lcat-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 2px solid var(--adv-ink);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--cat-color) 18%, var(--adv-card));
+}
+
+.adv-lcat-row--hidden {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.adv-lcat-row__emoji {
+  font-size: 1.2rem;
+}
+
+.adv-lcat-row__label {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.92rem;
+}
+
+.adv-lcat-row__label small {
+  font-size: 0.7rem;
+  color: var(--adv-muted);
+}
+
+.adv-lcat-btn {
+  flex-shrink: 0;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  border: 2px solid var(--adv-ink);
+  border-radius: 10px;
+  background: var(--adv-card);
+  color: var(--adv-ink);
+  font-family: var(--adv-font);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.adv-lcat-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.adv-lcat-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.adv-modal .adv-lcat-form input[type="text"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.adv-modal .adv-lcat-form .adv-lcat-form__emoji {
+  flex: 0 0 3.2em;
+  text-align: center;
 }
