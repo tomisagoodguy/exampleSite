@@ -25,8 +25,8 @@ import {
 } from './supabase';
 import { esc, openModal, showToast } from './ui';
 
-/** 💰 公帳分頁：📒 流水（本月逐日）、✅ 核對（對信用卡帳單）、📊 回顧（月報） */
-export type LedgerView = 'list' | 'check' | 'review';
+/** 💰 公帳分頁：📒 流水（本月逐日）、📅 月曆（每天花多少、去了哪）、✅ 核對（對信用卡帳單）、📊 回顧（月報） */
+export type LedgerView = 'list' | 'calendar' | 'check' | 'review';
 
 export interface LedgerState {
   /** YYYY-MM */
@@ -227,7 +227,9 @@ export function renderLedger(
       + bankHTML(entries, balances)
     : view === 'review'
       ? reviewHTML(entries, month, placeById, tripBySlug)
-      : picking && monthEntries.length
+      : view === 'calendar'
+        ? calendarHTML(monthEntries, month, places, placeById, tripBySlug)
+        : picking && monthEntries.length
         ? pickHTML(monthEntries)
         : `${searchBoxHTML()}<div data-ledger-results>${listBody()}</div>`;
 
@@ -250,6 +252,7 @@ export function renderLedger(
       </div>` : ''}
     <div class="adv-guide-seasons" role="group" aria-label="切換公帳畫面">
       ${viewChip('list', '📒 流水')}
+      ${viewChip('calendar', '📅 月曆')}
       ${viewChip('check', '✅ 核對', unchecked.length + ownPending.length)}
       ${viewChip('review', '📊 回顧')}
     </div>
@@ -292,6 +295,19 @@ export function renderLedger(
         amount: LEDGER_MONTHLY_DEPOSIT,
         spent_on: month === currentMonth() ? localDate() : `${month}-01`,
       });
+      return;
+    }
+
+    const dayBtn = target.closest<HTMLElement>('[data-ledger-day]');
+    if (dayBtn) {
+      calendarDay = dayBtn.dataset.ledgerDay || null;
+      handlers.onStateChange({ month, view });
+      return;
+    }
+
+    const addDayBtn = target.closest<HTMLElement>('[data-ledger-add-day]');
+    if (addDayBtn) {
+      handlers.onAdd({ spent_on: addDayBtn.dataset.ledgerAddDay });
       return;
     }
 
@@ -470,6 +486,96 @@ function listHTML(monthEntries: LedgerEntry[], placeById: Map<number, PlaceEntry
   if (!monthEntries.length) return `<p class="adv-empty">這個月還沒有記帳，按「＋ 記一筆」開始</p>${HISTORY_LINK}`;
   return daysHTML(monthEntries, placeById, tripBySlug)
     + '<button type="button" class="adv-ledger-link" data-ledger-pick="on">☑️ 一次選幾筆刪除</button>' + HISTORY_LINK;
+}
+
+// ───────────────────────── 月曆 ─────────────────────────
+
+/** 月曆上點開的那天；不在目前月份就改看今天（本月）或不展開 */
+let calendarDay: string | null = null;
+
+/** 那天去了哪：行程定在那天的地點，加上那天記帳連到的地點 */
+function placesOn(date: string, places: PlaceEntry[], dayEntries: LedgerEntry[], placeById: Map<number, PlaceEntry>): PlaceEntry[] {
+  const found = new Map<number, PlaceEntry>();
+  places.filter((p) => p.visit_date?.slice(0, 10) === date).forEach((p) => found.set(p.id, p));
+  dayEntries.forEach((e) => {
+    const p = e.place_id != null ? placeById.get(e.place_id) : undefined;
+    if (p) found.set(p.id, p);
+  });
+  return [...found.values()];
+}
+
+function calendarHTML(
+  monthEntries: LedgerEntry[],
+  month: string,
+  places: PlaceEntry[],
+  placeById: Map<number, PlaceEntry>,
+  tripBySlug: Map<string, Trip>
+): string {
+  const today = localDate();
+  const day = calendarDay?.startsWith(month) ? calendarDay : today.startsWith(month) ? today : null;
+  const [y, m] = month.split('-').map(Number);
+  const lead = new Date(y, m - 1, 1).getDay();
+  const days = daysInMonth(month);
+
+  const byDay = new Map<string, LedgerEntry[]>();
+  monthEntries.forEach((e) => byDay.set(e.spent_on, [...(byDay.get(e.spent_on) || []), e]));
+  const spentOn = (date: string) => sum((byDay.get(date) || []).filter((e) => e.kind === 'expense'));
+  const dates = Array.from({ length: days }, (_, i) => `${month}-${pad(i + 1)}`);
+  const max = Math.max(0, ...dates.map(spentOn));
+
+  const cells = dates.map((date, i) => {
+    const list = byDay.get(date) || [];
+    const spent = spentOn(date);
+    const went = placesOn(date, places, list, placeById).length;
+    const trip = list.some((e) => e.trip_slug);
+    const cls = ['adv-ledger-cal__cell', date === day ? 'is-active' : '', date === today ? 'is-today' : ''].filter(Boolean).join(' ');
+    return `
+      <button type="button" class="${cls}" data-ledger-day="${date}" aria-pressed="${date === day}" aria-label="${dayLabel(date)}${spent ? ` 花 ${money(spent)}` : ''}${went ? `，去了 ${went} 個地方` : ''}">
+        <span class="adv-ledger-cal__num">${i + 1}</span>
+        <span class="adv-ledger-cal__amt">${spent ? moneyShort(spent) : ''}</span>
+        <span class="adv-ledger-cal__mark" aria-hidden="true">${trip ? '✈️' : ''}${went ? '📍' : ''}</span>
+        ${spent > 0 && max > 0 ? `<span class="adv-ledger-cal__bar" style="--heat:${Math.max(0.15, spent / max).toFixed(2)}" aria-hidden="true"></span>` : ''}
+      </button>
+    `;
+  }).join('');
+
+  const spentDays = dates.filter((d) => spentOn(d) > 0).length;
+  const total = sum(monthEntries.filter((e) => e.kind === 'expense'));
+
+  return `
+    <div class="adv-ledger-cal">
+      <div class="adv-ledger-cal__grid">
+        ${[...WEEKDAY].map((w) => `<span class="adv-ledger-cal__wd">${w}</span>`).join('')}
+        ${'<span></span>'.repeat(lead)}
+        ${cells}
+      </div>
+      <p class="adv-ledger-cal__legend">
+        ${spentDays ? `${spentDays} 天有花錢，平均一天 ${money(Math.round(total / spentDays))}・` : ''}底下色條越長花越多・📍 去了哪・✈️ 旅行中
+      </p>
+    </div>
+    ${day ? calendarDayHTML(day, byDay.get(day) || [], places, placeById, tripBySlug) : ''}
+  `;
+}
+
+function calendarDayHTML(
+  date: string,
+  list: LedgerEntry[],
+  places: PlaceEntry[],
+  placeById: Map<number, PlaceEntry>,
+  tripBySlug: Map<string, Trip>
+): string {
+  const went = placesOn(date, places, list, placeById);
+  const spent = sum(list.filter((e) => e.kind === 'expense'));
+  return `
+    <div class="adv-ledger-day adv-ledger-cal__day">
+      <div class="adv-ledger-day__head"><span>${dayLabel(date)}</span>${spent ? `<span>小計 ${money(spent)}</span>` : ''}</div>
+      ${went.length ? `<p class="adv-ledger-cal__places">${went.map((p) => `<span>${p.status === 'done' ? '📍' : '🗓️'} ${esc(p.name)}</span>`).join('')}</p>` : ''}
+      ${list.length
+        ? [...list].sort((a, b) => b.id - a.id).map((e) => rowHTML(e, placeById, tripBySlug)).join('')
+        : '<p class="adv-empty">這天沒有記帳</p>'}
+      <button type="button" class="adv-card-btn" data-ledger-add-day="${date}">＋ 記這天的帳</button>
+    </div>
+  `;
 }
 
 // ───────────────────────── 搜尋（所有月份） ─────────────────────────

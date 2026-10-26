@@ -187,6 +187,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - 核對不分月份：列出所有 `method = 'card'` 且未核對的支出，依日期由舊到新，對著帳單勾；勾選時顯示已選合計
 - 待核對再**依帳單期分組**（`ledger.ts` `statementsHTML`）：結帳日是 `data.ts` `LEDGER_CARD_CLOSING_DAY`（大於當月天數算月底），已過結帳日的一期標「📄 M/D 結帳的帳單」，還沒到的標「🕒 未出帳」；以消費日分期，結帳日前一兩天刷的可能實際入帳在下一期
 - **流水搜尋**（`searchQuery` 模組變數）：跨所有月份，比對備註、分類、地點、旅行、誰付、付款方式；純數字詞比金額（台幣或原幣）要**完全相等**，`1,280` 不會找到 128；空白分開＝AND。打字只重畫 `[data-ledger-results]`，輸入框不失焦；最多列 200 筆
+- **📅 月曆**（`ledger.ts` `calendarHTML`）：每格是當天支出、底部珊瑚色條（長度＝當天花費 ÷ 本月最多那天）、📍＝那天去了哪（地點 `visit_date` 等於那天，或當天記帳連到的 `place_id`）、✈️＝當天有帳連到旅行。點某天在下方列出那天的地點與流水，「＋ 記這天的帳」預帶日期；點開的日子存在模組變數 `calendarDay`
 - **📊 回顧**全在前端由流水算出（`ledger.ts`）：分類組成條＋橫條、🔮 本月預估（`forecastMonth`：已花＋剩餘天數 × 每天速度，速度＝本月與前 3 個月平常花費依已過天數加權，**大額不拿來推速度**；月底餘額另加還沒記的入金）、📈 每月花費長條圖（近 12 個月，可切分類，點長條跳月）、🐷 餘額折線、⬇️ CSV（本月／全部，含 BOM 給 Excel，文字欄開頭 `=+-@` 加 `'`）。圖是手刻 SVG，文字與線條用 CSS class 吃 `--adv-*`，沒有圖表套件
 - 大額門檻 `data.ts` `LEDGER_BIG_EXPENSE`（3,000）：流水左邊珊瑚色條＋「🔺 大額」，回顧另列合計
 - 寫入走 RPC：`dating_map_save_expense`（`saveExpense`，`p_id` 為 `null` 時新增）、`dating_map_delete_expense`、`dating_map_set_expense_checked`（一次多筆）。`fetchLedger` 會分頁讀完，一個月約百筆，幾年就超過 PostgREST 單次 1000 筆上限

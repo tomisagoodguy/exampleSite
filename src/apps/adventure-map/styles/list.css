@@ -2185,6 +2185,93 @@ button.adv-ach-place small {
   font-variant-numeric: tabular-nums;
 }
 
+.adv-ledger-cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.adv-ledger-cal__wd {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--adv-muted);
+}
+
+.adv-ledger-cal__cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-height: 58px;
+  padding: 4px 2px 8px;
+  overflow: hidden;
+  border: 2px solid var(--adv-line);
+  border-radius: 12px;
+  background: var(--adv-card);
+  color: var(--adv-ink);
+  font-family: var(--adv-font);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.adv-ledger-cal__cell.is-today .adv-ledger-cal__num {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--adv-yellow);
+  color: var(--adv-on-flat);
+}
+
+.adv-ledger-cal__cell.is-active {
+  border-color: var(--adv-ink);
+  box-shadow: 2px 2px 0 var(--adv-drop);
+}
+
+.adv-ledger-cal__num {
+  font-size: 0.8rem;
+}
+
+.adv-ledger-cal__amt {
+  font-size: 0.68rem;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.adv-ledger-cal__mark {
+  font-size: 0.65rem;
+  line-height: 1;
+}
+
+.adv-ledger-cal__bar {
+  position: absolute;
+  left: 6px;
+  bottom: 4px;
+  width: calc((100% - 12px) * var(--heat));
+  height: 4px;
+  border-radius: 999px;
+  background: var(--adv-coral);
+}
+
+.adv-ledger-cal__legend {
+  margin: 8px 4px 14px;
+  font-size: 0.78rem;
+  color: var(--adv-muted);
+}
+
+.adv-ledger-cal__places {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+}
+
+.adv-ledger-cal__places span {
+  padding: 2px 10px;
+  border: 2px solid var(--adv-ink);
+  border-radius: 999px;
+}
+
 .adv-ledger-row {
   display: flex;
   align-items: center;
