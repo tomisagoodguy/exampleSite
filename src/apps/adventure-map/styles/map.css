@@ -521,7 +521,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
 
 @media (max-width: 899px) {
   .adv-back-top {
-    bottom: calc(150px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(200px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -1017,6 +1017,15 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
     background: var(--adv-chip);
   }
 
+  /* 玩的四顆跟記帳隔開，與手機底部的玩／記帳兩區同一套分法 */
+  .adv-deskbar__sep {
+    align-self: stretch;
+    width: 3px;
+    margin: 4px 6px;
+    border-radius: 2px;
+    background: var(--adv-ink);
+  }
+
   .adv-deskbar__btn--active,
   .adv-deskbar__btn--active:hover {
     background: var(--adv-yellow);
@@ -1120,7 +1129,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
 
 @media (max-width: 899px) {
   .adv-page {
-    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px));
   }
 
   /* 靠右縮小，不再擋住清單中間的「想去」按鈕與卡片標籤 */
@@ -1130,7 +1139,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
     transform: none;
     padding: 9px 16px;
     font-size: 0.92rem;
-    bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(140px + env(safe-area-inset-bottom, 0px));
   }
 
   .adv-fab:hover {
@@ -1144,7 +1153,8 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   /* 不透明底色：半透明時底下卡片文字會透出來，看起來很亂 */
   .adv-tabbar {
     display: flex;
-    gap: 2px;
+    flex-direction: column;
+    gap: 4px;
     position: fixed;
     left: 0;
     right: 0;
@@ -1152,7 +1162,75 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
     z-index: 600;
     background: var(--adv-paper);
     border-top: 3px solid var(--adv-ink);
-    padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+    padding: 4px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* 上層：玩的六個子分頁，或記帳的「＋ 記一筆」，依目前分頁二選一 */
+  .adv-tabbar__sub {
+    display: flex;
+    gap: 2px;
+    min-height: 48px;
+    padding-bottom: 4px;
+    border-bottom: 2px dashed var(--adv-line);
+  }
+
+  .adv-page[data-active-tab="ledger"] .adv-tabbar__sub--play,
+  .adv-page:not([data-active-tab="ledger"]) .adv-tabbar__sub--ledger {
+    display: none;
+  }
+
+  .adv-tabbar__add {
+    flex: 1;
+    border-radius: 16px;
+    border: 3px solid var(--adv-ink);
+    background: var(--adv-coral);
+    color: var(--adv-on-flat);
+    font-family: var(--adv-font);
+    font-size: 1.05rem;
+    cursor: pointer;
+    box-shadow: 0 3px 0 var(--adv-drop);
+  }
+
+  .adv-tabbar__add:active {
+    transform: translateY(3px);
+    box-shadow: none;
+  }
+
+  /* 下層：玩／記帳兩顆大按鈕，各佔半邊 */
+  .adv-tabbar__modes {
+    display: flex;
+    gap: 6px;
+  }
+
+  .adv-mode {
+    flex: 1;
+    min-height: 48px;
+    border-radius: 16px;
+    border: 2px solid var(--adv-line);
+    background: var(--adv-card);
+    color: var(--adv-muted);
+    font-family: var(--adv-font);
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .adv-mode:active {
+    transform: scale(0.97);
+  }
+
+  .adv-mode--active {
+    border: 3px solid var(--adv-ink);
+    color: var(--adv-on-flat);
+    box-shadow: 0 3px 0 var(--adv-drop);
+  }
+
+  .adv-mode--play.adv-mode--active {
+    background: var(--adv-water);
+  }
+
+  .adv-mode--ledger.adv-mode--active {
+    background: var(--adv-yellow);
   }
 
   .adv-tab {
@@ -1178,14 +1256,15 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
     transform: scale(0.95);
   }
 
-  /* 七個分頁擠一排，「願望清單」會折成兩行，字縮一點並禁止換行 */
+  /* 六個子分頁一排，「願望清單」不能折成兩行 */
   .adv-tab {
-    font-size: 0.68rem;
+    padding: 4px 2px 2px;
+    font-size: 0.7rem;
     white-space: nowrap;
   }
 
   .adv-tab__icon {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
     line-height: 1;
   }
 

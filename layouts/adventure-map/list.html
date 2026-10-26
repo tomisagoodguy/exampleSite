@@ -98,7 +98,8 @@
     <button class="adv-deskbar__btn" data-desk-target="guides">📚 行程懶人包 <span class="adv-section-count" data-section="guides">0</span></button>
     <button class="adv-deskbar__btn" data-desk-target="achievements">🏆 成就 <span class="adv-section-count" data-section="achievements">0</span></button>
     <button class="adv-deskbar__btn" data-desk-target="trips">✈️ 旅行 <span class="adv-section-count" data-section="trips">0</span></button>
-    <button class="adv-deskbar__btn" data-desk-target="ledger">💰 公帳</button>
+    <span class="adv-deskbar__sep" aria-hidden="true"></span>
+    <button class="adv-deskbar__btn adv-deskbar__btn--ledger" data-desk-target="ledger">💰 記帳</button>
   </nav>
 
   {{/* ─── 地點搜尋框 ─── */}}
@@ -234,8 +235,10 @@
   {{/* ─── 回到頂部 ─── */}}
   <button class="adv-back-top" id="adv-back-top" aria-label="回到頂部" title="回到頂部">↑</button>
 
-  {{/* ─── 手機版底部分頁列，桌面隱藏；前三個依流程順序：願望 → 提案 → 行程 ─── */}}
+  {{/* ─── 手機版底部分頁列，桌面隱藏：下層是「玩／記帳」兩顆大按鈕，上層隨模式換成六個子分頁或「＋ 記一筆」 ─── */}}
   <nav class="adv-tabbar" id="adv-tabbar">
+    {{/* 玩的子分頁：前三個依流程順序，願望 → 提案 → 行程 */}}
+    <div class="adv-tabbar__sub adv-tabbar__sub--play">
     <button class="adv-tab" data-tab-target="idea">
       <span class="adv-tab__icon">💭</span>
       願望清單
@@ -266,10 +269,14 @@
       旅行
       <span class="adv-section-count adv-tab__badge" data-section="trips">0</span>
     </button>
-    <button class="adv-tab" data-tab-target="ledger">
-      <span class="adv-tab__icon">💰</span>
-      公帳
-    </button>
+    </div>
+    <div class="adv-tabbar__sub adv-tabbar__sub--ledger">
+      <button type="button" class="adv-tabbar__add" id="adv-tabbar-ledger-new">＋ 記一筆</button>
+    </div>
+    <div class="adv-tabbar__modes">
+      <button type="button" class="adv-mode adv-mode--play" data-mode-target="play">🎒 玩</button>
+      <button type="button" class="adv-mode adv-mode--ledger" data-mode-target="ledger">💰 記帳</button>
+    </div>
   </nav>
 
 </section>

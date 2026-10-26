@@ -313,9 +313,17 @@ class DatingMapApp {
     const deskbar = document.getElementById('adv-deskbar');
     const PLAN_TABS = ['proposed', 'itinerary', 'idea'];
     let lastPlanTab = 'proposed';
+    // 手機下層「🎒 玩」回到上次看的子分頁
+    let lastPlayTab = this.defaultTab();
 
     const setActive = (tab: string) => {
       if (PLAN_TABS.includes(tab)) lastPlanTab = tab;
+      if (tab !== 'ledger') lastPlayTab = tab;
+      tabbar.querySelectorAll<HTMLElement>('.adv-mode').forEach((btn) => {
+        const active = (btn.dataset.modeTarget === 'ledger') === (tab === 'ledger');
+        btn.classList.toggle('adv-mode--active', active);
+        btn.setAttribute('aria-pressed', String(active));
+      });
       const deskTab = PLAN_TABS.includes(tab) ? 'plan' : tab;
       document.querySelectorAll('.adv-section[data-tab]').forEach((el) => {
         el.classList.toggle('adv-section--active', (el as HTMLElement).dataset.tab === tab);
@@ -341,6 +349,10 @@ class DatingMapApp {
 
     tabbar.querySelectorAll('.adv-tab').forEach((btn) => {
       btn.addEventListener('click', () => setActive((btn as HTMLElement).dataset.tabTarget || 'proposed'));
+    });
+
+    tabbar.querySelectorAll<HTMLElement>('.adv-mode').forEach((btn) => {
+      btn.addEventListener('click', () => setActive(btn.dataset.modeTarget === 'ledger' ? 'ledger' : lastPlayTab));
     });
 
     deskbar?.querySelectorAll<HTMLElement>('.adv-deskbar__btn').forEach((btn) => {
@@ -993,6 +1005,7 @@ class DatingMapApp {
     document.getElementById('adv-guide-new')?.addEventListener('click', () => this.editGuide());
     document.getElementById('adv-trip-new')?.addEventListener('click', () => this.editTrip());
     document.getElementById('adv-ledger-new')?.addEventListener('click', () => this.addExpense());
+    document.getElementById('adv-tabbar-ledger-new')?.addEventListener('click', () => this.addExpense());
     document.getElementById('adv-ledger-cats')?.addEventListener('click', () => this.manageLedgerCategories());
   }
 
