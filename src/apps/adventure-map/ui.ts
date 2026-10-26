@@ -8,7 +8,8 @@ import {
   ACHIEVEMENT_CATEGORY,
   AchievementCategory,
   AchievementCategoryConfig,
-  ACHIEVEMENT_TITLES,
+  ACHIEVEMENT_BOOKS,
+  AchievementBook,
   REGION_INFO,
   IDEA_TIER,
   IdeaTier,
@@ -1151,14 +1152,17 @@ export interface AchievementHandlers {
   onUndo: (a: Achievement) => void;
   onEdit: (a: Achievement) => void;
   onDelete: (a: Achievement) => void;
-  onCreate: () => void;
+  /** 新增時預設選目前冊子的第一個分類 */
+  onCreate: (category: AchievementCategory) => void;
 }
 
-/** 成就分頁：稱號 + 徽章進度（兼分類篩選）+ 成就卡片 */
+/** 成就分頁：冊子切換 + 稱號 + 徽章進度（兼分類篩選）+ 成就卡片 */
 export function renderAchievements(
-  all: Achievement[],
-  searched: Achievement[],
+  everything: Achievement[],
+  searchedEverything: Achievement[],
   allPlaces: PlaceEntry[],
+  book: AchievementBook,
+  onBookChange: (book: AchievementBook) => void,
   filter: AchievementFilter,
   onFilterChange: (filter: AchievementFilter) => void,
   handlers: AchievementHandlers
@@ -1170,15 +1174,30 @@ export function renderAchievements(
   if (!mount || !summary || !wall || !todoHead) return;
 
   const placeById = new Map(allPlaces.map((p) => [p.id, p]));
-  const unlockOf = new Map(all.map((a) => [a.id, achievementUnlock(a, placeById)]));
+  const unlockOf = new Map(everything.map((a) => [a.id, achievementUnlock(a, placeById)]));
   const isUnlocked = (a: Achievement) => unlockOf.get(a.id) != null;
   const unlockDate = (a: Achievement) => unlockOf.get(a.id)?.date || '';
-  const cats = Object.entries(ACHIEVEMENT_CATEGORY) as [AchievementCategory, AchievementCategoryConfig][];
+  const inBook = (a: Achievement) => ACHIEVEMENT_CATEGORY[a.category].book === book;
+  const all = everything.filter(inBook);
+  const searched = searchedEverything.filter(inBook);
+  const cats = (Object.entries(ACHIEVEMENT_CATEGORY) as [AchievementCategory, AchievementCategoryConfig][])
+    .filter(([, cfg]) => cfg.book === book);
 
-  // 稱號、統計與徽章看全部成就，不受搜尋影響
+  // 冊子切換：數字是各冊已完成／全部，不受搜尋影響
+  const books = (Object.entries(ACHIEVEMENT_BOOKS) as [AchievementBook, (typeof ACHIEVEMENT_BOOKS)[AchievementBook]][])
+    .map(([key, cfg]) => {
+      const list = everything.filter((a) => ACHIEVEMENT_CATEGORY[a.category].book === key);
+      const active = key === book;
+      return `<button type="button" class="adv-ach-book ${active ? 'is-active' : ''}" data-ach-book="${key}" aria-pressed="${active}">
+        <span aria-hidden="true">${cfg.emoji}</span> ${cfg.label}
+        <span class="adv-ach-book-count">${list.filter(isUnlocked).length}/${list.length}</span>
+      </button>`;
+    }).join('');
+
+  // 稱號、統計與徽章看這本冊子的全部成就，不受搜尋影響
   const unlockedAll = all.filter(isUnlocked);
   const total = unlockedAll.length;
-  const title = [...ACHIEVEMENT_TITLES].reverse().find((t) => total >= t.min)?.title || '';
+  const title = [...ACHIEVEMENT_BOOKS[book].titles].reverse().find((t) => total >= t.min)?.title || '';
   const year = String(new Date().getFullYear());
   const thisYear = unlockedAll.filter((a) => unlockDate(a).startsWith(year)).length;
   const latest = unlockedAll
@@ -1186,6 +1205,7 @@ export function renderAchievements(
     .sort((x, y) => unlockDate(y).localeCompare(unlockDate(x)))[0];
 
   summary.innerHTML = `
+    <div class="adv-ach-books" role="group" aria-label="切換成就冊子">${books}</div>
     <div class="adv-ach-rank">
       <span class="adv-ach-rank-title">${title}</span>
       <span class="adv-ach-rank-count">${total} / ${all.length}</span>
@@ -1216,6 +1236,12 @@ export function renderAchievements(
     const key = btn.dataset.achFilter as AchievementFilter;
     btn.addEventListener('click', () => onFilterChange(filter === key ? 'all' : key));
   });
+  summary.querySelectorAll<HTMLElement>('[data-ach-book]').forEach((btn) => {
+    const key = btn.dataset.achBook as AchievementBook;
+    if (key !== book) btn.addEventListener('click', () => onBookChange(key));
+  });
+  const credit = document.getElementById('adv-ach-credit');
+  if (credit) credit.hidden = book !== 'travel';
 
   // 進度優先：未解鎖的依「離完成多近」排序（連結地點已排進行程 > 提案中 > 在願望清單 > 沒有地點），再依難度由易到難
   const nearness = (a: Achievement) =>
@@ -1244,18 +1270,18 @@ export function renderAchievements(
       : `<p class="adv-ach-wall-empty">完成第一個成就，就會掛到這面牆上</p>`}
   `;
 
-  // 挑戰中：只列未解鎖的
+  // 挑戰中：只列未解鎖的；100 件事照清單編號排，不比難度
   const todo = shown
     .filter((a) => !isUnlocked(a))
     .sort((x, y) =>
       nearness(y) - nearness(x) ||
-      x.difficulty - y.difficulty ||
+      (book === 'travel' ? x.difficulty - y.difficulty : 0) ||
       order.indexOf(x.category) - order.indexOf(y.category) ||
       x.sort_order - y.sort_order
     );
-  todoHead.innerHTML = `🎯 挑戰中 <span class="adv-ach-subhead-count">${todo.length}</span>
-    <button type="button" class="adv-card-btn adv-card-btn--primary adv-ach-new-btn" id="adv-ach-new">＋ 新增成就</button>`;
-  todoHead.querySelector('#adv-ach-new')?.addEventListener('click', () => handlers.onCreate());
+  todoHead.innerHTML = `🎯 ${book === 'travel' ? '挑戰中' : '還沒一起做'} <span class="adv-ach-subhead-count">${todo.length}</span>
+    <button type="button" class="adv-card-btn adv-card-btn--primary adv-ach-new-btn" id="adv-ach-new">${book === 'travel' ? '＋ 新增成就' : '＋ 新增一件事'}</button>`;
+  todoHead.querySelector('#adv-ach-new')?.addEventListener('click', () => handlers.onCreate(cats[0][0]));
 
   mount.innerHTML = todo.length
     ? todo.map((a) => achievementCardHTML(a, placeById)).join('')
@@ -1271,7 +1297,7 @@ export function renderAchievements(
   });
 
   document.querySelectorAll('.adv-section-count[data-section="achievements"]').forEach((el) => {
-    el.textContent = `${total}`;
+    el.textContent = `${everything.filter(isUnlocked).length}`;
   });
 }
 
@@ -1786,16 +1812,22 @@ export function openMarkDoneModal(title = '標記已去過'): Promise<{ visitDat
 /** 新增／修改成就；連結地點用名稱搜尋挑選，去過任一個就自動解鎖 */
 export function openAchievementModal(
   allPlaces: PlaceEntry[],
-  existing?: Achievement
+  existing?: Achievement,
+  defaultCategory: AchievementCategory = 'nature'
 ): Promise<AchievementInput | null> {
   return new Promise((resolve) => {
     const placeById = new Map(allPlaces.map((p) => [p.id, p]));
     const picked = (existing?.place_ids || []).filter((id) => placeById.has(id));
-    const category = existing?.category || 'nature';
+    const category = existing?.category || defaultCategory;
     const difficulty = existing?.difficulty || 2;
 
-    const categoryOptions = (Object.entries(ACHIEVEMENT_CATEGORY) as [AchievementCategory, AchievementCategoryConfig][])
-      .map(([key, cfg]) => `<option value="${key}" ${category === key ? 'selected' : ''}>${cfg.emoji} ${cfg.label}</option>`)
+    // 分類依冊子分組，改到另一本冊子的分類就等於搬過去
+    const entries = Object.entries(ACHIEVEMENT_CATEGORY) as [AchievementCategory, AchievementCategoryConfig][];
+    const categoryOptions = (Object.entries(ACHIEVEMENT_BOOKS) as [AchievementBook, (typeof ACHIEVEMENT_BOOKS)[AchievementBook]][])
+      .map(([bookKey, bookCfg]) => `<optgroup label="${bookCfg.emoji} ${bookCfg.label}">${entries
+        .filter(([, cfg]) => cfg.book === bookKey)
+        .map(([key, cfg]) => `<option value="${key}" ${category === key ? 'selected' : ''}>${cfg.emoji} ${cfg.label}</option>`)
+        .join('')}</optgroup>`)
       .join('');
     const difficultyOptions = [1, 2, 3, 4, 5]
       .map((n) => `<option value="${n}" ${difficulty === n ? 'selected' : ''}>${'★'.repeat(n)}${'☆'.repeat(5 - n)}</option>`)
@@ -1811,11 +1843,11 @@ export function openAchievementModal(
       <input type="text" id="adv-af-emoji" value="${esc(existing?.emoji)}" placeholder="🌌" />
       <label>難度</label>
       <select id="adv-af-difficulty">${difficultyOptions}</select>
-      <label>何時去</label>
+      <label>何時去（可留空）</label>
       <input type="text" id="adv-af-when" value="${esc(existing?.when_text)}" placeholder="例如：4–9 月新月前後" />
       <label>說明</label>
       <textarea id="adv-af-desc">${esc(existing?.description)}</textarea>
-      <label>連結地點（去過任一個就自動解鎖）</label>
+      <label>連結地點（可留空；去過任一個就自動解鎖）</label>
       <div class="adv-ach-picked" id="adv-af-picked"></div>
       <input type="text" id="adv-af-search" placeholder="搜尋地點名稱" autocomplete="off" />
       <div class="adv-ach-results" id="adv-af-results"></div>

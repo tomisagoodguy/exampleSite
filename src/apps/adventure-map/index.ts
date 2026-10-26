@@ -1,6 +1,14 @@
 import './styles/map.css';
 import './styles/list.css';
-import { CATEGORY_CONFIG, colorToFade, filterPlaces, guideDay } from './data';
+import {
+  CATEGORY_CONFIG,
+  colorToFade,
+  filterPlaces,
+  guideDay,
+  ACHIEVEMENT_BOOKS,
+  AchievementBook,
+  AchievementCategory,
+} from './data';
 import {
   renderFilterBar,
   renderAttrBar,
@@ -72,12 +80,26 @@ import {
   verifyPassphrase,
 } from './supabase';
 
+/** 成就分頁上次看的冊子，只記在各自的裝置上 */
+const ACH_BOOK_KEY = 'adv-ach-book';
+
+function readAchBook(): AchievementBook {
+  try {
+    const saved = localStorage.getItem(ACH_BOOK_KEY);
+    if (saved && saved in ACHIEVEMENT_BOOKS) return saved as AchievementBook;
+  } catch {
+    // 讀不到就用預設冊子
+  }
+  return 'travel';
+}
+
 class DatingMapApp {
   private allPlaces: PlaceEntry[] = [];
   private guides: Guide[] = [];
   private currentGuideFilter: GuideFilter = GUIDE_FILTER_ALL;
   private achievements: Achievement[] = [];
   private currentAchFilter: AchievementFilter = 'all';
+  private currentAchBook: AchievementBook = readAchBook();
   private trips: Trip[] = [];
   private currentCat: string = 'all';
   private currentAttr: AttrFilter = { region: 'all', rainOnly: false };
@@ -462,6 +484,17 @@ class DatingMapApp {
       this.achievements,
       this.filterAchievements(),
       this.allPlaces,
+      this.currentAchBook,
+      (book) => {
+        this.currentAchBook = book;
+        this.currentAchFilter = 'all';
+        try {
+          localStorage.setItem(ACH_BOOK_KEY, book);
+        } catch {
+          // 私密瀏覽模式寫不進去，只是下次回到預設冊子
+        }
+        this.renderAll();
+      },
       this.currentAchFilter,
       (filter) => {
         this.currentAchFilter = filter;
@@ -472,7 +505,7 @@ class DatingMapApp {
         onUndo: (a) => this.undoAchievement(a),
         onEdit: (a) => this.editAchievement(a),
         onDelete: (a) => this.deleteAchievement(a),
-        onCreate: () => this.editAchievement(),
+        onCreate: (category) => this.editAchievement(undefined, category),
       }
     );
     renderTrips(
@@ -617,8 +650,8 @@ class DatingMapApp {
   }
 
   /** 沒給 a 就是新增 */
-  private async editAchievement(a?: Achievement) {
-    const input = await openAchievementModal(this.allPlaces, a);
+  private async editAchievement(a?: Achievement, category?: AchievementCategory) {
+    const input = await openAchievementModal(this.allPlaces, a, category);
     if (!input) return;
 
     const saved = await this.withPassphrase((pw) => saveAchievement(pw, a?.id ?? null, input));

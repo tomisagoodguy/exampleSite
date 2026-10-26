@@ -138,7 +138,9 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - **解鎖規則（前端 `achievementUnlock` 判斷）**：`done_date` 有值（手動打勾），**或**任一連結地點 `status = 'done'`；所以地點標記「已去過」會自動解鎖成就，祭典這類沒有固定地點的只能手動
 - 前端寫入走三支 RPC：`dating_map_set_achievement` 手動解鎖（`p_done=false` 清除手動紀錄）；`dating_map_save_achievement`（`saveAchievement`，`p_id` 為 `null` 時新增）存名稱、分類、emoji、難度、何時去、說明，並把連結地點**整組換成** `p_place_ids`；`dating_map_delete_achievement`（`deleteAchievement`）刪除成就，連結由 `ON DELETE CASCADE` 跟著刪，地點不動
 - 入口：「🎯 挑戰中」標題右側「＋ 新增成就」，以及每張成就卡片的「✏️ 修改／🗑️ 刪除」（成就牆也有）；表單是 `ui.ts` `openAchievementModal`，連結地點用名稱搜尋挑選
-- 分類徽章門檻與稱號定義在 `data.ts` 的 `ACHIEVEMENT_CATEGORY` / `ACHIEVEMENT_TITLES`；新增成就分類要同時改這裡與資料表的 CHECK 約束
+- 分類徽章門檻定義在 `data.ts` 的 `ACHIEVEMENT_CATEGORY`，稱號在 `ACHIEVEMENT_BOOKS`；新增成就分類要同時改這裡與資料表的 CHECK 約束
+- **兩本冊子**（成就分頁頂部切換鈕，上次看的記在 localStorage `adv-ach-book`）：🧭 旅行成就＝`nature` / `photo` / `festival` / `island`；💑 一起的 100 件事＝`outing` 出走、`eat` 吃吃喝喝、`words` 書與文字、`music` 音樂、`play` 玩樂體驗、`talk` 心裡話、`quirky` 小怪點子（2026-10-26 匯入，`sort_order` ＝清單編號 1–100）。同一張表、同一套解鎖／成就牆／照片，分類的 `book` 欄位決定放哪本；稱號、進度、徽章各冊各算，分頁按鈕的數字是兩冊合計。100 件事的待完成清單照 `sort_order` 排，不比難度
+- 100 件事只連結能一對一對上的地點（陽明山、擎天崗、九份老街、國家圖書館、美術館、花市、桌遊店、保齡球館…），「淡水看夕陽」這種去了不等於做到的不連結，靠手動打勾
 
 **旅行介紹頁**（「✈️ 旅行」分頁，一趟一張卡片）存在 `dating_map_docs`：
 

@@ -1370,6 +1370,53 @@ body.adv-tripmap-open {
   border: 3px solid var(--adv-ink);
 }
 
+/* 冊子切換：旅行成就／一起做的 100 件事，兩顆等寬的書籤按鈕 */
+.adv-ach-books {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.adv-ach-book {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 2px solid var(--adv-ink);
+  border-radius: 16px;
+  background: var(--adv-card);
+  color: var(--adv-ink);
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.adv-ach-book:hover {
+  background: var(--adv-chip);
+}
+
+.adv-ach-book.is-active {
+  background: var(--adv-coral);
+  color: var(--adv-on-flat);
+  box-shadow: 3px 3px 0 var(--adv-drop);
+  cursor: default;
+}
+
+.adv-ach-book-count {
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+.adv-ach-credit[hidden] {
+  display: none;
+}
+
 .adv-ach-rank {
   display: flex;
   justify-content: space-between;

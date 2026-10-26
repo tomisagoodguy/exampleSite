@@ -127,9 +127,15 @@ export function ideaTier(p: PlaceEntry): IdeaTier {
   return p.region === 'tzm' ? 'weekend' : 'trip';
 }
 
-export type AchievementCategory ='nature' | 'photo' | 'festival' | 'island';
+export type AchievementCategory =
+  | 'nature' | 'photo' | 'festival' | 'island'
+  | 'outing' | 'eat' | 'words' | 'music' | 'play' | 'talk' | 'quirky';
+
+/** 成就分頁的兩本冊子：旅行成就／一起做的 100 件事，各自有稱號、進度與成就牆 */
+export type AchievementBook = 'travel' | 'together';
 
 export interface AchievementCategoryConfig {
+  book: AchievementBook;
   label: string;
   emoji: string;
   color: string;
@@ -137,22 +143,46 @@ export interface AchievementCategoryConfig {
   badge: { name: string; threshold: number };
 }
 
-/** 宣告順序即成就分頁的分類順序；徽章門檻沿用參考專案（ivanusto/taiwan-travel-achievement-list） */
+/** 宣告順序即成就分頁的分類順序；旅行成就的徽章門檻沿用參考專案（ivanusto/taiwan-travel-achievement-list） */
 export const ACHIEVEMENT_CATEGORY: Record<AchievementCategory, AchievementCategoryConfig> = {
-  nature:   { label: '自然', emoji: '🏔️', color: '#81B29A', badge: { name: '山海自然控', threshold: 6 } },
-  photo:    { label: '攝影', emoji: '📷', color: '#7B8CDE', badge: { name: '極景攝影師', threshold: 5 } },
-  festival: { label: '祭典', emoji: '🥁', color: '#C47B5A', badge: { name: '民俗祭典通', threshold: 4 } },
-  island:   { label: '離島', emoji: '🚢', color: '#3D5A80', badge: { name: '跳島旅行家', threshold: 4 } },
+  nature:   { book: 'travel', label: '自然', emoji: '🏔️', color: '#81B29A', badge: { name: '山海自然控', threshold: 6 } },
+  photo:    { book: 'travel', label: '攝影', emoji: '📷', color: '#7B8CDE', badge: { name: '極景攝影師', threshold: 5 } },
+  festival: { book: 'travel', label: '祭典', emoji: '🥁', color: '#C47B5A', badge: { name: '民俗祭典通', threshold: 4 } },
+  island:   { book: 'travel', label: '離島', emoji: '🚢', color: '#3D5A80', badge: { name: '跳島旅行家', threshold: 4 } },
+  outing:   { book: 'together', label: '出走', emoji: '🛵', color: '#81B29A', badge: { name: '說走就走', threshold: 8 } },
+  eat:      { book: 'together', label: '吃吃喝喝', emoji: '🍝', color: '#E07A5F', badge: { name: '吃貨搭檔', threshold: 8 } },
+  words:    { book: 'together', label: '書與文字', emoji: '📚', color: '#C47B5A', badge: { name: '書蟲二人組', threshold: 8 } },
+  music:    { book: 'together', label: '音樂', emoji: '🎸', color: '#7B8CDE', badge: { name: '合拍的人', threshold: 8 } },
+  play:     { book: 'together', label: '玩樂體驗', emoji: '🎳', color: '#F2CC8F', badge: { name: '玩伴認證', threshold: 8 } },
+  talk:     { book: 'together', label: '心裡話', emoji: '💬', color: '#3D5A80', badge: { name: '靈魂知己', threshold: 8 } },
+  quirky:   { book: 'together', label: '小怪點子', emoji: '🎁', color: '#B5838D', badge: { name: '古怪同盟', threshold: 5 } },
 };
 
 /** 依解鎖總數決定稱號，由低到高 */
-export const ACHIEVEMENT_TITLES: { min: number; title: string }[] = [
-  { min: 0, title: '🌱 台灣新手' },
-  { min: 5, title: '🎒 週末旅人' },
-  { min: 12, title: '✈️ 台灣探索家' },
-  { min: 22, title: '🗺️ 破關老手' },
-  { min: 32, title: '🏯 台灣旅行神' },
-];
+export const ACHIEVEMENT_BOOKS: Record<AchievementBook, { label: string; emoji: string; titles: { min: number; title: string }[] }> = {
+  travel: {
+    label: '旅行成就',
+    emoji: '🧭',
+    titles: [
+      { min: 0, title: '🌱 台灣新手' },
+      { min: 5, title: '🎒 週末旅人' },
+      { min: 12, title: '✈️ 台灣探索家' },
+      { min: 22, title: '🗺️ 破關老手' },
+      { min: 32, title: '🏯 台灣旅行神' },
+    ],
+  },
+  together: {
+    label: '一起的 100 件事',
+    emoji: '💑',
+    titles: [
+      { min: 0, title: '🌱 剛開始的我們' },
+      { min: 10, title: '☕ 有默契了' },
+      { min: 30, title: '🫶 最佳拍檔' },
+      { min: 60, title: '🏡 生活在一起' },
+      { min: 100, title: '💯 百件達成' },
+    ],
+  },
+};
 
 export function filterPlaces(
   places: PlaceEntry[],
