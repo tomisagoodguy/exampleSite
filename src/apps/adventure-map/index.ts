@@ -24,6 +24,7 @@ import {
   achievementUnlock,
   AchievementFilter,
   renderTrips,
+  TripSpend,
   openPassphraseModal,
   openProposeModal,
   openMarkDoneModal,
@@ -44,7 +45,7 @@ import {
 import { PlaceEntry } from '../../shared/types';
 import { geocodePlace, lookupArea } from './geocode';
 import { openTripMap, TripStop } from './tripmap';
-import { renderLedger, endLedgerPick, openExpenseModal, openLedgerCategoryModal, openLedgerHistoryModal, LedgerState, currentMonth } from './ledger';
+import { renderLedger, endLedgerPick, openExpenseModal, openLedgerCategoryModal, openLedgerHistoryModal, LedgerState, currentMonth, localDate } from './ledger';
 import { setupPhotoViewer } from './photos';
 import { captureCard, flyCard } from './fly';
 import {
@@ -553,8 +554,10 @@ class DatingMapApp {
       this.trips,
       this.filterTrips(),
       (t) => this.tripPlaces(t).length,
+      (t) => this.tripSpend(t.slug),
       {
         onOpenMap: (t) => this.openTripMap(t),
+        onSpend: (t) => this.addExpense({ trip_slug: t.slug }),
         onEdit: (t) => this.editTrip(t),
         onDelete: (t) => this.deleteTrip(t),
       }
@@ -751,6 +754,18 @@ class DatingMapApp {
     return this.allPlaces.filter((p) => p.area?.startsWith(prefix) && p.lat != null && p.lng != null);
   }
 
+  /** 這趟的支出（退款是負數，一起加）；沒有就不顯示 */
+  private tripSpend(slug: string): TripSpend | null {
+    const rows = this.ledger.filter((e) => e.kind === 'expense' && e.trip_slug === slug);
+    if (!rows.length) return null;
+    const today = localDate();
+    return {
+      total: rows.reduce((s, e) => s + e.amount, 0),
+      count: rows.length,
+      today: rows.filter((e) => e.spent_on === today).reduce((s, e) => s + e.amount, 0),
+    };
+  }
+
   private openTripMap(trip: Trip) {
     // 懶人包的「🔗 原文」指到這趟的介紹頁，就是這趟的各天；懶人包已依 sort_order 排好，
     // 每條各自一條路線（day），顯示的天數取標題的「Day 3 路線 A」，沒寫就是第幾條
@@ -784,6 +799,7 @@ class DatingMapApp {
         this.renderAll();
         return saved;
       },
+      onAddExpense: (place) => this.addExpense({ trip_slug: trip.slug, place_id: place.id }),
     });
   }
 

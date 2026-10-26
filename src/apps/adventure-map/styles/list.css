@@ -590,6 +590,20 @@
   color: var(--adv-coral-deep);
 }
 
+.adv-trip-spend {
+  font-size: 0.85rem;
+}
+
+/* Huninn 只有一種字重，金額靠顏色凸顯 */
+.adv-trip-spend b {
+  font-weight: inherit;
+  color: var(--adv-green);
+}
+
+.adv-trip-spend__today {
+  white-space: nowrap;
+}
+
 .adv-trip-pending {
   align-self: center;
   font-size: 0.8rem;

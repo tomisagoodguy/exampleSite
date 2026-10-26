@@ -1301,7 +1301,17 @@ export function renderAchievements(
   });
 }
 
-function tripCardHTML(trip: Trip, placeCount: number): string {
+/** 這趟記在公帳的支出（trip_slug 連到這趟） */
+export interface TripSpend {
+  total: number;
+  count: number;
+  /** 今天記的，旅途中看「今天花了多少」 */
+  today: number;
+}
+
+const twd = (n: number) => `$${Math.round(n).toLocaleString('zh-TW')}`;
+
+function tripCardHTML(trip: Trip, placeCount: number, spend: TripSpend | null): string {
   const slug = esc(trip.slug);
   return `
     <div class="adv-card adv-trip-card">
@@ -1311,11 +1321,13 @@ function tripCardHTML(trip: Trip, placeCount: number): string {
         ${trip.date_text ? `<div class="adv-trip-date">${esc(trip.date_text)}</div>` : ''}
         ${trip.summary ? `<div class="adv-guide-summary">${esc(trip.summary)}</div>` : ''}
         ${trip.tags.length || trip.proposed_by ? `<div class="adv-guide-meta">${trip.tags.map((t) => `<span class="adv-guide-tag">#${esc(t)}</span>`).join('')}${trip.proposed_by ? `<span class="adv-guide-tag">🙋 ${esc(trip.proposed_by)} 提案</span>` : ''}</div>` : ''}
+        ${spend ? `<div class="adv-trip-spend">💰 這趟花了 <b>${twd(spend.total)}</b>（${spend.count} 筆）${spend.today ? `<span class="adv-trip-spend__today">・今天 <b>${twd(spend.today)}</b></span>` : ''}</div>` : ''}
         <div class="adv-card-actions">
           ${trip.has_html
             ? `<a class="adv-card-btn adv-card-btn--primary" href="/adventure-map/${encodeURIComponent(trip.slug)}/">📖 完整行程</a>`
             : `<span class="adv-trip-pending">📝 介紹頁還沒寫</span>`}
           ${placeCount ? `<button type="button" class="adv-card-btn" data-trip-action="map" data-trip-slug="${slug}">🗺️ 行程地圖</button>` : ''}
+          <button type="button" class="adv-card-btn" data-trip-action="spend" data-trip-slug="${slug}">💰 記一筆</button>
           <button type="button" class="adv-card-btn adv-card-btn--ghost" data-trip-action="edit" data-trip-slug="${slug}">✏️ 修改</button>
           ${trip.has_html ? '' : `<button type="button" class="adv-card-btn adv-card-btn--ghost" data-trip-action="delete" data-trip-slug="${slug}">🗑️ 刪除</button>`}
         </div>
@@ -1326,6 +1338,8 @@ function tripCardHTML(trip: Trip, placeCount: number): string {
 
 export interface TripHandlers {
   onOpenMap: (trip: Trip) => void;
+  /** 記一筆公帳，預設連到這趟 */
+  onSpend: (trip: Trip) => void;
   onEdit: (trip: Trip) => void;
   /** 只有還沒寫介紹頁的旅行有刪除按鈕 */
   onDelete: (trip: Trip) => void;
@@ -1336,19 +1350,20 @@ export function renderTrips(
   all: Trip[],
   searched: Trip[],
   placeCount: (trip: Trip) => number,
+  spendOf: (trip: Trip) => TripSpend | null,
   handlers: TripHandlers
 ) {
   const mount = document.getElementById('adv-section-trips');
   if (!mount) return;
 
   mount.innerHTML = searched.length
-    ? searched.map((t) => tripCardHTML(t, placeCount(t))).join('')
+    ? searched.map((t) => tripCardHTML(t, placeCount(t), spendOf(t))).join('')
     : `<p class="adv-empty">${all.length ? '沒有符合的旅行' : '還沒有旅行，按「＋ 新增旅行」開始'}</p>`;
   mount.querySelectorAll<HTMLElement>('[data-trip-action]').forEach((btn) => {
     const trip = searched.find((t) => t.slug === btn.dataset.tripSlug);
     if (!trip) return;
-    const run = { map: handlers.onOpenMap, edit: handlers.onEdit, delete: handlers.onDelete }[
-      btn.dataset.tripAction as 'map' | 'edit' | 'delete'
+    const run = { map: handlers.onOpenMap, spend: handlers.onSpend, edit: handlers.onEdit, delete: handlers.onDelete }[
+      btn.dataset.tripAction as 'map' | 'spend' | 'edit' | 'delete'
     ];
     btn.addEventListener('click', () => run?.(trip));
   });

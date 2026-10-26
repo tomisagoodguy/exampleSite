@@ -227,6 +227,25 @@ export function ledgerCategory(key: string | null): LedgerCategoryConfig {
   return (key && LEDGER_CATEGORY[key]) || { emoji: '📦', label: key || '其他', color: '#8E8A86' };
 }
 
+/**
+ * 記帳選了地點、還沒選分類時，依地點分類帶預設的公帳分類。
+ * shop 不帶：逛街可能買生活用品也可能是玩樂；分類被隱藏或刪掉也不帶
+ */
+const PLACE_TO_LEDGER_CATEGORY: Record<string, LedgerCategory> = {
+  food: 'food',
+  cafe: 'cafe',
+  stay: 'stay',
+  museum: 'fun',
+  diy: 'fun',
+  scenery: 'fun',
+  walk: 'fun',
+};
+
+export function ledgerCategoryForPlace(placeCategory: string): LedgerCategory | null {
+  const key = PLACE_TO_LEDGER_CATEGORY[placeCategory];
+  return key && LEDGER_CATEGORY[key] && !LEDGER_CATEGORY[key].hidden ? key : null;
+}
+
 /** ✨ 特別的日子（紀念日等）：資料庫欄位 is_special 已建好，true 才在記帳表單與回顧出現 */
 export const LEDGER_SHOW_SPECIAL = false;
 

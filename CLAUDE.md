@@ -179,6 +179,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | `checked` | boolean | `card`＝已跟信用卡帳單核對；`own`＝已從公帳轉回給先墊的人。RPC 改了日期、金額或付款方式會自動變回 `false` |
 
 - **「旅行」不是分類**：旅行中的吃住交通照樣歸 `food`／`stay`／`transport`，用 `trip_slug` 連到旅行，回顧才能同時回答「這月吃多少」和「這趟花多少」
+- **旅行裡直接記帳**：旅行卡片「💰 記一筆」（預帶 `trip_slug`）、行程地圖站點資訊卡與地點彈窗「💰 記一筆」（預帶 `trip_slug` + `place_id`）；卡片顯示「這趟花了 $X（N 筆）・今天 $Y」（`index.ts` `tripSpend`，只算 `expense`，退款負數一起加）。表單選了地點、還沒選分類時依地點分類帶預設（`data.ts` `ledgerCategoryForPlace`：food／cafe／stay 同名，museum／diy／scenery／walk → `fun`，shop 不帶）
 - **分類在網頁管理**（公帳標題列「⚙️ 分類」，`ledger.ts` `openLedgerCategoryModal`）：新增、改名、換 emoji／顏色、隱藏、排序。代號建立後不變，改名後舊帳自動顯示新名稱；**用過的分類只能隱藏**（`dating_map_delete_ledger_category` 會拒絕）。RPC：`dating_map_save_ledger_category`（`p_key` 為 `null` 時新增）、`dating_map_reorder_ledger_categories`、`dating_map_delete_ledger_category`。`data.ts` 的 `LEDGER_CATEGORY` 只是讀不到分類表時的備援，讀到後由 `applyLedgerCategories` 整組換掉；查分類一律用 `ledgerCategory(key)`（不認得的代號也有預設樣子）
 - `is_special` ✨ 特別的日子已建欄位，由 `data.ts` `LEDGER_SHOW_SPECIAL` 控制是否顯示；藏起來時修改舊帳會保留原值
 - 「✅ 核對」分兩段：👛 先墊待還（`own` 未勾，依誰墊的分組，轉帳後勾「已從公帳轉回」）→ 💳 對信用卡帳單

@@ -10,6 +10,7 @@ import {
   LedgerCategory,
   LedgerCategoryConfig,
   ledgerCategory,
+  ledgerCategoryForPlace,
 } from './data';
 import {
   IDENTITIES,
@@ -1270,16 +1271,21 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
   return new Promise((resolve) => {
     const base = opts.existing || opts.preset || {};
     let kind: LedgerKind = base.kind || 'expense';
-    let category: LedgerCategory | null = base.category || null;
+    const placeById = new Map(opts.places.map((p) => [p.id, p]));
+    let placeId: number | null = base.place_id ?? null;
+    /** 還沒選分類時，依地點分類帶預設（例如從行程地圖的餐廳記帳就是吃飯） */
+    const placeCategory = (id: number | null) => {
+      const p = id != null ? placeById.get(id) : undefined;
+      return p ? ledgerCategoryForPlace(p.category) : null;
+    };
+    let category: LedgerCategory | null = base.category || (opts.existing ? null : placeCategory(placeId));
     let paidBy: Identity | null = base.paid_by ?? opts.identity;
     let method: LedgerMethod = base.method || 'card';
-    let placeId: number | null = base.place_id ?? null;
     let negative = (base.amount ?? 0) < 0;
     // 外幣：主金額欄改填原幣，台幣＝原幣 × 匯率（可以直接改台幣，匯率跟著反算）
     let currency = base.orig_currency || '';
     const baseOrig = base.orig_amount != null ? Math.abs(Number(base.orig_amount)) : null;
     const baseTwd = base.amount ? Math.abs(base.amount) : null;
-    const placeById = new Map(opts.places.map((p) => [p.id, p]));
     const tripBySlug = new Map(opts.trips.map((t) => [t.slug, t]));
     const lockedBefore = opts.existing && opts.balances ? lastMatchedCheckpoint(opts.entries, opts.balances) : null;
     const locked = !!(lockedBefore && opts.existing && opts.existing.spent_on <= lockedBefore);
@@ -1525,6 +1531,10 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       searchEl.value = '';
       resultsEl.innerHTML = '';
       renderPicked();
+      if (!category && kind === 'expense') {
+        category = placeCategory(id);
+        setActive('.adv-ledger-cats', 'data-cat', category);
+      }
     };
 
     const clearError = () => {

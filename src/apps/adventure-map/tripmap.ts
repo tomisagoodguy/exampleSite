@@ -79,6 +79,8 @@ export interface TripMapOptions {
   stops: TripStop[];
   /** 按「想去」：回傳更新後的地點，失敗或取消回傳 null */
   onToggleLike: (place: PlaceEntry) => Promise<PlaceEntry | null>;
+  /** 在這個地點記一筆公帳（帶入這趟與地點）；表單蓋在地圖上，記完回到地圖 */
+  onAddExpense: (place: PlaceEntry) => void;
 }
 
 interface Nearest {
@@ -251,6 +253,7 @@ export function openTripMap(opts: TripMapOptions): void {
         <div class="adv-tripmap__pop-likes">${likesText(p)}</div>
         <div class="adv-tripmap__pop-actions">
           <button type="button" data-like-id="${p.id}">❤️ 想去／取消</button>
+          <button type="button" data-spend-id="${p.id}">💰 記一筆</button>
           <a href="https://www.google.com/maps?q=${navQuery(p)}" target="_blank" rel="noopener">📍 Google 地圖</a>
         </div>
       </div>
@@ -274,6 +277,9 @@ export function openTripMap(opts: TripMapOptions): void {
     const btn = e.popup.getElement()?.querySelector<HTMLButtonElement>('[data-like-id]');
     const p = btn ? byId.get(Number(btn.dataset.likeId)) : undefined;
     if (btn && p) btn.addEventListener('click', () => toggleLike(p, btn));
+    const spendBtn = e.popup.getElement()?.querySelector<HTMLButtonElement>('[data-spend-id]');
+    const sp = spendBtn ? byId.get(Number(spendBtn.dataset.spendId)) : undefined;
+    if (spendBtn && sp) spendBtn.addEventListener('click', () => opts.onAddExpense(sp));
   });
 
   const showPlace = (p: PlaceEntry) => {
@@ -400,6 +406,7 @@ export function openTripMap(opts: TripMapOptions): void {
           <strong>${esc(s.label)}</strong>
           <small>${esc(stopTitle(s))}</small>
         </div>
+        ${place ? '<button type="button" class="adv-tripmap__chip" data-card-spend>💰 記一筆</button>' : ''}
         <button type="button" class="adv-tripmap__card-close" aria-label="關閉資訊卡">✕</button>
       </div>
       ${place?.note ? `<p class="adv-tripmap__card-note">${esc(place.note)}</p>` : ''}
@@ -408,6 +415,7 @@ export function openTripMap(opts: TripMapOptions): void {
     `;
     cardEl.hidden = false;
     cardEl.querySelector('.adv-tripmap__card-close')?.addEventListener('click', hideCard);
+    if (place) cardEl.querySelector('[data-card-spend]')?.addEventListener('click', () => opts.onAddExpense(place));
     cardEl.querySelectorAll<HTMLButtonElement>('[data-focus]').forEach((btn) =>
       btn.addEventListener('click', () => {
         const p = byId.get(Number(btn.dataset.focus));
