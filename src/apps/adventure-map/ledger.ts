@@ -1,5 +1,6 @@
 import { PlaceEntry } from '../../shared/types';
 import {
+  LEDGER_BIG_EXPENSE,
   LEDGER_CATEGORY,
   LEDGER_METHOD,
   LEDGER_MONTHLY_DEPOSIT,
@@ -72,6 +73,20 @@ const signed = (e: LedgerEntry) => (e.kind === 'expense' ? -e.amount : e.amount)
 function balanceAt(entries: LedgerEntry[], month: string): number {
   const end = `${month}-31`;
   return entries.filter((e) => e.spent_on <= end).reduce((s, e) => s + signed(e), 0);
+}
+
+const isBig = (e: LedgerEntry) => e.kind === 'expense' && e.amount >= LEDGER_BIG_EXPENSE;
+
+function daysInMonth(month: string): number {
+  const [y, m] = month.split('-').map(Number);
+  return new Date(y, m, 0).getDate();
+}
+
+/** 圖表上的短金額：1.2萬、8,500 */
+function moneyShort(n: number): string {
+  const a = Math.abs(n);
+  const s = a >= 10000 ? `${(a / 10000).toFixed(a >= 100000 ? 0 : 1).replace(/\.0$/, '')}萬` : a.toLocaleString('zh-TW');
+  return `${n < 0 ? '−' : ''}${s}`;
 }
 
 function categoryOf(e: LedgerEntry) {
@@ -204,6 +219,30 @@ export function renderLedger(
       return;
     }
 
+    // 趨勢圖點某個月就跳到那個月的回顧
+    const gotoBtn = target.closest<Element>('[data-ledger-goto]');
+    if (gotoBtn) {
+      const to = gotoBtn.getAttribute('data-ledger-goto');
+      if (to && to !== month) handlers.onStateChange({ view, month: to });
+      return;
+    }
+
+    // 換趨勢圖的分類只重畫那一塊，不動整頁
+    const trendBtn = target.closest<HTMLElement>('[data-ledger-trend-cat]');
+    if (trendBtn) {
+      trendCat = trendBtn.dataset.ledgerTrendCat || '';
+      const box = mount.querySelector('[data-ledger-trend]');
+      if (box) box.outerHTML = trendBoxHTML(entries, month, forecastMonth(entries, month));
+      return;
+    }
+
+    const csvBtn = target.closest<HTMLElement>('[data-ledger-csv]');
+    if (csvBtn) {
+      const all = csvBtn.dataset.ledgerCsv === 'all';
+      downloadCSV(all ? entries : monthEntries, all ? `公帳-全部-${localDate().replace(/-/g, '')}.csv` : `公帳-${month}.csv`, placeById, tripBySlug);
+      return;
+    }
+
     if (target.closest('[data-ledger-copy]')) copyReview(entries, month, placeById, tripBySlug);
   };
 
@@ -234,6 +273,7 @@ function metaParts(e: LedgerEntry, placeById: Map<number, PlaceEntry>, tripBySlu
   const trip = e.trip_slug ? tripBySlug.get(e.trip_slug) : undefined;
   if (trip) parts.push(`✈️ ${esc(trip.title)}`);
   if (LEDGER_SHOW_SPECIAL && e.is_special) parts.push('✨ 特別的日子');
+  if (isBig(e)) parts.push('🔺 大額');
   if (e.kind === 'expense' && e.checked) parts.push(e.method === 'own' ? '✓ 已轉回' : '✓ 已核對');
   return parts;
 }
@@ -242,7 +282,7 @@ function rowHTML(e: LedgerEntry, placeById: Map<number, PlaceEntry>, tripBySlug:
   const meta = metaParts(e, placeById, tripBySlug);
   const income = e.kind !== 'expense' ? e.amount > 0 : e.amount < 0;
   return `
-    <button type="button" class="adv-ledger-row" data-ledger-id="${e.id}" style="--cat-color:${categoryOf(e)?.color || 'var(--adv-yellow)'}">
+    <button type="button" class="adv-ledger-row ${isBig(e) ? 'adv-ledger-row--big' : ''}" data-ledger-id="${e.id}" style="--cat-color:${categoryOf(e)?.color || 'var(--adv-yellow)'}">
       <span class="adv-ledger-row__icon" aria-hidden="true">${entryIcon(e)}</span>
       <span class="adv-ledger-row__main">
         <span class="adv-ledger-row__title">${esc(entryTitle(e))}</span>
@@ -396,6 +436,217 @@ function compareText(now: number, before: number): string {
   return `比上個月${diff > 0 ? '多' : '少'} ${money(Math.abs(diff))}（${pct}%）`;
 }
 
+interface Forecast {
+  /** 預估整月花費（已花的＋剩下天數 × 每天速度） */
+  total: number;
+  /** 本月已記的大額合計，已含在 total 裡 */
+  big: number;
+  daily: number;
+  remaining: number;
+  /** 預估月底公帳餘額，含還沒記的入金 */
+  balance: number;
+  missingDeposit: number;
+  basis: string;
+}
+
+/**
+ * 只預估本月：已花的照算，剩下的天數乘每天的速度。大額不拿來推速度（月初一筆住宿會把整月估爆）。
+ * 每天的速度＝本月平常花費的速度與前 3 個月的平均，依已過天數加權：月初偏向過去、月底偏向本月
+ */
+function forecastMonth(entries: LedgerEntry[], month: string): Forecast | null {
+  if (month !== currentMonth()) return null;
+  const today = new Date().getDate();
+  const dim = daysInMonth(month);
+  const cur = expensesIn(entries, month);
+  const curRate = sum(cur.filter((e) => !isBig(e))) / today;
+  const history = [1, 2, 3]
+    .map((i) => shiftMonth(month, -i))
+    .map((m) => ({ m, list: expensesIn(entries, m) }))
+    .filter((h) => h.list.length)
+    .map((h) => sum(h.list.filter((e) => !isBig(e))) / daysInMonth(h.m));
+  const w = today / dim;
+  const daily = history.length ? w * curRate + (1 - w) * (history.reduce((s, r) => s + r, 0) / history.length) : curRate;
+  const remaining = dim - today;
+  const deposited = new Set(entries.filter((e) => e.kind === 'deposit' && e.spent_on.startsWith(month)).map((e) => e.paid_by));
+  const missingDeposit = IDENTITIES.filter((id) => !deposited.has(id)).length * LEDGER_MONTHLY_DEPOSIT;
+  return {
+    total: Math.round(sum(cur) + daily * remaining),
+    big: sum(cur.filter(isBig)),
+    daily: Math.round(daily),
+    remaining,
+    balance: Math.round(balanceAt(entries, month) - daily * remaining + missingDeposit),
+    missingDeposit,
+    basis: history.length ? `本月和前 ${history.length} 個月的平均` : '本月到今天的速度',
+  };
+}
+
+/** 趨勢圖的月份：選定月份往前最多 12 個月，但不早於第一筆帳 */
+function trendMonths(entries: LedgerEntry[], month: string): string[] {
+  const first = entries.reduce((min, e) => (e.spent_on < min ? e.spent_on : min), month).slice(0, 7);
+  const months: string[] = [];
+  for (let m = month; months.length < 12 && m >= first; m = shiftMonth(m, -1)) months.unshift(m);
+  return months;
+}
+
+/** 趨勢圖目前看的分類，'' 是全部；換月份時保留 */
+let trendCat = '';
+
+const CHART_W = 320;
+const CHART_H = 150;
+const CHART_TOP = 16;
+const CHART_BOTTOM = 18;
+
+function trendBoxHTML(entries: LedgerEntry[], month: string, forecast: Forecast | null): string {
+  const months = trendMonths(entries, month);
+  const inMonths = months.flatMap((m) => expensesIn(entries, m));
+  const cats = [...new Set(inMonths.map((e) => e.category).filter((k): k is string => !!k))];
+  if (trendCat && !cats.includes(trendCat)) trendCat = '';
+
+  const values = months.map((m) => sum(expensesIn(entries, m).filter((e) => !trendCat || e.category === trendCat)));
+  const est = !trendCat && forecast ? forecast.total : 0;
+  // 入金參考線只在看全部時有意義
+  const target = trendCat ? 0 : IDENTITIES.length * LEDGER_MONTHLY_DEPOSIT;
+  const max = Math.max(1, ...values, est, target);
+  const plotH = CHART_H - CHART_TOP - CHART_BOTTOM;
+  const y = (v: number) => CHART_TOP + (1 - Math.max(0, v) / max) * plotH;
+  const base = CHART_TOP + plotH;
+  const slot = CHART_W / months.length;
+  const barW = Math.min(28, slot * 0.62);
+  const color = trendCat ? ledgerCategory(trendCat).color : '';
+
+  const cols = months.map((m, i) => {
+    const v = values[i];
+    const x = slot * i + (slot - barW) / 2;
+    const isEst = est > 0 && i === months.length - 1;
+    const top = y(Math.max(v, isEst ? est : 0));
+    return `
+      <g class="adv-trend__col ${m === month ? 'is-current' : ''}" data-ledger-goto="${m}">
+        <title>${monthLabel(m)}：${money(v)}${isEst ? `（預估整月 ${money(est)}）` : ''}</title>
+        <rect class="adv-trend__hit" x="${slot * i}" y="0" width="${slot}" height="${CHART_H}" />
+        ${isEst ? `<rect class="adv-trend__est" x="${x}" y="${y(est)}" width="${barW}" height="${base - y(est)}" rx="4" />` : ''}
+        <rect class="adv-trend__bar" x="${x}" y="${y(v)}" width="${barW}" height="${base - y(v)}" rx="4" ${color ? `style="fill:${color}"` : ''} />
+        ${v || isEst ? `<text x="${x + barW / 2}" y="${top - 4}" text-anchor="middle">${moneyShort(isEst ? est : v)}${isEst ? '?' : ''}</text>` : ''}
+        <text class="adv-trend__month" x="${x + barW / 2}" y="${CHART_H - 4}" text-anchor="middle">${Number(m.slice(5))}月</text>
+      </g>`;
+  }).join('');
+
+  // 參考線的說明寫在圖下方，寫在線上會跟長條的金額疊在一起
+  const targetLine = target
+    ? `<line class="adv-trend__target" x1="0" x2="${CHART_W}" y1="${y(target)}" y2="${y(target)}" />`
+    : '';
+
+  // 平均只算已過完的月份，本月還沒結束會把平均拉低
+  const done = months.filter((m) => m < currentMonth()).map((m) => values[months.indexOf(m)]);
+  const avg = done.length ? Math.round(done.reduce((s, v) => s + v, 0) / done.length) : 0;
+  const chip = (key: string, label: string) =>
+    `<button type="button" class="adv-guide-season ${trendCat === key ? 'is-active' : ''}" data-ledger-trend-cat="${key}" aria-pressed="${trendCat === key}">${label}</button>`;
+
+  return `
+    <section class="adv-ledger-box" data-ledger-trend>
+      <h4 class="adv-ledger-box__title">📈 每月花費</h4>
+      <div class="adv-ledger-chips adv-trend__cats">
+        ${chip('', '全部')}
+        ${cats.map((k) => chip(k, `${ledgerCategory(k).emoji} ${esc(ledgerCategory(k).label)}`)).join('')}
+      </div>
+      <svg class="adv-trend" viewBox="0 0 ${CHART_W} ${CHART_H}" role="img" aria-label="近 ${months.length} 個月${trendCat ? esc(ledgerCategory(trendCat).label) : ''}花費長條圖">
+        <line class="adv-trend__axis" x1="0" x2="${CHART_W}" y1="${base}" y2="${base}" />
+        ${targetLine}
+        ${cols}
+      </svg>
+      <p class="adv-ledger-sub">${avg ? `已過完的 ${done.length} 個月平均每月 <b>${money(avg)}</b>` : '下個月起就看得到平均'}${target ? `・橫虛線是每月入金 ${money(target)}` : ''}${est ? '・虛線框是本月預估' : ''}・點長條看那個月</p>
+    </section>`;
+}
+
+function balanceBoxHTML(entries: LedgerEntry[], month: string, forecast: Forecast | null): string {
+  const months = trendMonths(entries, month);
+  if (months.length < 2) return '';
+  const values = months.map((m) => balanceAt(entries, m));
+  const all = forecast ? [...values, forecast.balance] : values;
+  const min = Math.min(0, ...all);
+  const max = Math.max(1, ...all);
+  const plotH = CHART_H - CHART_TOP - CHART_BOTTOM;
+  const y = (v: number) => CHART_TOP + ((max - v) / (max - min || 1)) * plotH;
+  const slot = CHART_W / months.length;
+  const x = (i: number) => slot * i + slot / 2;
+  const last = months.length - 1;
+  const points = values.map((v, i) => `${x(i)},${y(v)}`).join(' ');
+
+  return `
+    <section class="adv-ledger-box">
+      <h4 class="adv-ledger-box__title">🐷 公帳餘額走勢</h4>
+      <svg class="adv-trend" viewBox="0 0 ${CHART_W} ${CHART_H}" role="img" aria-label="近 ${months.length} 個月月底公帳餘額折線圖">
+        ${min < 0 ? `<line class="adv-trend__target" x1="0" x2="${CHART_W}" y1="${y(0)}" y2="${y(0)}" />` : ''}
+        <polyline class="adv-trend__line" points="${points}" />
+        ${forecast ? `<line class="adv-trend__line adv-trend__line--est" x1="${x(last)}" y1="${y(values[last])}" x2="${x(last) + slot * 0.42}" y2="${y(forecast.balance)}" />` : ''}
+        ${months.map((m, i) => `
+          <g class="adv-trend__col ${m === month ? 'is-current' : ''}" data-ledger-goto="${m}">
+            <title>${monthLabel(m)}月底：${money(values[i])}</title>
+            <rect class="adv-trend__hit" x="${slot * i}" y="0" width="${slot}" height="${CHART_H}" />
+            <circle class="adv-trend__dot" cx="${x(i)}" cy="${y(values[i])}" r="${m === month ? 5 : 3.5}" />
+            ${i === last || m === month ? `<text x="${x(i) - 7}" y="${y(values[i]) - 7}" text-anchor="end">${moneyShort(values[i])}</text>` : ''}
+            <text class="adv-trend__month" x="${x(i)}" y="${CHART_H - 4}" text-anchor="middle">${Number(m.slice(5))}月</text>
+          </g>`).join('')}
+      </svg>
+      <p class="adv-ledger-sub">每個月底的餘額${forecast ? `・虛線是本月底預估 ${money(forecast.balance)}` : ''}</p>
+    </section>`;
+}
+
+function forecastBoxHTML(f: Forecast, spent: number): string {
+  return `
+    <section class="adv-ledger-box">
+      <h4 class="adv-ledger-box__title">🔮 這個月預估</h4>
+      <p class="adv-ledger-big">${money(f.total)}</p>
+      <p class="adv-ledger-sub">已花 ${money(spent)}，剩 ${f.remaining} 天，每天約 ${money(f.daily)}（照${f.basis}）</p>
+      ${f.big ? `<p class="adv-ledger-sub">已記的大額 ${money(f.big)} 算進去了，但不拿來推每天的速度</p>` : ''}
+      <p class="adv-ledger-sub">月底公帳預計還有 <b>${money(f.balance)}</b>${f.missingDeposit ? `（含還沒記的入金 ${money(f.missingDeposit)}）` : ''}</p>
+      ${f.balance < 0 ? '<p class="adv-ledger-sub adv-ledger-warn">照這個速度月底會不夠，要補錢或省一點</p>' : ''}
+    </section>`;
+}
+
+const CSV_KIND: Record<LedgerKind, string> = { expense: '支出', deposit: '入金', adjust: '調整' };
+const CSV_METHOD: Record<LedgerMethod, string> = { card: '公帳卡', account: '公帳帳戶', own: '自己先墊' };
+
+/** 文字欄開頭是 = + - @ 時 Excel 會當公式，前面加 ' 擋掉 */
+function csvCell(v: string | number | null | undefined, text = false): string {
+  let s = v == null ? '' : String(v);
+  if (text && /^[=+\-@]/.test(s)) s = `'${s}`;
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function downloadCSV(list: LedgerEntry[], filename: string, placeById: Map<number, PlaceEntry>, tripBySlug: Map<string, Trip>) {
+  if (!list.length) {
+    showToast('沒有可以下載的帳');
+    return;
+  }
+  const header = ['日期', '類型', '分類', '金額', '公帳增減', '付款方式', '誰付', '備註', '地點', '旅行', '已核對／已轉回'];
+  const rows = [...list]
+    .sort((a, b) => a.spent_on.localeCompare(b.spent_on) || a.id - b.id)
+    .map((e) => [
+      csvCell(e.spent_on),
+      csvCell(CSV_KIND[e.kind]),
+      csvCell(e.category ? ledgerCategory(e.category).label : '', true),
+      csvCell(e.amount),
+      csvCell(signed(e)),
+      csvCell(CSV_METHOD[e.method] || e.method),
+      csvCell(e.paid_by, true),
+      csvCell(e.note, true),
+      csvCell(e.place_id != null ? placeById.get(e.place_id)?.name || '已刪除的地點' : '', true),
+      csvCell(e.trip_slug ? tripBySlug.get(e.trip_slug)?.title || e.trip_slug : '', true),
+      csvCell(e.kind === 'expense' && e.checked ? '是' : ''),
+    ].join(','));
+  // 開頭 BOM：Excel 才會用 UTF-8 開，不然中文變亂碼
+  const blob = new Blob(['﻿' + [header.join(','), ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast(`已下載 ${list.length} 筆`);
+}
+
 function reviewHTML(
   entries: LedgerEntry[],
   month: string,
@@ -403,9 +654,14 @@ function reviewHTML(
   tripBySlug: Map<string, Trip>
 ): string {
   const d = reviewData(entries, month, placeById, tripBySlug);
-  if (!d.count && !d.deposited) return '<p class="adv-empty">這個月還沒有紀錄，回顧會在記帳後出現</p>';
+  const forecast = forecastMonth(entries, month);
+  const charts = entries.length ? trendBoxHTML(entries, month, forecast) + balanceBoxHTML(entries, month, forecast) : '';
+  if (!d.count && !d.deposited) {
+    return `<p class="adv-empty">這個月還沒有紀錄，回顧會在記帳後出現</p>${charts ? `<div class="adv-ledger-review">${charts}</div>${actionsHTML(false)}` : ''}`;
+  }
 
   const maxCat = Math.max(1, ...d.categories.map((c) => c.amount));
+  const bigs = expensesIn(entries, month).filter(isBig);
   const favorite = [...d.categories].sort((a, b) => b.count - a.count)[0];
   const box = (title: string, inner: string) =>
     `<section class="adv-ledger-box"><h4 class="adv-ledger-box__title">${title}</h4>${inner}</section>`;
@@ -418,8 +674,20 @@ function reviewHTML(
     `),
   ];
 
+  if (forecast && d.count) parts.push(forecastBoxHTML(forecast, d.total));
+  let chartsAt = parts.length;
+
   if (d.categories.length) {
-    parts.push(box('🍰 花在哪裡', `<div class="adv-ledger-bars">${d.categories.map((c) => {
+    // 整條的組成比例（像攤平的圓餅），退款這種負數不畫
+    const positive = d.categories.filter((c) => c.amount > 0);
+    const posTotal = positive.reduce((s, c) => s + c.amount, 0);
+    const stack = posTotal ? `<div class="adv-ledger-stack" role="img" aria-label="各分類佔比">${positive.map((c) => {
+      const cfg = ledgerCategory(c.key);
+      const share = (c.amount / posTotal) * 100;
+      return `<span style="--cat-color:${cfg.color};flex-basis:${share}%" title="${esc(cfg.label)} ${Math.round(share)}%">${share >= 12 ? cfg.emoji : ''}</span>`;
+    }).join('')}</div>` : '';
+    chartsAt++;
+    parts.push(box('🍰 花在哪裡', `${stack}<div class="adv-ledger-bars">${d.categories.map((c) => {
       const cfg = ledgerCategory(c.key);
       const share = d.total ? Math.round((c.amount / d.total) * 100) : 0;
       const diff = c.amount - c.lastAmount;
@@ -433,8 +701,10 @@ function reviewHTML(
   }
 
   if (d.top.length) {
-    parts.push(box('🏅 最大的幾筆', `<ol class="adv-ledger-top">${d.top
-      .map((e) => `<li><span>${dayLabel(e.spent_on)} ${entryIcon(e)} ${esc(entryTitle(e))}</span><b>${money(e.amount)}</b></li>`)
+    parts.push(box('🏅 最大的幾筆', `${bigs.length
+      ? `<p class="adv-ledger-sub adv-ledger-sub--top">🔺 大額（${money(LEDGER_BIG_EXPENSE)} 以上）${bigs.length} 筆・共 <b>${money(sum(bigs))}</b>，佔本月 ${d.total > 0 ? Math.round((sum(bigs) / d.total) * 100) : 0}%</p>`
+      : ''}<ol class="adv-ledger-top">${d.top
+      .map((e) => `<li><span>${dayLabel(e.spent_on)} ${entryIcon(e)} ${esc(entryTitle(e))}${isBig(e) ? ' 🔺' : ''}</span><b>${money(e.amount)}</b></li>`)
       .join('')}</ol>`));
   }
 
@@ -465,10 +735,22 @@ function reviewHTML(
     <p class="adv-ledger-sub">到月底公帳還有 <b>${money(d.balance)}</b></p>
   `));
 
+  // 趨勢圖接在「這個月／預估／花在哪裡」之後
+  parts.splice(chartsAt, 0, charts);
+
   return `
     <div class="adv-ledger-review">${parts.join('')}</div>
-    <button type="button" class="adv-card-btn adv-ledger-copy" data-ledger-copy>📋 複製成文字（貼到 LINE）</button>
+    ${actionsHTML(true)}
   `;
+}
+
+function actionsHTML(withCopy: boolean): string {
+  return `
+    <div class="adv-ledger-actions">
+      ${withCopy ? '<button type="button" class="adv-card-btn" data-ledger-copy>📋 複製成文字（貼到 LINE）</button>' : ''}
+      <button type="button" class="adv-card-btn" data-ledger-csv="month">⬇️ 下載本月 CSV</button>
+      <button type="button" class="adv-card-btn" data-ledger-csv="all">⬇️ 下載全部 CSV</button>
+    </div>`;
 }
 
 function copyReview(
@@ -487,6 +769,8 @@ function copyReview(
   if (d.top.length) lines.push('', '最大的幾筆：', ...d.top.map((e, i) => `${i + 1}. ${entryTitle(e)} ${money(e.amount)}`));
   if (d.places.length) lines.push('', `去了：${d.places.map((p) => p.name).join('、')}`);
   lines.push('', `入金 ${money(d.deposited)} − 花費 ${money(d.total)} ＝ 結餘 ${money(d.deposited - d.total)}`, `公帳還有 ${money(d.balance)}`);
+  const f = forecastMonth(entries, month);
+  if (f) lines.push('', `🔮 照目前速度，這個月約花 ${money(f.total)}，月底公帳預計 ${money(f.balance)}`);
 
   navigator.clipboard.writeText(lines.join('\n')).then(
     () => showToast('已複製，可以貼到 LINE 了'),

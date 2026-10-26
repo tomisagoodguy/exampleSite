@@ -184,6 +184,8 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - 「✅ 核對」分兩段：👛 先墊待還（`own` 未勾，依誰墊的分組，轉帳後勾「已從公帳轉回」）→ 💳 對信用卡帳單
 - 公帳餘額＝入金＋調整−支出（銀行帳戶＋信用卡未繳合計），所以**繳卡費不記**，那只是帳戶轉到信用卡
 - 核對不分月份：列出所有 `method = 'card'` 且未核對的支出，依日期由舊到新，對著帳單勾；勾選時顯示已選合計
+- **📊 回顧**全在前端由流水算出（`ledger.ts`）：分類組成條＋橫條、🔮 本月預估（`forecastMonth`：已花＋剩餘天數 × 每天速度，速度＝本月與前 3 個月平常花費依已過天數加權，**大額不拿來推速度**；月底餘額另加還沒記的入金）、📈 每月花費長條圖（近 12 個月，可切分類，點長條跳月）、🐷 餘額折線、⬇️ CSV（本月／全部，含 BOM 給 Excel，文字欄開頭 `=+-@` 加 `'`）。圖是手刻 SVG，文字與線條用 CSS class 吃 `--adv-*`，沒有圖表套件
+- 大額門檻 `data.ts` `LEDGER_BIG_EXPENSE`（3,000）：流水左邊珊瑚色條＋「🔺 大額」，回顧另列合計
 - 寫入走 RPC：`dating_map_save_expense`（`saveExpense`，`p_id` 為 `null` 時新增）、`dating_map_delete_expense`、`dating_map_set_expense_checked`（一次多筆）。`fetchLedger` 會分頁讀完，一個月約百筆，幾年就超過 PostgREST 單次 1000 筆上限
 - 結餘一律留在公帳累積；不夠時兩人補一樣的錢（阿康自己通知，系統不提醒）
 - 清單框（`.adv-ledger-checklist`）**不能加 `overflow: hidden`**：會變成 sticky 的參考框，底部勾選列就浮在清單中間蓋住項目

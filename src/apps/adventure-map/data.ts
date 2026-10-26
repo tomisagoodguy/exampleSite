@@ -235,6 +235,9 @@ export const LEDGER_METHOD: Record<'card' | 'account' | 'own', string> = {
 /** 每人每月存進公帳的金額；記入金時預設帶這個數字 */
 export const LEDGER_MONTHLY_DEPOSIT = 10000;
 
+/** 單筆支出達這個金額算「大額」：流水標 🔺、回顧另外統計，月中預估時不拿來推算每天的花費速度 */
+export const LEDGER_BIG_EXPENSE = 3000;
+
 export function filterPlaces(
   places: PlaceEntry[],
   category: string,

@@ -2406,8 +2406,131 @@ button.adv-ach-place small {
   font-variant-numeric: tabular-nums;
 }
 
-.adv-ledger-copy {
+.adv-ledger-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-top: 12px;
+}
+
+.adv-ledger-sub--top {
+  margin: 0 0 8px;
+}
+
+.adv-ledger-warn {
+  color: var(--adv-danger);
+}
+
+/* 流水裡的大額：左邊加一條珊瑚色，一眼看得出來 */
+.adv-ledger-row--big {
+  box-shadow: inset 4px 0 0 var(--adv-coral-deep);
+}
+
+/* 分類組成：一條攤平的圓餅 */
+.adv-ledger-stack {
+  display: flex;
+  height: 22px;
+  margin-bottom: 12px;
+  border: 2px solid var(--adv-ink);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.adv-ledger-stack span {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  font-size: 0.72rem;
+  background: color-mix(in srgb, var(--cat-color), var(--adv-ink) var(--adv-cat-lift));
+}
+
+.adv-ledger-stack span + span {
+  border-left: 2px solid var(--adv-ink);
+}
+
+/* 趨勢圖：SVG 文字與線條都吃 token，夜晚自動換色 */
+.adv-trend__cats {
+  margin-bottom: 8px;
+}
+
+.adv-trend {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.adv-trend text {
+  fill: var(--adv-muted);
+  font-family: var(--adv-font);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-trend__axis {
+  stroke: var(--adv-ink);
+  stroke-width: 2;
+}
+
+.adv-trend__target {
+  stroke: var(--adv-muted);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.adv-trend__col {
+  cursor: pointer;
+}
+
+.adv-trend__hit {
+  fill: transparent;
+}
+
+.adv-trend__col:hover .adv-trend__hit {
+  fill: var(--adv-chip);
+}
+
+.adv-trend__bar {
+  fill: var(--adv-yellow);
+  stroke: var(--adv-ink);
+  stroke-width: 1.5;
+}
+
+.adv-trend__col.is-current .adv-trend__bar {
+  fill: var(--adv-coral);
+}
+
+.adv-trend__col.is-current text {
+  fill: var(--adv-ink);
+}
+
+.adv-trend__est {
+  fill: none;
+  stroke: var(--adv-coral-deep);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 2;
+}
+
+.adv-trend__line {
+  fill: none;
+  stroke: var(--adv-blue);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.adv-trend__line--est {
+  stroke-dasharray: 4 3;
+}
+
+.adv-trend__dot {
+  fill: var(--adv-water);
+  stroke: var(--adv-ink);
+  stroke-width: 1.5;
+}
+
+.adv-trend__col.is-current .adv-trend__dot {
+  fill: var(--adv-coral);
 }
 
 /* 記一筆表單 */
