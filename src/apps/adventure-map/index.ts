@@ -42,6 +42,7 @@ import {
 import { PlaceEntry } from '../../shared/types';
 import { geocodePlace, lookupArea } from './geocode';
 import { openTripMap, TripStop } from './tripmap';
+import { renderLedger, openExpenseModal, LedgerState, currentMonth } from './ledger';
 import { setupPhotoViewer } from './photos';
 import { captureCard, flyCard } from './fly';
 import {
@@ -78,6 +79,12 @@ import {
   subscribeToChanges,
   setReadPassphrase,
   verifyPassphrase,
+  fetchLedger,
+  saveExpense,
+  deleteExpense,
+  setExpenseChecked,
+  LedgerEntry,
+  LedgerInput,
 } from './supabase';
 
 /** 成就分頁上次看的冊子，只記在各自的裝置上 */
@@ -101,6 +108,8 @@ class DatingMapApp {
   private currentAchFilter: AchievementFilter = 'all';
   private currentAchBook: AchievementBook = readAchBook();
   private trips: Trip[] = [];
+  private ledger: LedgerEntry[] = [];
+  private ledgerState: LedgerState = { month: currentMonth(), view: 'list' };
   private currentCat: string = 'all';
   private currentAttr: AttrFilter = { region: 'all', rainOnly: false };
   private currentSearch: string = '';
@@ -126,7 +135,7 @@ class DatingMapApp {
       showToast('資料讀取失敗，稍後再試試');
       this.allPlaces = [];
     }
-    await Promise.all([this.loadGuides(), this.loadAchievements(), this.loadTrips()]);
+    await Promise.all([this.loadGuides(), this.loadAchievements(), this.loadTrips(), this.loadLedger()]);
 
     this.renderAll();
     this.setupFab();
@@ -399,6 +408,12 @@ class DatingMapApp {
         this.renderAll();
         return;
       }
+      // 對方記了一筆只重讀公帳，不用整頁重抓
+      if (table === 'dating_map_ledger') {
+        await this.loadLedger();
+        this.renderAll();
+        return;
+      }
       this.scheduleRealtimeRefresh();
     });
   }
@@ -518,6 +533,83 @@ class DatingMapApp {
         onDelete: (t) => this.deleteTrip(t),
       }
     );
+    renderLedger(this.ledger, this.allPlaces, this.trips, this.ledgerState, {
+      onAdd: (preset) => this.addExpense(preset),
+      onEdit: (e) => this.editExpense(e),
+      onSetChecked: (ids, checked) => this.setExpenseChecked(ids, checked),
+      onStateChange: (state) => {
+        this.ledgerState = state;
+        this.renderAll();
+      },
+    });
+  }
+
+  private async loadLedger() {
+    try {
+      this.ledger = await fetchLedger();
+    } catch (err) {
+      console.error('讀取公帳失敗', err);
+      this.ledger = [];
+    }
+  }
+
+  /** 存完切到那筆所在的月份，補記上個月的帳也看得到 */
+  private async afterLedgerSave(month: string, message: string) {
+    vibrate(10);
+    showToast(message);
+    this.ledgerState = { ...this.ledgerState, month };
+    await this.loadLedger();
+    this.renderAll();
+  }
+
+  private async addExpense(preset?: Partial<LedgerInput>) {
+    const identity = await this.ensureIdentity();
+    const result = await openExpenseModal({
+      preset,
+      identity,
+      places: this.allPlaces,
+      trips: this.trips,
+      entries: this.ledger,
+    });
+    if (result?.action !== 'save') return;
+
+    const { input } = result;
+    const saved = await this.withPassphrase((pw) => saveExpense(pw, null, input, identity));
+    if (saved !== null) {
+      const amount = `$${Math.abs(input.amount).toLocaleString('zh-TW')}`;
+      await this.afterLedgerSave(
+        input.spent_on.slice(0, 7),
+        input.kind === 'deposit' ? `💰 ${input.paid_by} 入金 ${amount}` : `記下來了：${amount}`
+      );
+    }
+  }
+
+  private async editExpense(entry: LedgerEntry) {
+    const result = await openExpenseModal({
+      existing: entry,
+      identity: this.identity,
+      places: this.allPlaces,
+      trips: this.trips,
+      entries: this.ledger,
+    });
+    if (!result) return;
+
+    if (result.action === 'delete') {
+      const confirmed = await openConfirmModal('要刪除這筆帳嗎？');
+      if (!confirmed) return;
+      const ok = await this.withPassphrase((pw) => deleteExpense(pw, entry.id).then(() => true));
+      if (ok) await this.afterLedgerSave(this.ledgerState.month, '已刪除');
+      return;
+    }
+
+    const { input } = result;
+    const saved = await this.withPassphrase((pw) => saveExpense(pw, entry.id, input, null));
+    if (saved !== null) await this.afterLedgerSave(input.spent_on.slice(0, 7), '已儲存修改');
+  }
+
+  private async setExpenseChecked(ids: number[], checked: boolean) {
+    const ok = await this.withPassphrase((pw) => setExpenseChecked(pw, ids, checked).then(() => true));
+    if (ok) await this.afterLedgerSave(this.ledgerState.month, checked ? `✓ 已核對 ${ids.length} 筆` : `已取消核對 ${ids.length} 筆`);
   }
 
   /** 這趟旅行地區裡存過、有座標的地點（依 Trip.area_prefix 比對 area） */
@@ -866,6 +958,7 @@ class DatingMapApp {
     fab?.addEventListener('click', () => this.createProposal());
     document.getElementById('adv-guide-new')?.addEventListener('click', () => this.editGuide());
     document.getElementById('adv-trip-new')?.addEventListener('click', () => this.editTrip());
+    document.getElementById('adv-ledger-new')?.addEventListener('click', () => this.addExpense());
   }
 
   private async withPassphrase<T>(action: (pw: string) => Promise<T>): Promise<T | null> {
@@ -1149,7 +1242,7 @@ class DatingMapApp {
     } catch (err) {
       console.error(err);
     }
-    await Promise.all([this.loadGuides(), this.loadAchievements(), this.loadTrips()]);
+    await Promise.all([this.loadGuides(), this.loadAchievements(), this.loadTrips(), this.loadLedger()]);
     this.renderAll();
   }
 }

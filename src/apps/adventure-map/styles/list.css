@@ -2071,3 +2071,409 @@ button.adv-ach-place small {
 @media (prefers-reduced-motion: reduce) {
   .adv-cmap-county { transition: none; }
 }
+
+/* ─── 💰 公帳（ledger.ts）：流水／核對／回顧 ─── */
+/* 標題列（＋ 記一筆）跟內容一起限寬，桌面才不會一個在最右邊、一個在中間 */
+.adv-section[data-tab="ledger"] {
+  max-width: 1000px;
+}
+
+.adv-ledger-month {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+
+.adv-ledger-month__label {
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-ledger-month__nav {
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--adv-ink);
+  border-radius: 50%;
+  background: var(--adv-card);
+  color: var(--adv-ink);
+  font-family: var(--adv-font);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.adv-ledger-month__today {
+  margin-left: auto;
+}
+
+/* 三格統計沿用成就儀表板的 .adv-ach-stats，這裡改成三等分 */
+.adv-ledger-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.adv-ledger-remind {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 2px dashed var(--adv-ink);
+  border-radius: 16px;
+  font-size: 0.85rem;
+}
+
+.adv-ledger-day {
+  margin-bottom: 14px;
+}
+
+.adv-ledger-day__head {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px 4px;
+  font-size: 0.82rem;
+  color: var(--adv-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-ledger-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 8px 12px;
+  border: 2px solid var(--adv-ink);
+  border-radius: 16px;
+  background: var(--adv-card);
+  color: var(--adv-ink);
+  font-family: var(--adv-font);
+  text-align: left;
+  cursor: pointer;
+}
+
+.adv-ledger-row:hover {
+  background: var(--adv-chip);
+}
+
+.adv-ledger-row__icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 2px solid var(--adv-ink);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--cat-color) 35%, var(--adv-card));
+  font-size: 1rem;
+}
+
+.adv-ledger-row__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.adv-ledger-row__title {
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adv-ledger-row__meta {
+  font-size: 0.74rem;
+  color: var(--adv-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adv-ledger-row__amt {
+  flex-shrink: 0;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-ledger-row__amt--in {
+  color: var(--adv-green);
+}
+
+/* 核對：一列一筆，勾選後底部顯示已選合計，方便跟帳單金額比 */
+.adv-ledger-hint {
+  margin: 0 0 10px;
+}
+
+.adv-ledger-subhead {
+  margin: 4px 0 8px;
+  font-size: 0.9rem;
+}
+
+.adv-ledger-checklist {
+  border: 2px solid var(--adv-ink);
+  border-radius: 16px;
+  background: var(--adv-card);
+  overflow: hidden;
+}
+
+.adv-ledger-check {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-bottom: 1.5px dashed var(--adv-soft);
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.adv-ledger-check--all {
+  grid-template-columns: auto 1fr;
+  color: var(--adv-muted);
+  font-size: 0.8rem;
+}
+
+.adv-ledger-check input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--adv-coral-deep);
+}
+
+.adv-ledger-check__date {
+  color: var(--adv-muted);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-ledger-check__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adv-ledger-check__title small {
+  color: var(--adv-muted);
+}
+
+.adv-ledger-check__amt {
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-ledger-checklist__bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--adv-washi);
+  font-size: 0.85rem;
+}
+
+.adv-ledger-checklist__bar button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.adv-ledger-done {
+  margin-top: 14px;
+}
+
+.adv-ledger-done summary {
+  margin-bottom: 8px;
+  font-size: 0.88rem;
+  color: var(--adv-muted);
+  cursor: pointer;
+}
+
+/* 回顧：一塊一張卡；桌面兩欄 */
+.adv-ledger-review {
+  display: grid;
+  gap: 12px;
+}
+
+/* 手機的底部分頁列是 fixed，勾選列要停在它上面，不然「標記已核對」會被蓋住 */
+@media (max-width: 899px) {
+  .adv-ledger-checklist__bar {
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (min-width: 900px) {
+  .adv-ledger-review {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.adv-ledger-box {
+  padding: 12px 14px;
+  border: 3px solid var(--adv-ink);
+  border-radius: var(--adv-r);
+  background: var(--adv-card);
+}
+
+.adv-ledger-box__title {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
+.adv-ledger-big {
+  margin: 0;
+  font-size: 1.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-ledger-sub {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--adv-muted);
+}
+
+.adv-ledger-sub b {
+  font-weight: 400;
+  color: var(--adv-ink);
+}
+
+.adv-ledger-bars {
+  display: grid;
+  gap: 8px;
+}
+
+.adv-ledger-bar {
+  display: grid;
+  /* 金額欄固定寬，每一列的長條才會對齊 */
+  grid-template-columns: 6.5em 1fr 6.5em;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.adv-ledger-bar__track {
+  height: 14px;
+  border: 2px solid var(--adv-ink);
+  border-radius: 999px;
+  background: var(--adv-chip);
+  overflow: hidden;
+}
+
+.adv-ledger-bar__fill {
+  display: block;
+  height: 100%;
+  background: color-mix(in srgb, var(--cat-color), var(--adv-ink) var(--adv-cat-lift));
+}
+
+.adv-ledger-bar__amt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-ledger-bar__amt small {
+  font-size: 0.7rem;
+  color: var(--adv-muted);
+}
+
+.adv-ledger-top {
+  margin: 0;
+  padding-left: 1.4em;
+  font-size: 0.86rem;
+}
+
+.adv-ledger-top li {
+  padding: 3px 0;
+}
+
+.adv-ledger-top li span {
+  display: inline-block;
+  max-width: calc(100% - 6em);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.adv-ledger-top li b {
+  float: right;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-ledger-copy {
+  margin-top: 12px;
+}
+
+/* 記一筆表單 */
+.adv-ledger-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.adv-ledger-recent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.adv-ledger-amount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adv-modal .adv-ledger-amount input {
+  flex: 1;
+  font-size: 1.4rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-ledger-cats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.adv-ledger-cat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 2px;
+  border: 2px solid var(--adv-ink);
+  border-radius: 14px;
+  background: var(--adv-card);
+  color: var(--adv-ink);
+  font-family: var(--adv-font);
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+
+.adv-ledger-cat span {
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+
+.adv-ledger-cat.is-active {
+  background: color-mix(in srgb, var(--cat-color) 45%, var(--adv-card));
+  box-shadow: 0 3px 0 var(--adv-drop);
+  transform: translateY(-2px);
+}
+
+.adv-ledger-special {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 表單依種類切換欄位用 hidden；元件自己的 display 會蓋掉瀏覽器預設的 [hidden] */
+.adv-modal [hidden] {
+  display: none !important;
+}

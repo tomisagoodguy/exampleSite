@@ -184,6 +184,35 @@ export const ACHIEVEMENT_BOOKS: Record<AchievementBook, { label: string; emoji: 
   },
 };
 
+export type LedgerCategory = 'food' | 'cafe' | 'fun' | 'transport' | 'stay' | 'daily' | 'gift' | 'other';
+
+/**
+ * 公帳支出分類，宣告順序＝記帳時按鈕順序；值要與 dating_map_ledger 的 CHECK 約束一致。
+ * hidden 的分類資料庫已允許，只是記帳時先不出現（打開就把 hidden 拿掉）；舊帳仍照常顯示
+ */
+export const LEDGER_CATEGORY: Record<LedgerCategory, { emoji: string; label: string; color: string; hidden?: boolean }> = {
+  food:      { emoji: '🍜', label: '吃飯',     color: '#E07A5F' },
+  cafe:      { emoji: '☕', label: '咖啡甜點', color: '#9C7456' },
+  fun:       { emoji: '🎡', label: '玩樂',     color: '#E28AAE' },
+  transport: { emoji: '🚇', label: '交通',     color: '#5B8FC9' },
+  stay:      { emoji: '🏨', label: '住宿',     color: '#3D5A80' },
+  daily:     { emoji: '🛒', label: '生活用品', color: '#6FA36B' },
+  gift:      { emoji: '🎁', label: '一起送人', color: '#D9A62E', hidden: true },
+  other:     { emoji: '📦', label: '其他',     color: '#8E8A86' },
+};
+
+/** ✨ 特別的日子（紀念日等）：資料庫欄位 is_special 已建好，true 才在記帳表單與回顧出現 */
+export const LEDGER_SHOW_SPECIAL = false;
+
+export const LEDGER_METHOD: Record<'card' | 'account' | 'own', string> = {
+  card: '💳 公帳卡',
+  account: '🏦 公帳帳戶',
+  own: '👛 自己先墊',
+};
+
+/** 每人每月存進公帳的金額；記入金時預設帶這個數字 */
+export const LEDGER_MONTHLY_DEPOSIT = 10000;
+
 export function filterPlaces(
   places: PlaceEntry[],
   category: string,

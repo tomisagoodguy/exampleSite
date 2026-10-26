@@ -652,7 +652,7 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
     display: none;
   }
 
-  .adv-page:is([data-active-tab="guides"], [data-active-tab="achievements"], [data-active-tab="trips"]) .adv-plan-col {
+  .adv-page:is([data-active-tab="guides"], [data-active-tab="achievements"], [data-active-tab="trips"], [data-active-tab="ledger"]) .adv-plan-col {
     display: none;
   }
 }
@@ -980,6 +980,11 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   display: none !important;
 }
 
+/* 公帳跟地點無關：地點篩選、搜尋框、「新增提案」都收起來，記帳用標題列的「＋ 記一筆」 */
+.adv-page[data-active-tab="ledger"] :is(#adv-filter-mount, #adv-attr-mount, #adv-region-mount, .adv-search-wrap, .adv-fab) {
+  display: none !important;
+}
+
 /* ─── 桌面主題切換列：規劃看板／懶人包／成就分開看（同旅行頁的日期切換） ─── */
 .adv-deskbar {
   display: none;
@@ -1051,7 +1056,8 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
   .adv-page:is([data-active-tab="proposed"], [data-active-tab="itinerary"], [data-active-tab="idea"]) .adv-board .adv-section--guides,
   .adv-page[data-active-tab="guides"] .adv-board .adv-section[data-tab]:not([data-tab="guides"]),
   .adv-page[data-active-tab="achievements"] .adv-board .adv-section[data-tab]:not([data-tab="achievements"]),
-  .adv-page[data-active-tab="trips"] .adv-board .adv-section[data-tab]:not([data-tab="trips"]) {
+  .adv-page[data-active-tab="trips"] .adv-board .adv-section[data-tab]:not([data-tab="trips"]),
+  .adv-page[data-active-tab="ledger"] .adv-board .adv-section[data-tab]:not([data-tab="ledger"]) {
     display: none;
   }
 }
@@ -1170,6 +1176,12 @@ body.dark-mode :is(.adv-modal, .adv-tripmap) a {
 
   .adv-tab:active {
     transform: scale(0.95);
+  }
+
+  /* 七個分頁擠一排，「願望清單」會折成兩行，字縮一點並禁止換行 */
+  .adv-tab {
+    font-size: 0.68rem;
+    white-space: nowrap;
   }
 
   .adv-tab__icon {

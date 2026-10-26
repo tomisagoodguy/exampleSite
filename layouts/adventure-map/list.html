@@ -98,6 +98,7 @@
     <button class="adv-deskbar__btn" data-desk-target="guides">📚 行程懶人包 <span class="adv-section-count" data-section="guides">0</span></button>
     <button class="adv-deskbar__btn" data-desk-target="achievements">🏆 成就 <span class="adv-section-count" data-section="achievements">0</span></button>
     <button class="adv-deskbar__btn" data-desk-target="trips">✈️ 旅行 <span class="adv-section-count" data-section="trips">0</span></button>
+    <button class="adv-deskbar__btn" data-desk-target="ledger">💰 公帳</button>
   </nav>
 
   {{/* ─── 地點搜尋框 ─── */}}
@@ -212,6 +213,17 @@
       <div class="adv-card-list adv-guide-list" id="adv-section-trips"></div>
     </div>
 
+    {{/* 公帳：兩人每月各存一萬的共同帳，內容由 ledger.ts 依月份產生（流水／核對／回顧） */}}
+    <div class="adv-section adv-section--guides" data-tab="ledger">
+      <div class="adv-section-header">
+        <span>💰 公帳</span>
+        <div class="adv-section-header__right">
+          <button type="button" class="adv-card-btn adv-card-btn--primary adv-guide-new-btn" id="adv-ledger-new">＋ 記一筆</button>
+        </div>
+      </div>
+      <div class="adv-ledger" id="adv-section-ledger"></div>
+    </div>
+
   </div>
 
   <div style="height:80px;"></div>
@@ -252,6 +264,10 @@
       <span class="adv-tab__icon">✈️</span>
       旅行
       <span class="adv-section-count adv-tab__badge" data-section="trips">0</span>
+    </button>
+    <button class="adv-tab" data-tab-target="ledger">
+      <span class="adv-tab__icon">💰</span>
+      公帳
     </button>
   </nav>
 

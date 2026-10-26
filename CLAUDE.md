@@ -37,7 +37,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > `hugo server` 開著時跑 `yarn build`，livereload 會重新整理頁面，Playwright 先前抓到的 DOM 元素全部失效；rebuild 後要重新 navigate 再測。
 >
-> `hugo server` 是 Fast Render 模式：改了 `layouts/` 或 `yarn build` 換掉 bundle 後，**已開過的頁面不會重新產生**（curl 拿到的還是舊 HTML）。`touch` 該頁的內容檔（破關地圖是 `content/adventure-map/_index.md`）再看，或起 server 時加 `--disableFastRender`。`hugo server` 開著時 `yarn build` 偶爾會因檔案被鎖而失敗，再跑一次即可。
+> `hugo server` 是 Fast Render 模式：改了 `layouts/` 或 `yarn build` 換掉 bundle 後，**已開過的頁面不會重新產生**（curl 拿到的還是舊 HTML）。`touch` 該頁的內容檔（破關地圖是 `content/adventure-map/_index.md`）再看，或起 server 時加 `--disableFastRender`。`hugo server` 開著時 `yarn build` 偶爾會因檔案被鎖而失敗，再跑一次即可；但失敗過一次後 `hugo server` 常會卡在 sync，bundle 一直回 500（頁面像舊版或空白），要重開 server。
 >
 > 換 port 一定要同時給 `--baseURL`：`list.html` 用 `absURL` 載 bundle，會指向 `localhost:1313`，跨 port 被 CORS 擋下，地圖整頁空白、沒有任何卡片。
 >
@@ -167,6 +167,24 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
   - 示意圖用 `PTS`（等距投影座標）／`ROUTES`（每天的點順序）畫，墨灰粗線上疊當天顏色，用 `getTotalLength()` 設 `--len` 做逐段畫出的動畫；`prefers-reduced-motion` 時所有動畫關掉，路線直接畫完
 - **改 `html` 不要用 `regexp_replace` 搭 `.*?`**：Postgres 的正規表示式由第一個量詞決定整條的貪婪性，`'\s*<div class="notice">.*?</div>'` 因為開頭的 `\s*` 變成貪婪，一路刪到最後一個 `</div>`，曾把整頁行程刪光（`dating_map_docs` 沒有歷史版本）。改用完整字串的 `replace()`，改完用 `<li class="stop` 數量等指標核對
 
+**💰 公帳**（「💰 公帳」分頁，`ledger.ts`）：兩人每月各存 `LEDGER_MONTHLY_DEPOSIT`（10,000）的共同帳，日常吃飯、生活用品、交通、約會、旅行都算；**送對方的禮物不記**。資料是一張流水表 `dating_map_ledger`：
+
+| 欄位 | 合法值 | 說明 |
+| --- | --- | --- |
+| `kind` | `expense` 支出／`deposit` 入金／`adjust` 對帳調整 | 退款＝負數支出；調整可正可負 |
+| `category` | `food` 吃飯、`cafe` 咖啡甜點、`fun` 玩樂、`transport` 交通、`stay` 住宿、`daily` 生活用品、`gift` 一起送人、`other` 其他 | 只有支出有（CHECK 約束）；定義在 `data.ts` `LEDGER_CATEGORY`，宣告順序＝記帳按鈕順序 |
+| `method` | `card` 公帳卡／`account` 公帳帳戶／`own` 自己先墊 | 入金與調整固定 `account`；`own` 會列在回顧的「👛 自己先墊的」 |
+| `paid_by` | `阿康`／`小黃` | 誰刷卡、誰入金（入金必填） |
+| `place_id` / `trip_slug` | → `dating_map_places` / `dating_map_docs` | 可空，刪地點或旅行時 `SET NULL`，帳不會消失 |
+| `checked` | boolean | 已跟信用卡帳單核對；RPC 改了日期、金額或付款方式會自動變回 `false` |
+
+- **「旅行」不是分類**：旅行中的吃住交通照樣歸 `food`／`stay`／`transport`，用 `trip_slug` 連到旅行，回顧才能同時回答「這月吃多少」和「這趟花多少」
+- **先建好、還沒打開的**：`gift` 在 `LEDGER_CATEGORY` 標 `hidden: true`（拿掉就會出現在記帳按鈕）；`is_special` ✨ 特別的日子由 `LEDGER_SHOW_SPECIAL` 控制。藏起來時修改舊帳會保留原值
+- 公帳餘額＝入金＋調整−支出（銀行帳戶＋信用卡未繳合計），所以**繳卡費不記**，那只是帳戶轉到信用卡
+- 核對不分月份：列出所有 `method = 'card'` 且未核對的支出，依日期由舊到新，對著帳單勾；勾選時顯示已選合計
+- 寫入走 RPC：`dating_map_save_expense`（`saveExpense`，`p_id` 為 `null` 時新增）、`dating_map_delete_expense`、`dating_map_set_expense_checked`（一次多筆）。`fetchLedger` 會分頁讀完，一個月約百筆，幾年就超過 PostgREST 單次 1000 筆上限
+- 新增分類要同時改 `LEDGER_CATEGORY` 與資料表的 CHECK 約束
+
 **回憶照片**（地點卡片＋成就牆的縮圖列，點開是燈箱）：照片**不走 Supabase**，是 repo 裡的公開檔，push 後跟網站一起部署。
 
 1. 原圖放進收件匣 `photos-inbox/<地點名稱>/`（說明寫同資料夾 `說明.txt`，每行「原檔名 說明」），照常 commit：pre-commit hook `.githooks/pre-commit`（需 `git config core.hooksPath .githooks`）會跑 `scripts/add-photos.py`，把壓縮版加進這次 commit、`git reset` 掉收件匣原圖，原圖移到 `photos-inbox/_done/`（gitignore）。收件匣**刻意不 gitignore**：新照片要顯示成變更，只放照片時才 commit 得出去（git 在 hook 之前就判斷有無變更）。名稱查 id 要 `.env` 有 `DATING_MAP_PASSPHRASE`，同名多筆時資料夾改「`361 小油坑`」，失敗原因寫在該資料夾 `處理失敗.txt`。也可直接 `uv run scripts/add-photos.py <地點 id> <照片…> --caption "說明"`。兩種都會縮成長邊 1600px＋400px 縮圖 `NN.thumb.jpg`、**去掉 EXIF（含 GPS）**，放進 `static/adventure-map/photos/<地點 id>/`；支援 HEIC。地點 id 用 SQL 查 `dating_map_places`
@@ -225,6 +243,7 @@ src/
 │   ├── countymap.ts        # 台灣縣市地圖選擇器（願望清單、懶人包的「🗺️ 地圖選」）
 │   ├── taiwan-shape.ts     # 縣市 SVG 路徑（scripts/build-taiwan-shape.py 產生）
 │   ├── photos.ts           # 回憶照片：讀 window.DATING_MAP_PHOTOS、卡片縮圖列、燈箱
+│   ├── ledger.ts           # 💰 公帳分頁：流水、核對信用卡帳單、月度回顧、記一筆表單
 │   ├── fly.ts              # 換階段動畫：重畫前 captureCard、refresh 後 flyCard，卡片飛到新位置（看不到就飛進分頁按鈕／流程條），靠卡片上的 data-place 找新卡片
 │   ├── ui.ts               # 面板 UI 邏輯（面板、懶人包時間軸、成就徽章、Modal、Toast）
 │   └── index.ts            # 入口，組合各模組
@@ -316,7 +335,7 @@ pipe 左右必須有空格，separator 使用 `---`：
 
 - **大量匯入資料後要用真實數量看 UI**：願望清單曾因 `.adv-row-list { overflow: hidden }` 蓋掉 `.adv-card-list` 的捲動，300+ 筆時桌面版被裁掉；資料寫入成功 ≠ 畫面可用
 - **用 Playwright 測 UI 前先看篩選列**：「☔ 雨天可去」、地區、分類篩選若被開著，行程／清單可能被濾成空的（例如唯一一筆定案地點非室內就消失），別誤判成功能壞掉
-- **分頁狀態在 `#adv-app-root[data-active-tab]`**（`index.ts` `setupTabBar`，手機底部 `#adv-tabbar` 與桌面 `#adv-deskbar` 共用）：桌面「規劃看板」＝左邊寬的願望清單＋右欄 `.adv-plan-col`（提案在上、行程在下，sticky、整欄一起捲；願望清單跟整頁捲，**畫面上只留右欄一個內捲**），上方流程條 `#adv-flow`（願望 → 提案 → 行程，點了把那段捲進來；數量只顯示在這裡，桌面版區塊標題的數量藏起來）。桌面 Hero 壓成一列、分頁按鈕與搜尋框同一列（`.adv-topbar`）；提案卡只露出按讚＋定案，其他操作收在右上「⋯」（與行程卡共用 `adv-more-actions-<id>`）；手機分頁列前三個也依這個順序。懶人包、成就、旅行各自獨立一頁。這三頁只吃搜尋，不吃分類／地區／雨天篩選，CSS 會在這三頁藏起 `#adv-filter-mount` / `#adv-attr-mount` / `#adv-region-mount`。新增分頁時要決定它屬於哪一組、吃不吃這些篩選，並同步 `map.css`；開場分頁由 `defaultTab()` 選第一個有內容的
+- **分頁狀態在 `#adv-app-root[data-active-tab]`**（`index.ts` `setupTabBar`，手機底部 `#adv-tabbar` 與桌面 `#adv-deskbar` 共用）：桌面「規劃看板」＝左邊寬的願望清單＋右欄 `.adv-plan-col`（提案在上、行程在下，sticky、整欄一起捲；願望清單跟整頁捲，**畫面上只留右欄一個內捲**），上方流程條 `#adv-flow`（願望 → 提案 → 行程，點了把那段捲進來；數量只顯示在這裡，桌面版區塊標題的數量藏起來）。桌面 Hero 壓成一列、分頁按鈕與搜尋框同一列（`.adv-topbar`）；提案卡只露出按讚＋定案，其他操作收在右上「⋯」（與行程卡共用 `adv-more-actions-<id>`）；手機分頁列前三個也依這個順序。懶人包、成就、旅行、公帳各自獨立一頁。前三頁只吃搜尋，不吃分類／地區／雨天篩選，CSS 會在這三頁藏起 `#adv-filter-mount` / `#adv-attr-mount` / `#adv-region-mount`；公帳連搜尋框和「新增提案」都藏起來。手機分頁列已有七個，`.adv-tab` 用 `white-space: nowrap` 防止「願望清單」折行，再加分頁要先確認 390px 寬放得下。新增分頁時要決定它屬於哪一組、吃不吃這些篩選，並同步 `map.css`；開場分頁由 `defaultTab()` 選第一個有內容的
 - **成就分頁三段**：儀表板（稱號、進度、已完成／今年／最近解鎖、徽章）→ 🏆 成就牆（已解鎖，依解鎖日新到舊，一筆一列橫放：桌面左標題右內容、手機上下排，描述、地點、心得與取消解鎖直接顯示，不用點開）→ 🎯 挑戰中（只列未解鎖）。已解鎖的**不會**出現在挑戰中清單
 - **願望清單區域預設收合**（`<details>`，展開後才產生地點列；組內 12 筆以內自動全開）、**挑戰中全部列出**（依連結地點狀態 confirmed > proposed > idea 再依難度排序）；成就分類篩選就是徽章本身（再點一次回全部），沒有另外的 chip 列。用 Playwright 數卡片時要先展開區域
 - **驗證正式站要繞過快取**：HTML 本身也快取 10 分鐘；用 `curl` 看 `Age` / `X-Cache` 標頭，瀏覽器測試前先清快取（Ctrl + Shift + R）
@@ -332,5 +351,5 @@ pipe 左右必須有空格，separator 使用 `---`：
 
 ## Active Status
 
-- **最後更新**：2026-10-24（加入夜晚繪本深色模式）
+- **最後更新**：2026-10-26（加入「💰 公帳」分頁）
 - **已知問題**：無

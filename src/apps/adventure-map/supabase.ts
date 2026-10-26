@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { PlaceEntry, PlaceStatus, Region } from '../../shared/types';
-import type { AchievementCategory } from './data';
+import type { AchievementCategory, LedgerCategory } from './data';
 
 const url = (window as any).DATING_MAP_SUPABASE_URL as string;
 const key = (window as any).DATING_MAP_SUPABASE_KEY as string;
@@ -454,6 +454,95 @@ export async function deletePlace(passphrase: string, id: number): Promise<void>
   const { error } = await supabase.rpc('dating_map_delete', {
     p_passphrase: passphrase,
     p_id: id,
+  });
+
+  if (error) throw error;
+}
+
+export type LedgerKind = 'expense' | 'deposit' | 'adjust';
+export type LedgerMethod = 'card' | 'account' | 'own';
+
+/** 公帳流水一筆：支出（退款記負數）、入金、對帳調整（可正可負） */
+export interface LedgerEntry {
+  id: number;
+  spent_on: string;
+  kind: LedgerKind;
+  amount: number;
+  /** 只有支出有分類 */
+  category: LedgerCategory | null;
+  method: LedgerMethod;
+  paid_by: Identity | null;
+  note: string | null;
+  place_id: number | null;
+  trip_slug: string | null;
+  is_special: boolean;
+  /** 已跟信用卡帳單核對；改了日期、金額或付款方式會自動變回 false */
+  checked: boolean;
+  created_by: string | null;
+}
+
+export type LedgerInput = Omit<LedgerEntry, 'id' | 'checked' | 'created_by'>;
+
+/** 一個月約百筆，幾年就會超過 PostgREST 單次上限 1000 筆，所以分頁讀完 */
+export async function fetchLedger(): Promise<LedgerEntry[]> {
+  const PAGE = 1000;
+  const rows: LedgerEntry[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from('dating_map_ledger')
+      .select('*')
+      .order('spent_on', { ascending: false })
+      .order('id', { ascending: false })
+      .range(from, from + PAGE - 1);
+
+    if (error) throw error;
+    rows.push(...((data || []) as LedgerEntry[]));
+    if (!data || data.length < PAGE) return rows;
+  }
+}
+
+/** 新增（id 為 null）或修改一筆 */
+export async function saveExpense(
+  passphrase: string,
+  id: number | null,
+  input: LedgerInput,
+  createdBy: string | null
+): Promise<number> {
+  const { data, error } = await supabase.rpc('dating_map_save_expense', {
+    p_passphrase: passphrase,
+    p_id: id,
+    p_spent_on: input.spent_on,
+    p_kind: input.kind,
+    p_amount: input.amount,
+    p_category: input.category,
+    p_method: input.method,
+    p_paid_by: input.paid_by,
+    p_note: input.note,
+    p_place_id: input.place_id,
+    p_trip_slug: input.trip_slug,
+    p_is_special: input.is_special,
+    p_created_by: createdBy,
+  });
+
+  if (error) throw error;
+  return data as number;
+}
+
+export async function deleteExpense(passphrase: string, id: number): Promise<void> {
+  const { error } = await supabase.rpc('dating_map_delete_expense', {
+    p_passphrase: passphrase,
+    p_id: id,
+  });
+
+  if (error) throw error;
+}
+
+/** 對帳單時一次勾選（或取消）多筆 */
+export async function setExpenseChecked(passphrase: string, ids: number[], checked: boolean): Promise<void> {
+  const { error } = await supabase.rpc('dating_map_set_expense_checked', {
+    p_passphrase: passphrase,
+    p_ids: ids,
+    p_checked: checked,
   });
 
   if (error) throw error;

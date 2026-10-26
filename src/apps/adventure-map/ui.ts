@@ -634,7 +634,7 @@ const STATUS_BADGE: Record<string, string> = {
   done: '🏁',
 };
 
-function esc(text: string | null | undefined): string {
+export function esc(text: string | null | undefined): string {
   return (text || '').replace(/[&<>"']/g, (c) => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string
   ));
@@ -1462,7 +1462,7 @@ export function openNextTripModal(allPlaces: PlaceEntry[]): void {
 
 // ───────────────────────── Modals ─────────────────────────
 
-function openModal(innerHTML: string): { root: HTMLElement; close: () => void } {
+export function openModal(innerHTML: string): { root: HTMLElement; close: () => void } {
   const root = document.createElement('div');
   root.className = 'adv-modal-backdrop';
   root.innerHTML = `<div class="adv-modal">${innerHTML}</div>`;
