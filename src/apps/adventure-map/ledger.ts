@@ -521,7 +521,10 @@ function calendarHTML(
   monthEntries.forEach((e) => byDay.set(e.spent_on, [...(byDay.get(e.spent_on) || []), e]));
   const spentOn = (date: string) => sum((byDay.get(date) || []).filter((e) => e.kind === 'expense'));
   const dates = Array.from({ length: days }, (_, i) => `${month}-${pad(i + 1)}`);
-  const max = Math.max(0, ...dates.map(spentOn));
+  const spentDays = dates.filter((d) => spentOn(d) > 0).length;
+  const total = sum(monthEntries.filter((e) => e.kind === 'expense'));
+  // 色條以「有花錢的日子平均 × 2」為滿格：用最多那天當基準的話，一晚住宿就把其他天全壓成最短
+  const full = spentDays ? (total / spentDays) * 2 : 0;
 
   const cells = dates.map((date, i) => {
     const list = byDay.get(date) || [];
@@ -534,28 +537,30 @@ function calendarHTML(
         <span class="adv-ledger-cal__num">${i + 1}</span>
         <span class="adv-ledger-cal__amt">${spent ? moneyShort(spent) : ''}</span>
         <span class="adv-ledger-cal__mark" aria-hidden="true">${trip ? '✈️' : ''}${went ? '📍' : ''}</span>
-        ${spent > 0 && max > 0 ? `<span class="adv-ledger-cal__bar" style="--heat:${Math.max(0.15, spent / max).toFixed(2)}" aria-hidden="true"></span>` : ''}
+        ${spent > 0 && full > 0 ? `<span class="adv-ledger-cal__bar" style="--heat:${Math.min(1, Math.max(0.15, spent / full)).toFixed(2)}" aria-hidden="true"></span>` : ''}
       </button>
     `;
   }).join('');
 
-  const spentDays = dates.filter((d) => spentOn(d) > 0).length;
-  const total = sum(monthEntries.filter((e) => e.kind === 'expense'));
-
   return `
     <div class="adv-ledger-cal">
+      <div class="adv-ledger-cal__main">
       <div class="adv-ledger-cal__grid">
         ${[...WEEKDAY].map((w) => `<span class="adv-ledger-cal__wd">${w}</span>`).join('')}
         ${'<span></span>'.repeat(lead)}
         ${cells}
       </div>
       <p class="adv-ledger-cal__legend">
-        ${spentDays ? `${spentDays} 天有花錢，平均一天 ${money(Math.round(total / spentDays))}・` : ''}底下色條越長花越多・📍 去了哪・✈️ 旅行中
+        ${spentDays ? `${spentDays} 天有花錢，平均一天 ${money(Math.round(total / spentDays))}・色條滿格＝平均的兩倍以上・` : ''}📍 去了哪・✈️ 旅行中
       </p>
+      </div>
+      ${day ? calendarDayHTML(day, byDay.get(day) || [], places, placeById, tripBySlug) : ''}
     </div>
-    ${day ? calendarDayHTML(day, byDay.get(day) || [], places, placeById, tripBySlug) : ''}
   `;
 }
+
+/** 那天的帳超過這麼多筆，先列分類小計與最大的幾筆，其餘收起來 */
+const CALENDAR_DAY_ROWS = 6;
 
 function calendarDayHTML(
   date: string,
@@ -565,14 +570,37 @@ function calendarDayHTML(
   tripBySlug: Map<string, Trip>
 ): string {
   const went = placesOn(date, places, list, placeById);
-  const spent = sum(list.filter((e) => e.kind === 'expense'));
+  const expenses = list.filter((e) => e.kind === 'expense');
+  const spent = sum(expenses);
+  const row = (e: LedgerEntry) => rowHTML(e, placeById, tripBySlug);
+
+  let rows = '<p class="adv-empty">這天沒有記帳</p>';
+  if (list.length > CALENDAR_DAY_ROWS) {
+    // 筆數多（旅行日）先看錢花在哪：分類小計＋金額最大的幾筆，其餘照時間收在後面
+    const byCat = new Map<string, number>();
+    expenses.forEach((e) => byCat.set(e.category || '', (byCat.get(e.category || '') || 0) + e.amount));
+    const cats = [...byCat.entries()].sort((a, b) => b[1] - a[1]).map(([key, amt]) => {
+      const c = key ? ledgerCategory(key) : null;
+      return `<span>${c?.emoji || '📦'} ${esc(c?.label || '其他')} ${money(amt)}</span>`;
+    }).join('');
+    const sorted = [...list].sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount) || b.id - a.id);
+    rows = `
+      ${cats ? `<p class="adv-ledger-cal__cats">${cats}</p>` : ''}
+      ${sorted.slice(0, CALENDAR_DAY_ROWS).map(row).join('')}
+      <details class="adv-ledger-cal__more">
+        <summary>其餘 ${list.length - CALENDAR_DAY_ROWS} 筆</summary>
+        ${sorted.slice(CALENDAR_DAY_ROWS).map(row).join('')}
+      </details>
+    `;
+  } else if (list.length) {
+    rows = [...list].sort((a, b) => b.id - a.id).map(row).join('');
+  }
+
   return `
     <div class="adv-ledger-day adv-ledger-cal__day">
-      <div class="adv-ledger-day__head"><span>${dayLabel(date)}</span>${spent ? `<span>小計 ${money(spent)}</span>` : ''}</div>
+      <div class="adv-ledger-day__head"><span>${dayLabel(date)}・${list.length} 筆</span>${spent ? `<span>小計 ${money(spent)}</span>` : ''}</div>
       ${went.length ? `<p class="adv-ledger-cal__places">${went.map((p) => `<span>${p.status === 'done' ? '📍' : '🗓️'} ${esc(p.name)}</span>`).join('')}</p>` : ''}
-      ${list.length
-        ? [...list].sort((a, b) => b.id - a.id).map((e) => rowHTML(e, placeById, tripBySlug)).join('')
-        : '<p class="adv-empty">這天沒有記帳</p>'}
+      ${rows}
       <button type="button" class="adv-card-btn" data-ledger-add-day="${date}">＋ 記這天的帳</button>
     </div>
   `;

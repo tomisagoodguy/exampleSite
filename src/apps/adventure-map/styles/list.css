@@ -2258,7 +2258,8 @@ button.adv-ach-place small {
   color: var(--adv-muted);
 }
 
-.adv-ledger-cal__places {
+.adv-ledger-cal__places,
+.adv-ledger-cal__cats {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -2270,6 +2271,34 @@ button.adv-ach-place small {
   padding: 2px 10px;
   border: 2px solid var(--adv-ink);
   border-radius: 999px;
+}
+
+.adv-ledger-cal__cats span {
+  padding: 2px 10px;
+  border: 2px dashed var(--adv-line);
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-ledger-cal__more {
+  margin-bottom: 8px;
+}
+
+.adv-ledger-cal__more summary {
+  padding: 4px;
+  font-size: 0.85rem;
+  color: var(--adv-muted);
+  cursor: pointer;
+}
+
+/* 桌面：月曆在左、那天的明細在右，筆數多也不會把明細擠到很下面 */
+@media (min-width: 900px) {
+  .adv-ledger-cal {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 20px;
+    align-items: start;
+  }
 }
 
 .adv-ledger-row {
