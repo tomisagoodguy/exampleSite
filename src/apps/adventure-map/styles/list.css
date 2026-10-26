@@ -2185,6 +2185,35 @@ button.adv-ach-place small {
   font-variant-numeric: tabular-nums;
 }
 
+/* 較早的日子收成一行，點開才看那天的帳 */
+.adv-ledger-day--folded {
+  margin-bottom: 6px;
+}
+
+.adv-ledger-day--folded > summary {
+  padding: 8px 12px;
+  border: 2px dashed var(--adv-line);
+  border-radius: 14px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.adv-ledger-day--folded > summary::-webkit-details-marker {
+  display: none;
+}
+
+.adv-ledger-day--folded > summary > span:first-child::before {
+  content: '▸ ';
+}
+
+.adv-ledger-day--folded[open] > summary {
+  margin-bottom: 6px;
+}
+
+.adv-ledger-day--folded[open] > summary > span:first-child::before {
+  content: '▾ ';
+}
+
 .adv-ledger-cal__grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));

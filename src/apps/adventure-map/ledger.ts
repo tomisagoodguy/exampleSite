@@ -298,6 +298,15 @@ export function renderLedger(
       return;
     }
 
+    // 點的當下 details 還沒切換，open 是切換前的狀態；不擋預設行為，讓瀏覽器自己展開／收合
+    const fold = target.closest<HTMLElement>('[data-ledger-fold]');
+    if (fold) {
+      const date = fold.dataset.ledgerFold || '';
+      if ((fold.parentElement as HTMLDetailsElement).open) unfoldedDays.delete(date);
+      else unfoldedDays.add(date);
+      return;
+    }
+
     const dayBtn = target.closest<HTMLElement>('[data-ledger-day]');
     if (dayBtn) {
       calendarDay = dayBtn.dataset.ledgerDay || null;
@@ -464,19 +473,40 @@ function pickHTML(monthEntries: LedgerEntry[]): string {
   `;
 }
 
-/** 依日期新到舊分天列出，每天標支出小計 */
-function daysHTML(entries: LedgerEntry[], placeById: Map<number, PlaceEntry>, tripBySlug: Map<string, Trip>, withYear = false): string {
+/** 流水預設展開最近幾個有記帳的日子，較早的收合成一行（日期、筆數、小計） */
+const LIST_OPEN_DAYS = 7;
+
+/** 手動點開的較早日子；改完帳重畫時保持展開 */
+const unfoldedDays = new Set<string>();
+
+/** 依日期新到舊分天列出，每天標支出小計；openDays 有給時只展開最新的那幾天 */
+function daysHTML(
+  entries: LedgerEntry[],
+  placeById: Map<number, PlaceEntry>,
+  tripBySlug: Map<string, Trip>,
+  withYear = false,
+  openDays = Infinity
+): string {
   const days = new Map<string, LedgerEntry[]>();
   [...entries]
     .sort((a, b) => b.spent_on.localeCompare(a.spent_on) || b.id - a.id)
     .forEach((e) => days.set(e.spent_on, [...(days.get(e.spent_on) || []), e]));
 
-  return [...days.entries()].map(([date, list]) => {
+  return [...days.entries()].map(([date, list], i) => {
     const spent = sum(list.filter((e) => e.kind === 'expense'));
+    const rows = list.map((e) => rowHTML(e, placeById, tripBySlug)).join('');
+    if (i >= openDays) {
+      return `
+        <details class="adv-ledger-day adv-ledger-day--folded" ${unfoldedDays.has(date) ? 'open' : ''}>
+          <summary class="adv-ledger-day__head" data-ledger-fold="${date}"><span>${dayLabel(date, withYear)}・${list.length} 筆</span>${spent ? `<span>小計 ${money(spent)}</span>` : ''}</summary>
+          ${rows}
+        </details>
+      `;
+    }
     return `
       <div class="adv-ledger-day">
         <div class="adv-ledger-day__head"><span>${dayLabel(date, withYear)}</span>${spent ? `<span>小計 ${money(spent)}</span>` : ''}</div>
-        ${list.map((e) => rowHTML(e, placeById, tripBySlug)).join('')}
+        ${rows}
       </div>
     `;
   }).join('');
@@ -484,7 +514,7 @@ function daysHTML(entries: LedgerEntry[], placeById: Map<number, PlaceEntry>, tr
 
 function listHTML(monthEntries: LedgerEntry[], placeById: Map<number, PlaceEntry>, tripBySlug: Map<string, Trip>): string {
   if (!monthEntries.length) return `<p class="adv-empty">這個月還沒有記帳，按「＋ 記一筆」開始</p>${HISTORY_LINK}`;
-  return daysHTML(monthEntries, placeById, tripBySlug)
+  return daysHTML(monthEntries, placeById, tripBySlug, false, LIST_OPEN_DAYS)
     + '<button type="button" class="adv-ledger-link" data-ledger-pick="on">☑️ 一次選幾筆刪除</button>' + HISTORY_LINK;
 }
 
