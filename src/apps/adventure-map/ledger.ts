@@ -1,6 +1,7 @@
 import { PlaceEntry } from '../../shared/types';
 import {
   LEDGER_BIG_EXPENSE,
+  LEDGER_CARD_CLOSING_DAY,
   LEDGER_CATEGORY,
   LEDGER_CURRENCY,
   LEDGER_METHOD,
@@ -72,9 +73,31 @@ function monthLabel(month: string): string {
   return `${y} 年 ${m} 月`;
 }
 
-function dayLabel(date: string): string {
+/** withYear：不是今年才在前面加年份（跨月搜尋結果用） */
+function dayLabel(date: string, withYear = false): string {
   const [y, m, d] = date.split('-').map(Number);
-  return `${m}/${d}（${WEEKDAY[new Date(y, m - 1, d).getDay()]}）`;
+  const year = withYear && y !== new Date().getFullYear() ? `${y}/` : '';
+  return `${year}${m}/${d}（${WEEKDAY[new Date(y, m - 1, d).getDay()]}）`;
+}
+
+/** 某月的結帳日 YYYY-MM-DD；結帳日大於當月天數就算月底。delta 用來往前後推月份 */
+function closingIn(month: string, delta = 0): string {
+  const ym = shiftMonth(month, delta);
+  return `${ym}-${pad(Math.min(LEDGER_CARD_CLOSING_DAY, daysInMonth(ym)))}`;
+}
+
+/** 這筆刷卡會出現在哪一期帳單，回傳那期的結帳日 */
+function statementClose(date: string): string {
+  const close = closingIn(date.slice(0, 7));
+  return date <= close ? close : closingIn(date.slice(0, 7), 1);
+}
+
+/** 帳單期間「9/16–10/15」：上一期結帳日隔天到這期結帳日 */
+function periodLabel(close: string): string {
+  const [py, pm, pd] = closingIn(close.slice(0, 7), -1).split('-').map(Number);
+  const start = new Date(py, pm - 1, pd + 1);
+  const [, m, d] = close.split('-').map(Number);
+  return `${start.getMonth() + 1}/${start.getDate()}–${m}/${d}`;
 }
 
 const sum = (list: LedgerEntry[]) => list.reduce((s, e) => s + e.amount, 0);
@@ -193,6 +216,11 @@ export function renderLedger(
     ? []
     : IDENTITIES.filter((id) => !monthEntries.some((e) => e.kind === 'deposit' && e.paid_by === id));
 
+  // 搜尋時改列所有月份的結果，打字時只重畫 [data-ledger-results]，輸入框不會失去焦點
+  const listBody = () => searchQuery.trim()
+    ? searchHTML(entries, searchQuery, placeById, tripBySlug)
+    : (isFuture ? '' : budgetRemindHTML(entries, month)) + listHTML(monthEntries, placeById, tripBySlug);
+
   const body = view === 'check'
     ? checkHTML(unchecked, monthEntries.filter((e) => e.kind === 'expense' && e.method === 'card' && e.checked), ownPending)
       + bankHTML(entries, balances)
@@ -200,7 +228,7 @@ export function renderLedger(
       ? reviewHTML(entries, month, placeById, tripBySlug)
       : picking && monthEntries.length
         ? pickHTML(monthEntries)
-        : (isFuture ? '' : budgetRemindHTML(entries, month)) + listHTML(monthEntries, placeById, tripBySlug);
+        : `${searchBoxHTML()}<div data-ledger-results>${listBody()}</div>`;
 
   mount.innerHTML = `
     <div class="adv-ledger-month">
@@ -335,6 +363,13 @@ export function renderLedger(
 
   // 對銀行餘額：邊填邊算差額
   mount.oninput = (ev) => {
+    const search = (ev.target as HTMLElement).closest<HTMLInputElement>('[data-ledger-search]');
+    if (search) {
+      searchQuery = search.value;
+      const results = mount.querySelector('[data-ledger-results]');
+      if (results) results.innerHTML = listBody();
+      return;
+    }
     if (!(ev.target as HTMLElement).closest('[data-ledger-bank]')) return;
     const bank = readBankForm(mount, entries);
     const result = mount.querySelector<HTMLElement>('[data-bank-result]');
@@ -412,11 +447,10 @@ function pickHTML(monthEntries: LedgerEntry[]): string {
   `;
 }
 
-function listHTML(monthEntries: LedgerEntry[], placeById: Map<number, PlaceEntry>, tripBySlug: Map<string, Trip>): string {
-  if (!monthEntries.length) return `<p class="adv-empty">這個月還沒有記帳，按「＋ 記一筆」開始</p>${HISTORY_LINK}`;
-
+/** 依日期新到舊分天列出，每天標支出小計 */
+function daysHTML(entries: LedgerEntry[], placeById: Map<number, PlaceEntry>, tripBySlug: Map<string, Trip>, withYear = false): string {
   const days = new Map<string, LedgerEntry[]>();
-  [...monthEntries]
+  [...entries]
     .sort((a, b) => b.spent_on.localeCompare(a.spent_on) || b.id - a.id)
     .forEach((e) => days.set(e.spent_on, [...(days.get(e.spent_on) || []), e]));
 
@@ -424,11 +458,66 @@ function listHTML(monthEntries: LedgerEntry[], placeById: Map<number, PlaceEntry
     const spent = sum(list.filter((e) => e.kind === 'expense'));
     return `
       <div class="adv-ledger-day">
-        <div class="adv-ledger-day__head"><span>${dayLabel(date)}</span>${spent ? `<span>小計 ${money(spent)}</span>` : ''}</div>
+        <div class="adv-ledger-day__head"><span>${dayLabel(date, withYear)}</span>${spent ? `<span>小計 ${money(spent)}</span>` : ''}</div>
         ${list.map((e) => rowHTML(e, placeById, tripBySlug)).join('')}
       </div>
     `;
-  }).join('') + '<button type="button" class="adv-ledger-link" data-ledger-pick="on">☑️ 一次選幾筆刪除</button>' + HISTORY_LINK;
+  }).join('');
+}
+
+function listHTML(monthEntries: LedgerEntry[], placeById: Map<number, PlaceEntry>, tripBySlug: Map<string, Trip>): string {
+  if (!monthEntries.length) return `<p class="adv-empty">這個月還沒有記帳，按「＋ 記一筆」開始</p>${HISTORY_LINK}`;
+  return daysHTML(monthEntries, placeById, tripBySlug)
+    + '<button type="button" class="adv-ledger-link" data-ledger-pick="on">☑️ 一次選幾筆刪除</button>' + HISTORY_LINK;
+}
+
+// ───────────────────────── 搜尋（所有月份） ─────────────────────────
+
+/** 流水搜尋字；重畫時沿用，清空輸入框就回到本月流水 */
+let searchQuery = '';
+
+const SEARCH_LIMIT = 200;
+
+function searchBoxHTML(): string {
+  return `
+    <div class="adv-ledger-search">
+      <input type="search" class="adv-search-input" data-ledger-search value="${esc(searchQuery)}"
+        placeholder="🔍 搜尋所有月份：備註、金額、地點、分類" aria-label="搜尋公帳" autocomplete="off" enterkeyhint="search" />
+    </div>`;
+}
+
+/**
+ * 空白分開的每個詞都要命中（AND）。數字詞另外比對金額（台幣或原幣），要完全相等：
+ * 對帳單找「1,280」那筆時，不會冒出 128、12,800
+ */
+function matchEntry(e: LedgerEntry, terms: string[], placeById: Map<number, PlaceEntry>, tripBySlug: Map<string, Trip>): boolean {
+  const place = e.place_id != null ? placeById.get(e.place_id) : undefined;
+  const trip = e.trip_slug ? tripBySlug.get(e.trip_slug) : undefined;
+  const hay = [
+    entryTitle(e), e.note, categoryOf(e)?.label, place?.name, trip?.title, e.paid_by,
+    KIND_LABEL[e.kind], e.method ? LEDGER_METHOD[e.method] : '', e.orig_currency,
+  ].filter(Boolean).join(' ').toLowerCase();
+
+  return terms.every((t) => {
+    if (hay.includes(t)) return true;
+    const num = t.replace(/[$,，＄]/g, '');
+    if (!/^\d+(\.\d+)?$/.test(num)) return false;
+    const n = Number(num);
+    return Math.abs(e.amount) === n || (e.orig_amount != null && Math.abs(Number(e.orig_amount)) === n);
+  });
+}
+
+function searchHTML(entries: LedgerEntry[], query: string, placeById: Map<number, PlaceEntry>, tripBySlug: Map<string, Trip>): string {
+  const terms = query.trim().toLowerCase().split(/\s+/);
+  const hits = entries.filter((e) => matchEntry(e, terms, placeById, tripBySlug));
+  if (!hits.length) return '<p class="adv-empty">所有月份都找不到符合的帳</p>';
+
+  const shown = [...hits].sort((a, b) => b.spent_on.localeCompare(a.spent_on) || b.id - a.id).slice(0, SEARCH_LIMIT);
+  const spent = sum(hits.filter((e) => e.kind === 'expense'));
+  return `
+    <p class="adv-ledger-sub">找到 ${hits.length} 筆${spent ? `・支出合計 <b>${money(spent)}</b>` : ''}${
+      hits.length > SEARCH_LIMIT ? `・只列最近 ${SEARCH_LIMIT} 筆，多打幾個字縮小範圍` : ''}</p>
+    ${daysHTML(shown, placeById, tripBySlug, true)}`;
 }
 
 // ───────────────────────── 預算 ─────────────────────────
@@ -581,6 +670,26 @@ function checklistHTML(
   `;
 }
 
+/** 待核對的刷卡依帳單期分組（舊到新）；已結帳的期數應該都在帳單上，還沒結帳的是「未出帳」 */
+function statementsHTML(sorted: LedgerEntry[]): string {
+  const periods = new Map<string, LedgerEntry[]>();
+  sorted.forEach((e) => {
+    const close = statementClose(e.spent_on);
+    periods.set(close, [...(periods.get(close) || []), e]);
+  });
+  const today = localDate();
+  return [...periods.entries()].map(([close, list]) => {
+    const [y, m, d] = close.split('-').map(Number);
+    const year = y !== Number(today.slice(0, 4)) ? `${y}/` : '';
+    const head = close < today
+      ? `📄 ${year}${m}/${d} 結帳的帳單（${periodLabel(close)}）`
+      : `🕒 未出帳（${periodLabel(close)}，${m}/${d} 結帳）`;
+    return `
+      <div class="adv-ledger-sub adv-ledger-period"><span>${head}</span><span>${list.length} 筆・<b>${money(sum(list))}</b></span></div>
+      ${checklistHTML(list, 'on')}`;
+  }).join('');
+}
+
 /** 依日期由舊到新，跟帳單的順序一樣 */
 function checkHTML(unchecked: LedgerEntry[], checkedThisMonth: LedgerEntry[], ownPending: LedgerEntry[]): string {
   const byDate = (a: LedgerEntry, b: LedgerEntry) => a.spent_on.localeCompare(b.spent_on) || a.id - b.id;
@@ -594,9 +703,9 @@ function checkHTML(unchecked: LedgerEntry[], checkedThisMonth: LedgerEntry[], ow
         ${checklistHTML([...list].sort(byDate), 'on', '✓ 已從公帳轉回', '轉帳給對方後勾起來')}`).join('')}
       <div class="adv-ledger-gap"></div>
       <div class="adv-ledger-subhead">💳 對信用卡帳單</div>` : ''}
-    <p class="adv-modal-hint adv-ledger-hint">打開信用卡帳單逐筆對：對得上就勾起來。帳單上有、這裡沒有的就是漏記，按「＋ 記一筆」補上；金額不同就點流水那筆改掉。</p>
+    <p class="adv-modal-hint adv-ledger-hint">打開信用卡帳單逐筆對：對得上就勾起來。帳單上有、這裡沒有的就是漏記，按「＋ 記一筆」補上；金額不同就點流水那筆改掉。依每月 ${LEDGER_CARD_CLOSING_DAY} 號結帳分期，結帳日前一兩天刷的可能入帳在下一期。</p>
     ${unchecked.length
-      ? `<div class="adv-ledger-subhead">待核對 ${unchecked.length} 筆・合計 ${money(sum(unchecked))}</div>${checklistHTML([...unchecked].sort(byDate), 'on')}`
+      ? `<div class="adv-ledger-subhead">待核對 ${unchecked.length} 筆・合計 ${money(sum(unchecked))}</div>${statementsHTML([...unchecked].sort(byDate))}`
       : '<p class="adv-empty">🎉 刷卡紀錄都核對過了</p>'}
     ${checkedThisMonth.length ? `
       <details class="adv-ledger-done">

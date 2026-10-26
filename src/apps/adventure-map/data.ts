@@ -255,6 +255,9 @@ export const LEDGER_CURRENCY: Record<string, { label: string; symbol: string }> 
 /** 單筆支出達這個金額算「大額」：流水標 🔺、回顧另外統計，月中預估時不拿來推算每天的花費速度 */
 export const LEDGER_BIG_EXPENSE = 3000;
 
+/** 公帳卡每月結帳日（1–31，大於當月天數就算月底）：「✅ 核對」依這天把刷卡分成一期一期，對著每期帳單勾 */
+export const LEDGER_CARD_CLOSING_DAY = 15;
+
 export function filterPlaces(
   places: PlaceEntry[],
   category: string,

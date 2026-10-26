@@ -2309,6 +2309,19 @@ button.adv-ach-place small {
   font-size: 0.85rem;
 }
 
+.adv-ledger-search {
+  margin-bottom: 12px;
+}
+
+/* 核對的帳單期標題：期間在左、筆數合計在右 */
+.adv-ledger-sub.adv-ledger-period {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 8px;
+  margin: 12px 0 6px;
+}
+
 .adv-ledger-pickhead {
   display: flex;
   align-items: center;
