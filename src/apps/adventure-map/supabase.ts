@@ -12,11 +12,19 @@ export function setReadPassphrase(value: string | null) {
   readPassphrase = value;
 }
 
+/** header 只能放 ASCII，中文名字轉成 UTF-8 的 base64 */
+function base64Utf8(s: string): string {
+  return btoa(String.fromCharCode(...new TextEncoder().encode(s)));
+}
+
 export const supabase = createClient(url, key, {
   global: {
     fetch: (input, init) => {
       const headers = new Headers(init?.headers);
       if (readPassphrase) headers.set('x-dating-map-pass', readPassphrase);
+      // 公帳改帳紀錄由 trigger 從這個 header 記下是誰改的，不用每支 RPC 多帶參數
+      const who = getStoredIdentity();
+      if (who) headers.set('x-dating-map-who', base64Utf8(who));
       return fetch(input, { ...init, headers });
     },
   },
@@ -479,9 +487,14 @@ export interface LedgerEntry {
   /** 已跟信用卡帳單核對；改了日期、金額或付款方式會自動變回 false */
   checked: boolean;
   created_by: string | null;
+  created_at: string;
+  /** 外幣支出的原幣金額；amount 一律是台幣（先用匯率估，核對帳單時改成實際扣款） */
+  orig_amount: number | null;
+  /** ISO 4217 代碼，例如 JPY；與 orig_amount 同時有值或同時 null */
+  orig_currency: string | null;
 }
 
-export type LedgerInput = Omit<LedgerEntry, 'id' | 'checked' | 'created_by'>;
+export type LedgerInput = Omit<LedgerEntry, 'id' | 'checked' | 'created_by' | 'created_at'>;
 
 /** 一個月約百筆，幾年就會超過 PostgREST 單次上限 1000 筆，所以分頁讀完 */
 export async function fetchLedger(): Promise<LedgerEntry[]> {
@@ -522,10 +535,98 @@ export async function saveExpense(
     p_trip_slug: input.trip_slug,
     p_is_special: input.is_special,
     p_created_by: createdBy,
+    p_orig_amount: input.orig_amount,
+    p_orig_currency: input.orig_currency,
   });
 
   if (error) throw error;
   return data as number;
+}
+
+/** 改帳紀錄一筆：trigger 在每次修改、刪除時寫入；restore 是從刪除紀錄復原 */
+export interface LedgerHistory {
+  id: number;
+  entry_id: number;
+  op: 'update' | 'delete' | 'restore';
+  old_row: LedgerEntry | null;
+  new_row: LedgerEntry | null;
+  changed_by: string | null;
+  changed_at: string;
+}
+
+/** entryId 有值只讀那一筆的紀錄，否則讀最近 limit 筆（全部帳） */
+export async function fetchLedgerHistory(entryId: number | null, limit = 100): Promise<LedgerHistory[]> {
+  let query = supabase.from('dating_map_ledger_history').select('*');
+  if (entryId != null) query = query.eq('entry_id', entryId);
+  const { data, error } = await query.order('changed_at', { ascending: false }).limit(limit);
+
+  if (error) throw error;
+  return (data || []) as LedgerHistory[];
+}
+
+/** 從刪除紀錄復原，沿用原本的 id */
+export async function restoreExpense(passphrase: string, historyId: number): Promise<number> {
+  const { data, error } = await supabase.rpc('dating_map_restore_expense', {
+    p_passphrase: passphrase,
+    p_history_id: historyId,
+  });
+
+  if (error) throw error;
+  return data as number;
+}
+
+/**
+ * 餘額核對點：某天銀行帳戶的實際餘額。book_balance（到那天為止帳上的公帳餘額）與
+ * own_pending（當時還沒轉回的先墊）由資料庫在存的當下算好，之後有人改了更早的帳就看得出來
+ */
+export interface LedgerBalance {
+  id: number;
+  checked_on: string;
+  bank: number;
+  /** 信用卡還沒繳的錢（含未出帳） */
+  card_owed: number;
+  own_pending: number;
+  book_balance: number;
+  note: string | null;
+  created_by: string | null;
+}
+
+export async function fetchLedgerBalances(): Promise<LedgerBalance[]> {
+  const { data, error } = await supabase
+    .from('dating_map_ledger_balances')
+    .select('id, checked_on, bank, card_owed, own_pending, book_balance, note, created_by')
+    .order('checked_on', { ascending: false })
+    .order('id', { ascending: false });
+
+  if (error) throw error;
+  return (data || []) as LedgerBalance[];
+}
+
+export async function saveLedgerBalance(
+  passphrase: string,
+  input: { checked_on: string; bank: number; card_owed: number; note: string | null },
+  createdBy: string | null
+): Promise<number> {
+  const { data, error } = await supabase.rpc('dating_map_save_balance', {
+    p_passphrase: passphrase,
+    p_checked_on: input.checked_on,
+    p_bank: input.bank,
+    p_card_owed: input.card_owed,
+    p_note: input.note,
+    p_created_by: createdBy,
+  });
+
+  if (error) throw error;
+  return data as number;
+}
+
+export async function deleteLedgerBalance(passphrase: string, id: number): Promise<void> {
+  const { error } = await supabase.rpc('dating_map_delete_balance', {
+    p_passphrase: passphrase,
+    p_id: id,
+  });
+
+  if (error) throw error;
 }
 
 export async function deleteExpense(passphrase: string, id: number): Promise<void> {
@@ -543,13 +644,15 @@ export interface LedgerCategoryRow {
   emoji: string;
   color: string;
   hidden: boolean;
+  /** 每月預算，null＝不設 */
+  monthly_budget: number | null;
 }
 
 /** 依 sort_order 排好；表還沒建（migration 未執行）時回空陣列，前端沿用 data.ts 的備援分類 */
 export async function fetchLedgerCategories(): Promise<LedgerCategoryRow[]> {
   const { data, error } = await supabase
     .from('dating_map_ledger_categories')
-    .select('key, label, emoji, color, hidden')
+    .select('key, label, emoji, color, hidden, monthly_budget')
     .order('sort_order', { ascending: true });
 
   if (error) throw error;
@@ -560,7 +663,7 @@ export async function fetchLedgerCategories(): Promise<LedgerCategoryRow[]> {
 export async function saveLedgerCategory(
   passphrase: string,
   key: string | null,
-  input: Omit<LedgerCategoryRow, 'key'>
+  input: Omit<LedgerCategoryRow, 'key' | 'monthly_budget'>
 ): Promise<string> {
   const { data, error } = await supabase.rpc('dating_map_save_ledger_category', {
     p_passphrase: passphrase,
@@ -573,6 +676,17 @@ export async function saveLedgerCategory(
 
   if (error) throw error;
   return data as string;
+}
+
+/** 分類每月預算；null 或 0 是取消 */
+export async function setLedgerBudget(passphrase: string, key: string, budget: number | null): Promise<void> {
+  const { error } = await supabase.rpc('dating_map_set_ledger_budget', {
+    p_passphrase: passphrase,
+    p_key: key,
+    p_budget: budget,
+  });
+
+  if (error) throw error;
 }
 
 /** 依陣列順序重排記帳按鈕 */

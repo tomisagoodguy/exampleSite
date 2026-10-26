@@ -9,6 +9,7 @@ import {
   AchievementBook,
   AchievementCategory,
   applyLedgerCategories,
+  LEDGER_CATEGORY,
 } from './data';
 import {
   renderFilterBar,
@@ -43,7 +44,7 @@ import {
 import { PlaceEntry } from '../../shared/types';
 import { geocodePlace, lookupArea } from './geocode';
 import { openTripMap, TripStop } from './tripmap';
-import { renderLedger, openExpenseModal, openLedgerCategoryModal, LedgerState, currentMonth } from './ledger';
+import { renderLedger, openExpenseModal, openLedgerCategoryModal, openLedgerHistoryModal, LedgerState, currentMonth } from './ledger';
 import { setupPhotoViewer } from './photos';
 import { captureCard, flyCard } from './fly';
 import {
@@ -90,6 +91,13 @@ import {
   saveLedgerCategory,
   deleteLedgerCategory,
   reorderLedgerCategories,
+  setLedgerBudget,
+  fetchLedgerHistory,
+  restoreExpense,
+  LedgerBalance,
+  fetchLedgerBalances,
+  saveLedgerBalance,
+  deleteLedgerBalance,
 } from './supabase';
 
 /** 成就分頁上次看的冊子，只記在各自的裝置上 */
@@ -114,6 +122,7 @@ class DatingMapApp {
   private currentAchBook: AchievementBook = readAchBook();
   private trips: Trip[] = [];
   private ledger: LedgerEntry[] = [];
+  private ledgerBalances: LedgerBalance[] = [];
   private ledgerState: LedgerState = { month: currentMonth(), view: 'list' };
   private currentCat: string = 'all';
   private currentAttr: AttrFilter = { region: 'all', rainOnly: false };
@@ -426,7 +435,7 @@ class DatingMapApp {
         return;
       }
       // 對方記了一筆只重讀公帳，不用整頁重抓
-      if (table === 'dating_map_ledger' || table === 'dating_map_ledger_categories') {
+      if (table === 'dating_map_ledger' || table === 'dating_map_ledger_categories' || table === 'dating_map_ledger_balances') {
         await Promise.all([this.loadLedger(), this.loadLedgerCategories()]);
         this.renderAll();
         return;
@@ -550,7 +559,7 @@ class DatingMapApp {
         onDelete: (t) => this.deleteTrip(t),
       }
     );
-    renderLedger(this.ledger, this.allPlaces, this.trips, this.ledgerState, {
+    renderLedger(this.ledger, this.allPlaces, this.trips, this.ledgerBalances, this.ledgerState, {
       onAdd: (preset) => this.addExpense(preset),
       onEdit: (e) => this.editExpense(e),
       onSetChecked: (ids, checked) => this.setExpenseChecked(ids, checked),
@@ -558,16 +567,50 @@ class DatingMapApp {
         this.ledgerState = state;
         this.renderAll();
       },
+      onSaveBalance: (input) => this.saveBalance(input),
+      onDeleteBalance: (id) => this.deleteBalance(id),
+      onOpenHistory: () => this.openLedgerHistory(),
     });
   }
 
+  /** 核對點表還沒建（migration 未執行）時只是看不到核對點，流水照常 */
   private async loadLedger() {
-    try {
-      this.ledger = await fetchLedger();
-    } catch (err) {
-      console.error('讀取公帳失敗', err);
-      this.ledger = [];
+    const [ledger, balances] = await Promise.allSettled([fetchLedger(), fetchLedgerBalances()]);
+    if (ledger.status === 'rejected') console.error('讀取公帳失敗', ledger.reason);
+    if (balances.status === 'rejected') console.error('讀取餘額核對點失敗', balances.reason);
+    this.ledger = ledger.status === 'fulfilled' ? ledger.value : [];
+    this.ledgerBalances = balances.status === 'fulfilled' ? balances.value : [];
+  }
+
+  private async saveBalance(input: { checked_on: string; bank: number; card_owed: number; note: string | null }) {
+    const ok = await this.withPassphrase((pw) => saveLedgerBalance(pw, input, this.identity).then(() => true));
+    if (ok) await this.afterLedgerSave(this.ledgerState.month, '📌 記下核對點了');
+  }
+
+  private async deleteBalance(id: number) {
+    const confirmed = await openConfirmModal('要刪除這個核對點嗎？帳不會動。');
+    if (!confirmed) return;
+    const ok = await this.withPassphrase((pw) => deleteLedgerBalance(pw, id).then(() => true));
+    if (ok) await this.afterLedgerSave(this.ledgerState.month, '已刪除核對點');
+  }
+
+  private async openLedgerHistory() {
+    const history = await fetchLedgerHistory(null, 200).catch((err) => {
+      console.error('讀取改帳紀錄失敗', err);
+      return null;
+    });
+    if (!history) {
+      showToast('讀不到改帳紀錄');
+      return;
     }
+    openLedgerHistoryModal(history, this.ledger, this.allPlaces, this.trips, async (historyId) => {
+      const id = await this.withPassphrase((pw) => restoreExpense(pw, historyId));
+      if (id === null) return false;
+      // 跳到復原那筆所在的月份
+      const spentOn = history.find((h) => h.id === historyId)?.old_row?.spent_on;
+      await this.afterLedgerSave(spentOn ? spentOn.slice(0, 7) : this.ledgerState.month, '↩️ 復原了');
+      return true;
+    });
   }
 
   /** 存完切到那筆所在的月份，補記上個月的帳也看得到 */
@@ -606,18 +649,26 @@ class DatingMapApp {
           paid_by: input.paid_by,
           method: input.method,
           trip_slug: input.trip_slug,
+          orig_currency: input.orig_currency,
         });
       }
     }
   }
 
   private async editExpense(entry: LedgerEntry) {
+    // 讀不到紀錄（表還沒建或斷線）照樣能改，只是看不到改帳紀錄
+    const history = await fetchLedgerHistory(entry.id).catch((err) => {
+      console.error('讀取改帳紀錄失敗', err);
+      return [];
+    });
     const result = await openExpenseModal({
       existing: entry,
       identity: this.identity,
       places: this.allPlaces,
       trips: this.trips,
       entries: this.ledger,
+      history,
+      balances: this.ledgerBalances,
     });
     if (!result) return;
 
@@ -662,7 +713,13 @@ class DatingMapApp {
     };
 
     openLedgerCategoryModal(usage, {
-      save: (key, input) => apply((pw) => saveLedgerCategory(pw, key, input), '儲存失敗'),
+      // 預算走另一支 RPC，有變才送
+      save: (key, input) =>
+        apply(async (pw) => {
+          const saved = await saveLedgerCategory(pw, key, input);
+          const before = key ? LEDGER_CATEGORY[key]?.budget ?? null : null;
+          if (input.budget !== before) await setLedgerBudget(pw, saved, input.budget);
+        }, '儲存失敗'),
       remove: (key) => apply((pw) => deleteLedgerCategory(pw, key), '刪除失敗（用過的分類只能隱藏）'),
       reorder: (keys) => apply((pw) => reorderLedgerCategories(pw, keys), '排序失敗'),
     });

@@ -2869,3 +2869,208 @@ button.adv-ach-place small {
   font-family: inherit;
   font-size: 0.7rem;
 }
+
+/* ─── 公帳：預算、對銀行餘額、改帳紀錄、外幣（ledger.ts） ─── */
+.adv-ledger-remind--budget {
+  border-color: var(--adv-coral-deep);
+}
+
+.adv-ledger-remind--budget span + span::before {
+  content: '・';
+}
+
+.adv-ledger-bar--over .adv-ledger-bar__fill {
+  background: var(--adv-danger);
+}
+
+/* 照天數到今天該用到的位置 */
+.adv-ledger-bar__track {
+  position: relative;
+}
+
+.adv-ledger-bar__pace {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--adv-ink);
+}
+
+.adv-ledger-link {
+  display: block;
+  margin: 14px auto 0;
+  padding: 6px 10px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--adv-muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.adv-ledger-bank {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 10px;
+  padding: 12px 14px;
+  border: 2px solid var(--adv-ink);
+  border-radius: 16px;
+  background: var(--adv-card);
+}
+
+.adv-ledger-bank label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--adv-muted);
+}
+
+.adv-ledger-bank input {
+  min-width: 0;
+  padding: 6px 10px;
+  border: 2px solid var(--adv-ink);
+  border-radius: 12px;
+  background: var(--adv-paper);
+  color: var(--adv-ink);
+  font: inherit;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-ledger-bank__result,
+.adv-ledger-bank .adv-ledger-actions {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+@media (max-width: 560px) {
+  .adv-ledger-bank {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .adv-ledger-bank label:first-of-type {
+    grid-column: 1 / -1;
+  }
+}
+
+.adv-ledger-bank__past {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.86rem;
+}
+
+.adv-ledger-bank__past li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--adv-soft);
+}
+
+.adv-ledger-bank__past small {
+  font-size: 0.75rem;
+}
+
+.adv-ledger-hist,
+.adv-ledger-hist ul {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.adv-ledger-hist__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--adv-soft);
+  font-size: 0.85rem;
+}
+
+.adv-ledger-hist__when {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  color: var(--adv-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-ledger-hist__what {
+  flex: 1 1 12em;
+  min-width: 0;
+}
+
+.adv-ledger-hist__what small {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--adv-muted);
+}
+
+.adv-ledger-hist__item .adv-card-btn {
+  margin-left: auto;
+}
+
+/* 記一筆：幣別選單接在金額後面；選外幣時下面多一列匯率與台幣 */
+.adv-modal .adv-ledger-amount .adv-lf-cur {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 6px 8px;
+  font-size: 0.85rem;
+}
+
+.adv-lf-fx {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-top: 8px;
+  font-size: 0.85rem;
+}
+
+.adv-lf-fx[hidden] {
+  display: none;
+}
+
+.adv-modal .adv-lf-fx label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.adv-modal .adv-lf-fx input {
+  width: 7em;
+  padding: 4px 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-lf-fx small {
+  flex-basis: 100%;
+  color: var(--adv-muted);
+}
+
+/* .adv-modal label 是 block、input 是滿寬，勾選框列要蓋回來 */
+.adv-modal .adv-ledger-special {
+  display: flex;
+}
+
+.adv-modal .adv-ledger-special input {
+  width: auto;
+}
+
+/* 預算：金額只放「已花／預算」，說明另起一列，不擠在窄欄裡 */
+.adv-ledger-bar__note {
+  grid-column: 2 / -1;
+  margin-top: -4px;
+  font-size: 0.75rem;
+  color: var(--adv-muted);
+}
+
+.adv-ledger-bar--over .adv-ledger-bar__note {
+  color: var(--adv-danger);
+}

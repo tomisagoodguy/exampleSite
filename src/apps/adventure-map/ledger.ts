@@ -2,6 +2,7 @@ import { PlaceEntry } from '../../shared/types';
 import {
   LEDGER_BIG_EXPENSE,
   LEDGER_CATEGORY,
+  LEDGER_CURRENCY,
   LEDGER_METHOD,
   LEDGER_MONTHLY_DEPOSIT,
   LEDGER_SHOW_SPECIAL,
@@ -9,7 +10,17 @@ import {
   LedgerCategoryConfig,
   ledgerCategory,
 } from './data';
-import { IDENTITIES, Identity, LedgerEntry, LedgerInput, LedgerKind, LedgerMethod, Trip } from './supabase';
+import {
+  IDENTITIES,
+  Identity,
+  LedgerBalance,
+  LedgerEntry,
+  LedgerHistory,
+  LedgerInput,
+  LedgerKind,
+  LedgerMethod,
+  Trip,
+} from './supabase';
 import { esc, openModal, showToast } from './ui';
 
 /** 💰 公帳分頁：📒 流水（本月逐日）、✅ 核對（對信用卡帳單）、📊 回顧（月報） */
@@ -27,6 +38,10 @@ export interface LedgerHandlers {
   onEdit: (entry: LedgerEntry) => void;
   onSetChecked: (ids: number[], checked: boolean) => void;
   onStateChange: (state: LedgerState) => void;
+  onSaveBalance: (input: { checked_on: string; bank: number; card_owed: number; note: string | null }) => void;
+  onDeleteBalance: (id: number) => void;
+  /** 打開「🕘 改帳紀錄」（全部帳，含刪掉的） */
+  onOpenHistory: () => void;
 }
 
 const WEEKDAY = '日一二三四五六';
@@ -69,10 +84,43 @@ const expensesIn = (entries: LedgerEntry[], month: string) =>
 /** 對公帳餘額的影響：入金、調整照正負加；支出扣掉（退款是負數支出，等於加回來） */
 const signed = (e: LedgerEntry) => (e.kind === 'expense' ? -e.amount : e.amount);
 
+/** 某天（含）為止帳上的公帳餘額 */
+function balanceThrough(entries: LedgerEntry[], date: string): number {
+  return entries.filter((e) => e.spent_on <= date).reduce((s, e) => s + signed(e), 0);
+}
+
 /** 月底為止的公帳餘額（銀行帳戶＋信用卡未繳合計）；字串比較時 -31 對所有月份都成立 */
 function balanceAt(entries: LedgerEntry[], month: string): number {
-  const end = `${month}-31`;
-  return entries.filter((e) => e.spent_on <= end).reduce((s, e) => s + signed(e), 0);
+  return balanceThrough(entries, `${month}-31`);
+}
+
+/** 原幣金額：¥3,200、US$12.5 */
+function origText(e: Pick<LedgerEntry, 'orig_amount' | 'orig_currency'>): string {
+  if (e.orig_amount == null || !e.orig_currency) return '';
+  const n = Number(e.orig_amount);
+  const sym = LEDGER_CURRENCY[e.orig_currency]?.symbol || `${e.orig_currency} `;
+  return `${n < 0 ? '−' : ''}${sym}${Math.abs(n).toLocaleString('zh-TW', { maximumFractionDigits: 2 })}`;
+}
+
+// ───────────────────────── 餘額核對點 ─────────────────────────
+
+/**
+ * 銀行帳戶實際上應該有的錢 − 帳上算的。
+ * 帳上餘額＝銀行＋信用卡未繳（負債）合計，先墊的帳已經扣掉、錢卻還在銀行，所以實際＝銀行 − 卡費未繳 − 先墊待還
+ */
+function checkpointDiff(b: Pick<LedgerBalance, 'bank' | 'card_owed' | 'own_pending'>, book: number): number {
+  return b.bank - b.card_owed - b.own_pending - book;
+}
+
+/** 最近一次「現在仍對得上」的核對日；改這天以前的帳會讓那次對好的餘額跑掉 */
+function lastMatchedCheckpoint(entries: LedgerEntry[], balances: LedgerBalance[]): string | null {
+  const ok = balances.find((b) => checkpointDiff(b, balanceThrough(entries, b.checked_on)) === 0);
+  return ok?.checked_on || null;
+}
+
+function diffText(diff: number): string {
+  if (!diff) return '✅ 對得上';
+  return diff > 0 ? `實際多 ${money(diff)}（可能漏記入金或退款）` : `實際少 ${money(-diff)}（可能漏記支出）`;
 }
 
 const isBig = (e: LedgerEntry) => e.kind === 'expense' && e.amount >= LEDGER_BIG_EXPENSE;
@@ -118,6 +166,7 @@ export function renderLedger(
   entries: LedgerEntry[],
   places: PlaceEntry[],
   trips: Trip[],
+  balances: LedgerBalance[],
   state: LedgerState,
   handlers: LedgerHandlers
 ) {
@@ -145,9 +194,10 @@ export function renderLedger(
 
   const body = view === 'check'
     ? checkHTML(unchecked, monthEntries.filter((e) => e.kind === 'expense' && e.method === 'card' && e.checked), ownPending)
+      + bankHTML(entries, balances)
     : view === 'review'
       ? reviewHTML(entries, month, placeById, tripBySlug)
-      : listHTML(monthEntries, placeById, tripBySlug);
+      : (isFuture ? '' : budgetRemindHTML(entries, month)) + listHTML(monthEntries, placeById, tripBySlug);
 
   mount.innerHTML = `
     <div class="adv-ledger-month">
@@ -243,7 +293,38 @@ export function renderLedger(
       return;
     }
 
+    if (target.closest('[data-ledger-history]')) {
+      handlers.onOpenHistory();
+      return;
+    }
+
+    const bank = readBankForm(mount, entries);
+    if (target.closest('[data-bank-save]') && bank) {
+      handlers.onSaveBalance({ checked_on: bank.date, bank: bank.bank, card_owed: bank.card, note: null });
+      return;
+    }
+    if (target.closest('[data-bank-adjust]') && bank?.diff) {
+      handlers.onAdd({ kind: 'adjust', amount: bank.diff, spent_on: bank.date, note: '對銀行餘額的差額' });
+      return;
+    }
+    const bankDel = target.closest<HTMLElement>('[data-bank-del]');
+    if (bankDel) {
+      handlers.onDeleteBalance(Number(bankDel.dataset.bankDel));
+      return;
+    }
+
     if (target.closest('[data-ledger-copy]')) copyReview(entries, month, placeById, tripBySlug);
+  };
+
+  // 對銀行餘額：邊填邊算差額
+  mount.oninput = (ev) => {
+    if (!(ev.target as HTMLElement).closest('[data-ledger-bank]')) return;
+    const bank = readBankForm(mount, entries);
+    const result = mount.querySelector<HTMLElement>('[data-bank-result]');
+    if (result) result.innerHTML = bank ? bankResultHTML(bank) : '填好銀行餘額就會算差額';
+    mount.querySelector<HTMLButtonElement>('[data-bank-save]')?.toggleAttribute('disabled', !bank);
+    const adjustBtn = mount.querySelector<HTMLButtonElement>('[data-bank-adjust]');
+    if (adjustBtn) adjustBtn.hidden = !bank?.diff;
   };
 
   // 核對清單：勾選時更新「已選 N 筆、合計」，方便跟帳單上的金額比
@@ -265,6 +346,7 @@ export function renderLedger(
 function metaParts(e: LedgerEntry, placeById: Map<number, PlaceEntry>, tripBySlug: Map<string, Trip>): string[] {
   const parts: string[] = [];
   if (e.kind === 'expense') {
+    if (e.orig_currency) parts.push(`🌏 ${origText(e)}`);
     if (e.note) parts.push(esc(categoryOf(e)?.label));
     if (e.paid_by) parts.push(`${esc(e.paid_by)}${e.method === 'card' ? '刷卡' : e.method === 'own' ? '先墊' : '轉帳'}`);
   }
@@ -293,8 +375,10 @@ function rowHTML(e: LedgerEntry, placeById: Map<number, PlaceEntry>, tripBySlug:
   `;
 }
 
+const HISTORY_LINK = '<button type="button" class="adv-ledger-link" data-ledger-history>🕘 改帳紀錄（誰改了什麼、復原刪掉的帳）</button>';
+
 function listHTML(monthEntries: LedgerEntry[], placeById: Map<number, PlaceEntry>, tripBySlug: Map<string, Trip>): string {
-  if (!monthEntries.length) return '<p class="adv-empty">這個月還沒有記帳，按「＋ 記一筆」開始</p>';
+  if (!monthEntries.length) return `<p class="adv-empty">這個月還沒有記帳，按「＋ 記一筆」開始</p>${HISTORY_LINK}`;
 
   const days = new Map<string, LedgerEntry[]>();
   [...monthEntries]
@@ -309,7 +393,132 @@ function listHTML(monthEntries: LedgerEntry[], placeById: Map<number, PlaceEntry
         ${list.map((e) => rowHTML(e, placeById, tripBySlug)).join('')}
       </div>
     `;
+  }).join('') + HISTORY_LINK;
+}
+
+// ───────────────────────── 預算 ─────────────────────────
+
+interface BudgetRow {
+  key: string;
+  cfg: LedgerCategoryConfig;
+  budget: number;
+  spent: number;
+}
+
+function budgetRows(entries: LedgerEntry[], month: string): BudgetRow[] {
+  const cur = expensesIn(entries, month);
+  return Object.entries(LEDGER_CATEGORY)
+    .filter(([, cfg]) => cfg.budget)
+    .map(([key, cfg]) => ({ key, cfg, budget: cfg.budget as number, spent: sum(cur.filter((e) => e.category === key)) }));
+}
+
+/** 流水頂端只提醒用到 90% 以上的分類 */
+function budgetRemindHTML(entries: LedgerEntry[], month: string): string {
+  const tight = budgetRows(entries, month).filter((r) => r.spent >= r.budget * 0.9);
+  if (!tight.length) return '';
+  return `
+    <div class="adv-ledger-remind adv-ledger-remind--budget">
+      ${tight.map((r) => `<span>${esc(r.cfg.emoji)} ${esc(r.cfg.label)} ${r.spent > r.budget ? `超過預算 ${money(r.spent - r.budget)}` : `已用 ${Math.round((r.spent / r.budget) * 100)}%`}</span>`).join('')}
+    </div>`;
+}
+
+/** 回顧的預算進度；本月多畫一條「照天數該用到哪」的刻度，並算剩下每天能花多少 */
+function budgetBoxHTML(entries: LedgerEntry[], month: string): string {
+  const rows = budgetRows(entries, month);
+  if (!rows.length) {
+    return `<section class="adv-ledger-box"><h4 class="adv-ledger-box__title">🎯 預算</h4><p class="adv-ledger-sub">還沒設定。到「⚙️ 分類」幫分類設每月上限，這裡就會出現進度條。</p></section>`;
+  }
+  const isNow = month === currentMonth();
+  const dim = daysInMonth(month);
+  const today = new Date().getDate();
+  const left = dim - today + 1;
+  const pace = isNow ? (today / dim) * 100 : 0;
+  const totalBudget = rows.reduce((s, r) => s + r.budget, 0);
+  const totalSpent = rows.reduce((s, r) => s + r.spent, 0);
+
+  return `
+    <section class="adv-ledger-box">
+      <h4 class="adv-ledger-box__title">🎯 預算</h4>
+      <div class="adv-ledger-bars">${rows.map((r) => {
+        const over = r.spent > r.budget;
+        const remain = r.budget - r.spent;
+        return `
+          <div class="adv-ledger-bar ${over ? 'adv-ledger-bar--over' : ''}" style="--cat-color:${r.cfg.color}">
+            <span class="adv-ledger-bar__label">${esc(r.cfg.emoji)} ${esc(r.cfg.label)}</span>
+            <span class="adv-ledger-bar__track">
+              <span class="adv-ledger-bar__fill" style="width:${Math.min(100, Math.max(0, (r.spent / r.budget) * 100))}%"></span>
+              ${pace ? `<span class="adv-ledger-bar__pace" style="left:${pace}%" title="照天數到今天該用到這裡"></span>` : ''}
+            </span>
+            <span class="adv-ledger-bar__amt">${money(r.spent)}<small>／${money(r.budget)}</small></span>
+            <span class="adv-ledger-bar__note">${
+              over ? `超過 ${money(-remain)}` : isNow ? `還能花 ${money(remain)}，剩 ${left} 天每天約 ${money(Math.floor(remain / left))}` : `剩 ${money(remain)}`}</span>
+          </div>`;
+      }).join('')}</div>
+      <p class="adv-ledger-sub">有設預算的分類合計 ${money(totalSpent)}／${money(totalBudget)}${pace ? '・直線是照天數到今天該用到的位置' : ''}</p>
+    </section>`;
+}
+
+// ───────────────────────── 對銀行餘額 ─────────────────────────
+
+interface BankForm {
+  date: string;
+  bank: number;
+  card: number;
+  ownPending: number;
+  book: number;
+  diff: number;
+}
+
+/** 讀「對銀行餘額」表單；銀行餘額沒填回 null。先墊待還用現在還沒轉回的（核對點通常記今天） */
+function readBankForm(mount: HTMLElement, entries: LedgerEntry[]): BankForm | null {
+  const form = mount.querySelector('[data-ledger-bank]');
+  if (!form) return null;
+  const val = (sel: string) => form.querySelector<HTMLInputElement>(sel)?.value.trim() || '';
+  const date = val('[data-bank-date]');
+  const bankRaw = val('[data-bank-bank]');
+  if (!date || !bankRaw) return null;
+  const bank = Math.round(parseAmount(bankRaw));
+  const card = Math.round(parseAmount(val('[data-bank-card]')));
+  const ownPending = sum(entries.filter((e) => e.kind === 'expense' && e.method === 'own' && !e.checked && e.spent_on <= date));
+  const book = balanceThrough(entries, date);
+  return { date, bank, card, ownPending, book, diff: checkpointDiff({ bank, card_owed: card, own_pending: ownPending }, book) };
+}
+
+function bankResultHTML(f: BankForm): string {
+  const actual = f.bank - f.card - f.ownPending;
+  return `
+    銀行 ${money(f.bank)} − 卡費未繳 ${money(f.card)}${f.ownPending ? ` − 先墊待還 ${money(f.ownPending)}` : ''} ＝ <b>${money(actual)}</b>
+    <br>帳上算到 ${dayLabel(f.date)} 是 <b>${money(f.book)}</b>・<b class="${f.diff ? 'adv-ledger-warn' : ''}">${diffText(f.diff)}</b>`;
+}
+
+function bankHTML(entries: LedgerEntry[], balances: LedgerBalance[]): string {
+  const past = balances.slice(0, 6).map((b) => {
+    const nowDiff = checkpointDiff(b, balanceThrough(entries, b.checked_on));
+    const thenDiff = checkpointDiff(b, b.book_balance);
+    return `
+      <li>
+        <span>${dayLabel(b.checked_on)} 銀行 ${money(b.bank)}${b.created_by ? ` <small>${esc(b.created_by)}</small>` : ''}
+          <br><small class="${nowDiff ? 'adv-ledger-warn' : ''}">現在${diffText(nowDiff)}${thenDiff !== nowDiff ? `（記錄時${thenDiff ? `差 ${money(thenDiff)}` : '對得上'}，之後這天以前的帳有變動）` : ''}</small></span>
+        <button type="button" class="adv-lcat-btn" data-bank-del="${b.id}" aria-label="刪除這個核對點">✕</button>
+      </li>`;
   }).join('');
+
+  return `
+    <div class="adv-ledger-gap"></div>
+    <div class="adv-ledger-subhead">🏦 對銀行餘額</div>
+    <p class="adv-modal-hint adv-ledger-hint">打開網銀看公帳帳戶餘額，再看信用卡 App 還沒繳的金額（含未出帳）。對得上就記一個核對點；之後有人改了那天以前的帳，這裡會提醒。</p>
+    <div class="adv-ledger-bank" data-ledger-bank>
+      <label>日期<input type="date" data-bank-date value="${localDate()}" max="${localDate()}" /></label>
+      <label>銀行帳戶餘額<input type="text" inputmode="numeric" data-bank-bank placeholder="例如 23450" autocomplete="off" /></label>
+      <label>信用卡還沒繳<input type="text" inputmode="numeric" data-bank-card placeholder="0" autocomplete="off" /></label>
+      <p class="adv-ledger-sub adv-ledger-bank__result" data-bank-result>填好銀行餘額就會算差額</p>
+      <div class="adv-ledger-actions">
+        <button type="button" class="adv-card-btn adv-card-btn--primary" data-bank-save disabled>📌 記下核對點</button>
+        <button type="button" class="adv-card-btn" data-bank-adjust hidden>⚖️ 差額記成調整</button>
+      </div>
+    </div>
+    ${past ? `<div class="adv-ledger-subhead">之前的核對點</div><ul class="adv-ledger-bank__past">${past}</ul>` : ''}
+  `;
 }
 
 function checklistHTML(
@@ -325,7 +534,8 @@ function checklistHTML(
         <label class="adv-ledger-check">
           <input type="checkbox" value="${e.id}" />
           <span class="adv-ledger-check__date">${dayLabel(e.spent_on)}</span>
-          <span class="adv-ledger-check__title">${entryIcon(e)} ${esc(entryTitle(e))}${e.paid_by ? ` <small>${esc(e.paid_by)}</small>` : ''}</span>
+          <span class="adv-ledger-check__title">${entryIcon(e)} ${esc(entryTitle(e))}${e.paid_by ? ` <small>${esc(e.paid_by)}</small>` : ''}${
+            e.orig_currency ? ` <small>🌏 ${origText(e)}（台幣是估的，照帳單改）</small>` : ''}</span>
           <span class="adv-ledger-check__amt">${money(e.amount)}</span>
         </label>`).join('')}
       <div class="adv-ledger-checklist__bar">
@@ -618,7 +828,7 @@ function downloadCSV(list: LedgerEntry[], filename: string, placeById: Map<numbe
     showToast('沒有可以下載的帳');
     return;
   }
-  const header = ['日期', '類型', '分類', '金額', '公帳增減', '付款方式', '誰付', '備註', '地點', '旅行', '已核對／已轉回'];
+  const header = ['日期', '類型', '分類', '金額', '公帳增減', '付款方式', '誰付', '備註', '地點', '旅行', '已核對／已轉回', '外幣', '原幣金額'];
   const rows = [...list]
     .sort((a, b) => a.spent_on.localeCompare(b.spent_on) || a.id - b.id)
     .map((e) => [
@@ -633,6 +843,8 @@ function downloadCSV(list: LedgerEntry[], filename: string, placeById: Map<numbe
       csvCell(e.place_id != null ? placeById.get(e.place_id)?.name || '已刪除的地點' : '', true),
       csvCell(e.trip_slug ? tripBySlug.get(e.trip_slug)?.title || e.trip_slug : '', true),
       csvCell(e.kind === 'expense' && e.checked ? '是' : ''),
+      csvCell(e.orig_currency),
+      csvCell(e.orig_amount),
     ].join(','));
   // 開頭 BOM：Excel 才會用 UTF-8 開，不然中文變亂碼
   const blob = new Blob(['﻿' + [header.join(','), ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8' });
@@ -675,6 +887,7 @@ function reviewHTML(
   ];
 
   if (forecast && d.count) parts.push(forecastBoxHTML(forecast, d.total));
+  parts.push(budgetBoxHTML(entries, month));
   let chartsAt = parts.length;
 
   if (d.categories.length) {
@@ -750,6 +963,7 @@ function actionsHTML(withCopy: boolean): string {
       ${withCopy ? '<button type="button" class="adv-card-btn" data-ledger-copy>📋 複製成文字（貼到 LINE）</button>' : ''}
       <button type="button" class="adv-card-btn" data-ledger-csv="month">⬇️ 下載本月 CSV</button>
       <button type="button" class="adv-card-btn" data-ledger-csv="all">⬇️ 下載全部 CSV</button>
+      <button type="button" class="adv-card-btn" data-ledger-history>🕘 改帳紀錄</button>
     </div>`;
 }
 
@@ -791,14 +1005,116 @@ export interface ExpenseModalOptions {
   trips: Trip[];
   /** 用來產生「最近記過」快捷鍵，同一個備註只留最近一次 */
   entries: LedgerEntry[];
+  /** 修改時這筆的改帳紀錄（新到舊） */
+  history?: LedgerHistory[];
+  /** 修改到對好的核對點以前的帳時提醒 */
+  balances?: LedgerBalance[];
 }
 
 const KIND_LABEL: Record<LedgerKind, string> = { expense: '💸 支出', deposit: '💰 入金', adjust: '⚖️ 調整' };
 
-/** 金額可以寫「60+55」，加總後存；開頭有 - 代表負數 */
+/** 金額可以寫「60+55」，加總後存；開頭有 - 代表負數。保留小數（外幣），台幣由呼叫端四捨五入 */
 function parseAmount(raw: string): number {
-  const total = raw.split('+').reduce((s, part) => s + Number(part.replace(/[^\d]/g, '') || 0), 0);
+  const total = raw.split('+').reduce((s, part) => s + (Number(part.replace(/[^\d.]/g, '')) || 0), 0);
   return raw.trim().startsWith('-') ? -total : total;
+}
+
+const FX_CACHE = 'adv-fx-';
+
+/** 外幣對台幣的參考匯率：同一天只查一次（open.er-api.com，免金鑰），查不到就用上次的 */
+async function fetchRate(cur: string): Promise<{ rate: number; fresh: boolean } | null> {
+  const today = localDate();
+  let cached: { rate: number; date: string } | null = null;
+  try {
+    cached = JSON.parse(localStorage.getItem(FX_CACHE + cur) || 'null');
+  } catch {
+    cached = null;
+  }
+  if (cached?.date === today) return { rate: cached.rate, fresh: true };
+  try {
+    const res = await fetch(`https://open.er-api.com/v6/latest/${cur}`);
+    const json = (await res.json()) as { rates?: Record<string, number> };
+    const rate = json.rates?.TWD;
+    if (!rate) throw new Error('沒有 TWD 匯率');
+    try {
+      localStorage.setItem(FX_CACHE + cur, JSON.stringify({ rate, date: today }));
+    } catch {
+      // 存不了就每次查
+    }
+    return { rate, fresh: true };
+  } catch (err) {
+    console.error('查匯率失敗', err);
+    return cached ? { rate: cached.rate, fresh: false } : null;
+  }
+}
+
+const HISTORY_FIELDS: [keyof LedgerEntry, string][] = [
+  ['kind', '種類'],
+  ['spent_on', '日期'],
+  ['amount', '金額'],
+  ['orig_amount', '原幣金額'],
+  ['orig_currency', '幣別'],
+  ['category', '分類'],
+  ['method', '付款方式'],
+  ['paid_by', '誰付'],
+  ['note', '備註'],
+  ['place_id', '地點'],
+  ['trip_slug', '旅行'],
+  ['is_special', '特別的日子'],
+];
+
+interface HistoryContext {
+  placeById: Map<number, PlaceEntry>;
+  tripBySlug: Map<string, Trip>;
+}
+
+function fieldText(key: keyof LedgerEntry, v: unknown, ctx: HistoryContext): string {
+  if (v == null || v === '') return '（空白）';
+  switch (key) {
+    case 'kind': return KIND_LABEL[v as LedgerKind] || String(v);
+    case 'spent_on': return dayLabel(String(v));
+    case 'amount': return money(Number(v));
+    case 'category': return ledgerCategory(String(v)).label;
+    case 'method': return LEDGER_METHOD[v as LedgerMethod] || String(v);
+    case 'place_id': return ctx.placeById.get(Number(v))?.name || '已刪除的地點';
+    case 'trip_slug': return ctx.tripBySlug.get(String(v))?.title || String(v);
+    case 'is_special': return v ? '是' : '否';
+    default: return String(v);
+  }
+}
+
+/** 一筆紀錄改了哪些欄位；只勾核對的另外寫 */
+function historyChanges(h: LedgerHistory, ctx: HistoryContext): string[] {
+  const { old_row: o, new_row: n } = h;
+  if (h.op !== 'update' || !o || !n) return [];
+  const changes = HISTORY_FIELDS
+    .filter(([k]) => String(o[k] ?? '') !== String(n[k] ?? ''))
+    .map(([k, label]) => `${label} ${esc(fieldText(k, o[k], ctx))} → ${esc(fieldText(k, n[k], ctx))}`);
+  if (o.checked !== n.checked) {
+    const own = n.method === 'own';
+    changes.push(n.checked ? (own ? '✓ 標記已轉回' : '✓ 標記已核對') : own ? '取消已轉回' : '取消核對');
+  }
+  return changes;
+}
+
+function stampText(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getMonth() + 1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+const HISTORY_OP: Record<LedgerHistory['op'], string> = { update: '✏️ 改了', delete: '🗑️ 刪除', restore: '↩️ 復原' };
+
+function historyItemHTML(h: LedgerHistory, ctx: HistoryContext, opts: { withTitle: boolean; restorable: boolean }): string {
+  const row = h.new_row || h.old_row;
+  const changes = historyChanges(h, ctx);
+  const title = row && opts.withTitle ? ` ${entryIcon(row)} ${esc(entryTitle(row))} ${entryAmount(row)}` : '';
+  return `
+    <li class="adv-ledger-hist__item">
+      <span class="adv-ledger-hist__when">${stampText(h.changed_at)}${h.changed_by ? `・${esc(h.changed_by)}` : ''}</span>
+      <span class="adv-ledger-hist__what">${HISTORY_OP[h.op]}${title}${row && h.op !== 'update' && opts.withTitle ? `<small>（${dayLabel(row.spent_on)}）</small>` : ''}
+        ${changes.length ? `<small>${changes.join('、')}</small>` : ''}</span>
+      ${opts.restorable ? `<button type="button" class="adv-card-btn" data-restore="${h.id}">↩️ 復原</button>` : ''}
+    </li>`;
 }
 
 /**
@@ -815,7 +1131,14 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     let method: LedgerMethod = base.method || 'card';
     let placeId: number | null = base.place_id ?? null;
     let negative = (base.amount ?? 0) < 0;
+    // 外幣：主金額欄改填原幣，台幣＝原幣 × 匯率（可以直接改台幣，匯率跟著反算）
+    let currency = base.orig_currency || '';
+    const baseOrig = base.orig_amount != null ? Math.abs(Number(base.orig_amount)) : null;
+    const baseTwd = base.amount ? Math.abs(base.amount) : null;
     const placeById = new Map(opts.places.map((p) => [p.id, p]));
+    const tripBySlug = new Map(opts.trips.map((t) => [t.slug, t]));
+    const lockedBefore = opts.existing && opts.balances ? lastMatchedCheckpoint(opts.entries, opts.balances) : null;
+    const locked = !!(lockedBefore && opts.existing && opts.existing.spent_on <= lockedBefore);
     const DAY = 86400000;
     const quickDates: [string, string][] = [
       ['今天', localDate()],
@@ -852,11 +1175,21 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
           ${(Object.keys(KIND_LABEL) as LedgerKind[]).map((k) => radio('data-kind', k, KIND_LABEL[k], k === kind)).join('')}
         </div>
       </div>
+      ${locked ? `<p class="adv-modal-hint adv-ledger-warn">⚠️ 這筆在 ${dayLabel(lockedBefore as string)} 對過銀行餘額的範圍內，改金額或日期會讓那次對好的餘額對不上</p>` : ''}
       <label for="adv-lf-amount">金額</label>
       <div class="adv-ledger-amount">
-        <span class="adv-ledger-amount__cur" aria-hidden="true">$</span>
-        <input type="text" id="adv-lf-amount" inputmode="numeric" enterkeyhint="done" autocomplete="off" placeholder="0" value="${base.amount ? Math.abs(base.amount) : ''}" />
+        <span class="adv-ledger-amount__cur" id="adv-lf-cursym" aria-hidden="true">$</span>
+        <input type="text" id="adv-lf-amount" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="0" value="${currency && baseOrig != null ? baseOrig : baseTwd ?? ''}" />
+        <select id="adv-lf-cur" class="adv-lf-cur" data-only="expense" aria-label="幣別" tabindex="-1">
+          <option value="">台幣</option>
+          ${Object.entries(LEDGER_CURRENCY).map(([code, c]) => `<option value="${code}" ${code === currency ? 'selected' : ''}>${c.label}</option>`).join('')}
+        </select>
         <button type="button" class="adv-guide-season" id="adv-lf-sign" aria-pressed="false" tabindex="-1"></button>
+      </div>
+      <div class="adv-lf-fx" id="adv-lf-fx" data-only="expense">
+        <label>匯率<input type="text" id="adv-lf-rate" inputmode="decimal" autocomplete="off" tabindex="-1" /></label>
+        <label>≈ 台幣 $<input type="text" id="adv-lf-twd" inputmode="numeric" autocomplete="off" tabindex="-1" value="${currency && baseTwd ? baseTwd : ''}" /></label>
+        <small id="adv-lf-fxnote"></small>
       </div>
       ${recent.length ? `
         <div class="adv-ledger-recent" data-only="expense" aria-label="最近記過，點一下帶入" tabindex="-1">
@@ -909,6 +1242,17 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
         ${LEDGER_SHOW_SPECIAL ? `
           <label class="adv-ledger-special"><input type="checkbox" id="adv-lf-special" ${base.is_special ? 'checked' : ''} /> ✨ 特別的日子（紀念日、生日…）</label>` : ''}
       </details>
+      ${opts.existing ? `
+        <details class="adv-ledger-more adv-ledger-hist">
+          <summary>🕘 改帳紀錄${opts.history?.length ? `（改過 ${opts.history.length} 次）` : ''}</summary>
+          <ul>
+            ${(opts.history || []).map((h) => historyItemHTML(h, { placeById, tripBySlug }, { withTitle: false, restorable: false })).join('')}
+            <li class="adv-ledger-hist__item">
+              <span class="adv-ledger-hist__when">${opts.existing.created_at ? stampText(opts.existing.created_at) : ''}${opts.existing.created_by ? `・${esc(opts.existing.created_by)}` : ''}</span>
+              <span class="adv-ledger-hist__what">📝 記下這筆</span>
+            </li>
+          </ul>
+        </details>` : ''}
       <div class="adv-lf-foot">
         <div class="adv-modal-error" id="adv-lf-error" role="alert" style="display:none;"></div>
         <div class="adv-modal-actions">
@@ -932,6 +1276,51 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     const pickedEl = $<HTMLElement>('#adv-lf-picked');
     const resultsEl = $<HTMLElement>('#adv-lf-results');
     const errorEl = $<HTMLElement>('#adv-lf-error');
+    const curEl = $<HTMLSelectElement>('#adv-lf-cur');
+    const curSymEl = $<HTMLElement>('#adv-lf-cursym');
+    const fxEl = $<HTMLElement>('#adv-lf-fx');
+    const rateEl = $<HTMLInputElement>('#adv-lf-rate');
+    const twdEl = $<HTMLInputElement>('#adv-lf-twd');
+    const fxNoteEl = $<HTMLElement>('#adv-lf-fxnote');
+
+    const recalcTwd = () => {
+      const orig = Math.abs(parseAmount(amountEl.value));
+      const rate = parseAmount(rateEl.value);
+      if (orig && rate) twdEl.value = String(Math.round(orig * rate));
+    };
+
+    /** 幣別與種類決定要不要顯示匯率列；換幣別時查當天匯率 */
+    const syncCurrency = () => {
+      const isFx = kind === 'expense' && !!currency;
+      fxEl.hidden = !isFx;
+      curSymEl.textContent = isFx ? LEDGER_CURRENCY[currency]?.symbol || currency : '$';
+    };
+    const loadRate = () => {
+      const cur = currency;
+      if (!cur) return;
+      fxNoteEl.textContent = '查匯率中…';
+      fetchRate(cur).then((r) => {
+        if (currency !== cur) return;
+        if (!r) {
+          fxNoteEl.textContent = '查不到匯率，自己填';
+          return;
+        }
+        rateEl.value = String(Number(r.rate.toFixed(4)));
+        fxNoteEl.textContent = r.fresh ? '今天的參考匯率；核對帳單時把台幣改成實際扣款' : '查不到今天的匯率，先用上次的';
+        recalcTwd();
+      });
+    };
+    const setCurrency = (cur: string) => {
+      currency = cur;
+      curEl.value = cur;
+      if (!cur) {
+        rateEl.value = '';
+        twdEl.value = '';
+        fxNoteEl.textContent = '';
+      }
+      syncCurrency();
+      loadRate();
+    };
 
     /** 每個 radiogroup 只留一個 Tab 停點：選中的那顆，沒選就第一顆 */
     const syncTabStops = () => {
@@ -960,6 +1349,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       signBtn.textContent = kind === 'adjust' ? (negative ? '➖ 減少' : '➕ 增加') : '↩️ 退款';
       signBtn.classList.toggle('is-active', negative);
       signBtn.setAttribute('aria-pressed', String(negative));
+      syncCurrency();
     };
 
     /** 「更多」收起來時也看得到選了什麼 */
@@ -1043,7 +1433,9 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       if (recentBtn) {
         const e = recent.find((r) => r.id === Number(recentBtn.dataset.recent));
         if (!e) return;
-        amountEl.value = String(e.amount);
+        if ((e.orig_currency || '') !== currency) setCurrency(e.orig_currency || '');
+        amountEl.value = String(e.orig_currency && e.orig_amount != null ? Number(e.orig_amount) : e.amount);
+        recalcTwd();
         noteEl.value = e.note || '';
         category = e.category;
         method = e.method;
@@ -1074,7 +1466,18 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     searchEl.addEventListener('input', renderResults);
     tripEl.addEventListener('change', syncMoreSummary);
     dateEl.addEventListener('change', () => setActive('#adv-lf-quickdate', 'data-date', dateEl.value));
-    amountEl.addEventListener('input', clearError);
+    amountEl.addEventListener('input', () => {
+      clearError();
+      if (currency) recalcTwd();
+    });
+    curEl.addEventListener('change', () => setCurrency(curEl.value));
+    rateEl.addEventListener('input', recalcTwd);
+    // 直接改台幣（例如照帳單的實際扣款）時反算匯率
+    twdEl.addEventListener('input', () => {
+      const orig = Math.abs(parseAmount(amountEl.value));
+      const twd = parseAmount(twdEl.value);
+      if (orig && twd) rateEl.value = String(Number((twd / orig).toFixed(4)));
+    });
 
     let done = false;
     const finish = (result: ExpenseModalResult) => {
@@ -1086,8 +1489,13 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     };
 
     const submit = (again: boolean) => {
-      const amount = parseAmount(amountEl.value) * (negative ? -1 : 1);
-      if (!amount) return fail('金額要填一個不是 0 的數字', amountEl);
+      const sign = negative ? -1 : 1;
+      const isFx = kind === 'expense' && !!currency;
+      const raw = parseAmount(amountEl.value);
+      if (!raw) return fail(isFx ? '外幣金額要填一個不是 0 的數字' : '金額要填一個不是 0 的數字', amountEl);
+      const amount = (isFx ? Math.round(Math.abs(parseAmount(twdEl.value))) : Math.round(raw)) * sign;
+      if (!amount) return fail(isFx ? '台幣金額要填（填了匯率會自動算）' : '金額要填一個不是 0 的數字', isFx ? rateEl : amountEl);
+      const origAmount = isFx ? (Math.round(Math.abs(raw) * 100) / 100) * sign : null;
       if (kind === 'expense' && !category) {
         return fail('選一個分類', root.querySelector<HTMLElement>('.adv-ledger-cats [role="radio"]'));
       }
@@ -1112,6 +1520,8 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
           trip_slug: expense ? tripEl.value || null : null,
           // 欄位藏起來時保留原值，之後打開 ✨ 不會把舊資料洗掉
           is_special: !expense ? false : LEDGER_SHOW_SPECIAL ? $<HTMLInputElement>('#adv-lf-special').checked : base.is_special ?? false,
+          orig_amount: origAmount,
+          orig_currency: isFx ? currency : null,
         },
       });
     };
@@ -1181,9 +1591,78 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     syncKind();
     syncTabStops();
     renderPicked();
+    // 修改外幣帳：匯率由存的金額反算，不重查；新的一筆（「再記一筆」沿用幣別）才查今天的匯率
+    if (currency && opts.existing && baseOrig && baseTwd) {
+      rateEl.value = String(Number((baseTwd / baseOrig).toFixed(4)));
+      fxNoteEl.textContent = '核對帳單後，把台幣改成實際扣款';
+    } else if (currency) {
+      loadRate();
+    }
     // 直接聚焦，不要包 setTimeout：iOS 只在使用者點擊的同一輪才肯叫出鍵盤
     if (!opts.existing) amountEl.focus();
   });
+}
+
+// ───────────────────────── 改帳紀錄 ─────────────────────────
+
+/**
+ * 最近的修改、刪除、復原（新到舊）。刪掉、而且還沒復原的帳有「↩️ 復原」；
+ * 只勾核對的紀錄很多，預設藏起來。onRestore 成功回傳 true，視窗就關掉讓呼叫端重讀
+ */
+export function openLedgerHistoryModal(
+  history: LedgerHistory[],
+  entries: LedgerEntry[],
+  places: PlaceEntry[],
+  trips: Trip[],
+  onRestore: (historyId: number) => Promise<boolean>
+): void {
+  const ctx: HistoryContext = {
+    placeById: new Map(places.map((p) => [p.id, p])),
+    tripBySlug: new Map(trips.map((t) => [t.slug, t])),
+  };
+  const alive = new Set(entries.map((e) => e.id));
+  const onlyChecks = (h: LedgerHistory) =>
+    h.op === 'update' && !!h.old_row && !!h.new_row && HISTORY_FIELDS.every(([k]) => String(h.old_row?.[k] ?? '') === String(h.new_row?.[k] ?? ''));
+  let showChecks = false;
+
+  const { root, close } = openModal(`
+    <h3>🕘 改帳紀錄</h3>
+    <p class="adv-modal-hint">最近 ${history.length} 次修改與刪除。刪掉的帳可以復原；改錯的帳點流水那筆照舊值改回來。</p>
+    <label class="adv-ledger-special"><input type="checkbox" id="adv-lh-checks" /> 也顯示勾核對／已轉回</label>
+    <ul class="adv-ledger-hist" id="adv-lh-list"></ul>
+    <div class="adv-modal-error" id="adv-lh-error" style="display:none;"></div>
+    <div class="adv-modal-actions">
+      <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-lh-close">關閉</button>
+    </div>
+  `);
+
+  const listEl = root.querySelector('#adv-lh-list') as HTMLElement;
+  const render = () => {
+    const shown = history.filter((h) => showChecks || !onlyChecks(h));
+    listEl.innerHTML = shown.length
+      ? shown.map((h) => historyItemHTML(h, ctx, { withTitle: true, restorable: h.op === 'delete' && !alive.has(h.entry_id) })).join('')
+      : '<li class="adv-empty">還沒有修改或刪除的紀錄</li>';
+  };
+
+  root.querySelector('#adv-lh-checks')?.addEventListener('change', (ev) => {
+    showChecks = (ev.target as HTMLInputElement).checked;
+    render();
+  });
+  listEl.addEventListener('click', async (ev) => {
+    const btn = (ev.target as HTMLElement).closest<HTMLButtonElement>('[data-restore]');
+    if (!btn || btn.disabled) return;
+    btn.disabled = true;
+    if (await onRestore(Number(btn.dataset.restore))) {
+      close();
+      return;
+    }
+    btn.disabled = false;
+    const err = root.querySelector('#adv-lh-error') as HTMLElement;
+    err.style.display = 'block';
+    err.textContent = '復原失敗';
+  });
+  root.querySelector('#adv-lh-close')?.addEventListener('click', close);
+  render();
 }
 
 // ───────────────────────── 管理分類 ─────────────────────────
@@ -1210,6 +1689,8 @@ export function openLedgerCategoryModal(usage: Map<string, number>, handlers: Le
       <input type="text" id="adv-lcat-label" placeholder="名稱，例如：寵物" aria-label="名稱" />
       <input type="color" id="adv-lcat-color" class="adv-cat-color" value="#8C6A55" aria-label="顏色" />
     </div>
+    <label for="adv-lcat-budget">每月預算（選填，空白＝不設）</label>
+    <input type="text" id="adv-lcat-budget" inputmode="numeric" autocomplete="off" placeholder="例如 8000" />
     <div class="adv-modal-error" id="adv-lcat-error" style="display:none;"></div>
     <div class="adv-modal-actions">
       <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-lcat-close">關閉</button>
@@ -1223,6 +1704,7 @@ export function openLedgerCategoryModal(usage: Map<string, number>, handlers: Le
   const emojiEl = $<HTMLInputElement>('#adv-lcat-emoji');
   const labelEl = $<HTMLInputElement>('#adv-lcat-label');
   const colorEl = $<HTMLInputElement>('#adv-lcat-color');
+  const budgetEl = $<HTMLInputElement>('#adv-lcat-budget');
   const errorEl = $<HTMLElement>('#adv-lcat-error');
   let editing: string | null = null;
   let busy = false;
@@ -1238,6 +1720,7 @@ export function openLedgerCategoryModal(usage: Map<string, number>, handlers: Le
     emojiEl.value = cfg?.emoji || '';
     labelEl.value = cfg?.label || '';
     colorEl.value = cfg?.color || '#8C6A55';
+    budgetEl.value = cfg?.budget ? String(cfg.budget) : '';
     $('#adv-lcat-form-title').textContent = cfg ? `修改「${cfg.label}」` : '新增分類';
     $('#adv-lcat-submit').textContent = cfg ? '儲存修改' : '新增';
     $('#adv-lcat-cancel-edit').hidden = !cfg;
@@ -1252,7 +1735,7 @@ export function openLedgerCategoryModal(usage: Map<string, number>, handlers: Le
       return `
         <div class="adv-lcat-row ${cfg.hidden ? 'adv-lcat-row--hidden' : ''}" style="--cat-color:${esc(cfg.color)}">
           <span class="adv-lcat-row__emoji" aria-hidden="true">${esc(cfg.emoji)}</span>
-          <span class="adv-lcat-row__label">${esc(cfg.label)}<small>${cfg.hidden ? '隱藏中・' : ''}${used ? `用了 ${used} 筆` : '還沒用過'}</small></span>
+          <span class="adv-lcat-row__label">${esc(cfg.label)}<small>${cfg.hidden ? '隱藏中・' : ''}${used ? `用了 ${used} 筆` : '還沒用過'}${cfg.budget ? `・預算 ${money(cfg.budget)}／月` : ''}</small></span>
           <button type="button" class="adv-lcat-btn" data-move="-1" data-key="${esc(key)}" ${i === 0 ? 'disabled' : ''} aria-label="往前">↑</button>
           <button type="button" class="adv-lcat-btn" data-move="1" data-key="${esc(key)}" ${i === keys.length - 1 ? 'disabled' : ''} aria-label="往後">↓</button>
           <button type="button" class="adv-lcat-btn" data-toggle="${esc(key)}" aria-label="${cfg.hidden ? '顯示' : '隱藏'}">${cfg.hidden ? '顯示' : '隱藏'}</button>
@@ -1288,7 +1771,7 @@ export function openLedgerCategoryModal(usage: Map<string, number>, handlers: Le
     } else if (btn.dataset.toggle) {
       const key = btn.dataset.toggle;
       const cfg = LEDGER_CATEGORY[key];
-      await run(() => handlers.save(key, { emoji: cfg.emoji, label: cfg.label, color: cfg.color, hidden: !cfg.hidden }));
+      await run(() => handlers.save(key, { emoji: cfg.emoji, label: cfg.label, color: cfg.color, hidden: !cfg.hidden, budget: cfg.budget ?? null }));
     } else if (btn.dataset.edit) {
       setEditing(btn.dataset.edit);
     } else if (btn.dataset.del) {
@@ -1304,7 +1787,9 @@ export function openLedgerCategoryModal(usage: Map<string, number>, handlers: Le
     const duplicate = Object.entries(LEDGER_CATEGORY).some(([k, c]) => c.label === label && k !== editing);
     if (duplicate) return showError('已經有同名的分類');
     const hidden = editing ? !!LEDGER_CATEGORY[editing]?.hidden : false;
-    const ok = await run(() => handlers.save(editing, { emoji: emojiEl.value.trim() || '🏷️', label, color: colorEl.value, hidden }));
+    const budget = Math.round(parseAmount(budgetEl.value));
+    if (budget < 0) return showError('預算不能是負數');
+    const ok = await run(() => handlers.save(editing, { emoji: emojiEl.value.trim() || '🏷️', label, color: colorEl.value, hidden, budget: budget || null }));
     if (ok) setEditing(null);
   });
   $('#adv-lcat-cancel-edit').addEventListener('click', () => setEditing(null));

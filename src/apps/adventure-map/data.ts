@@ -193,6 +193,8 @@ export interface LedgerCategoryConfig {
   color: string;
   /** 記帳按鈕不出現，舊帳照常顯示 */
   hidden?: boolean;
+  /** 每月預算，沒設就不顯示進度條 */
+  budget?: number | null;
 }
 
 /**
@@ -212,10 +214,12 @@ export const LEDGER_CATEGORY: Record<LedgerCategory, LedgerCategoryConfig> = {
 };
 
 /** rows 已依 sort_order 排好；空陣列（表還沒建或讀不到）就保留備援值 */
-export function applyLedgerCategories(rows: ({ key: string } & LedgerCategoryConfig)[]) {
+export function applyLedgerCategories(rows: ({ key: string; monthly_budget?: number | null } & LedgerCategoryConfig)[]) {
   if (!rows.length) return;
   for (const key of Object.keys(LEDGER_CATEGORY)) delete LEDGER_CATEGORY[key];
-  for (const { key, emoji, label, color, hidden } of rows) LEDGER_CATEGORY[key] = { emoji, label, color, hidden };
+  for (const { key, emoji, label, color, hidden, monthly_budget } of rows) {
+    LEDGER_CATEGORY[key] = { emoji, label, color, hidden, budget: monthly_budget ?? null };
+  }
 }
 
 /** 已經刪掉或還沒讀到的分類代號也要能顯示 */
@@ -234,6 +238,19 @@ export const LEDGER_METHOD: Record<'card' | 'account' | 'own', string> = {
 
 /** 每人每月存進公帳的金額；記入金時預設帶這個數字 */
 export const LEDGER_MONTHLY_DEPOSIT = 10000;
+
+/** 記帳表單的外幣選項（順序＝按鈕順序）；符號用在流水顯示原幣金額 */
+export const LEDGER_CURRENCY: Record<string, { label: string; symbol: string }> = {
+  JPY: { label: '日圓', symbol: '¥' },
+  KRW: { label: '韓元', symbol: '₩' },
+  USD: { label: '美元', symbol: 'US$' },
+  EUR: { label: '歐元', symbol: '€' },
+  THB: { label: '泰銖', symbol: '฿' },
+  HKD: { label: '港幣', symbol: 'HK$' },
+  CNY: { label: '人民幣', symbol: 'CN¥' },
+  SGD: { label: '新幣', symbol: 'S$' },
+  GBP: { label: '英鎊', symbol: '£' },
+};
 
 /** 單筆支出達這個金額算「大額」：流水標 🔺、回顧另外統計，月中預估時不拿來推算每天的花費速度 */
 export const LEDGER_BIG_EXPENSE = 3000;

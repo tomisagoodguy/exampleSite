@@ -188,6 +188,11 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - 大額門檻 `data.ts` `LEDGER_BIG_EXPENSE`（3,000）：流水左邊珊瑚色條＋「🔺 大額」，回顧另列合計
 - 寫入走 RPC：`dating_map_save_expense`（`saveExpense`，`p_id` 為 `null` 時新增）、`dating_map_delete_expense`、`dating_map_set_expense_checked`（一次多筆）。`fetchLedger` 會分頁讀完，一個月約百筆，幾年就超過 PostgREST 單次 1000 筆上限
 - 結餘一律留在公帳累積；不夠時兩人補一樣的錢（阿康自己通知，系統不提醒）
+- **改帳紀錄**（`dating_map_ledger_history`）：row trigger `dating_map_ledger_log` 在每次 UPDATE／DELETE 寫入 `old_row` / `new_row`（jsonb），只動 `updated_at` 的不記。**誰改的不靠 RPC 參數**：`supabase.ts` 的自訂 `fetch` 每次帶 header `x-dating-map-who`（身分名稱 UTF-8 的 base64，header 不能放中文），`dating_map_request_actor()` 解出來。刪掉的帳用 `dating_map_restore_expense(p_history_id)`（`restoreExpense`）以原 id 復原，地點／旅行已不在就清空、分類不在改 `other`。入口：流水最下方連結、回顧下方按鈕（`ledger.ts` `openLedgerHistoryModal`），單筆紀錄在修改表單底部
+- **對銀行餘額**（「✅ 核對」最下方，`dating_map_ledger_balances`）：實際＝銀行 − 信用卡未繳 − 先墊待還，差額＝實際 − 帳上餘額（`checkpointDiff`）。`dating_map_save_balance` 存的當下由資料庫算好 `book_balance` / `own_pending`，之後改到那天以前的帳，列表會顯示「現在」與「記錄時」不同；修改表單對「現在仍對得上」的最近核對日以前的帳顯示警告。差額可一鍵記成 `adjust`
+- **分類月預算**：`dating_map_ledger_categories.monthly_budget`（null＝不設），在「⚙️ 分類」表單填，走獨立 RPC `dating_map_set_ledger_budget`（沒改 `dating_map_save_ledger_category` 簽章）。回顧有「🎯 預算」框（本月畫照天數的刻度線），流水頂端提醒用到 90% 以上的分類
+- **外幣**：`orig_amount` / `orig_currency`（ISO 代碼，兩欄同時有值或同時 null），`amount` 仍是台幣，**先用參考匯率估、核對帳單時改成實際扣款**。表單選幣別後主金額欄改填原幣，匯率查 `open.er-api.com`（免金鑰、有 CORS，localStorage `adv-fx-<幣別>` 每天快取一次），改台幣會反算匯率；幣別清單在 `data.ts` `LEDGER_CURRENCY`。`dating_map_save_expense` 有 13 參數舊版與 15 參數新版兩個 overload，前端只呼叫新版
+- **備份**：`uv run scripts/backup-ledger.py [--out <資料夾>]` 把四張公帳表存成 JSON＋CSV 到 `ledger-backups/`（gitignore；repo 公開，備份絕不能 commit）
 - 清單框（`.adv-ledger-checklist`）**不能加 `overflow: hidden`**：會變成 sticky 的參考框，底部勾選列就浮在清單中間蓋住項目
 - **記一筆表單**（`ledger.ts` `openExpenseModal`，`.adv-lf`）：Enter 記下來、Shift+Enter 記下來再開一張（沿用日期／誰付／付款方式／旅行，對帳單補記用）、Esc 取消；各組是 `role="radiogroup"`，Tab 在組間移動、方向鍵在組內選；金額可寫 `60+55`。鍵盤監聽掛在 `document` 捕獲階段，任何關閉路徑都要走 `finish()` 才會拿掉；`isComposing` 的 Enter（注音選字）不送出。底部按鈕列 `.adv-lf-foot` 是 sticky，手機不用捲到底
   - 可橫捲的容器（「最近記過」）Chrome 會把它當成 Tab 停點，要 `tabindex="-1"`；手機全螢幕 modal 是 flex 直排，可捲動的子元素會被壓扁，`.adv-lf > *` 要 `flex-shrink: 0`
@@ -360,5 +365,5 @@ pipe 左右必須有空格，separator 使用 `---`：
 
 ## Active Status
 
-- **最後更新**：2026-10-26（加入「💰 公帳」分頁）
+- **最後更新**：2026-10-26（公帳加入改帳紀錄／復原、對銀行餘額、分類月預算、外幣）
 - **已知問題**：無
