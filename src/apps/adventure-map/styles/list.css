@@ -2556,3 +2556,193 @@ button.adv-ach-place small {
   flex: 0 0 3.2em;
   text-align: center;
 }
+
+/* ─── 記一筆表單（.adv-lf，ledger.ts openExpenseModal）：按鈕列固定在底部、鍵盤可操作 ─── */
+.adv-lf-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.adv-lf-head h3 {
+  margin: 0;
+}
+
+.adv-lf .adv-ledger-amount__cur {
+  font-size: 1.4rem;
+  color: var(--adv-muted);
+}
+
+.adv-modal.adv-lf .adv-ledger-amount input {
+  font-size: 1.6rem;
+  padding: 8px 14px;
+}
+
+/* 手機全螢幕表單是 flex 直排，內容超出時子元素會被壓縮；可捲動的「最近記過」會被壓到只剩一條線 */
+.adv-modal.adv-lf > * {
+  flex-shrink: 0;
+}
+
+/* 最近記過：一列橫捲，不把表單撐高 */
+.adv-lf .adv-ledger-recent {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 2px 2px 4px;
+}
+
+.adv-lf .adv-ledger-recent::-webkit-scrollbar {
+  display: none;
+}
+
+.adv-lf .adv-ledger-recent .adv-card-btn {
+  flex-shrink: 0;
+  min-height: 36px;
+  white-space: nowrap;
+}
+
+.adv-lf .adv-ledger-recent small {
+  color: var(--adv-muted);
+}
+
+/* 單選按鈕放大到手指好按的高度 */
+.adv-lf [role="radio"].adv-guide-season {
+  min-height: 40px;
+  padding: 4px 14px;
+  font-size: 0.9rem;
+}
+
+.adv-lf .adv-ledger-cat {
+  min-height: 64px;
+}
+
+/* 選中的分類要一眼看得出來：底色加深、框加粗 */
+.adv-lf .adv-ledger-cat.is-active {
+  background: color-mix(in srgb, var(--cat-color) 65%, var(--adv-card));
+  border-width: 3px;
+  color: var(--adv-on-flat);
+}
+
+/* 鍵盤操作時看得到焦點在哪 */
+.adv-lf button:focus-visible,
+.adv-lf summary:focus-visible {
+  outline: 3px solid var(--adv-coral-deep);
+  outline-offset: 2px;
+}
+
+.adv-lf-pair {
+  display: grid;
+  gap: 0 16px;
+}
+
+@media (min-width: 560px) {
+  .adv-modal.adv-lf {
+    max-width: 560px;
+  }
+
+  .adv-lf-pair {
+    grid-template-columns: auto 1fr;
+  }
+}
+
+.adv-lf-dates {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.adv-modal.adv-lf .adv-lf-dates input[type="date"] {
+  flex: 1;
+  min-width: 10em;
+  width: auto;
+  padding: 7px 12px;
+}
+
+.adv-ledger-more {
+  margin-top: 16px;
+  padding: 10px 14px 14px;
+  border: 2px dashed var(--adv-soft);
+  border-radius: 16px;
+}
+
+.adv-ledger-more summary {
+  font-size: 0.9rem;
+  color: var(--adv-muted);
+  cursor: pointer;
+}
+
+.adv-ledger-more summary span {
+  color: var(--adv-ink);
+}
+
+.adv-ledger-more > label:first-of-type {
+  margin-top: 10px;
+}
+
+/* 底部按鈕列：sticky 貼著表單下緣（抵掉 .adv-modal 的下內距），手機不用捲到底才按得到 */
+.adv-lf .adv-lf-foot {
+  position: sticky;
+  bottom: calc(-28px - env(safe-area-inset-bottom, 0px));
+  z-index: 1;
+  margin: 18px -22px calc(-28px - env(safe-area-inset-bottom, 0px));
+  padding: 10px 22px calc(12px + env(safe-area-inset-bottom, 0px));
+  border-top: 2px dashed var(--adv-soft);
+  background: var(--adv-paper);
+}
+
+.adv-lf .adv-lf-foot .adv-modal-error {
+  margin: 0 0 8px;
+}
+
+.adv-lf .adv-lf-foot .adv-modal-actions {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.adv-lf .adv-lf-small {
+  flex: 0 0 auto;
+  padding-inline: 16px;
+}
+
+.adv-lf .adv-lf-save {
+  flex: 1.6;
+}
+
+@media (max-width: 559px) {
+  /* 全螢幕表單：按鈕列推到最底 */
+  .adv-lf .adv-lf-foot {
+    margin-top: auto;
+  }
+}
+
+/* 鍵盤提示只給有滑鼠鍵盤的裝置 */
+.adv-lf-keys {
+  display: none;
+  margin: 8px 0 0;
+  font-size: 0.74rem;
+  color: var(--adv-muted);
+  text-align: center;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .adv-lf-keys {
+    display: block;
+  }
+}
+
+.adv-lf-keys kbd {
+  display: inline-block;
+  padding: 0 5px;
+  border: 1.5px solid var(--adv-line);
+  border-bottom-width: 3px;
+  border-radius: 6px;
+  background: var(--adv-card);
+  /* 主題給 kbd 白字深底，這裡底色換成卡片色，字色也要跟著指定，不然白字看不見 */
+  color: var(--adv-ink);
+  box-shadow: none;
+  font-family: inherit;
+  font-size: 0.7rem;
+}

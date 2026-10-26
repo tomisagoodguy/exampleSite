@@ -187,6 +187,10 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - 寫入走 RPC：`dating_map_save_expense`（`saveExpense`，`p_id` 為 `null` 時新增）、`dating_map_delete_expense`、`dating_map_set_expense_checked`（一次多筆）。`fetchLedger` 會分頁讀完，一個月約百筆，幾年就超過 PostgREST 單次 1000 筆上限
 - 結餘一律留在公帳累積；不夠時兩人補一樣的錢（阿康自己通知，系統不提醒）
 - 清單框（`.adv-ledger-checklist`）**不能加 `overflow: hidden`**：會變成 sticky 的參考框，底部勾選列就浮在清單中間蓋住項目
+- **記一筆表單**（`ledger.ts` `openExpenseModal`，`.adv-lf`）：Enter 記下來、Shift+Enter 記下來再開一張（沿用日期／誰付／付款方式／旅行，對帳單補記用）、Esc 取消；各組是 `role="radiogroup"`，Tab 在組間移動、方向鍵在組內選；金額可寫 `60+55`。鍵盤監聽掛在 `document` 捕獲階段，任何關閉路徑都要走 `finish()` 才會拿掉；`isComposing` 的 Enter（注音選字）不送出。底部按鈕列 `.adv-lf-foot` 是 sticky，手機不用捲到底
+  - 可橫捲的容器（「最近記過」）Chrome 會把它當成 Tab 停點，要 `tabindex="-1"`；手機全螢幕 modal 是 flex 直排，可捲動的子元素會被壓扁，`.adv-lf > *` 要 `flex-shrink: 0`
+  - Bootstrap 的 `kbd` 是白字黑底，自訂淺色 `kbd` 要一併指定 `color`
+  - Playwright 測表單時選擇器要加 `.adv-lf` 前綴：篩選列的地點分類 chip 也有 `data-cat`，`[data-cat='food']` 會同時命中而違反 strict mode
 
 **回憶照片**（地點卡片＋成就牆的縮圖列，點開是燈箱）：照片**不走 Supabase**，是 repo 裡的公開檔，push 後跟網站一起部署。
 

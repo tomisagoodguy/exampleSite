@@ -496,7 +496,8 @@ function copyReview(
 
 // ───────────────────────── 記一筆 ─────────────────────────
 
-export type ExpenseModalResult = { action: 'save'; input: LedgerInput } | { action: 'delete' } | null;
+/** again：「再記一筆」，呼叫端存完再開一張新表單（對帳單補記時連續輸入用） */
+export type ExpenseModalResult = { action: 'save'; input: LedgerInput; again: boolean } | { action: 'delete' } | null;
 
 export interface ExpenseModalOptions {
   existing?: LedgerEntry;
@@ -510,7 +511,17 @@ export interface ExpenseModalOptions {
 
 const KIND_LABEL: Record<LedgerKind, string> = { expense: '💸 支出', deposit: '💰 入金', adjust: '⚖️ 調整' };
 
-/** 必填只有金額、分類、誰付；其他都有預設值或可留空 */
+/** 金額可以寫「60+55」，加總後存；開頭有 - 代表負數 */
+function parseAmount(raw: string): number {
+  const total = raw.split('+').reduce((s, part) => s + Number(part.replace(/[^\d]/g, '') || 0), 0);
+  return raw.trim().startsWith('-') ? -total : total;
+}
+
+/**
+ * 記一筆。必填只有金額、分類、誰付；其他都有預設值或收在「更多」。
+ * 鍵盤：Enter 記下來、Shift+Enter 記下來再記一筆、Esc 取消；Tab 在各組間移動，方向鍵在組內選（radiogroup）。
+ * 底部按鈕列固定在表單底部，手機不用捲到最下面才按得到
+ */
 export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModalResult> {
   return new Promise((resolve) => {
     const base = opts.existing || opts.preset || {};
@@ -521,12 +532,19 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     let placeId: number | null = base.place_id ?? null;
     let negative = (base.amount ?? 0) < 0;
     const placeById = new Map(opts.places.map((p) => [p.id, p]));
+    const DAY = 86400000;
+    const quickDates: [string, string][] = [
+      ['今天', localDate()],
+      ['昨天', localDate(new Date(Date.now() - DAY))],
+      ['前天', localDate(new Date(Date.now() - 2 * DAY))],
+    ];
+    const startDate = base.spent_on || localDate();
 
     const recent: LedgerEntry[] = [];
     if (!opts.existing) {
       const seen = new Set<string>();
       for (const e of opts.entries) {
-        if (recent.length >= 6) break;
+        if (recent.length >= 8) break;
         if (e.kind !== 'expense' || !e.note || e.amount <= 0 || seen.has(e.note)) continue;
         seen.add(e.note);
         recent.push(e);
@@ -537,80 +555,116 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     const categories = Object.entries(LEDGER_CATEGORY).filter(([key, cfg]) => !cfg.hidden || key === category);
     // 舊帳的分類已不在清單（改名後重讀前、或被刪掉）也要留一顆按鈕，修改時才不會被迫換分類
     if (category && !LEDGER_CATEGORY[category]) categories.push([category, ledgerCategory(category)]);
-    const chip = (attr: string, value: string, label: string, active: boolean) =>
-      `<button type="button" class="adv-guide-season ${active ? 'is-active' : ''}" ${attr}="${value}" aria-pressed="${active}">${label}</button>`;
+
+    /** radiogroup 的一顆：只有選中的那顆在 Tab 順序裡，組內用方向鍵 */
+    const radio = (attr: string, value: string, label: string, active: boolean) =>
+      `<button type="button" role="radio" class="adv-guide-season ${active ? 'is-active' : ''}" ${attr}="${esc(value)}" aria-checked="${active}">${label}</button>`;
+    const hasMore = !!(base.place_id || base.trip_slug || base.is_special);
 
     const { root, close } = openModal(`
-      <h3>${opts.existing ? '修改這筆' : '記一筆'}</h3>
-      <div class="adv-ledger-chips" id="adv-lf-kinds">
-        ${(Object.keys(KIND_LABEL) as LedgerKind[]).map((k) => chip('data-kind', k, KIND_LABEL[k], k === kind)).join('')}
+      <div class="adv-lf-head">
+        <h3>${opts.existing ? '修改這筆' : '記一筆'}</h3>
+        <div class="adv-ledger-chips" id="adv-lf-kinds" role="radiogroup" aria-label="種類">
+          ${(Object.keys(KIND_LABEL) as LedgerKind[]).map((k) => radio('data-kind', k, KIND_LABEL[k], k === kind)).join('')}
+        </div>
       </div>
-      ${recent.length ? `
-        <div class="adv-ledger-recent" data-only="expense">
-          ${recent.map((e) => `<button type="button" class="adv-card-btn" data-recent="${e.id}">${entryIcon(e)} ${esc(e.note)} ${money(e.amount)}</button>`).join('')}
-        </div>` : ''}
       <label for="adv-lf-amount">金額</label>
       <div class="adv-ledger-amount">
-        <input type="text" id="adv-lf-amount" inputmode="numeric" autocomplete="off" placeholder="320" value="${base.amount ? Math.abs(base.amount) : ''}" />
-        <button type="button" class="adv-guide-season" id="adv-lf-sign" aria-pressed="false"></button>
+        <span class="adv-ledger-amount__cur" aria-hidden="true">$</span>
+        <input type="text" id="adv-lf-amount" inputmode="numeric" enterkeyhint="done" autocomplete="off" placeholder="0" value="${base.amount ? Math.abs(base.amount) : ''}" />
+        <button type="button" class="adv-guide-season" id="adv-lf-sign" aria-pressed="false" tabindex="-1"></button>
       </div>
+      ${recent.length ? `
+        <div class="adv-ledger-recent" data-only="expense" aria-label="最近記過，點一下帶入" tabindex="-1">
+          ${/* 點選用的捷徑，不放進 Tab 順序：金額之後 Tab 直接到分類。外層可橫捲，Chrome 會把它當成 Tab 停點，所以外層也要 tabindex=-1 */ ''}
+          ${recent.map((e) => `<button type="button" class="adv-card-btn" data-recent="${e.id}" tabindex="-1">${entryIcon(e)} ${esc(e.note)} <small>${money(e.amount)}</small></button>`).join('')}
+        </div>` : ''}
       <div data-only="expense">
-        <label>分類</label>
-        <div class="adv-ledger-cats">
+        <label id="adv-lf-cat-label">分類</label>
+        <div class="adv-ledger-cats" role="radiogroup" aria-labelledby="adv-lf-cat-label" data-cols="4">
           ${categories.map(([key, cfg]) => `
-            <button type="button" class="adv-ledger-cat ${key === category ? 'is-active' : ''}" data-cat="${key}" style="--cat-color:${cfg.color}" aria-pressed="${key === category}">
-              <span aria-hidden="true">${cfg.emoji}</span>${cfg.label}
+            <button type="button" role="radio" class="adv-ledger-cat ${key === category ? 'is-active' : ''}" data-cat="${esc(key)}" style="--cat-color:${esc(cfg.color)}" aria-checked="${key === category}">
+              <span aria-hidden="true">${esc(cfg.emoji)}</span>${esc(cfg.label)}
             </button>`).join('')}
         </div>
       </div>
-      <label id="adv-lf-who-label"></label>
-      <div class="adv-ledger-chips" id="adv-lf-who">
-        ${IDENTITIES.map((id) => chip('data-who', id, id, id === paidBy)).join('')}
-      </div>
-      <div data-only="expense">
-        <label>怎麼付</label>
-        <div class="adv-ledger-chips" id="adv-lf-method">
-          ${(Object.keys(LEDGER_METHOD) as LedgerMethod[]).map((m) => chip('data-method', m, LEDGER_METHOD[m], m === method)).join('')}
+      <div class="adv-lf-pair">
+        <div>
+          <label id="adv-lf-who-label"></label>
+          <div class="adv-ledger-chips" id="adv-lf-who" role="radiogroup" aria-labelledby="adv-lf-who-label">
+            ${IDENTITIES.map((id) => radio('data-who', id, id, id === paidBy)).join('')}
+          </div>
+        </div>
+        <div data-only="expense">
+          <label id="adv-lf-method-label">怎麼付</label>
+          <div class="adv-ledger-chips" id="adv-lf-method" role="radiogroup" aria-labelledby="adv-lf-method-label">
+            ${(Object.keys(LEDGER_METHOD) as LedgerMethod[]).map((m) => radio('data-method', m, LEDGER_METHOD[m], m === method)).join('')}
+          </div>
         </div>
       </div>
-      <label for="adv-lf-date">日期</label>
-      <input type="date" id="adv-lf-date" value="${esc(base.spent_on || localDate())}" />
+      <label id="adv-lf-date-label" for="adv-lf-date">日期</label>
+      <div class="adv-lf-dates">
+        <div class="adv-ledger-chips" id="adv-lf-quickdate" role="radiogroup" aria-labelledby="adv-lf-date-label">
+          ${quickDates.map(([label, d]) => radio('data-date', d, label, d === startDate)).join('')}
+        </div>
+        <input type="date" id="adv-lf-date" value="${esc(startDate)}" />
+      </div>
       <label for="adv-lf-note">備註（選填）</label>
-      <input type="text" id="adv-lf-note" value="${esc(base.note)}" placeholder="例如：鼎泰豐、高鐵台中來回" />
-      <div data-only="expense">
-        <label>地點（選填）</label>
+      <input type="text" id="adv-lf-note" enterkeyhint="done" value="${esc(base.note)}" placeholder="例如：鼎泰豐、高鐵台中來回" />
+      <details class="adv-ledger-more" data-only="expense" ${hasMore ? 'open' : ''}>
+        <summary>更多：地點、旅行<span id="adv-lf-more-sum"></span></summary>
+        <label for="adv-lf-place">地點</label>
         <div class="adv-ach-picked" id="adv-lf-picked"></div>
         <input type="text" id="adv-lf-place" placeholder="搜尋破關地圖的地點" autocomplete="off" />
         <div class="adv-ach-results" id="adv-lf-results"></div>
-        <label for="adv-lf-trip">哪趟旅行（選填）</label>
+        <label for="adv-lf-trip">哪趟旅行</label>
         <select id="adv-lf-trip">
           <option value="">不是旅行</option>
           ${opts.trips.map((t) => `<option value="${esc(t.slug)}" ${t.slug === base.trip_slug ? 'selected' : ''}>${esc(t.emoji || '✈️')} ${esc(t.title)}</option>`).join('')}
         </select>
         ${LEDGER_SHOW_SPECIAL ? `
           <label class="adv-ledger-special"><input type="checkbox" id="adv-lf-special" ${base.is_special ? 'checked' : ''} /> ✨ 特別的日子（紀念日、生日…）</label>` : ''}
-      </div>
-      <div class="adv-modal-error" id="adv-lf-error" style="display:none;"></div>
-      <div class="adv-modal-actions">
-        ${opts.existing ? '<button class="adv-modal-btn adv-modal-btn--ghost" id="adv-lf-delete">🗑️ 刪除</button>' : ''}
-        <button class="adv-modal-btn adv-modal-btn--ghost" id="adv-lf-cancel">取消</button>
-        <button class="adv-modal-btn adv-modal-btn--primary" id="adv-lf-submit">${opts.existing ? '儲存修改' : '記下來'}</button>
+      </details>
+      <div class="adv-lf-foot">
+        <div class="adv-modal-error" id="adv-lf-error" role="alert" style="display:none;"></div>
+        <div class="adv-modal-actions">
+          ${opts.existing ? '<button class="adv-modal-btn adv-modal-btn--ghost adv-lf-small" id="adv-lf-delete">🗑️ 刪除</button>' : ''}
+          <button class="adv-modal-btn adv-modal-btn--ghost adv-lf-small" id="adv-lf-cancel">取消</button>
+          ${opts.existing ? '' : '<button class="adv-modal-btn adv-modal-btn--ghost" id="adv-lf-again">再記一筆</button>'}
+          <button class="adv-modal-btn adv-modal-btn--primary adv-lf-save" id="adv-lf-submit">${opts.existing ? '儲存修改' : '記下來'}</button>
+        </div>
+        <p class="adv-lf-keys"><kbd>Enter</kbd> 記下來　${opts.existing ? '' : '<kbd>Shift</kbd>+<kbd>Enter</kbd> 記下來再記一筆　'}<kbd>Esc</kbd> 取消　<kbd>←</kbd><kbd>→</kbd> 選分類</p>
       </div>
     `);
 
+    (root.querySelector('.adv-modal') as HTMLElement).classList.add('adv-lf');
     const $ = <T extends HTMLElement>(sel: string) => root.querySelector(sel) as T;
     const amountEl = $<HTMLInputElement>('#adv-lf-amount');
     const signBtn = $<HTMLButtonElement>('#adv-lf-sign');
+    const dateEl = $<HTMLInputElement>('#adv-lf-date');
+    const noteEl = $<HTMLInputElement>('#adv-lf-note');
+    const tripEl = $<HTMLSelectElement>('#adv-lf-trip');
     const searchEl = $<HTMLInputElement>('#adv-lf-place');
     const pickedEl = $<HTMLElement>('#adv-lf-picked');
     const resultsEl = $<HTMLElement>('#adv-lf-results');
+    const errorEl = $<HTMLElement>('#adv-lf-error');
+
+    /** 每個 radiogroup 只留一個 Tab 停點：選中的那顆，沒選就第一顆 */
+    const syncTabStops = () => {
+      root.querySelectorAll<HTMLElement>('[role="radiogroup"]').forEach((g) => {
+        const radios = [...g.querySelectorAll<HTMLElement>('[role="radio"]')];
+        const current = radios.find((r) => r.classList.contains('is-active')) || radios[0];
+        radios.forEach((r) => (r.tabIndex = r === current ? 0 : -1));
+      });
+    };
 
     const setActive = (group: string, attr: string, value: string | null) => {
       root.querySelectorAll<HTMLElement>(`${group} [${attr}]`).forEach((b) => {
         const on = b.getAttribute(attr) === value;
         b.classList.toggle('is-active', on);
-        b.setAttribute('aria-pressed', String(on));
+        b.setAttribute('aria-checked', String(on));
       });
+      syncTabStops();
     };
 
     /** 依種類切換欄位：入金不需要分類與付款方式；負數只有支出（退款）和調整用得到 */
@@ -624,45 +678,81 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       signBtn.setAttribute('aria-pressed', String(negative));
     };
 
+    /** 「更多」收起來時也看得到選了什麼 */
+    const syncMoreSummary = () => {
+      const parts = [
+        placeId != null ? placeById.get(placeId)?.name : null,
+        tripEl.value ? opts.trips.find((t) => t.slug === tripEl.value)?.title : null,
+      ].filter(Boolean);
+      $('#adv-lf-more-sum').textContent = parts.length ? `：${parts.join('、')}` : '';
+    };
+
     const renderPicked = () => {
       const place = placeId != null ? placeById.get(placeId) : undefined;
       pickedEl.innerHTML = place ? `<button type="button" class="adv-ach-place" data-unpick>${esc(place.name)} ✕</button>` : '';
       searchEl.hidden = !!place;
+      syncMoreSummary();
+    };
+    const placeHits = () => {
+      const q = searchEl.value.trim().toLowerCase();
+      return q ? opts.places.filter((p) => p.name.toLowerCase().includes(q)).slice(0, 8) : [];
     };
     const renderResults = () => {
-      const q = searchEl.value.trim().toLowerCase();
-      const hits = q ? opts.places.filter((p) => p.name.toLowerCase().includes(q)).slice(0, 8) : [];
-      resultsEl.innerHTML = hits
+      resultsEl.innerHTML = placeHits()
         .map((p) => `<button type="button" class="adv-ach-place" data-pick="${p.id}">＋ ${esc(p.name)}${p.area ? ` <small>${esc(p.area)}</small>` : ''}</button>`)
         .join('');
+    };
+    const pickPlace = (id: number) => {
+      placeId = id;
+      searchEl.value = '';
+      resultsEl.innerHTML = '';
+      renderPicked();
+    };
+
+    const clearError = () => {
+      errorEl.style.display = 'none';
+    };
+    /** 錯誤寫在固定的底部列（一定看得到），並把焦點移到要補的那一格 */
+    const fail = (msg: string, focusEl?: HTMLElement | null) => {
+      errorEl.style.display = 'block';
+      errorEl.textContent = msg;
+      focusEl?.focus();
+      focusEl?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    };
+
+    /** 選了某一組的某個值；方向鍵與點擊共用 */
+    const choose = (btn: HTMLElement) => {
+      if (btn.dataset.kind) {
+        kind = btn.dataset.kind as LedgerKind;
+        setActive('#adv-lf-kinds', 'data-kind', kind);
+        syncKind();
+      } else if (btn.dataset.cat) {
+        category = btn.dataset.cat;
+        setActive('.adv-ledger-cats', 'data-cat', category);
+      } else if (btn.dataset.who) {
+        paidBy = btn.dataset.who as Identity;
+        setActive('#adv-lf-who', 'data-who', paidBy);
+      } else if (btn.dataset.method) {
+        method = btn.dataset.method as LedgerMethod;
+        setActive('#adv-lf-method', 'data-method', method);
+      } else if (btn.dataset.date) {
+        dateEl.value = btn.dataset.date;
+        setActive('#adv-lf-quickdate', 'data-date', btn.dataset.date);
+      }
+      clearError();
     };
 
     root.addEventListener('click', (ev) => {
       const t = ev.target as HTMLElement;
-      const kindBtn = t.closest<HTMLElement>('[data-kind]');
-      if (kindBtn) {
-        kind = kindBtn.dataset.kind as LedgerKind;
-        setActive('#adv-lf-kinds', 'data-kind', kind);
-        syncKind();
-        return;
-      }
-      const catBtn = t.closest<HTMLElement>('[data-cat]');
-      if (catBtn) {
-        category = catBtn.dataset.cat as LedgerCategory;
-        setActive('.adv-ledger-cats', 'data-cat', category);
-        return;
-      }
-      const whoBtn = t.closest<HTMLElement>('[data-who]');
-      if (whoBtn) {
-        // 再點一次取消，給「調整」這種不屬於誰的用
-        paidBy = paidBy === whoBtn.dataset.who ? null : (whoBtn.dataset.who as Identity);
-        setActive('#adv-lf-who', 'data-who', paidBy);
-        return;
-      }
-      const methodBtn = t.closest<HTMLElement>('[data-method]');
-      if (methodBtn) {
-        method = methodBtn.dataset.method as LedgerMethod;
-        setActive('#adv-lf-method', 'data-method', method);
+      const radioBtn = t.closest<HTMLElement>('[role="radio"]');
+      if (radioBtn) {
+        // 「調整」不一定屬於誰：再點一次已選的人就取消
+        if (kind === 'adjust' && radioBtn.dataset.who && radioBtn.dataset.who === paidBy) {
+          paidBy = null;
+          setActive('#adv-lf-who', 'data-who', null);
+          return;
+        }
+        choose(radioBtn);
         return;
       }
       const recentBtn = t.closest<HTMLElement>('[data-recent]');
@@ -670,13 +760,15 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
         const e = recent.find((r) => r.id === Number(recentBtn.dataset.recent));
         if (!e) return;
         amountEl.value = String(e.amount);
-        $<HTMLInputElement>('#adv-lf-note').value = e.note || '';
+        noteEl.value = e.note || '';
         category = e.category;
         method = e.method;
         placeId = e.place_id;
         setActive('.adv-ledger-cats', 'data-cat', category);
         setActive('#adv-lf-method', 'data-method', method);
         renderPicked();
+        clearError();
+        // 帶入後通常只差改金額：選起來，直接打新數字或按 Enter
         amountEl.focus();
         amountEl.select();
         return;
@@ -688,12 +780,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
         return;
       }
       const pick = t.closest<HTMLElement>('[data-pick]');
-      if (pick) {
-        placeId = Number(pick.dataset.pick);
-        searchEl.value = '';
-        resultsEl.innerHTML = '';
-        renderPicked();
-      }
+      if (pick) pickPlace(Number(pick.dataset.pick));
     });
 
     signBtn.addEventListener('click', () => {
@@ -701,51 +788,114 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       syncKind();
     });
     searchEl.addEventListener('input', renderResults);
+    tripEl.addEventListener('change', syncMoreSummary);
+    dateEl.addEventListener('change', () => setActive('#adv-lf-quickdate', 'data-date', dateEl.value));
+    amountEl.addEventListener('input', clearError);
 
-    const fail = (msg: string) => {
-      const el = $<HTMLElement>('#adv-lf-error');
-      el.style.display = 'block';
-      el.textContent = msg;
+    let done = false;
+    const finish = (result: ExpenseModalResult) => {
+      if (done) return;
+      done = true;
+      document.removeEventListener('keydown', onKey, true);
+      close();
+      resolve(result);
     };
 
-    $('#adv-lf-cancel').addEventListener('click', () => {
-      close();
-      resolve(null);
-    });
-    root.querySelector('#adv-lf-delete')?.addEventListener('click', () => {
-      close();
-      resolve({ action: 'delete' });
-    });
-    $('#adv-lf-submit').addEventListener('click', () => {
-      const digits = amountEl.value.replace(/[^\d]/g, '');
-      const amount = Number(digits) * (negative || amountEl.value.trim().startsWith('-') ? -1 : 1);
-      if (!digits || !amount) return fail('金額要填一個不是 0 的數字');
-      if (kind === 'expense' && !category) return fail('選一個分類');
-      if (kind !== 'adjust' && !paidBy) return fail(kind === 'deposit' ? '選一下是誰入金' : '選一下是誰付的');
-      const date = $<HTMLInputElement>('#adv-lf-date').value;
-      if (!date) return fail('日期不能空白');
+    const submit = (again: boolean) => {
+      const amount = parseAmount(amountEl.value) * (negative ? -1 : 1);
+      if (!amount) return fail('金額要填一個不是 0 的數字', amountEl);
+      if (kind === 'expense' && !category) {
+        return fail('選一個分類', root.querySelector<HTMLElement>('.adv-ledger-cats [role="radio"]'));
+      }
+      if (kind !== 'adjust' && !paidBy) {
+        return fail(kind === 'deposit' ? '選一下是誰入金' : '選一下是誰付的', root.querySelector<HTMLElement>('#adv-lf-who [role="radio"]'));
+      }
+      if (!dateEl.value) return fail('日期不能空白', dateEl);
 
       const expense = kind === 'expense';
-      close();
-      resolve({
+      finish({
         action: 'save',
+        again: again && !opts.existing,
         input: {
-          spent_on: date,
+          spent_on: dateEl.value,
           kind,
           amount,
           category: expense ? category : null,
           method: expense ? method : 'account',
           paid_by: paidBy,
-          note: $<HTMLInputElement>('#adv-lf-note').value.trim() || null,
+          note: noteEl.value.trim() || null,
           place_id: expense ? placeId : null,
-          trip_slug: expense ? $<HTMLSelectElement>('#adv-lf-trip').value || null : null,
+          trip_slug: expense ? tripEl.value || null : null,
           // 欄位藏起來時保留原值，之後打開 ✨ 不會把舊資料洗掉
           is_special: !expense ? false : LEDGER_SHOW_SPECIAL ? $<HTMLInputElement>('#adv-lf-special').checked : base.is_special ?? false,
         },
       });
+    };
+
+    /** 方向鍵在 radiogroup 內移動並選取；分類是 4 欄格子，上下一次跳一列 */
+    const moveInGroup = (btn: HTMLElement, key: string): boolean => {
+      const group = btn.closest<HTMLElement>('[role="radiogroup"]');
+      if (!group) return false;
+      const radios = [...group.querySelectorAll<HTMLElement>('[role="radio"]')];
+      const cols = Number(group.dataset.cols) || radios.length;
+      const steps: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -cols, ArrowDown: cols, Home: -radios.length, End: radios.length };
+      if (!(key in steps)) return false;
+      const i = radios.indexOf(btn);
+      const next = radios[Math.max(0, Math.min(radios.length - 1, i + steps[key]))];
+      if (next && next !== btn) {
+        choose(next);
+        next.focus();
+      }
+      return true;
+    };
+
+    const onKey = (ev: KeyboardEvent) => {
+      // 注音／倉頡選字時的 Enter 是確認文字，不是送出
+      if (ev.isComposing || ev.keyCode === 229) return;
+      const t = ev.target as HTMLElement;
+
+      if (ev.key === 'Escape') {
+        ev.preventDefault();
+        if (searchEl.value) {
+          searchEl.value = '';
+          renderResults();
+          return;
+        }
+        finish(null);
+        return;
+      }
+
+      if (t.getAttribute('role') === 'radio' && moveInGroup(t, ev.key)) {
+        ev.preventDefault();
+        return;
+      }
+
+      if (ev.key !== 'Enter') return;
+      // 地點搜尋框：Enter 選第一個結果，不送出
+      if (t === searchEl && placeHits().length) {
+        ev.preventDefault();
+        pickPlace(placeHits()[0].id);
+        return;
+      }
+      // 取消、刪除、帶入、展開「更多」這些按鈕照原本行為（Enter＝按下去）
+      if (t.matches('button:not([role="radio"]):not(#adv-lf-submit):not(#adv-lf-again), summary')) return;
+      ev.preventDefault();
+      submit(ev.shiftKey || t.id === 'adv-lf-again');
+    };
+    // 掛在 document 的捕獲階段：焦點在表單任何地方（包括剛點完空白處）Enter／Esc 都有效
+    document.addEventListener('keydown', onKey, true);
+
+    $('#adv-lf-cancel').addEventListener('click', () => finish(null));
+    root.querySelector('#adv-lf-delete')?.addEventListener('click', () => finish({ action: 'delete' }));
+    root.querySelector('#adv-lf-again')?.addEventListener('click', () => submit(true));
+    $('#adv-lf-submit').addEventListener('click', () => submit(false));
+    // 點背景關閉（openModal 已經移除畫面），這裡補上拿掉鍵盤監聽、回傳取消
+    root.addEventListener('click', (ev) => {
+      if (ev.target === root) finish(null);
     });
 
     syncKind();
+    syncTabStops();
     renderPicked();
     // 直接聚焦，不要包 setTimeout：iOS 只在使用者點擊的同一輪才肯叫出鍵盤
     if (!opts.existing) amountEl.focus();

@@ -598,6 +598,16 @@ class DatingMapApp {
         input.spent_on.slice(0, 7),
         input.kind === 'deposit' ? `💰 ${input.paid_by} 入金 ${amount}` : `記下來了：${amount}`
       );
+      // 「再記一筆」：沿用日期、誰付、付款方式、旅行，對著帳單連續補記
+      if (result.again) {
+        await this.addExpense({
+          kind: input.kind,
+          spent_on: input.spent_on,
+          paid_by: input.paid_by,
+          method: input.method,
+          trip_slug: input.trip_slug,
+        });
+      }
     }
   }
 
