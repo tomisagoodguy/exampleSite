@@ -476,17 +476,47 @@ function pickHTML(monthEntries: LedgerEntry[]): string {
 /** 流水預設展開最近幾個有記帳的日子，較早的收合成一行（日期、筆數、小計） */
 const LIST_OPEN_DAYS = 7;
 
-/** 手動點開的較早日子；改完帳重畫時保持展開 */
+/** 手動點開的較早日子（日期）與「其餘 N 筆」（`more:日期`）；改完帳重畫時保持展開 */
 const unfoldedDays = new Set<string>();
 
-/** 依日期新到舊分天列出，每天標支出小計；openDays 有給時只展開最新的那幾天 */
+/** 一天的帳超過這麼多筆，先列分類小計與金額最大的幾筆，其餘收起來 */
+const BUSY_DAY_ROWS = 6;
+
+/** 一天的帳：筆數多（旅行日）先看錢花在哪，分類小計＋金額最大的幾筆，其餘收在「其餘 N 筆」 */
+function dayRowsHTML(date: string, list: LedgerEntry[], placeById: Map<number, PlaceEntry>, tripBySlug: Map<string, Trip>): string {
+  const row = (e: LedgerEntry) => rowHTML(e, placeById, tripBySlug);
+  // 只藏一兩筆反而多點一次，至少能收起 3 筆才摘要
+  if (list.length < BUSY_DAY_ROWS + 3) return list.map(row).join('');
+
+  const byCat = new Map<string, number>();
+  list.filter((e) => e.kind === 'expense').forEach((e) => byCat.set(e.category || '', (byCat.get(e.category || '') || 0) + e.amount));
+  const cats = [...byCat.entries()].sort((a, b) => b[1] - a[1]).map(([key, amt]) => {
+    const c = key ? ledgerCategory(key) : null;
+    return `<span>${c?.emoji || '📦'} ${esc(c?.label || '其他')} ${money(amt)}</span>`;
+  }).join('');
+  const sorted = [...list].sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount) || b.id - a.id);
+  const key = `more:${date}`;
+  return `
+    ${cats ? `<p class="adv-ledger-busy__cats">${cats}</p>` : ''}
+    ${sorted.slice(0, BUSY_DAY_ROWS).map(row).join('')}
+    <details class="adv-ledger-busy__more" ${unfoldedDays.has(key) ? 'open' : ''}>
+      <summary data-ledger-fold="${key}">其餘 ${list.length - BUSY_DAY_ROWS} 筆</summary>
+      ${sorted.slice(BUSY_DAY_ROWS).map(row).join('')}
+    </details>
+  `;
+}
+
+/**
+ * 依日期新到舊分天列出，每天標支出小計。
+ * 本月流水（folding）只展開最新幾天、筆數多的日子改列分類小計；搜尋結果全部照列，免得要找的那筆被收起來
+ */
 function daysHTML(
   entries: LedgerEntry[],
   placeById: Map<number, PlaceEntry>,
   tripBySlug: Map<string, Trip>,
-  withYear = false,
-  openDays = Infinity
+  opts: { withYear?: boolean; folding?: boolean } = {}
 ): string {
+  const { withYear = false, folding = false } = opts;
   const days = new Map<string, LedgerEntry[]>();
   [...entries]
     .sort((a, b) => b.spent_on.localeCompare(a.spent_on) || b.id - a.id)
@@ -494,8 +524,10 @@ function daysHTML(
 
   return [...days.entries()].map(([date, list], i) => {
     const spent = sum(list.filter((e) => e.kind === 'expense'));
-    const rows = list.map((e) => rowHTML(e, placeById, tripBySlug)).join('');
-    if (i >= openDays) {
+    const rows = folding
+      ? dayRowsHTML(date, list, placeById, tripBySlug)
+      : list.map((e) => rowHTML(e, placeById, tripBySlug)).join('');
+    if (folding && i >= LIST_OPEN_DAYS) {
       return `
         <details class="adv-ledger-day adv-ledger-day--folded" ${unfoldedDays.has(date) ? 'open' : ''}>
           <summary class="adv-ledger-day__head" data-ledger-fold="${date}"><span>${dayLabel(date, withYear)}・${list.length} 筆</span>${spent ? `<span>小計 ${money(spent)}</span>` : ''}</summary>
@@ -514,7 +546,7 @@ function daysHTML(
 
 function listHTML(monthEntries: LedgerEntry[], placeById: Map<number, PlaceEntry>, tripBySlug: Map<string, Trip>): string {
   if (!monthEntries.length) return `<p class="adv-empty">這個月還沒有記帳，按「＋ 記一筆」開始</p>${HISTORY_LINK}`;
-  return daysHTML(monthEntries, placeById, tripBySlug, false, LIST_OPEN_DAYS)
+  return daysHTML(monthEntries, placeById, tripBySlug, { folding: true })
     + '<button type="button" class="adv-ledger-link" data-ledger-pick="on">☑️ 一次選幾筆刪除</button>' + HISTORY_LINK;
 }
 
@@ -589,9 +621,6 @@ function calendarHTML(
   `;
 }
 
-/** 那天的帳超過這麼多筆，先列分類小計與最大的幾筆，其餘收起來 */
-const CALENDAR_DAY_ROWS = 6;
-
 function calendarDayHTML(
   date: string,
   list: LedgerEntry[],
@@ -600,31 +629,10 @@ function calendarDayHTML(
   tripBySlug: Map<string, Trip>
 ): string {
   const went = placesOn(date, places, list, placeById);
-  const expenses = list.filter((e) => e.kind === 'expense');
-  const spent = sum(expenses);
-  const row = (e: LedgerEntry) => rowHTML(e, placeById, tripBySlug);
-
-  let rows = '<p class="adv-empty">這天沒有記帳</p>';
-  if (list.length > CALENDAR_DAY_ROWS) {
-    // 筆數多（旅行日）先看錢花在哪：分類小計＋金額最大的幾筆，其餘照時間收在後面
-    const byCat = new Map<string, number>();
-    expenses.forEach((e) => byCat.set(e.category || '', (byCat.get(e.category || '') || 0) + e.amount));
-    const cats = [...byCat.entries()].sort((a, b) => b[1] - a[1]).map(([key, amt]) => {
-      const c = key ? ledgerCategory(key) : null;
-      return `<span>${c?.emoji || '📦'} ${esc(c?.label || '其他')} ${money(amt)}</span>`;
-    }).join('');
-    const sorted = [...list].sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount) || b.id - a.id);
-    rows = `
-      ${cats ? `<p class="adv-ledger-cal__cats">${cats}</p>` : ''}
-      ${sorted.slice(0, CALENDAR_DAY_ROWS).map(row).join('')}
-      <details class="adv-ledger-cal__more">
-        <summary>其餘 ${list.length - CALENDAR_DAY_ROWS} 筆</summary>
-        ${sorted.slice(CALENDAR_DAY_ROWS).map(row).join('')}
-      </details>
-    `;
-  } else if (list.length) {
-    rows = [...list].sort((a, b) => b.id - a.id).map(row).join('');
-  }
+  const spent = sum(list.filter((e) => e.kind === 'expense'));
+  const rows = list.length
+    ? dayRowsHTML(date, [...list].sort((a, b) => b.id - a.id), placeById, tripBySlug)
+    : '<p class="adv-empty">這天沒有記帳</p>';
 
   return `
     <div class="adv-ledger-day adv-ledger-cal__day">
@@ -682,7 +690,7 @@ function searchHTML(entries: LedgerEntry[], query: string, placeById: Map<number
   return `
     <p class="adv-ledger-sub">找到 ${hits.length} 筆${spent ? `・支出合計 <b>${money(spent)}</b>` : ''}${
       hits.length > SEARCH_LIMIT ? `・只列最近 ${SEARCH_LIMIT} 筆，多打幾個字縮小範圍` : ''}</p>
-    ${daysHTML(shown, placeById, tripBySlug, true)}`;
+    ${daysHTML(shown, placeById, tripBySlug, { withYear: true })}`;
 }
 
 // ───────────────────────── 預算 ─────────────────────────
