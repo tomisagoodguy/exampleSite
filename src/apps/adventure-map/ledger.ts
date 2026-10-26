@@ -369,6 +369,11 @@ export function renderLedger(
       return;
     }
 
+    if (target.closest('[data-ledger-pdf]')) {
+      printReview(mount, month);
+      return;
+    }
+
     const bank = readBankForm(mount, entries);
     if (target.closest('[data-bank-save]') && bank) {
       handlers.onSaveBalance({ checked_on: bank.date, bank: bank.bank, card_owed: bank.card, note: null });
@@ -1274,10 +1279,33 @@ function reviewHTML(
   `;
 }
 
+/** 📄 存 PDF：把回顧複製到 body 最外層，列印時只印這一塊（list.css `#adv-ledger-print`，固定淺色），印完拿掉 */
+function printReview(mount: HTMLElement, month: string) {
+  const review = mount.querySelector('.adv-ledger-review');
+  if (!review) return;
+  document.getElementById('adv-ledger-print')?.remove();
+  const sheet = document.createElement('div');
+  sheet.id = 'adv-ledger-print';
+  sheet.innerHTML = `
+    <h1 class="adv-ledger-print__title">💰 ${monthLabel(month)}公帳回顧</h1>
+    <p class="adv-ledger-sub">${localDate()} 印出</p>`;
+  sheet.appendChild(review.cloneNode(true));
+  document.body.appendChild(sheet);
+  document.documentElement.classList.add('adv-printing');
+  const done = () => {
+    sheet.remove();
+    document.documentElement.classList.remove('adv-printing');
+    window.removeEventListener('afterprint', done);
+  };
+  window.addEventListener('afterprint', done);
+  window.print();
+}
+
 function actionsHTML(withCopy: boolean): string {
   return `
     <div class="adv-ledger-actions">
       ${withCopy ? '<button type="button" class="adv-card-btn" data-ledger-copy>📋 複製成文字（貼到 LINE）</button>' : ''}
+      <button type="button" class="adv-card-btn" data-ledger-pdf title="列印視窗的印表機選「另存為 PDF」">📄 存 PDF</button>
       <button type="button" class="adv-card-btn" data-ledger-csv="month">⬇️ 下載本月 CSV</button>
       <button type="button" class="adv-card-btn" data-ledger-csv="all">⬇️ 下載全部 CSV</button>
       <button type="button" class="adv-card-btn" data-ledger-history>🕘 改帳紀錄</button>

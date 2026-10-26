@@ -92,8 +92,9 @@
   color-scheme: dark;
 }
 
-/* 行程地圖的底圖是淺灰，整個浮層固定用白天色 */
-.adv-tripmap {
+/* 行程地圖的底圖是淺灰，整個浮層固定用白天色；公帳回顧存 PDF 也固定淺色 */
+.adv-tripmap,
+#adv-ledger-print {
   --adv-paper:        #FFFCF6;
   --adv-washi:        #FDF3DF;
   --adv-card:         #FFFFFF;

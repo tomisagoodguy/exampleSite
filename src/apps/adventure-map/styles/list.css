@@ -2633,6 +2633,71 @@ button.adv-ach-place small {
   margin: 0 0 8px;
 }
 
+/* 📄 存 PDF（ledger.ts printReview）：只印複製到 body 最外層的回顧，兩欄、每塊不切到兩頁 */
+#adv-ledger-print {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  html.adv-printing,
+  html.adv-printing body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  /* 系統深色時頁邊留白會沿用深色畫布；要蓋過 map.css 的 :root:not([data-theme="light"]) */
+  html:root.adv-printing {
+    color-scheme: light;
+  }
+
+  html.adv-printing body > :not(#adv-ledger-print) {
+    display: none !important;
+  }
+
+  #adv-ledger-print {
+    display: block;
+    font-family: var(--adv-font);
+    color: var(--adv-ink);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* 主站的標題色是 --pb-ink，夜晚是米白 */
+  #adv-ledger-print h1,
+  #adv-ledger-print h4 {
+    color: var(--adv-ink);
+  }
+
+  #adv-ledger-print > .adv-ledger-sub {
+    margin: 0 0 10px;
+  }
+
+  #adv-ledger-print .adv-ledger-review {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+
+  #adv-ledger-print .adv-ledger-box {
+    break-inside: avoid;
+  }
+
+  /* 趨勢圖的分類切換鈕只留目前選的那顆，當作圖的說明 */
+  #adv-ledger-print .adv-trend__cats button:not(.is-active) {
+    display: none;
+  }
+}
+
+.adv-ledger-print__title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 400;
+}
+
 .adv-ledger-warn {
   color: var(--adv-danger);
 }
