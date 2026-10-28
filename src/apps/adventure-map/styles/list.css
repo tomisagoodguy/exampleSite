@@ -2160,6 +2160,16 @@ button.adv-ach-place small {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+/* 手機三格各約 110px，「−$117,740」用 1.3rem 會被截成「−$11…」，字級跟著格子寬度（cqi）縮 */
+.adv-ledger-stats .adv-ach-stat {
+  container-type: inline-size;
+  padding: 6px 10px;
+}
+
+.adv-ledger-stats .adv-ach-stat b {
+  font-size: clamp(0.75rem, 18cqi, 1.3rem);
+}
+
 .adv-ledger-remind {
   display: flex;
   flex-wrap: wrap;
