@@ -1,10 +1,17 @@
 schema: spec-driven
 
 context: |
-  Tech stack: Hugo SSG, TypeScript, Vanilla CSS/SCSS
-  Deployment: Netlify
-  Naming conventions: PascalCase components, camelCase functions/variables, kebab-case CSS classes
-  Reusable partials in layouts/partials/
-  Conventional commits
-  No `any` in TypeScript
-  Domain: personal website/portfolio with sections for AI, Dev Lab, and Lifestyle
+  Domain: 定康筆記（Hugo 個人知識庫）＋ 破關地圖（約會／旅遊地點看板、懶人包、成就、旅行、公帳），完整說明見根目錄 CLAUDE.md
+  Tech stack: Hugo Extended 0.127.0（Netlify 仍是 0.87.0，不可用之後才有的 Hugo 功能）、TypeScript + Vite（src/ → static/）、Supabase（RLS + RPC 寫入、Realtime）
+  套件管理只用 yarn，禁止 npm install；Python 腳本用 uv
+  主題 themes/liva-hugo/ 不可改，一律在 layouts/ 覆寫
+  樣式：日系繪本風，顏色一律用 token（主站 --pb-*、破關地圖 --adv-*），白天／夜晚兩套
+  TypeScript 禁止 any；camelCase 函式／變數、kebab-case CSS class
+  沒有測試框架：驗證靠 yarn build、tsc（指令見 CLAUDE.md）、Playwright 實跑
+  資料庫變更以 Supabase migration／RPC 進行，含 DROP 的 SQL 存成檔案由使用者手動執行
+  Conventional commits，訊息用繁體中文
+
+rules:
+  tasks:
+    - 每個 task 結尾附驗證方式（yarn build、tsc、Playwright 截圖或 SQL 查詢）
+    - 動到 UI 的 task 要同時確認 390px 手機寬與桌面 ≥900px、白天與夜晚主題

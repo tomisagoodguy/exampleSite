@@ -1,3 +1,34 @@
+<!-- SPECTRA:START v1.3.0 -->
+
+# Spectra Instructions
+
+This project uses Spectra for Spec-Driven Development(SDD). Specs live in `openspec/specs/`, change proposals in `openspec/changes/`.
+
+## Skills
+
+Each `/spectra-*` skill carries its own trigger description; these are the groups:
+
+- Shape and plan → `/spectra-discuss`, `/spectra-propose`
+- Continue tasks for an identified change → `/spectra-apply`
+- Update requirements or plans for an identified change → `/spectra-ingest`
+- Quality gate → `/spectra-verify`, `/spectra-review`, `/spectra-analyze`, `/spectra-audit`, `/spectra-drift`, `/spectra-debug`
+- Finish → `/spectra-archive`, `/spectra-commit`
+
+Explicit skill invocation takes precedence. Apply existing authorization within its unchanged scope.
+
+## Workflow
+
+discuss? → propose → apply ⇄ ingest → verify / review → archive
+
+- `discuss` is optional — skip if requirements are clear
+- Requirements change mid-work? Plan mode → `ingest` → resume `apply`
+
+## Parked Changes
+
+Changes can be parked（暫存）— temporarily moved out of `openspec/changes/`. Parked changes won't appear in `spectra list` but can be found with `spectra list --parked`. To restore: `spectra unpark <name>`. The `/spectra-apply` and `/spectra-ingest` skills disclose parking and restore when the named operation is already explicitly requested; respect a known refusal, otherwise ask for missing authorization.
+
+<!-- SPECTRA:END -->
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -278,6 +309,20 @@ src/
 └── shared/
     └── types.ts            # PlaceEntry 等共用型別
 ```
+
+---
+
+## Spectra（SDD）流程
+
+- **新功能、跨多個模組或動到資料表／RPC 的改動走 Spectra**（`/spectra-propose` → `/spectra-apply` → `/spectra-archive`，見頂部 Spectra Instructions）；修小 bug、調樣式、匯入資料、寫文章直接做
+- `openspec/` 目錄名沿用，但指令一律用 `/spectra-*`；`openspec-*` skill 與 `/opsx:*` 是舊流程遺留
+- 專案 context 在 `openspec/config.yaml`，`spectra init --force` 會把它清回範本，重跑後要補回
+- 專案沒有測試框架，`.spectra.yaml` 不開 `tdd`；也不開 `worktree`（junction 共用 `node_modules`，拆 worktree 曾連主目錄的一起刪）
+- CLI 陷阱（實測於 scrivener-flow）：
+  - 沒有 `spectra sync`；`spectra archive <name>`（不加 `--skip-specs`）就會把 delta specs 併入 `openspec/specs/`
+  - `spectra task done <change> <id>` 的 `<id>` 是數字流水號，不是 `tasks.md` 的 `1.1`；先用 `spectra instructions apply --change <name> --json` 查
+  - 長 artifact 不要用 heredoc 餵 `--stdin`（會被靜默截斷但仍顯示驗證通過），先 Write 成檔再 `< <file>`，寫完數 `#### Scenario` 核對
+  - `spectra analyze` 逐字比對：`tasks.md` 每條要引用 spec 的 `Requirement: <名稱>` 與 design 決策標題原文，否則報 Warning
 
 ---
 

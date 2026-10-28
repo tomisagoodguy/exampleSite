@@ -32,3 +32,5 @@ photos-inbox/**/處理失敗.txt
 
 # Hugo js.Build 自動產生
 assets/jsconfig.json
+.spectra/
+openspec/.vector-search.db*
