@@ -4706,10 +4706,23 @@ a.badge:hover,
   }
 }
 
-@media (max-width: 768px) {
-  .navigation .navbar {
+/* 選單收合時（≤991px）展開會變高，膠囊 999px 圓角會把整塊畫成大圓；
+   要連 body.scrolled 一起寫，否則捲動後權重較高的膠囊規則又蓋回來 */
+@media (max-width: 991px) {
+  .navigation .navbar,
+  body.scrolled .navigation .navbar {
     border-radius: 24px;
   }
+
+  /* 導覽列是 fixed，選單比螢幕高時要能在選單內捲動 */
+  .navigation .navbar-collapse.show,
+  .navigation .navbar-collapse.collapsing {
+    max-height: calc(100dvh - 110px);
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 768px) {
 
   /* Huninn 比原字型寬，不縮的話選單鈕會被擠到第二行 */
   .navigation .navbar-brand h3 {
