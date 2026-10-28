@@ -105,6 +105,8 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - 前端修改這兩個欄位走獨立 RPC `dating_map_set_attrs`（`setPlaceAttrs`），沒有改 `dating_map_update` 的參數簽章
 - `area` 走 RPC `dating_map_set_area`（`setPlaceArea`）。座標一變，trigger `dating_map_places_clear_area` 會把它清空，所以前端在 `updatePlace` **之後**才寫回；`geocode.ts` `lookupArea` 先取地址開頭的「縣市＋鄉鎮區」，沒有再用 ArcGIS `reverseGeocode`（`featureTypes=Postal`，預設的 POI 會回「九份」這種聚落名；Postal 只給到縣時改用 `Locality`）。市中心有些點 ArcGIS 只回縣市，大批補資料時改用 Nominatim reverse（`zoom=14`）
 - **🗺️ 地圖選**（願望清單分組列最前面、懶人包篩選列「全部」右邊）：`countymap.ts` `renderCountyMap` 畫台灣縣市 SVG，依數量深淺上色，點縣市（或下方縣市按鈕列）選取、再點取消；縣市取 `area` 前三字。願望清單切到地圖選時取代出門成本分組，組內依鄉鎮區分；懶人包依各站地點的縣市篩，可與季節／場景／天數疊加，多日旅行一天命中就整趟留下。縣市形狀在 `taiwan-shape.ts`（`scripts/build-taiwan-shape.py` 由 taiwan-atlas 產生，勿手改；金門、馬祖平移放大到左上插圖框）
+  - **預設是 🏝️ 立體小島**（`island3d.ts`，Three.js 由 `countymap.ts` 動態 `import()`，打開地圖選才下載約 140 KB gzip）：縣市拉高成積木，高度＝數量（開根號），`MeshBasicMaterial` 平塗＋`LineMaterial` 墨線，顏色每次從 `--adv-*` token 讀，所以日夜跟著主題切換。名牌是 HTML 按鈕（疊在一起時留數量多的），右下角按鈕可以旋轉、鳥瞰／斜看、縮放；滾輪不縮放，手機觸控不轉島，都是為了讓整頁照常捲動。「🗺️ 換平面」切回 SVG，選擇存在 localStorage `adv-cmap-mode`；沒有 WebGL2 或載入失敗會自動用平面
+  - 同一個 mount 只建一次 WebGL：rerender 時把原本的 canvas 搬進新容器（`attachIsland`）
 - **願望清單分組**（`data.ts` `IDEA_TIER` / `ideaTier()`，以台北為起點）：🚇 下班就能去＝北北基有填捷運站，或在台北市／新北捷運沿線區且不是 `scenery`；🚗 週末一日＝北北基其他＋桃竹苗；🧳 排趟旅行＝其餘地區；💡 活動點子＝`region` 為 `null`。組內再依 `area` 收合（`ui.ts` `groupIdeas`）：🧳 依縣市分，超過 30 筆的縣市（台中）改依鄉鎮區；💡 依分類分
 
 **行程懶人包**（「📚 懶人包」分頁，別人分享的一日路線）存在兩張表：
@@ -226,6 +228,8 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | `src/apps/adventure-map/index.html` | `static/js/adventure-map.bundle.js` + `static/css/adventure-map.bundle.css` |
 | 共用 JS chunks | `static/assets/` |
 
+⚠️ **動態載入的 chunk 不能 import 主 bundle 裡的模組**：chunk 匯入 `../js/adventure-map.bundle.js` 時網址沒有 `?v=`，瀏覽器會把整個 app 再執行一次，產生第二份狀態（曾讓「地圖選」一打開就被關掉）。需要的資料由呼叫端當參數傳進去，只用 `import type`；build 後用 `grep adventure-map.bundle static/assets/*.js` 確認沒有命中。
+
 > 破關地圖主畫面是純清單看板，**唯一的地圖是「✈️ 旅行」卡片的「🗺️ 行程地圖」**（`tripmap.ts`，Leaflet `circleMarker`＋編號 `divIcon`，沒用 MarkerCluster）；`lat` / `lng` 另用於 `region` 判定。底圖用 Esri `World_Light_Gray_Base`（免金鑰；行程地圖浮層 `.adv-tripmap` 固定用白天 token，系統深色時也不切深色底圖）：OSM 預設圖磚滿是廟宇、店家圖示會蓋過標記，CARTO 已改成要 API key（顯示「API KEY REQUIRED」），也不要疊 `World_Light_Gray_Reference`（大比例尺時區名會放大成整片模糊字）。
 
 ### layouts/ 覆寫規則
@@ -261,6 +265,7 @@ src/
 │   ├── poster.ts           # 行程海報：Canvas 繪卷海報／時程甘特＋匯出 PNG（不畫地圖圖磚，避免 canvas tainted）
 │   ├── tripmap.ts          # 旅行行程地圖：分天編號路線＋箭頭、播放動畫、吃的／逛的圖層、站點附近資訊卡、定位
 │   ├── countymap.ts        # 台灣縣市地圖選擇器（願望清單、懶人包的「🗺️ 地圖選」）
+│   ├── island3d.ts         # 地圖選的 🏝️ 立體小島（Three.js，動態載入）
 │   ├── taiwan-shape.ts     # 縣市 SVG 路徑（scripts/build-taiwan-shape.py 產生）
 │   ├── photos.ts           # 回憶照片：讀 window.DATING_MAP_PHOTOS、卡片縮圖列、燈箱
 │   ├── ledger.ts           # 💰 公帳分頁：流水、核對信用卡帳單、月度回顧、記一筆表單

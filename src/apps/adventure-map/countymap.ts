@@ -8,6 +8,27 @@ function fillLevel(count: number): number {
   return 3;
 }
 
+const MODE_KEY = 'adv-cmap-mode';
+let islandBroken = false;
+
+function webglOK(): boolean {
+  try {
+    return !!document.createElement('canvas').getContext('webgl2');
+  } catch {
+    return false;
+  }
+}
+
+/** 預設立體；選過平面就記住。WebGL 不能用或載入失敗一律平面 */
+function useIsland(): boolean {
+  if (islandBroken || !webglOK()) return false;
+  try {
+    return localStorage.getItem(MODE_KEY) !== '2d';
+  } catch {
+    return true;
+  }
+}
+
 /**
  * 台灣縣市地圖選擇器：點縣市＝選取，再點一次取消。
  * 金門、馬祖在左上角插圖框裡，點框也算；澎湖、新竹市、嘉義市這種小塊另有下方按鈕列可點。
@@ -57,18 +78,49 @@ export function renderCountyMap(
       return `<button type="button" class="adv-guide-season ${active ? 'is-active' : ''}" data-county="${name}" aria-pressed="${active}">${name}<span class="adv-guide-season-count">${n}</span></button>`;
     }).join('')}</div>`;
 
+  const island = useIsland();
   const hint = selected
     ? `<b>📍 ${selected}</b>　${counts.get(selected) ?? 0} ${unit}　<button type="button" class="adv-cmap-clear" data-county-clear>✕ 換一個</button>`
-    : '點地圖上的縣市挑一個，顏色越深越多';
+    : `點地圖上的縣市挑一個，${island ? '越高' : '顏色越深'}越多`;
+
+  const modeBtn = webglOK() && !islandBroken
+    ? `<button type="button" class="adv-cmap-clear adv-cmap-mode" data-cmap-mode>${island ? '🗺️ 換平面' : '🏝️ 換立體'}</button>`
+    : '';
+  const map = island
+    ? `<div class="adv-island-host" role="group" aria-label="台灣縣市立體地圖"><p class="adv-island-loading">🏝️ 小島浮上來中…</p></div>`
+    : `<svg class="adv-cmap-svg" viewBox="${TAIWAN_VIEWBOX}" role="group" aria-label="台灣縣市地圖">${insets}${shapes}${badges}</svg>`;
 
   mount.innerHTML = `
-    <div class="adv-cmap">
-      <svg class="adv-cmap-svg" viewBox="${TAIWAN_VIEWBOX}" role="group" aria-label="台灣縣市地圖">${insets}${shapes}${badges}</svg>
+    <div class="adv-cmap${island ? ' is-island' : ''}">
+      ${map}
       <div class="adv-cmap-side">
-        <p class="adv-cmap-hint">${hint}</p>
+        <p class="adv-cmap-hint">${hint}${modeBtn}</p>
         ${picker}
       </div>
     </div>`;
+
+  if (island) {
+    const host = mount.querySelector<HTMLElement>('.adv-island-host') as HTMLElement;
+    import('./island3d')
+      .then(({ attachIsland }) => {
+        // 載入期間又重畫過，這個 host 已經不在畫面上
+        if (host.isConnected) attachIsland(mount, host, { counties: TAIWAN_COUNTIES, insets: TAIWAN_INSETS, viewBox: TAIWAN_VIEWBOX }, { counts, selected, unit, onSelect });
+      })
+      .catch((err: unknown) => {
+        console.error('立體地圖載入失敗，改用平面', err);
+        islandBroken = true;
+        renderCountyMap(mount, counts, selected, unit, onSelect, compact);
+      });
+  }
+  mount.querySelector('[data-cmap-mode]')?.addEventListener('click', () => {
+    try {
+      localStorage.setItem(MODE_KEY, island ? '2d' : '3d');
+    } catch {
+      // 無痕模式存不了，就只換這一次
+      islandBroken = island;
+    }
+    renderCountyMap(mount, counts, selected, unit, onSelect, compact);
+  });
 
   const pick = (name: string) => onSelect(name === selected ? null : name);
   mount.querySelectorAll<SVGElement | HTMLElement>('[data-county]').forEach((el) => {
