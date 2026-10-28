@@ -1,4 +1,5 @@
 import { TAIWAN_COUNTIES, TAIWAN_INSETS, TAIWAN_VIEWBOX } from './taiwan-shape';
+import type { IslandExtras } from './island3d';
 
 /** 數量越多顏色越深；0 筆的縣市不能點 */
 function fillLevel(count: number): number {
@@ -40,7 +41,8 @@ export function renderCountyMap(
   selected: string | null,
   unit: string,
   onSelect: (county: string | null) => void,
-  compact = false
+  compact = false,
+  extras: IslandExtras = {}
 ) {
   const insets = TAIWAN_INSETS.map((r) => {
     const n = counts.get(r.name) ?? 0;
@@ -104,12 +106,12 @@ export function renderCountyMap(
     import('./island3d')
       .then(({ attachIsland }) => {
         // 載入期間又重畫過，這個 host 已經不在畫面上
-        if (host.isConnected) attachIsland(mount, host, { counties: TAIWAN_COUNTIES, insets: TAIWAN_INSETS, viewBox: TAIWAN_VIEWBOX }, { counts, selected, unit, onSelect });
+        if (host.isConnected) attachIsland(mount, host, { counties: TAIWAN_COUNTIES, insets: TAIWAN_INSETS, viewBox: TAIWAN_VIEWBOX }, { counts, selected, unit, onSelect, ...extras });
       })
       .catch((err: unknown) => {
         console.error('立體地圖載入失敗，改用平面', err);
         islandBroken = true;
-        renderCountyMap(mount, counts, selected, unit, onSelect, compact);
+        renderCountyMap(mount, counts, selected, unit, onSelect, compact, extras);
       });
   }
   mount.querySelector('[data-cmap-mode]')?.addEventListener('click', () => {
@@ -119,7 +121,7 @@ export function renderCountyMap(
       // 無痕模式存不了，就只換這一次
       islandBroken = island;
     }
-    renderCountyMap(mount, counts, selected, unit, onSelect, compact);
+    renderCountyMap(mount, counts, selected, unit, onSelect, compact, extras);
   });
 
   const pick = (name: string) => onSelect(name === selected ? null : name);

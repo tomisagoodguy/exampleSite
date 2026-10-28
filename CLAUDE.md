@@ -107,6 +107,9 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - **🗺️ 地圖選**（願望清單分組列最前面、懶人包篩選列「全部」右邊）：`countymap.ts` `renderCountyMap` 畫台灣縣市 SVG，依數量深淺上色，點縣市（或下方縣市按鈕列）選取、再點取消；縣市取 `area` 前三字。願望清單切到地圖選時取代出門成本分組，組內依鄉鎮區分；懶人包依各站地點的縣市篩，可與季節／場景／天數疊加，多日旅行一天命中就整趟留下。縣市形狀在 `taiwan-shape.ts`（`scripts/build-taiwan-shape.py` 由 taiwan-atlas 產生，勿手改；金門、馬祖平移放大到左上插圖框）
   - **預設是 🏝️ 立體小島**（`island3d.ts`，Three.js 由 `countymap.ts` 動態 `import()`，打開地圖選才下載約 140 KB gzip）：縣市拉高成積木，高度＝數量（開根號），`MeshBasicMaterial` 平塗＋`LineMaterial` 墨線，顏色每次從 `--adv-*` token 讀，所以日夜跟著主題切換。名牌是 HTML 按鈕（疊在一起時留數量多的），右下角按鈕可以旋轉、鳥瞰／斜看、縮放；滾輪不縮放，手機觸控不轉島，都是為了讓整頁照常捲動。「🗺️ 換平面」切回 SVG，選擇存在 localStorage `adv-cmap-mode`；沒有 WebGL2 或載入失敗會自動用平面
   - 同一個 mount 只建一次 WebGL：rerender 時把原本的 canvas 搬進新容器（`attachIsland`）
+  - **🚩 去過的地點**（`status = 'done'`、有座標與 `area`）插在所屬縣市積木頂端，滑過或點旗子顯示地名（有照片加 📷）；**🎀 旅行路線**＝每趟旅行對應的懶人包各天（同行程地圖：`source_url` 等於 `/adventure-map/<slug>/`），每天一段，顏色依旅行輪替。資料由 `index.ts` `islandExtras()` 每次 renderAll 前經 `ui.ts` `setIslandExtras` 傳入；右下角「🚩 N／🎀 N」可各自隱藏
+  - 經緯度換算用 `island3d.ts` `project()`，常數與 `scripts/build-taiwan-shape.py` 相同（含金門、馬祖插圖框的平移放大），改其中一邊要兩邊一起改
+  - `taiwan-shape.ts` 產生時丟掉了內環，台北市在新北市「裡面」、嘉義市在嘉義縣裡面；立體版在 `ringsToShapes` 把被包住的縣市挖成洞，否則外圍縣市的積木會整塊蓋住它們
 - **願望清單分組**（`data.ts` `IDEA_TIER` / `ideaTier()`，以台北為起點）：🚇 下班就能去＝北北基有填捷運站，或在台北市／新北捷運沿線區且不是 `scenery`；🚗 週末一日＝北北基其他＋桃竹苗；🧳 排趟旅行＝其餘地區；💡 活動點子＝`region` 為 `null`。組內再依 `area` 收合（`ui.ts` `groupIdeas`）：🧳 依縣市分，超過 30 筆的縣市（台中）改依鄉鎮區；💡 依分類分
 
 **行程懶人包**（「📚 懶人包」分頁，別人分享的一日路線）存在兩張表：

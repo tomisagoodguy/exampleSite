@@ -3,6 +3,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
+import { Line2 } from 'three/examples/jsm/lines/Line2.js';
+import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import type { CountyShape } from './taiwan-shape';
 
 /**
@@ -19,7 +21,27 @@ export interface IslandShapes {
   viewBox: string;
 }
 
-export interface IslandOptions {
+/** 🚩 去過的地點；county 決定旗子插在哪塊積木上 */
+export interface IslandFlag {
+  name: string;
+  county: string;
+  lat: number;
+  lng: number;
+  photo: boolean;
+}
+
+/** 🎀 一趟旅行：每天一段，依站序 */
+export interface IslandRoute {
+  title: string;
+  days: { county: string; lat: number; lng: number }[][];
+}
+
+export interface IslandExtras {
+  flags?: IslandFlag[];
+  routes?: IslandRoute[];
+}
+
+export interface IslandOptions extends IslandExtras {
   counts: Map<string, number>;
   selected: string | null;
   unit: string;
@@ -37,9 +59,34 @@ const SELECTED_LIFT = 4;
 const FOV = 32;
 const VIEW_TILT = 0.85; // 斜看
 const VIEW_TOP = 0.12; // 鳥瞰
+const FLAG_TOP = 12;
 const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 type Ring = [number, number][];
+
+/** 經緯度 → viewBox 座標，與 scripts/build-taiwan-shape.py 的 project() 同一組常數（含金門、馬祖插圖框的平移放大） */
+const K = Math.cos((23.7 * Math.PI) / 180);
+const LON0 = 119.25;
+const LAT1 = 25.45;
+const SCALE = 300 / ((122.12 - LON0) * K);
+const INSET = {
+  matsu: { src: [119.88, 26.4], dst: [119.3, 25.42], zoom: 1.6 },
+  kinmen: { src: [118.2, 24.53], dst: [119.37, 24.55], zoom: 1.6 },
+};
+
+function project(lat: number, lng: number): [number, number] {
+  const ins = lng < 119 ? INSET.kinmen : lat > 25.9 && lng < 120.6 ? INSET.matsu : null;
+  if (ins) {
+    lng = ins.dst[0] + (lng - ins.src[0]) * ins.zoom;
+    lat = ins.dst[1] + (lat - ins.src[1]) * ins.zoom;
+  }
+  return [(lng - LON0) * K * SCALE, (LAT1 - lat) * SCALE];
+}
+
+function ringCenter(r: Ring): [number, number] {
+  const s = r.reduce((a, p) => [a[0] + p[0], a[1] + p[1]], [0, 0]);
+  return [s[0] / r.length, s[1] / r.length];
+}
 
 /** taiwan-shape.ts 只有 M／L／Z，一個 M…Z 是一圈 */
 function parseRings(d: string): Ring[] {
@@ -73,16 +120,17 @@ function inside([x, y]: [number, number], ring: Ring): boolean {
 /** SVG 座標 → 平面座標：x 向右、y 朝北為正（拉高後 -y 變成 +z，南方朝鏡頭） */
 const toV2 = ([x, y]: [number, number]) => new THREE.Vector2(x - CX, -(y - CY));
 
-/** 被同縣市另一圈包住的是洞（嘉義縣中間的嘉義市） */
-function ringsToShapes(rings: Ring[]): THREE.Shape[] {
-  const isHole = rings.map((r, i) => rings.some((o, j) => j !== i && inside(r[0], o)));
-  return rings.flatMap((r, i) => {
-    if (isHole[i]) return [];
+/**
+ * enclaves：被這個縣市整個包住的其他縣市（新北市裡的台北市、嘉義縣裡的嘉義市）。
+ * taiwan-shape.ts 產生時丟掉了內環，不挖洞的話外圍縣市的積木會把它們整塊蓋住。
+ */
+function ringsToShapes(rings: Ring[], enclaves: Ring[]): THREE.Shape[] {
+  return rings.map((r) => {
     const shape = new THREE.Shape(r.map(toV2));
-    rings.forEach((h, j) => {
-      if (isHole[j] && inside(h[0], r)) shape.holes.push(new THREE.Path(h.map(toV2)));
+    enclaves.forEach((h) => {
+      if (inside(ringCenter(h), r)) shape.holes.push(new THREE.Path(h.map(toV2)));
     });
-    return [shape];
+    return shape;
   });
 }
 
@@ -119,6 +167,20 @@ interface Palette {
   yellow: THREE.Color;
   water: THREE.Color;
   waterL: THREE.Color;
+  flag: THREE.Color;
+  routes: THREE.Color[];
+}
+
+interface FlagSpot {
+  flag: IslandFlag;
+  x: number;
+  z: number;
+  county?: CountyMesh;
+}
+
+interface RouteLine {
+  pts: { x: number; z: number; county?: CountyMesh }[];
+  geo: LineGeometry;
 }
 
 class Island {
@@ -140,6 +202,20 @@ class Island {
   private zoom = 1;
   private tilt = VIEW_TILT;
   private raycaster = new THREE.Raycaster();
+  // 🚩 旗子與 🎀 彩帶；資料沒變就不重建
+  private overlayKey = '';
+  private flagGroup = new THREE.Group();
+  private routeGroup = new THREE.Group();
+  private flags: FlagSpot[] = [];
+  private flagMesh: THREE.InstancedMesh | null = null;
+  private poleMesh: THREE.InstancedMesh | null = null;
+  private routes: RouteLine[] = [];
+  private routeInk: LineMaterial[] = [];
+  private routeColors: LineMaterial[] = [];
+  private flagBtn!: HTMLButtonElement;
+  private routeBtn!: HTMLButtonElement;
+  private tip = document.createElement('div');
+  private tipTimer = 0;
 
   constructor(private shapes: IslandShapes) {
     this.root.className = 'adv-island';
@@ -149,7 +225,11 @@ class Island {
     canvas.className = 'adv-island-canvas';
     canvas.setAttribute('aria-hidden', 'true');
     this.labelLayer.className = 'adv-island-labels';
-    this.root.append(canvas, this.labelLayer, this.buildToolbar());
+    this.tip.className = 'adv-island-tip';
+    this.tip.hidden = true;
+    this.tip.setAttribute('role', 'status');
+    this.root.append(canvas, this.labelLayer, this.tip, this.buildToolbar());
+    this.scene.add(this.flagGroup, this.routeGroup);
 
     this.controls = new OrbitControls(this.camera, canvas);
     this.controls.enableDamping = true;
@@ -184,7 +264,87 @@ class Island {
       if (first && reduceMotion()) c.h = c.targetH;
     });
     this.syncLabels();
+    this.buildOverlays(opts);
     this.applyPalette();
+  }
+
+  private buildOverlays({ flags = [], routes = [] }: IslandOptions) {
+    const key = JSON.stringify([flags.map((f) => [f.name, f.lat, f.lng, f.county]), routes]);
+    if (key === this.overlayKey) return;
+    this.overlayKey = key;
+    const byName = new Map(this.counties.map((c) => [c.name, c]));
+    const spot = (lat: number, lng: number, county: string) => {
+      const [sx, sy] = project(lat, lng);
+      return { x: sx - CX, z: sy - CY, county: byName.get(county) };
+    };
+
+    this.flagGroup.clear();
+    this.flagMesh?.dispose();
+    this.poleMesh?.dispose();
+    this.flagMesh = this.poleMesh = null;
+    this.flags = flags.map((f) => ({ flag: f, ...spot(f.lat, f.lng, f.county) }));
+    if (this.flags.length) {
+      const pole = new THREE.CylinderGeometry(0.6, 0.6, FLAG_TOP, 6).translate(0, FLAG_TOP / 2, 0);
+      const cloth = new THREE.ShapeGeometry(
+        new THREE.Shape([new THREE.Vector2(0, FLAG_TOP), new THREE.Vector2(0, FLAG_TOP - 5), new THREE.Vector2(7, FLAG_TOP - 2.5)])
+      );
+      this.poleMesh = new THREE.InstancedMesh(pole, new THREE.MeshBasicMaterial(), this.flags.length);
+      this.flagMesh = new THREE.InstancedMesh(cloth, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }), this.flags.length);
+      this.flagGroup.add(this.poleMesh, this.flagMesh);
+    }
+
+    this.routeGroup.clear();
+    this.routes.forEach((r) => r.geo.dispose());
+    const old = new Set([...this.routeInk, ...this.routeColors]);
+    old.forEach((m) => m.dispose());
+    this.lineMats = this.lineMats.filter((m) => !old.has(m));
+    this.routes = [];
+    this.routeInk = [];
+    this.routeColors = [];
+    routes.forEach((trip) => {
+      // 同一趟的每天共用一組材質，顏色依旅行輪替（applyPalette）
+      const ink = new LineMaterial({ linewidth: 6.5 });
+      const color = new LineMaterial({ linewidth: 3.5 });
+      this.routeInk.push(ink);
+      this.routeColors.push(color);
+      this.lineMats.push(ink);
+      trip.days.forEach((day) => {
+        if (day.length < 2) return;
+        const geo = new LineGeometry();
+        this.routes.push({ pts: day.map((s) => spot(s.lat, s.lng, s.county)), geo });
+        // 墨線墊底、顏色疊上去，跟名牌一樣有描邊
+        this.routeGroup.add(new Line2(geo, ink), new Line2(geo, color));
+      });
+    });
+
+    this.flagBtn.hidden = !this.flags.length;
+    this.flagBtn.textContent = `🚩 ${this.flags.length}`;
+    this.routeBtn.hidden = !this.routes.length;
+    this.routeBtn.textContent = `🎀 ${routes.length}`;
+    const w = this.root.clientWidth;
+    const h = this.root.clientHeight;
+    [...this.lineMats, ...this.routeColors].forEach((m) => m.resolution.set(w, h));
+    this.placeOverlays(true);
+  }
+
+  /** 旗子立在積木頂端、轉向鏡頭；彩帶沿著各縣市頂端走。heights：積木高度有變才重算彩帶 */
+  private placeOverlays(heights: boolean) {
+    const theta = this.spherical().theta;
+    const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), theta);
+    const m = new THREE.Matrix4();
+    const one = new THREE.Vector3(1, 1, 1);
+    this.flags.forEach((f, i) => {
+      m.compose(new THREE.Vector3(f.x, f.county?.h ?? BASE_H, f.z), q, one);
+      this.poleMesh?.setMatrixAt(i, m);
+      this.flagMesh?.setMatrixAt(i, m);
+    });
+    if (this.poleMesh && this.flagMesh) {
+      this.poleMesh.instanceMatrix.needsUpdate = true;
+      this.flagMesh.instanceMatrix.needsUpdate = true;
+      this.flagMesh.computeBoundingSphere();
+    }
+    if (!heights) return;
+    this.routes.forEach((r) => r.geo.setPositions(r.pts.flatMap((p) => [p.x, (p.county?.h ?? BASE_H) + 1.5, p.z])));
   }
 
   /** 顏色每次從 CSS token 讀，日夜切換、改 token 都不用動這裡 */
@@ -200,6 +360,8 @@ class Island {
       yellow: c('--adv-yellow', '#F6D27A'),
       water: c('--adv-water', '#A8D3E6'),
       waterL: c('--adv-water-l', '#E1F0F6'),
+      flag: c('--adv-blue', '#2F7A99'),
+      routes: [c('--adv-green', '#4E8A3A'), c('--adv-yellow-deep', '#B8860B'), c('--adv-blue', '#2F7A99'), c('--adv-coral-deep', '#B4533F')],
     };
   }
 
@@ -220,6 +382,9 @@ class Island {
     this.plate.top.color.copy(p.waterL);
     this.plate.side.color.copy(p.water);
     this.lineMats.forEach((m) => m.color.copy(p.ink));
+    this.routeColors.forEach((m, i) => m.color.copy(p.routes[i % p.routes.length]));
+    (this.flagMesh?.material as THREE.MeshBasicMaterial | undefined)?.color.copy(p.flag);
+    (this.poleMesh?.material as THREE.MeshBasicMaterial | undefined)?.color.copy(p.ink);
     this.invalidate();
   }
 
@@ -270,9 +435,11 @@ class Island {
     });
 
     const countyLine = lineMat(1.6);
-    this.shapes.counties.forEach((c) => {
-      const rings = parseRings(c.d);
-      const geo = new THREE.ExtrudeGeometry(ringsToShapes(rings), { depth: 1, bevelEnabled: false });
+    const allRings = this.shapes.counties.map((c) => parseRings(c.d));
+    this.shapes.counties.forEach((c, ci) => {
+      const rings = allRings[ci];
+      const enclaves = allRings.filter((_, j) => j !== ci).flat();
+      const geo = new THREE.ExtrudeGeometry(ringsToShapes(rings, enclaves), { depth: 1, bevelEnabled: false });
       geo.rotateX(-Math.PI / 2);
       const top = new THREE.MeshBasicMaterial();
       const side = new THREE.MeshBasicMaterial();
@@ -307,6 +474,19 @@ class Island {
       bar.append(b);
       return b;
     };
+    const toggle = (group: THREE.Group, b: HTMLButtonElement) => {
+      group.visible = !group.visible;
+      b.setAttribute('aria-pressed', String(group.visible));
+      this.tip.hidden = true;
+      this.invalidate();
+    };
+    this.flagBtn = btn('🚩', '顯示／隱藏去過的地點', () => toggle(this.flagGroup, this.flagBtn));
+    this.routeBtn = btn('🎀', '顯示／隱藏旅行路線', () => toggle(this.routeGroup, this.routeBtn));
+    [this.flagBtn, this.routeBtn].forEach((b) => {
+      b.classList.add('adv-island-layer');
+      b.setAttribute('aria-pressed', 'true');
+      b.hidden = true;
+    });
     btn('⟲', '向左轉', () => this.orbit(Math.PI / 4));
     btn('⟳', '向右轉', () => this.orbit(-Math.PI / 4));
     const tiltBtn = btn('鳥瞰', '切換鳥瞰／斜看', () => {
@@ -350,23 +530,58 @@ class Island {
     canvas.addEventListener('pointerup', (e) => {
       if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) return;
       down = null;
+      // 點到旗子只顯示地名，不選縣市
+      if (this.showTip(e)) {
+        window.clearTimeout(this.tipTimer);
+        this.tipTimer = window.setTimeout(() => (this.tip.hidden = true), 2500);
+        return;
+      }
       const name = this.pick(e);
       if (name) this.opts?.onSelect(name === this.opts.selected ? null : name);
     });
     canvas.addEventListener('pointermove', (e) => {
       if (e.pointerType !== 'mouse') return;
-      const name = this.pick(e);
-      canvas.style.cursor = name ? 'pointer' : '';
+      const onFlag = this.showTip(e);
+      const name = onFlag ? null : this.pick(e);
+      canvas.style.cursor = name || onFlag ? 'pointer' : '';
       if (name !== this.hover) {
         this.hover = name;
         this.applyPalette();
       }
     });
     canvas.addEventListener('pointerleave', () => {
+      this.tip.hidden = true;
       if (!this.hover) return;
       this.hover = null;
       this.applyPalette();
     });
+  }
+
+  /** 旗子太小不好點：找螢幕上離指標 16px 內最近的旗子，有就顯示地名 */
+  private showTip(e: PointerEvent): boolean {
+    if (!this.flagGroup.visible || !this.flags.length) return false;
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+    let best: { f: FlagSpot; x: number; y: number; d: number } | null = null;
+    const v = new THREE.Vector3();
+    for (const f of this.flags) {
+      v.set(f.x, (f.county?.h ?? BASE_H) + FLAG_TOP - 2.5, f.z).project(this.camera);
+      const x = ((v.x + 1) / 2) * rect.width;
+      const y = ((1 - v.y) / 2) * rect.height;
+      const d = Math.hypot(x - px, y - py);
+      if (d < 16 && (!best || d < best.d)) best = { f, x, y, d };
+    }
+    if (!best) {
+      if (e.pointerType === 'mouse') this.tip.hidden = true;
+      return false;
+    }
+    this.tip.textContent = `🚩 ${best.f.flag.name}${best.f.flag.photo ? ' 📷' : ''}`;
+    this.tip.hidden = false;
+    const tw = this.tip.offsetWidth;
+    const x = THREE.MathUtils.clamp(best.x - tw / 2, 4, rect.width - tw - 4);
+    this.tip.style.transform = `translate(${x}px, ${Math.max(4, best.y - 34)}px)`;
+    return true;
   }
 
   /** 只有有數量的縣市能點 */
@@ -434,7 +649,7 @@ class Island {
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
-    this.lineMats.forEach((m) => m.resolution.set(w, h));
+    [...this.lineMats, ...this.routeColors].forEach((m) => m.resolution.set(w, h));
     // 整塊木板塞得進畫面的距離
     const t = Math.tan(THREE.MathUtils.degToRad(FOV / 2));
     const fitR = Math.max((VB_H * 0.5) / t, (VB_W * 0.62) / (t * this.camera.aspect)) * 1.02;
@@ -455,9 +670,12 @@ class Island {
     if (!this.root.isConnected) return;
     const k = reduceMotion() ? 1 : 0.14;
     let busy = false;
+    let grew = false;
 
     this.counties.forEach((c) => {
       const d = c.targetH - c.h;
+      if (!d) return;
+      grew = true;
       if (Math.abs(d) < 0.02) c.h = c.targetH;
       else {
         c.h += d * k;
@@ -483,6 +701,7 @@ class Island {
     }
 
     if (this.controls.update()) busy = true;
+    this.placeOverlays(grew);
     this.renderer.render(this.scene, this.camera);
     this.placeLabels();
     if (busy) this.invalidate();

@@ -17,6 +17,7 @@ import {
   renderRegionCard,
   AttrFilter,
   renderSections,
+  setIslandExtras,
   renderGuides,
   GuideFilter,
   GUIDE_FILTER_ALL,
@@ -46,7 +47,9 @@ import { PlaceEntry } from '../../shared/types';
 import { geocodePlace, lookupArea } from './geocode';
 import { openTripMap, TripStop } from './tripmap';
 import { renderLedger, endLedgerPick, openExpenseModal, openLedgerCategoryModal, openLedgerHistoryModal, LedgerState, currentMonth, localDate } from './ledger';
-import { setupPhotoViewer } from './photos';
+import { setupPhotoViewer, placePhotos } from './photos';
+import { countyOf } from './countymap';
+import type { IslandFlag, IslandRoute } from './island3d';
 import { captureCard, flyCard } from './fly';
 import {
   fetchPlaces,
@@ -494,6 +497,7 @@ class DatingMapApp {
       }
     );
     renderRegionCard(this.allPlaces, region);
+    setIslandExtras(this.islandExtras());
     renderSections(filtered, {
       onGo: (p) => this.goIdea(p),
       onConfirm: (p) => this.confirmPlace(p),
@@ -764,6 +768,32 @@ class DatingMapApp {
       count: rows.length,
       today: rows.filter((e) => e.spent_on === today).reduce((s, e) => s + e.amount, 0),
     };
+  }
+
+  /** 立體小島：去過的地點插 🚩，每趟旅行的懶人包各天連成 🎀（同 openTripMap 的對應方式） */
+  private islandExtras(): { flags: IslandFlag[]; routes: IslandRoute[] } {
+    const placeById = new Map(this.allPlaces.map((p) => [p.id, p]));
+    const flags = this.allPlaces.flatMap((p) => {
+      const county = countyOf(p.area);
+      return p.status === 'done' && county && p.lat != null && p.lng != null
+        ? [{ name: p.name, county, lat: p.lat, lng: p.lng, photo: placePhotos(p.id).length > 0 }]
+        : [];
+    });
+    const routes = this.trips.flatMap((t) => {
+      const url = `/adventure-map/${t.slug}/`;
+      const days = this.guides
+        .filter((g) => g.source_url === url)
+        .map((g) =>
+          g.stops.flatMap((s) => {
+            const p = s.place_id != null ? placeById.get(s.place_id) : undefined;
+            const county = countyOf(p?.area);
+            return p && county && p.lat != null && p.lng != null ? [{ county, lat: p.lat, lng: p.lng }] : [];
+          })
+        )
+        .filter((d) => d.length > 1);
+      return days.length ? [{ title: t.title, days }] : [];
+    });
+    return { flags, routes };
   }
 
   private openTripMap(trip: Trip) {

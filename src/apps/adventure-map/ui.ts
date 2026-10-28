@@ -24,6 +24,7 @@ import { speechSupported, speak, stopSpeech, currentSpeech, setSpeechListener, S
 import { PosterData, PosterStop, drawPoster, drawGantt, ganttAvailable, ensurePosterFonts, exportPng } from './poster';
 import { photoStripHTML } from './photos';
 import { renderCountyMap, countyOf } from './countymap';
+import type { IslandExtras } from './island3d';
 
 /**
  * 依實際出現在資料中的分類，動態產生篩選 chips
@@ -396,6 +397,11 @@ let ideaTierSel: IdeaTier = 'mrt';
 /** 願望清單的另一種選法：在台灣地圖上點縣市，取代出門成本分組 */
 let ideaMapOn = false;
 let ideaCounty: string | null = null;
+/** 立體小島上的 🚩 去過地點與 🎀 旅行路線，由 index.ts 每次 renderAll 前設定；願望清單與懶人包的地圖選共用 */
+let islandExtras: IslandExtras = {};
+export function setIslandExtras(extras: IslandExtras) {
+  islandExtras = extras;
+}
 /** 記住展開的區域；Realtime 更新重繪時才不會整個收起來 */
 const openIdeaGroups = new Set<string>();
 /** 分組內地點不超過這個數（例如搜尋後）就全部展開，不必一個個點 */
@@ -507,7 +513,7 @@ function renderIdeaMap(ideas: PlaceEntry[], rerender: () => void): PlaceEntry[] 
   renderCountyMap(mount, counts, ideaCounty, '個', (county) => {
     ideaCounty = county;
     rerender();
-  }, true);
+  }, true, islandExtras);
   return ideaCounty ? ideas.filter(p => countyOf(p.area) === ideaCounty) : [];
 }
 
@@ -851,7 +857,7 @@ function renderGuideMap(guides: Guide[], placeById: Map<number, PlaceEntry>, rer
   renderCountyMap(mount, counts, guideCounty, '條路線', (county) => {
     guideCounty = county;
     rerender();
-  });
+  }, false, islandExtras);
 }
 
 /** 季節｜場景｜天數 擠在同一條橫捲列，手機首屏不多佔兩排；再點一次已選的按鈕即取消 */

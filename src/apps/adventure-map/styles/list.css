@@ -2076,7 +2076,7 @@ button.adv-ach-place small {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 4px;
-  max-width: 50%;
+  max-width: calc(100% - 16px);
 }
 
 .adv-island-tools button {
@@ -2091,6 +2091,30 @@ button.adv-ach-place small {
   border-radius: 10px;
   box-shadow: 0 2px 0 var(--adv-drop);
   cursor: pointer;
+}
+
+.adv-island-tools .adv-island-layer[aria-pressed="true"] {
+  color: var(--adv-on-flat);
+  background: var(--adv-yellow);
+}
+
+.adv-island-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: 70%;
+  padding: 2px 10px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--adv-ink);
+  background: var(--adv-card);
+  border: 2px solid var(--adv-ink);
+  border-radius: 10px;
+  box-shadow: 0 2px 0 var(--adv-drop);
+  pointer-events: none;
+  z-index: 2;
 }
 
 .adv-island-tools button:active {
