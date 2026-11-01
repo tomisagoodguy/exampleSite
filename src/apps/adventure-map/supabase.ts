@@ -576,8 +576,8 @@ export async function restoreExpense(passphrase: string, historyId: number): Pro
 }
 
 /**
- * 餘額核對點：某天銀行帳戶的實際餘額。book_balance（到那天為止帳上的公帳餘額）與
- * own_pending（當時的先墊待抵：未勾先墊支出 − 抵先墊入金）由資料庫在存的當下算好，之後有人改了更早的帳就看得出來
+ * 餘額核對點：某天銀行帳戶的實際餘額。book_balance（到那天為止帳上的公帳餘額，不含未勾的自己付）
+ * 由資料庫在存的當下算好，之後有人改了更早的帳就看得出來；own_pending 是舊核對點的先墊待還，新的存 0
  */
 export interface LedgerBalance {
   id: number;

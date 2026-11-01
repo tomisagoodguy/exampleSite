@@ -140,9 +140,9 @@ function contributionHTML(entries: LedgerEntry[], date: string, label: string): 
   const [a, b] = [...rows].sort((x, y) => y.total - x.total);
   const gap = a && b ? a.total - b.total : 0;
   return `
-    <ul class="adv-ledger-top">${rows
-      .map((r) => `<li><span>${esc(r.who)} 出了（入金 ${money(r.deposit)}${r.self ? `＋自己付 ${money(r.self)}` : ''}）</span><b>${money(r.total)}</b></li>`)
-      .join('')}</ul>
+    ${rows
+      .map((r) => `<p class="adv-ledger-sub">${esc(r.who)} 出了 <b>${money(r.total)}</b>（入金 ${money(r.deposit)}${r.self ? `＋自己付 ${money(r.self)}` : ''}）</p>`)
+      .join('')}
     <p class="adv-ledger-sub">${label}${
       gap ? `${esc(a.who)}多出 <b>${money(gap)}</b>，${esc(b.who)}想打平可以存 ${money(gap)} 進公帳` : '兩人出的一樣多'
     }</p>`;
@@ -903,7 +903,7 @@ interface ReviewData {
   top: LedgerEntry[];
   places: { name: string; amount: number; count: number }[];
   trips: { title: string; amount: number }[];
-  /** pending＝還沒從公帳轉回的金額 */
+  /** 本月未勾的自己付合計（不從公帳出） */
   selfPaid: number;
   special: number;
   deposited: number;
