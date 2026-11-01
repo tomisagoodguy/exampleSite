@@ -106,12 +106,18 @@ const sum = (list: LedgerEntry[]) => list.reduce((s, e) => s + e.amount, 0);
 const expensesIn = (entries: LedgerEntry[], month: string) =>
   entries.filter((e) => e.kind === 'expense' && e.spent_on.startsWith(month));
 
-/** 對公帳餘額的影響：入金、調整照正負加；支出扣掉（退款是負數支出，等於加回來） */
+/** 流水顯示的正負：入金、調整照正負；支出是負的（退款是負數支出，顯示成 +） */
 const signed = (e: LedgerEntry) => (e.kind === 'expense' ? -e.amount : e.amount);
+
+/** 自己付（method own）：錢沒從公帳帳戶出去，算付款人自己出的。checked 是舊規則「已從公帳轉回」，那筆公帳確實付過 */
+const isSelfPaid = (e: LedgerEntry) => e.kind === 'expense' && e.method === 'own' && !e.checked;
+
+/** 對公帳餘額的影響：自己付不算，其他照 signed */
+const potEffect = (e: LedgerEntry) => (isSelfPaid(e) ? 0 : signed(e));
 
 /** 某天（含）為止帳上的公帳餘額 */
 function balanceThrough(entries: LedgerEntry[], date: string): number {
-  return entries.filter((e) => e.spent_on <= date).reduce((s, e) => s + signed(e), 0);
+  return entries.filter((e) => e.spent_on <= date).reduce((s, e) => s + potEffect(e), 0);
 }
 
 /** 月底為止的公帳餘額（銀行帳戶＋信用卡未繳合計）；字串比較時 -31 對所有月份都成立 */
@@ -119,24 +125,28 @@ function balanceAt(entries: LedgerEntry[], month: string): number {
   return balanceThrough(entries, `${month}-31`);
 }
 
-/**
- * 某人的先墊待抵：先墊支出（還沒用舊規則勾「已轉回」的）− 抵先墊入金（method own 的入金），下次入金時扣掉。
- * 抵不完的自然留到下個月；date 有給就只算那天（含）以前的帳
- */
-export function ownAdvance(entries: LedgerEntry[], who: Identity, date?: string): { own: number; offset: number; pending: number } {
-  let own = 0;
-  let offset = 0;
-  for (const e of entries) {
-    if (e.paid_by !== who || e.method !== 'own' || (date && e.spent_on > date)) continue;
-    if (e.kind === 'expense' && !e.checked) own += e.amount;
-    else if (e.kind === 'deposit') offset += e.amount;
-  }
-  return { own, offset, pending: own - offset };
+/** 每人到某天（含）為止出了多少：入金＋自己付。只是參考，沒有規定一次要存多少 */
+function contributions(entries: LedgerEntry[], date: string): { who: Identity; deposit: number; self: number; total: number }[] {
+  return IDENTITIES.map((who) => {
+    const mine = entries.filter((e) => e.paid_by === who && e.spent_on <= date);
+    const deposit = sum(mine.filter((e) => e.kind === 'deposit'));
+    const self = sum(mine.filter(isSelfPaid));
+    return { who, deposit, self, total: deposit + self };
+  });
 }
 
-/** 兩人待抵合計，對銀行餘額時從銀行扣掉；多抵的負數也照算（那些錢同樣沒進銀行），跟 dating_map_save_balance 同一條公式 */
-function ownPendingTotal(entries: LedgerEntry[], date?: string): number {
-  return IDENTITIES.reduce((s, who) => s + ownAdvance(entries, who, date).pending, 0);
+/** 🤝 誰出了多少：各自合計＋差額，想打平就由少的人記一筆入金 */
+function contributionHTML(entries: LedgerEntry[], date: string, label: string): string {
+  const rows = contributions(entries, date);
+  const [a, b] = [...rows].sort((x, y) => y.total - x.total);
+  const gap = a && b ? a.total - b.total : 0;
+  return `
+    <ul class="adv-ledger-top">${rows
+      .map((r) => `<li><span>${esc(r.who)} 出了（入金 ${money(r.deposit)}${r.self ? `＋自己付 ${money(r.self)}` : ''}）</span><b>${money(r.total)}</b></li>`)
+      .join('')}</ul>
+    <p class="adv-ledger-sub">${label}${
+      gap ? `${esc(a.who)}多出 <b>${money(gap)}</b>，${esc(b.who)}想打平可以存 ${money(gap)} 進公帳` : '兩人出的一樣多'
+    }</p>`;
 }
 
 /** 原幣金額：¥3,200、US$12.5 */
@@ -151,7 +161,8 @@ function origText(e: Pick<LedgerEntry, 'orig_amount' | 'orig_currency'>): string
 
 /**
  * 銀行帳戶實際上應該有的錢 − 帳上算的。
- * 帳上餘額＝銀行＋信用卡未繳（負債）合計，先墊的帳已經扣掉、錢卻還在銀行（抵先墊的入金則相反），所以實際＝銀行 − 卡費未繳 − 先墊待抵
+ * 帳上餘額＝銀行＋信用卡未繳（負債）合計，自己付不算在裡面，所以實際＝銀行 − 卡費未繳。
+ * own_pending 是舊核對點存的「先墊待還」，新的一律 0
  */
 function checkpointDiff(b: Pick<LedgerBalance, 'bank' | 'card_owed' | 'own_pending'>, book: number): number {
   return b.bank - b.card_owed - b.own_pending - book;
@@ -194,7 +205,7 @@ function entryIcon(e: LedgerEntry): string {
 
 function entryTitle(e: LedgerEntry): string {
   if (e.note) return e.note;
-  if (e.kind === 'deposit') return `${e.paid_by || ''} ${e.method === 'own' ? '抵先墊' : '入金'}`;
+  if (e.kind === 'deposit') return `${e.paid_by || ''} 入金`;
   if (e.kind === 'adjust') return '對帳調整';
   return categoryOf(e)?.label || '支出';
 }
@@ -223,12 +234,6 @@ export function renderLedger(
   const tripBySlug = new Map(trips.map((t) => [t.slug, t]));
   const monthEntries = entries.filter((e) => e.spent_on.startsWith(month));
   const unchecked = entries.filter((e) => e.kind === 'expense' && e.method === 'card' && !e.checked);
-  // 先墊下次入金時扣掉，每人只看待抵總額；checked 是舊規則「已從公帳轉回」，這類不算待抵
-  const ownRows = IDENTITIES.map((who) => ({
-    who,
-    ...ownAdvance(entries, who),
-    list: entries.filter((e) => e.kind === 'expense' && e.method === 'own' && !e.checked && e.paid_by === who),
-  })).filter((r) => r.pending !== 0);
   const isFuture = month > currentMonth();
 
   const viewChip = (v: LedgerView, label: string, count?: number) =>
@@ -236,22 +241,13 @@ export function renderLedger(
       count ? `<span class="adv-guide-season-count">${count}</span>` : ''
     }</button>`;
 
-  // 本月入金（含抵先墊）還沒滿 LEDGER_MONTHLY_DEPOSIT 就提醒，按鈕預填扣掉先墊後要實際轉的錢；未來月份不提醒
-  const missingDeposit = isFuture
-    ? []
-    : IDENTITIES.map((id) => {
-        const short = LEDGER_MONTHLY_DEPOSIT - sum(monthEntries.filter((e) => e.kind === 'deposit' && e.paid_by === id));
-        const covered = Math.min(Math.max(0, ownAdvance(entries, id).pending), Math.max(0, short));
-        return { id, short, need: short - covered };
-      }).filter((r) => r.short > 0);
-
   // 搜尋時改列所有月份的結果，打字時只重畫 [data-ledger-results]，輸入框不會失去焦點
   const listBody = () => searchQuery.trim()
     ? searchHTML(entries, searchQuery, placeById, tripBySlug)
     : (isFuture ? '' : budgetRemindHTML(entries, month)) + listHTML(monthEntries, placeById, tripBySlug);
 
   const body = view === 'check'
-    ? checkHTML(unchecked, monthEntries.filter((e) => e.kind === 'expense' && e.method === 'card' && e.checked), ownRows)
+    ? checkHTML(unchecked, monthEntries.filter((e) => e.kind === 'expense' && e.method === 'card' && e.checked), entries)
       + bankHTML(entries, balances)
     : view === 'review'
       ? reviewHTML(entries, month, placeById, tripBySlug)
@@ -273,17 +269,10 @@ export function renderLedger(
       <div class="adv-ach-stat"><b>${money(sum(monthEntries.filter((e) => e.kind === 'deposit')))}</b><span>本月入金</span></div>
       <div class="adv-ach-stat"><b>${money(balanceAt(entries, month))}</b><span>公帳餘額</span></div>
     </div>
-    ${missingDeposit.length ? `
-      <div class="adv-ledger-remind">
-        <span>🪙 本月入金還沒滿 ${money(LEDGER_MONTHLY_DEPOSIT)}：</span>
-        ${missingDeposit.map((r) => `<button type="button" class="adv-card-btn" data-ledger-deposit="${r.id}" data-ledger-amount="${r.need}">${
-          r.need > 0 ? `${r.id} 這月實際轉 ${money(r.need)}` : `${r.id} 這月全用先墊抵`
-        }</button>`).join('')}
-      </div>` : ''}
     <div class="adv-guide-seasons" role="group" aria-label="切換公帳畫面">
       ${viewChip('list', '📒 流水')}
       ${viewChip('calendar', '📅 月曆')}
-      ${viewChip('check', '✅ 核對', unchecked.length + ownRows.filter((r) => r.pending > 0).length)}
+      ${viewChip('check', '✅ 核對', unchecked.length)}
       ${viewChip('review', '📊 回顧')}
     </div>
     ${body}
@@ -313,18 +302,6 @@ export function renderLedger(
     if (pickBtn) {
       picking = pickBtn.dataset.ledgerPick === 'on';
       handlers.onStateChange({ month, view });
-      return;
-    }
-
-    const depositBtn = target.closest<HTMLElement>('[data-ledger-deposit]');
-    if (depositBtn) {
-      // 入金日期記在這個月：本月就記今天，補記過去月份就記那個月 1 號
-      handlers.onAdd({
-        kind: 'deposit',
-        paid_by: depositBtn.dataset.ledgerDeposit as Identity,
-        amount: Number(depositBtn.dataset.ledgerAmount ?? LEDGER_MONTHLY_DEPOSIT),
-        spent_on: month === currentMonth() ? localDate() : `${month}-01`,
-      });
       return;
     }
 
@@ -461,10 +438,8 @@ function metaParts(e: LedgerEntry, placeById: Map<number, PlaceEntry>, tripBySlu
   if (e.kind === 'expense') {
     if (e.orig_currency) parts.push(`🌏 ${origText(e)}`);
     if (e.note) parts.push(esc(categoryOf(e)?.label));
-    if (e.paid_by) parts.push(`${esc(e.paid_by)}${e.method === 'card' ? '刷卡' : e.method === 'own' ? '先墊' : '轉帳'}`);
+    if (e.paid_by) parts.push(`${esc(e.paid_by)}${e.method === 'card' ? '刷卡' : e.method === 'own' ? '自己付' : '轉帳'}`);
   }
-  // 抵先墊的入金沒有轉進銀行，跟一般轉帳入金分開標
-  if (e.kind === 'deposit' && e.method === 'own') parts.push('👛 抵先墊（錢之前直接付給店家了）');
   const place = e.place_id != null ? placeById.get(e.place_id) : undefined;
   if (place) parts.push(`📍 ${esc(place.name)}`);
   const trip = e.trip_slug ? tripBySlug.get(e.trip_slug) : undefined;
@@ -798,12 +773,11 @@ interface BankForm {
   date: string;
   bank: number;
   card: number;
-  ownPending: number;
   book: number;
   diff: number;
 }
 
-/** 讀「對銀行餘額」表單；銀行餘額沒填回 null。先墊待抵算到核對日為止 */
+/** 讀「對銀行餘額」表單；銀行餘額沒填回 null */
 function readBankForm(mount: HTMLElement, entries: LedgerEntry[]): BankForm | null {
   const form = mount.querySelector('[data-ledger-bank]');
   if (!form) return null;
@@ -813,15 +787,14 @@ function readBankForm(mount: HTMLElement, entries: LedgerEntry[]): BankForm | nu
   if (!date || !bankRaw) return null;
   const bank = Math.round(parseAmount(bankRaw));
   const card = Math.round(parseAmount(val('[data-bank-card]')));
-  const ownPending = ownPendingTotal(entries, date);
   const book = balanceThrough(entries, date);
-  return { date, bank, card, ownPending, book, diff: checkpointDiff({ bank, card_owed: card, own_pending: ownPending }, book) };
+  return { date, bank, card, book, diff: checkpointDiff({ bank, card_owed: card, own_pending: 0 }, book) };
 }
 
 function bankResultHTML(f: BankForm): string {
-  const actual = f.bank - f.card - f.ownPending;
+  const actual = f.bank - f.card;
   return `
-    銀行 ${money(f.bank)} − 卡費未繳 ${money(f.card)}${f.ownPending ? ` − 先墊待抵 ${money(f.ownPending)}` : ''} ＝ <b>${money(actual)}</b>
+    銀行 ${money(f.bank)} − 卡費未繳 ${money(f.card)} ＝ <b>${money(actual)}</b>
     <br>帳上算到 ${dayLabel(f.date)} 是 <b>${money(f.book)}</b>・<b class="${f.diff ? 'adv-ledger-warn' : ''}">${diffText(f.diff)}</b>`;
 }
 
@@ -901,24 +874,13 @@ function statementsHTML(sorted: LedgerEntry[]): string {
 }
 
 /** 依日期由舊到新，跟帳單的順序一樣 */
-type OwnRow = { who: Identity; own: number; offset: number; pending: number; list: LedgerEntry[] };
-
-function checkHTML(unchecked: LedgerEntry[], checkedThisMonth: LedgerEntry[], ownRows: OwnRow[]): string {
+function checkHTML(unchecked: LedgerEntry[], checkedThisMonth: LedgerEntry[], entries: LedgerEntry[]): string {
   const byDate = (a: LedgerEntry, b: LedgerEntry) => a.spent_on.localeCompare(b.spent_on) || a.id - b.id;
-  // 先墊不用逐筆轉回：下次入金時「記一筆」會自動抵掉，這裡只看每人還剩多少
   return `
-    ${ownRows.length ? `
-      <div class="adv-ledger-subhead">👛 先墊待抵（下次入金時扣掉）</div>
-      ${ownRows.map((r) => `
-        <p class="adv-ledger-sub">${esc(r.who)} 先墊 ${money(r.own)} − 已抵 ${money(r.offset)} ＝ ${
-          r.pending > 0 ? `待抵 <b>${money(r.pending)}</b>` : `<b class="adv-ledger-warn">多抵了 ${money(-r.pending)}</b>`
-        }</p>
-        ${r.list.length ? `<ul class="adv-ledger-top">${[...r.list].sort(byDate)
-          .map((e) => `<li><span>${dayLabel(e.spent_on)} ${entryIcon(e)} ${esc(entryTitle(e))}</span><b>${money(e.amount)}</b></li>`)
-          .join('')}</ul>` : ''}`).join('')}
-      <p class="adv-modal-hint adv-ledger-hint">記入金時選了人，會自動算出這次抵多少、實際要轉多少；抵不完的留到下個月。</p>
-      <div class="adv-ledger-gap"></div>
-      <div class="adv-ledger-subhead">💳 對信用卡帳單</div>` : ''}
+    <div class="adv-ledger-subhead">🤝 誰出了多少（到今天）</div>
+    ${contributionHTML(entries, localDate(), '')}
+    <div class="adv-ledger-gap"></div>
+    <div class="adv-ledger-subhead">💳 對信用卡帳單</div>
     <p class="adv-modal-hint adv-ledger-hint">打開信用卡帳單逐筆對：對得上就勾起來。帳單上有、這裡沒有的就是漏記，按「＋ 記一筆」補上；金額不同就點流水那筆改掉。依每月 ${LEDGER_CARD_CLOSING_DAY} 號結帳分期，結帳日前一兩天刷的可能入帳在下一期。</p>
     ${unchecked.length
       ? `<div class="adv-ledger-subhead">待核對 ${unchecked.length} 筆・合計 ${money(sum(unchecked))}</div>${statementsHTML([...unchecked].sort(byDate))}`
@@ -943,7 +905,7 @@ interface ReviewData {
   places: { name: string; amount: number; count: number }[];
   trips: { title: string; amount: number }[];
   /** pending＝還沒從公帳轉回的金額 */
-  own: { who: string; amount: number; count: number; pending: number }[];
+  selfPaid: number;
   special: number;
   deposited: number;
   balance: number;
@@ -990,13 +952,7 @@ function reviewData(
     trips: group(cur, (e) => e.trip_slug)
       .map(([slug, list]) => ({ title: tripBySlug.get(slug)?.title || slug, amount: sum(list) }))
       .sort((a, b) => b.amount - a.amount),
-    own: group(cur.filter((e) => e.method === 'own'), (e) => e.paid_by || '沒填')
-      .map(([who, list]) => ({
-        who,
-        amount: sum(list),
-        count: list.length,
-        pending: IDENTITIES.includes(who as Identity) ? ownAdvance(entries, who as Identity, `${month}-31`).pending : 0,
-      })),
+    selfPaid: sum(cur.filter(isSelfPaid)),
     special: sum(cur.filter((e) => e.is_special)),
     deposited: sum(entries.filter((e) => e.kind === 'deposit' && e.spent_on.startsWith(month))),
     balance: balanceAt(entries, month),
@@ -1179,7 +1135,7 @@ function forecastBoxHTML(f: Forecast, spent: number): string {
 }
 
 const CSV_KIND: Record<LedgerKind, string> = { expense: '支出', deposit: '入金', adjust: '調整' };
-const CSV_METHOD: Record<LedgerMethod, string> = { card: '公帳卡', account: '公帳帳戶', own: '自己先墊' };
+const CSV_METHOD: Record<LedgerMethod, string> = { card: '公帳卡', account: '公帳帳戶', own: '自己付' };
 
 /** 文字欄開頭是 = + - @ 時 Excel 會當公式，前面加 ' 擋掉 */
 function csvCell(v: string | number | null | undefined, text = false): string {
@@ -1302,14 +1258,12 @@ function reviewHTML(
     parts.push(box('✨ 特別的日子', `<p class="adv-ledger-sub">特別的日子 ${money(d.special)}・平常約會 ${money(d.total - d.special)}</p>`));
   }
 
-  if (d.own.length) {
-    parts.push(box('👛 自己先墊的', `<ul class="adv-ledger-top">${d.own
-      .map((o) => `<li><span>${esc(o.who)} 先墊 ${o.count} 筆${o.pending > 0 ? `，月底還待抵 ${money(o.pending)}` : '，都抵完了'}</span><b>${money(o.amount)}</b></li>`)
-      .join('')}</ul>${d.own.some((o) => o.pending > 0) ? '<p class="adv-ledger-sub">下次入金時會自動扣掉</p>' : ''}`));
-  }
+  parts.push(box('🤝 誰出了多少', contributionHTML(entries, `${month}-31`, `累計到${monthLabel(month)}底：`)));
 
   parts.push(box('🐷 公帳', `
-    <p class="adv-ledger-sub">入金 ${money(d.deposited)} − 花費 ${money(d.total)} ＝ 本月結餘 <b>${money(d.deposited - d.total)}</b></p>
+    <p class="adv-ledger-sub">入金 ${money(d.deposited)} − 公帳付的花費 ${money(d.total - d.selfPaid)} ＝ 本月結餘 <b>${money(d.deposited - d.total + d.selfPaid)}</b>${
+      d.selfPaid ? `（另外自己付 ${money(d.selfPaid)}，不從公帳出）` : ''
+    }</p>
     <p class="adv-ledger-sub">到月底公帳還有 <b>${money(d.balance)}</b></p>
   `));
 
@@ -1370,7 +1324,7 @@ function copyReview(
   ];
   if (d.top.length) lines.push('', '最大的幾筆：', ...d.top.map((e, i) => `${i + 1}. ${entryTitle(e)} ${money(e.amount)}`));
   if (d.places.length) lines.push('', `去了：${d.places.map((p) => p.name).join('、')}`);
-  lines.push('', `入金 ${money(d.deposited)} − 花費 ${money(d.total)} ＝ 結餘 ${money(d.deposited - d.total)}`, `公帳還有 ${money(d.balance)}`);
+  lines.push('', `入金 ${money(d.deposited)} − 公帳付的花費 ${money(d.total - d.selfPaid)} ＝ 結餘 ${money(d.deposited - d.total + d.selfPaid)}${d.selfPaid ? `（另外自己付 ${money(d.selfPaid)}）` : ''}`, `公帳還有 ${money(d.balance)}`);
   const f = forecastMonth(entries, month);
   if (f) lines.push('', `🔮 照目前速度，這個月約花 ${money(f.total)}，月底公帳預計 ${money(f.balance)}`);
 
@@ -1383,8 +1337,7 @@ function copyReview(
 // ───────────────────────── 記一筆 ─────────────────────────
 
 /** again：「再記一筆」，呼叫端存完再開一張新表單（對帳單補記時連續輸入用） */
-/** offset：新增入金時抵掉的先墊（> 0 時呼叫端拆成「抵先墊」與「實際轉帳」兩列存），其他情況 0 */
-export type ExpenseModalResult = { action: 'save'; input: LedgerInput; again: boolean; offset: number } | { action: 'delete' } | null;
+export type ExpenseModalResult = { action: 'save'; input: LedgerInput; again: boolean } | { action: 'delete' } | null;
 
 export interface ExpenseModalOptions {
   existing?: LedgerEntry;
@@ -1529,8 +1482,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     // 外幣：主金額欄改填原幣，台幣＝原幣 × 匯率（可以直接改台幣，匯率跟著反算）
     let currency = base.orig_currency || '';
     const baseOrig = base.orig_amount != null ? Math.abs(Number(base.orig_amount)) : null;
-    // 入金提醒會預填 0（這月全用先墊抵），要顯示成 0 而不是空白
-    const baseTwd = base.amount != null ? Math.abs(base.amount) : null;
+    const baseTwd = base.amount ? Math.abs(base.amount) : null;
     const tripBySlug = new Map(opts.trips.map((t) => [t.slug, t]));
     const lockedBefore = opts.existing && opts.balances ? lastMatchedCheckpoint(opts.entries, opts.balances) : null;
     const locked = !!(lockedBefore && opts.existing && opts.existing.spent_on <= lockedBefore);
@@ -1581,7 +1533,6 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
         </select>
         <button type="button" class="adv-guide-season" id="adv-lf-sign" aria-pressed="false" tabindex="-1"></button>
       </div>
-      <p class="adv-modal-hint" id="adv-lf-offset" hidden></p>
       <p class="adv-modal-hint adv-ledger-warn" id="adv-lf-refund-note" hidden>↩️ 這筆是退款：金額會加回公帳。不是退款的話到下方「更多」取消勾選</p>
       <div class="adv-lf-fx" id="adv-lf-fx" data-only="expense">
         <label>匯率<input type="text" id="adv-lf-rate" inputmode="decimal" autocomplete="off" tabindex="-1" /></label>
@@ -1755,33 +1706,6 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       $('#adv-lf-refund-note').hidden = !refundEl.checked;
       syncCurrency();
       syncMoreSummary();
-      syncOffset();
-    };
-
-    /**
-     * 新增入金時填的是實際轉帳；先墊補到這個月滿 LEDGER_MONTHLY_DEPOSIT 為止（最多抵到待抵），抵不完的留到下個月。
-     * 本月還差＝每月入金 − 這人在入金日期那個月已記的入金（抵先墊也算）。修改舊帳不拆
-     */
-    const offsetPlan = (transfer: number) => {
-      if (kind !== 'deposit' || opts.existing || !paidBy) return null;
-      const pending = ownAdvance(opts.entries, paidBy).pending;
-      if (pending <= 0) return null;
-      const month = (dateEl.value || localDate()).slice(0, 7);
-      const deposited = sum(opts.entries.filter((e) => e.kind === 'deposit' && e.paid_by === paidBy && e.spent_on.startsWith(month)));
-      const short = Math.max(0, LEDGER_MONTHLY_DEPOSIT - deposited);
-      return { pending, short, offset: Math.min(pending, Math.max(0, short - transfer)) };
-    };
-    const offsetNow = (transfer: number): number => offsetPlan(transfer)?.offset ?? 0;
-    const syncOffset = () => {
-      const el = $('#adv-lf-offset');
-      const transfer = Math.round(Math.abs(parseAmount(amountEl.value)));
-      const plan = offsetPlan(transfer);
-      el.hidden = !plan;
-      if (!plan || !paidBy) return;
-      const left = plan.pending - plan.offset;
-      el.innerHTML = `👛 ${esc(paidBy)}先墊待抵 <b>${money(plan.pending)}</b>，本月還差 <b>${money(plan.short)}</b> → 實際轉 <b>${money(transfer)}</b>，抵先墊 <b>${money(plan.offset)}</b>${
-        left > 0 ? `（剩 ${money(left)} 下次再抵）` : ''
-      }`;
     };
 
     /** 「更多」收起來時也看得到選了什麼 */
@@ -1843,14 +1767,12 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       } else if (btn.dataset.who) {
         paidBy = btn.dataset.who as Identity;
         setActive('#adv-lf-who', 'data-who', paidBy);
-        syncOffset();
       } else if (btn.dataset.method) {
         method = btn.dataset.method as LedgerMethod;
         setActive('#adv-lf-method', 'data-method', method);
       } else if (btn.dataset.date) {
         dateEl.value = btn.dataset.date;
         setActive('#adv-lf-quickdate', 'data-date', btn.dataset.date);
-        syncOffset();
       }
       clearError();
     };
@@ -1908,14 +1830,10 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     });
     searchEl.addEventListener('input', renderResults);
     tripEl.addEventListener('change', syncMoreSummary);
-    dateEl.addEventListener('change', () => {
-      setActive('#adv-lf-quickdate', 'data-date', dateEl.value);
-      syncOffset();
-    });
+    dateEl.addEventListener('change', () => setActive('#adv-lf-quickdate', 'data-date', dateEl.value));
     amountEl.addEventListener('input', () => {
       clearError();
       if (currency) recalcTwd();
-      syncOffset();
     });
     curEl.addEventListener('change', () => setCurrency(curEl.value));
     rateEl.addEventListener('input', recalcTwd);
@@ -1941,12 +1859,9 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       // 支出、入金照正數存（直覺打「-120」記支出也不會變成退款），只有調整可以直接打負數
       const typed = parseAmount(amountEl.value);
       const raw = kind === 'adjust' ? typed : Math.abs(typed);
-      // 入金實際轉 0：先墊夠抵這個月時才可以，只記抵先墊那一列（要明確填 0，空白不算）
-      const offset = offsetNow(Math.round(raw));
-      const zeroOk = kind === 'deposit' && offset > 0 && amountEl.value.trim() !== '';
-      if (!raw && !zeroOk) return fail(isFx ? '外幣金額要填一個不是 0 的數字' : '金額要填一個不是 0 的數字', amountEl);
+      if (!raw) return fail(isFx ? '外幣金額要填一個不是 0 的數字' : '金額要填一個不是 0 的數字', amountEl);
       const amount = (isFx ? Math.round(Math.abs(parseAmount(twdEl.value))) : Math.round(raw)) * sign;
-      if (!amount && !zeroOk) return fail(isFx ? '台幣金額要填（填了匯率會自動算）' : '金額要填一個不是 0 的數字', isFx ? rateEl : amountEl);
+      if (!amount) return fail(isFx ? '台幣金額要填（填了匯率會自動算）' : '金額要填一個不是 0 的數字', isFx ? rateEl : amountEl);
       const origAmount = isFx ? (Math.round(Math.abs(raw) * 100) / 100) * sign : null;
       if (kind === 'expense' && !category) {
         return fail('選一個分類', root.querySelector<HTMLElement>('.adv-ledger-cats [role="radio"]'));
@@ -1960,14 +1875,12 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       finish({
         action: 'save',
         again: again && !opts.existing,
-        offset,
         input: {
           spent_on: dateEl.value,
           kind,
           amount,
           category: expense ? category : null,
-          // 修改既有的「抵先墊」入金要保留 own，不然會被改回一般轉帳
-          method: expense ? method : kind === 'deposit' && opts.existing?.method === 'own' ? 'own' : 'account',
+          method: expense ? method : 'account',
           paid_by: paidBy,
           note: noteEl.value.trim() || null,
           place_id: expense ? placeId : null,

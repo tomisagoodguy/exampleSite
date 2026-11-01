@@ -641,29 +641,13 @@ class DatingMapApp {
     });
     if (result?.action !== 'save') return;
 
-    const { input, offset } = result;
-    const fmt = (n: number) => `$${Math.abs(n).toLocaleString('zh-TW')}`;
-    // 入金抵先墊：填的是實際轉帳，另寫一列「抵先墊」（method own，錢沒進銀行），金額 0 的那列不寫
-    const transfer = input.amount;
-    let wroteOffset = false;
-    const saved = await this.withPassphrase(async (pw) => {
-      if (offset > 0 && !wroteOffset) {
-        await saveExpense(pw, null, { ...input, amount: offset, method: 'own' }, identity);
-        wroteOffset = true;
-      }
-      // 只有「實際轉 0、全用先墊抵」時才不寫這列；退款是負數支出，照樣要存
-      return offset > 0 && !transfer ? 0 : saveExpense(pw, null, { ...input, amount: transfer }, identity);
-    });
-    if (saved === null && wroteOffset) {
-      await this.afterLedgerSave(input.spent_on.slice(0, 7), `⚠️ 抵先墊 ${fmt(offset)} 記好了，實際轉帳 ${fmt(transfer)} 沒存成功，請再記一次`);
-      return;
-    }
+    const { input } = result;
+    const saved = await this.withPassphrase((pw) => saveExpense(pw, null, input, identity));
     if (saved !== null) {
-      const amount = fmt(input.amount + offset);
-      const split = offset > 0 ? `（抵先墊 ${fmt(offset)}，實際轉 ${fmt(transfer)}）` : '';
+      const amount = `$${Math.abs(input.amount).toLocaleString('zh-TW')}`;
       await this.afterLedgerSave(
         input.spent_on.slice(0, 7),
-        input.kind === 'deposit' ? `💰 ${input.paid_by} 入金 ${amount}${split}` : `記下來了：${amount}`
+        input.kind === 'deposit' ? `💰 ${input.paid_by} 入金 ${amount}` : `記下來了：${amount}`
       );
       // 「再記一筆」：沿用日期、誰付、付款方式、旅行，對著帳單連續補記
       if (result.again) {

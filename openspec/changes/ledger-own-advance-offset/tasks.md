@@ -26,3 +26,13 @@
 - [x] 5.1 記入金表單改用實際轉帳算抵先墊（Requirement: Deposit offsets pending advance；design「入金金額是實際轉帳，抵先墊補到本月 10,000」）：`openExpenseModal` 依入金日期所屬月份算本月還差 D，抵先墊 `min(待抵, max(0, D − 填的金額))`，試算列顯示待抵、本月還差、實際轉、抵先墊，改日期也更新；金額 0 只在抵先墊 > 0 時可送出；`index.ts` `addExpense` 寫 account（填的金額，> 0 時）與 own（抵先墊，> 0 時）。驗證：Playwright 攔截 `rpc/dating_map_save_expense`，以假資料跑 spec「offset boundaries」六列，送出的 own／account 金額與表一致（最後一列顯示錯誤訊息、沒有送出）
 - [x] 5.2 本月入金提醒預填實際轉帳（Requirement: Monthly deposit reminder prefills the transfer、Requirement: Offset deposit counts as contribution）：提醒條件改為本月入金合計 < `LEDGER_MONTHLY_DEPOSIT`；按鈕文案「{誰} 這月實際轉 $N」或「{誰} 這月全用先墊抵」，點了開入金表單預填 N，不直接寫入。驗證：Playwright 以假資料（小黃待抵 8582、阿康待抵 15000、皆未入金）讀到「小黃 這月實際轉 $1,418」「阿康 這月全用先墊抵」，點小黃按鈕後表單金額為 1418、沒有任何 save 請求；小黃只有 own 入金 10000 時不出現提醒 [after: 5.1]
 - [x] 5.3 更新 CLAUDE.md 公帳段落：入金填實際轉帳、抵先墊補到本月 10,000、金額 0 的條件、提醒按鈕預填。驗證：Grep CLAUDE.md 含「實際轉帳」與「本月還差」 [after: 5.2]
+
+## 6. 改為「自己付＝出資」（取代 1–5 組的待抵與抵扣）
+
+> 變更說明：兩人沒有規定每次入金多少，公帳主要記消費習慣。1.1、2.1–2.4、3.1、3.2、5.1、5.2 已完成並上線的「先墊待抵／抵先墊入金／補到一萬／入金提醒」依 design「自己付算付款人出資，不扣公帳餘額」整組取代，由本組移除並改寫；3.3 的資料庫公式由 6.4 取代。
+
+- [x] 6.1 公帳餘額排除未勾自己付、付款方式改名（Requirement: Shared balance excludes self-paid expenses、Requirement: Self-paid expense is the payer's contribution；design「自己付算付款人出資，不扣公帳餘額」「餘額影響與顯示正負分開」）：新增 `potEffect` 供 `balanceThrough` 使用，`signed` 只管顯示；「本月結餘」改為入金 − 公帳付的花費並註明自己付；`LEDGER_METHOD.own` 與流水 meta 改「自己付」。驗證：Playwright 以真實資料讀統計卡「公帳餘額」為 $17,848、流水「喝青茶」顯示「阿康自己付」與 −$60
+- [x] 6.2 移除待抵與抵扣，入金只記一列（Requirement: Deposit records the actual transfer）：拿掉 `ownAdvance`、`ownPendingTotal`、`#adv-lf-offset` 試算、金額 0 特例、`ExpenseModalResult.offset`、`addExpense` 拆列、本月入金提醒、抵先墊列標題與 meta。驗證：Playwright 攔截 `rpc/dating_map_save_expense`，小黃入金 1418 只送出一筆 account 1418、表單沒有 `#adv-lf-offset`、填 0 顯示錯誤；頁面沒有 `.adv-ledger-remind`；退款 500 仍送出 −500 [after: 6.1]
+- [x] 6.3 核對頁與回顧顯示出資差額（Requirement: Contribution gap is shown for reference；design「出資差額只顯示，補錢就是入金」）：核對頁最上方與回顧頁「🤝 誰出了多少」框列出每人出了多少（入金＋自己付）與差額句，取代「👛 先墊待抵」與回顧的待抵文案。驗證：Playwright 以真實資料讀到「阿康 出了 $10,060」「小黃 出了 $18,582」「小黃多出 $8,522」；假資料兩人各入金 10000 時顯示「一樣多」 [after: 6.2]
+- [x] 6.4 `dating_map_save_balance` 改存不含自己付的帳上餘額（Requirement: Shared balance excludes self-paid expenses；design「對銀行餘額的 own_pending 改公式」）：CREATE OR REPLACE（簽章不變、無 DROP），`book_balance` 排除未勾 own 支出、`own_pending` 存 0；前端對銀行餘額預覽不再扣先墊。驗證：SQL 在 `begin … rollback` 中以函式同公式查詢得 `book_balance = 17848`、函式定義含新條件；Playwright 對銀行餘額填 20000／2152 顯示「對得上」 [after: 6.1]
+- [x] 6.5 更新 CLAUDE.md 公帳段落與記憶 project_couple_ledger_rules：自己付算出資、不扣餘額、出資差額只顯示、補錢記入金、沒有規定入金金額；移除待抵／抵先墊／提醒的說明。驗證：Grep CLAUDE.md 不含「抵先墊」「待抵」，含「自己付」 [after: 6.3]

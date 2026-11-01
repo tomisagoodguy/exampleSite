@@ -252,7 +252,7 @@ export const LEDGER_SHOW_SPECIAL = false;
 export const LEDGER_METHOD: Record<'card' | 'account' | 'own', string> = {
   card: '💳 公帳卡',
   account: '🏦 公帳帳戶',
-  own: '👛 自己先墊',
+  own: '👛 自己付',
 };
 
 /** 每人每月存進公帳的金額；記入金時預設帶這個數字 */
