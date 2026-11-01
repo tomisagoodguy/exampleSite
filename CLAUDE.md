@@ -209,16 +209,17 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 | --- | --- | --- |
 | `kind` | `expense` 支出／`deposit` 入金／`adjust` 對帳調整 | 退款＝負數支出；調整可正可負 |
 | `category` | 外鍵 → `dating_map_ledger_categories.key`（內建 `food` 吃飯、`cafe` 咖啡甜點、`fun` 玩樂、`transport` 交通、`stay` 住宿、`daily` 生活用品、`gift` 一起送人（預設隱藏）、`other` 其他；網頁新增的代號是 `c` + 8 碼） | 只有支出有 |
-| `method` | `card` 公帳卡／`account` 公帳帳戶／`own` 自己先墊 | 入金與調整固定 `account`；先墊的錢**月底回顧時**由阿康從公帳帳戶轉回 |
+| `method` | `card` 公帳卡／`account` 公帳帳戶／`own` 自己先墊 | 調整固定 `account`；入金是 `account`（實際轉進銀行）或 `own`（**抵先墊**：之前已直接付給店家，沒進銀行）。先墊**下次入金時扣掉**，扣不完留到下個月，公帳不另外轉回 |
 | `paid_by` | `阿康`／`小黃` | 誰刷卡、誰入金（入金必填） |
 | `place_id` / `trip_slug` | → `dating_map_places` / `dating_map_docs` | 可空，刪地點或旅行時 `SET NULL`，帳不會消失 |
-| `checked` | boolean | `card`＝已跟信用卡帳單核對；`own`＝已從公帳轉回給先墊的人。RPC 改了日期、金額或付款方式會自動變回 `false` |
+| `checked` | boolean | `card`＝已跟信用卡帳單核對；`own` 支出的 `true` 是舊規則「已從公帳轉回」，不算待抵（前端已無此勾選）。RPC 改了日期、金額或付款方式會自動變回 `false` |
 
 - **「旅行」不是分類**：旅行中的吃住交通照樣歸 `food`／`stay`／`transport`，用 `trip_slug` 連到旅行，回顧才能同時回答「這月吃多少」和「這趟花多少」
 - **旅行裡直接記帳**：旅行卡片「💰 記一筆」（預帶 `trip_slug`）、行程地圖站點資訊卡與地點彈窗「💰 記一筆」（預帶 `trip_slug` + `place_id`）；卡片顯示「這趟花了 $X（N 筆）・今天 $Y」（`index.ts` `tripSpend`，只算 `expense`，退款負數一起加）。表單選了地點、還沒選分類時依地點分類帶預設（`data.ts` `ledgerCategoryForPlace`：food／cafe／stay 同名，museum／diy／scenery／walk → `fun`，shop 不帶）
 - **分類在網頁管理**（公帳標題列「⚙️ 分類」，`ledger.ts` `openLedgerCategoryModal`）：新增、改名、換 emoji／顏色、隱藏、排序。代號建立後不變，改名後舊帳自動顯示新名稱；**用過的分類只能隱藏**（`dating_map_delete_ledger_category` 會拒絕）。RPC：`dating_map_save_ledger_category`（`p_key` 為 `null` 時新增）、`dating_map_reorder_ledger_categories`、`dating_map_delete_ledger_category`。`data.ts` 的 `LEDGER_CATEGORY` 只是讀不到分類表時的備援，讀到後由 `applyLedgerCategories` 整組換掉；查分類一律用 `ledgerCategory(key)`（不認得的代號也有預設樣子）
 - `is_special` ✨ 特別的日子已建欄位，由 `data.ts` `LEDGER_SHOW_SPECIAL` 控制是否顯示；藏起來時修改舊帳會保留原值
-- 「✅ 核對」分兩段：👛 先墊待還（`own` 未勾，依誰墊的分組，轉帳後勾「已從公帳轉回」）→ 💳 對信用卡帳單
+- **先墊待抵**（`ledger.ts` `ownAdvance`）＝某人未勾的 `own` 支出 − 他的 `own` 入金。「記一筆」新增入金選了人且待抵 > 0 時顯示「這次抵 $Y，實際轉 $Z」，存檔由 `index.ts` `addExpense` 拆成 `own`（抵掉的錢，最多＝這次入金）與 `account`（其餘）兩列，金額 0 的不寫；修改既有入金保留原 `method`、不拆列。抵先墊列照樣算入金（餘額、「還沒存」提醒、回顧）
+- 「✅ 核對」分兩段：👛 先墊待抵（每人「先墊 − 已抵 ＝ 待抵」＋唯讀清單，不逐筆勾）→ 💳 對信用卡帳單
 - 公帳餘額＝入金＋調整−支出（銀行帳戶＋信用卡未繳合計），所以**繳卡費不記**，那只是帳戶轉到信用卡
 - 核對不分月份：列出所有 `method = 'card'` 且未核對的支出，依日期由舊到新，對著帳單勾；勾選時顯示已選合計
 - 待核對再**依帳單期分組**（`ledger.ts` `statementsHTML`）：結帳日是 `data.ts` `LEDGER_CARD_CLOSING_DAY`（大於當月天數算月底），已過結帳日的一期標「📄 M/D 結帳的帳單」，還沒到的標「🕒 未出帳」；以消費日分期，結帳日前一兩天刷的可能實際入帳在下一期
@@ -231,7 +232,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - **流水多選刪除**：流水最下方「☑️ 一次選幾筆刪除」切到 `pickHTML`（重用核對的 `checklistHTML`，action `delete`），模式存在 `ledger.ts` 模組變數 `picking`，換月／換畫面／刪完會關掉。刪除是 `index.ts` `deleteExpenses` 逐筆呼叫 `dating_map_delete_expense`（沒有批次 RPC），每筆都進改帳紀錄、可各自復原
 - 結餘一律留在公帳累積；不夠時兩人補一樣的錢（阿康自己通知，系統不提醒）
 - **改帳紀錄**（`dating_map_ledger_history`）：row trigger `dating_map_ledger_log` 在每次 UPDATE／DELETE 寫入 `old_row` / `new_row`（jsonb），只動 `updated_at` 的不記。**誰改的不靠 RPC 參數**：`supabase.ts` 的自訂 `fetch` 每次帶 header `x-dating-map-who`（身分名稱 UTF-8 的 base64，header 不能放中文），`dating_map_request_actor()` 解出來。刪掉的帳用 `dating_map_restore_expense(p_history_id)`（`restoreExpense`）以原 id 復原，地點／旅行已不在就清空、分類不在改 `other`。入口：流水最下方連結、回顧下方按鈕（`ledger.ts` `openLedgerHistoryModal`），單筆紀錄在修改表單底部
-- **對銀行餘額**（「✅ 核對」最下方，`dating_map_ledger_balances`）：實際＝銀行 − 信用卡未繳 − 先墊待還，差額＝實際 − 帳上餘額（`checkpointDiff`）。`dating_map_save_balance` 存的當下由資料庫算好 `book_balance` / `own_pending`，之後改到那天以前的帳，列表會顯示「現在」與「記錄時」不同；修改表單對「現在仍對得上」的最近核對日以前的帳顯示警告。差額可一鍵記成 `adjust`
+- **對銀行餘額**（「✅ 核對」最下方，`dating_map_ledger_balances`）：實際＝銀行 − 信用卡未繳 − 先墊待抵（兩人合計，與 `dating_map_save_balance` 同公式），差額＝實際 − 帳上餘額（`checkpointDiff`）。`dating_map_save_balance` 存的當下由資料庫算好 `book_balance` / `own_pending`，之後改到那天以前的帳，列表會顯示「現在」與「記錄時」不同；修改表單對「現在仍對得上」的最近核對日以前的帳顯示警告。差額可一鍵記成 `adjust`
 - **分類月預算**：`dating_map_ledger_categories.monthly_budget`（null＝不設），在「⚙️ 分類」表單填，走獨立 RPC `dating_map_set_ledger_budget`（沒改 `dating_map_save_ledger_category` 簽章）。回顧有「🎯 預算」框（本月畫照天數的刻度線），流水頂端提醒用到 90% 以上的分類
 - **外幣**：`orig_amount` / `orig_currency`（ISO 代碼，兩欄同時有值或同時 null），`amount` 仍是台幣，**先用參考匯率估、核對帳單時改成實際扣款**。表單選幣別後主金額欄改填原幣，匯率查 `open.er-api.com`（免金鑰、有 CORS，localStorage `adv-fx-<幣別>` 每天快取一次），改台幣會反算匯率；幣別清單在 `data.ts` `LEDGER_CURRENCY`。`dating_map_save_expense` 有 13 參數舊版與 15 參數新版兩個 overload，前端只呼叫新版
 - **備份**：`uv run scripts/backup-ledger.py [--out <資料夾>]` 把四張公帳表存成 JSON＋CSV 到 `ledger-backups/`（gitignore；repo 公開，備份絕不能 commit）

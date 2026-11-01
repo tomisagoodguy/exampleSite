@@ -641,13 +641,28 @@ class DatingMapApp {
     });
     if (result?.action !== 'save') return;
 
-    const { input } = result;
-    const saved = await this.withPassphrase((pw) => saveExpense(pw, null, input, identity));
+    const { input, offset } = result;
+    const fmt = (n: number) => `$${Math.abs(n).toLocaleString('zh-TW')}`;
+    // 入金抵先墊：拆成「抵先墊」（method own，錢沒進銀行）與「實際轉帳」兩列，金額 0 的那列不寫
+    const transfer = input.amount - offset;
+    let wroteOffset = false;
+    const saved = await this.withPassphrase(async (pw) => {
+      if (offset > 0 && !wroteOffset) {
+        await saveExpense(pw, null, { ...input, amount: offset, method: 'own' }, identity);
+        wroteOffset = true;
+      }
+      return transfer > 0 ? saveExpense(pw, null, { ...input, amount: transfer }, identity) : 0;
+    });
+    if (saved === null && wroteOffset) {
+      await this.afterLedgerSave(input.spent_on.slice(0, 7), `⚠️ 抵先墊 ${fmt(offset)} 記好了，實際轉帳 ${fmt(transfer)} 沒存成功，請再記一次`);
+      return;
+    }
     if (saved !== null) {
-      const amount = `$${Math.abs(input.amount).toLocaleString('zh-TW')}`;
+      const amount = fmt(input.amount);
+      const split = offset > 0 ? `（抵先墊 ${fmt(offset)}，實際轉 ${fmt(transfer)}）` : '';
       await this.afterLedgerSave(
         input.spent_on.slice(0, 7),
-        input.kind === 'deposit' ? `💰 ${input.paid_by} 入金 ${amount}` : `記下來了：${amount}`
+        input.kind === 'deposit' ? `💰 ${input.paid_by} 入金 ${amount}${split}` : `記下來了：${amount}`
       );
       // 「再記一筆」：沿用日期、誰付、付款方式、旅行，對著帳單連續補記
       if (result.again) {
