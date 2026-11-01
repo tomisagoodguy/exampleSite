@@ -1516,7 +1516,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     /** radiogroup 的一顆：只有選中的那顆在 Tab 順序裡，組內用方向鍵 */
     const radio = (attr: string, value: string, label: string, active: boolean) =>
       `<button type="button" role="radio" class="adv-guide-season ${active ? 'is-active' : ''}" ${attr}="${esc(value)}" aria-checked="${active}">${label}</button>`;
-    const hasMore = !!(base.place_id || base.trip_slug || base.is_special);
+    const hasMore = !!(base.place_id || base.trip_slug || base.is_special || negative);
 
     const { root, close } = openModal(`
       <div class="adv-lf-head">
@@ -1536,6 +1536,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
         </select>
         <button type="button" class="adv-guide-season" id="adv-lf-sign" aria-pressed="false" tabindex="-1"></button>
       </div>
+      <p class="adv-modal-hint adv-ledger-warn" id="adv-lf-refund-note" hidden>↩️ 這筆是退款：金額會加回公帳。不是退款的話到下方「更多」取消勾選</p>
       <div class="adv-lf-fx" id="adv-lf-fx" data-only="expense">
         <label>匯率<input type="text" id="adv-lf-rate" inputmode="decimal" autocomplete="off" tabindex="-1" /></label>
         <label>≈ 台幣 $<input type="text" id="adv-lf-twd" inputmode="numeric" autocomplete="off" tabindex="-1" value="${currency && baseTwd ? baseTwd : ''}" /></label>
@@ -1579,7 +1580,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       <label for="adv-lf-note">備註（選填）</label>
       <input type="text" id="adv-lf-note" enterkeyhint="done" value="${esc(base.note)}" placeholder="例如：鼎泰豐、高鐵台中來回" />
       <details class="adv-ledger-more" data-only="expense" ${hasMore ? 'open' : ''}>
-        <summary>更多：地點、旅行<span id="adv-lf-more-sum"></span></summary>
+        <summary>更多：地點、旅行、退款<span id="adv-lf-more-sum"></span></summary>
         <label for="adv-lf-place">地點</label>
         <div class="adv-ach-picked" id="adv-lf-picked"></div>
         <input type="text" id="adv-lf-place" placeholder="搜尋破關地圖的地點" autocomplete="off" />
@@ -1591,6 +1592,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
         </select>
         ${LEDGER_SHOW_SPECIAL ? `
           <label class="adv-ledger-special"><input type="checkbox" id="adv-lf-special" ${base.is_special ? 'checked' : ''} /> ✨ 特別的日子（紀念日、生日…）</label>` : ''}
+        <label class="adv-ledger-special"><input type="checkbox" id="adv-lf-refund" ${negative ? 'checked' : ''} /> ↩️ 這筆是退款（錢退回來，加回公帳）</label>
       </details>
       ${opts.existing ? `
         <details class="adv-ledger-more adv-ledger-hist">
@@ -1619,6 +1621,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     const $ = <T extends HTMLElement>(sel: string) => root.querySelector(sel) as T;
     const amountEl = $<HTMLInputElement>('#adv-lf-amount');
     const signBtn = $<HTMLButtonElement>('#adv-lf-sign');
+    const refundEl = $<HTMLInputElement>('#adv-lf-refund');
     const dateEl = $<HTMLInputElement>('#adv-lf-date');
     const noteEl = $<HTMLInputElement>('#adv-lf-note');
     const tripEl = $<HTMLSelectElement>('#adv-lf-trip');
@@ -1690,16 +1693,22 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       syncTabStops();
     };
 
-    /** 依種類切換欄位：入金不需要分類與付款方式；負數只有支出（退款）和調整用得到 */
+    /**
+     * 依種類切換欄位：入金不需要分類與付款方式。
+     * 負數只有調整（金額旁 ➕／➖）和退款用得到；退款容易誤按，收在「更多」的勾選框，勾了金額下方會提示
+     */
     const syncKind = () => {
       root.querySelectorAll<HTMLElement>('[data-only="expense"]').forEach((el) => (el.hidden = kind !== 'expense'));
       $('#adv-lf-who-label').textContent = kind === 'deposit' ? '誰入金' : kind === 'adjust' ? '跟誰有關（選填）' : '誰付的';
-      signBtn.hidden = kind === 'deposit';
+      signBtn.hidden = kind !== 'adjust';
       if (kind === 'deposit') negative = false;
-      signBtn.textContent = kind === 'adjust' ? (negative ? '➖ 減少' : '➕ 增加') : '↩️ 退款';
+      signBtn.textContent = negative ? '➖ 減少' : '➕ 增加';
       signBtn.classList.toggle('is-active', negative);
       signBtn.setAttribute('aria-pressed', String(negative));
+      refundEl.checked = kind === 'expense' && negative;
+      $('#adv-lf-refund-note').hidden = !refundEl.checked;
       syncCurrency();
+      syncMoreSummary();
     };
 
     /** 「更多」收起來時也看得到選了什麼 */
@@ -1707,6 +1716,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       const parts = [
         placeId != null ? placeById.get(placeId)?.name : null,
         tripEl.value ? opts.trips.find((t) => t.slug === tripEl.value)?.title : null,
+        refundEl.checked ? '↩️ 退款' : null,
       ].filter(Boolean);
       $('#adv-lf-more-sum').textContent = parts.length ? `：${parts.join('、')}` : '';
     };
@@ -1817,6 +1827,10 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       negative = !negative;
       syncKind();
     });
+    refundEl.addEventListener('change', () => {
+      negative = refundEl.checked;
+      syncKind();
+    });
     searchEl.addEventListener('input', renderResults);
     tripEl.addEventListener('change', syncMoreSummary);
     dateEl.addEventListener('change', () => setActive('#adv-lf-quickdate', 'data-date', dateEl.value));
@@ -1845,7 +1859,9 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     const submit = (again: boolean) => {
       const sign = negative ? -1 : 1;
       const isFx = kind === 'expense' && !!currency;
-      const raw = parseAmount(amountEl.value);
+      // 支出、入金照正數存（直覺打「-120」記支出也不會變成退款），只有調整可以直接打負數
+      const typed = parseAmount(amountEl.value);
+      const raw = kind === 'adjust' ? typed : Math.abs(typed);
       if (!raw) return fail(isFx ? '外幣金額要填一個不是 0 的數字' : '金額要填一個不是 0 的數字', amountEl);
       const amount = (isFx ? Math.round(Math.abs(parseAmount(twdEl.value))) : Math.round(raw)) * sign;
       if (!amount) return fail(isFx ? '台幣金額要填（填了匯率會自動算）' : '金額要填一個不是 0 的數字', isFx ? rateEl : amountEl);
