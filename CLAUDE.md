@@ -230,7 +230,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - 大額門檻 `data.ts` `LEDGER_BIG_EXPENSE`（3,000）：流水左邊珊瑚色條＋「🔺 大額」，回顧另列合計
 - 寫入走 RPC：`dating_map_save_expense`（`saveExpense`，`p_id` 為 `null` 時新增）、`dating_map_delete_expense`、`dating_map_set_expense_checked`（一次多筆）。`fetchLedger` 會分頁讀完，一個月約百筆，幾年就超過 PostgREST 單次 1000 筆上限
 - **流水多選刪除**：流水最下方「☑️ 一次選幾筆刪除」切到 `pickHTML`（重用核對的 `checklistHTML`，action `delete`），模式存在 `ledger.ts` 模組變數 `picking`，換月／換畫面／刪完會關掉。刪除是 `index.ts` `deleteExpenses` 逐筆呼叫 `dating_map_delete_expense`（沒有批次 RPC），每筆都進改帳紀錄、可各自復原
-- 結餘一律留在公帳累積；不夠時兩人補一樣的錢（阿康自己通知，系統不提醒）
+- 結餘一律留在公帳累積；不夠時要不要補、補多少由兩人決定（可參考 🤝 誰出了多少），系統不提醒
 - **改帳紀錄**（`dating_map_ledger_history`）：row trigger `dating_map_ledger_log` 在每次 UPDATE／DELETE 寫入 `old_row` / `new_row`（jsonb），只動 `updated_at` 的不記。**誰改的不靠 RPC 參數**：`supabase.ts` 的自訂 `fetch` 每次帶 header `x-dating-map-who`（身分名稱 UTF-8 的 base64，header 不能放中文），`dating_map_request_actor()` 解出來。刪掉的帳用 `dating_map_restore_expense(p_history_id)`（`restoreExpense`）以原 id 復原，地點／旅行已不在就清空、分類不在改 `other`。入口：流水最下方連結、回顧下方按鈕（`ledger.ts` `openLedgerHistoryModal`），單筆紀錄在修改表單底部
 - **對銀行餘額**（「✅ 核對」最下方，`dating_map_ledger_balances`）：實際＝銀行 − 信用卡未繳（自己付不在帳上餘額裡；`own_pending` 是舊核對點的先墊待還，新的存 0），差額＝實際 − 帳上餘額（`checkpointDiff`）。`dating_map_save_balance` 存的當下由資料庫算好 `book_balance` / `own_pending`，之後改到那天以前的帳，列表會顯示「現在」與「記錄時」不同；修改表單對「現在仍對得上」的最近核對日以前的帳顯示警告。差額可一鍵記成 `adjust`
 - **分類月預算**：`dating_map_ledger_categories.monthly_budget`（null＝不設），在「⚙️ 分類」表單填，走獨立 RPC `dating_map_set_ledger_budget`（沒改 `dating_map_save_ledger_category` 簽章）。回顧有「🎯 預算」框（本月畫照天數的刻度線），流水頂端提醒用到 90% 以上的分類。**每月總預算**不在資料庫，是 `data.ts` `LEDGER_MONTHLY_BUDGET`（目前 20,000，`null`＝不設），算全部支出，排在預算框最上面並附 🔮 月底預估
