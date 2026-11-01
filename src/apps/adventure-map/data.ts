@@ -255,9 +255,6 @@ export const LEDGER_METHOD: Record<'card' | 'account' | 'own', string> = {
   own: '👛 自己付',
 };
 
-/** 每人每月存進公帳的金額；記入金時預設帶這個數字 */
-export const LEDGER_MONTHLY_DEPOSIT = 10000;
-
 /** 記帳表單的外幣選項（順序＝按鈕順序）；符號用在流水顯示原幣金額 */
 export const LEDGER_CURRENCY: Record<string, { label: string; symbol: string }> = {
   JPY: { label: '日圓', symbol: '¥' },

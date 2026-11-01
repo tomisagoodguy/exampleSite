@@ -13,7 +13,6 @@
 **Non-Goals:**
 
 - 不強制或提醒補錢，不設每月入金目標的提醒
-- 不改 `forecastMonth` 的「還沒記的入金」預估與趨勢圖的每月入金虛線（仍用 `LEDGER_MONTHLY_DEPOSIT`；是否拿掉另議）
 - 不改資料表欄位、`dating_map_save_expense` 簽章
 - 不追蹤補錢對應哪幾筆自己付
 
@@ -49,7 +48,7 @@ Supersedes 本變更先前同名決策的待抵公式。`dating_map_save_balance
 
 **驗收**：tsc 與 `yarn build` 通過；Playwright 用真實資料（攔截寫入）讀到統計卡公帳餘額 $17,848、核對頁「阿康 出了 $10,060」「小黃 出了 $18,582」「小黃多出 $8,522」；記入金 1418 只送出一筆 account 1418、表單沒有試算列、金額 0 被拒；頁面沒有入金提醒；對銀行餘額填 20000／2152 顯示對得上；退款仍會存。SQL 在交易中呼叫等效查詢驗 `book_balance` = 17848 後 rollback。
 
-**範圍外**：預測與趨勢圖的每月入金假設（見 Non-Goals）。
+**月預估與趨勢圖**（使用者 2026-11-01 確認一併拿掉）：`forecastMonth` 的月底餘額不再加「還沒記的入金」，改只扣公帳付的花費速度（排除自己付）；趨勢圖拿掉每月入金虛線與說明；刪除 `LEDGER_MONTHLY_DEPOSIT`。
 
 ## Risks / Trade-offs
 
@@ -64,4 +63,4 @@ Supersedes 本變更先前同名決策的待抵公式。`dating_map_save_balance
 
 ## Open Questions
 
-- 預測「還沒記的入金」與趨勢圖每月入金虛線是否也要拿掉（另議）
+（無）

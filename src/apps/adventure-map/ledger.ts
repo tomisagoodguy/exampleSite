@@ -5,7 +5,6 @@ import {
   LEDGER_CATEGORY,
   LEDGER_CURRENCY,
   LEDGER_METHOD,
-  LEDGER_MONTHLY_DEPOSIT,
   LEDGER_SHOW_SPECIAL,
   LedgerCategory,
   LedgerCategoryConfig,
@@ -974,9 +973,8 @@ interface Forecast {
   big: number;
   daily: number;
   remaining: number;
-  /** 預估月底公帳餘額，含還沒記的入金 */
+  /** 預估月底公帳餘額：只扣公帳付的花費速度（自己付不從公帳出），不猜還沒記的入金 */
   balance: number;
-  missingDeposit: number;
   basis: string;
 }
 
@@ -989,24 +987,26 @@ function forecastMonth(entries: LedgerEntry[], month: string): Forecast | null {
   const today = new Date().getDate();
   const dim = daysInMonth(month);
   const cur = expensesIn(entries, month);
-  const curRate = sum(cur.filter((e) => !isBig(e))) / today;
   const history = [1, 2, 3]
     .map((i) => shiftMonth(month, -i))
     .map((m) => ({ m, list: expensesIn(entries, m) }))
-    .filter((h) => h.list.length)
-    .map((h) => sum(h.list.filter((e) => !isBig(e))) / daysInMonth(h.m));
+    .filter((h) => h.list.length);
   const w = today / dim;
-  const daily = history.length ? w * curRate + (1 - w) * (history.reduce((s, r) => s + r, 0) / history.length) : curRate;
+  /** keep 篩過的平常花費每天速度：花費預估看全部，餘額預估只看公帳付的 */
+  const speed = (keep: (e: LedgerEntry) => boolean) => {
+    const plain = (list: LedgerEntry[]) => sum(list.filter((e) => !isBig(e) && keep(e)));
+    const curRate = plain(cur) / today;
+    const rates = history.map((h) => plain(h.list) / daysInMonth(h.m));
+    return rates.length ? w * curRate + (1 - w) * (rates.reduce((s, r) => s + r, 0) / rates.length) : curRate;
+  };
+  const daily = speed(() => true);
   const remaining = dim - today;
-  const deposited = new Set(entries.filter((e) => e.kind === 'deposit' && e.spent_on.startsWith(month)).map((e) => e.paid_by));
-  const missingDeposit = IDENTITIES.filter((id) => !deposited.has(id)).length * LEDGER_MONTHLY_DEPOSIT;
   return {
     total: Math.round(sum(cur) + daily * remaining),
     big: sum(cur.filter(isBig)),
     daily: Math.round(daily),
     remaining,
-    balance: Math.round(balanceAt(entries, month) - daily * remaining + missingDeposit),
-    missingDeposit,
+    balance: Math.round(balanceAt(entries, month) - speed((e) => !isSelfPaid(e)) * remaining),
     basis: history.length ? `本月和前 ${history.length} 個月的平均` : '本月到今天的速度',
   };
 }
@@ -1035,9 +1035,7 @@ function trendBoxHTML(entries: LedgerEntry[], month: string, forecast: Forecast 
 
   const values = months.map((m) => sum(expensesIn(entries, m).filter((e) => !trendCat || e.category === trendCat)));
   const est = !trendCat && forecast ? forecast.total : 0;
-  // 入金參考線只在看全部時有意義
-  const target = trendCat ? 0 : IDENTITIES.length * LEDGER_MONTHLY_DEPOSIT;
-  const max = Math.max(1, ...values, est, target);
+  const max = Math.max(1, ...values, est);
   const plotH = CHART_H - CHART_TOP - CHART_BOTTOM;
   const y = (v: number) => CHART_TOP + (1 - Math.max(0, v) / max) * plotH;
   const base = CHART_TOP + plotH;
@@ -1061,10 +1059,6 @@ function trendBoxHTML(entries: LedgerEntry[], month: string, forecast: Forecast 
       </g>`;
   }).join('');
 
-  // 參考線的說明寫在圖下方，寫在線上會跟長條的金額疊在一起
-  const targetLine = target
-    ? `<line class="adv-trend__target" x1="0" x2="${CHART_W}" y1="${y(target)}" y2="${y(target)}" />`
-    : '';
 
   // 平均只算已過完的月份，本月還沒結束會把平均拉低
   const done = months.filter((m) => m < currentMonth()).map((m) => values[months.indexOf(m)]);
@@ -1081,10 +1075,9 @@ function trendBoxHTML(entries: LedgerEntry[], month: string, forecast: Forecast 
       </div>
       <svg class="adv-trend" viewBox="0 0 ${CHART_W} ${CHART_H}" role="img" aria-label="近 ${months.length} 個月${trendCat ? esc(ledgerCategory(trendCat).label) : ''}花費長條圖">
         <line class="adv-trend__axis" x1="0" x2="${CHART_W}" y1="${base}" y2="${base}" />
-        ${targetLine}
         ${cols}
       </svg>
-      <p class="adv-ledger-sub">${avg ? `已過完的 ${done.length} 個月平均每月 <b>${money(avg)}</b>` : '下個月起就看得到平均'}${target ? `・橫虛線是每月入金 ${money(target)}` : ''}${est ? '・虛線框是本月預估' : ''}・點長條看那個月</p>
+      <p class="adv-ledger-sub">${avg ? `已過完的 ${done.length} 個月平均每月 <b>${money(avg)}</b>` : '下個月起就看得到平均'}${est ? '・虛線框是本月預估' : ''}・點長條看那個月</p>
     </section>`;
 }
 
@@ -1129,7 +1122,7 @@ function forecastBoxHTML(f: Forecast, spent: number): string {
       <p class="adv-ledger-big">${money(f.total)}</p>
       <p class="adv-ledger-sub">已花 ${money(spent)}，剩 ${f.remaining} 天，每天約 ${money(f.daily)}（照${f.basis}）</p>
       ${f.big ? `<p class="adv-ledger-sub">已記的大額 ${money(f.big)} 算進去了，但不拿來推每天的速度</p>` : ''}
-      <p class="adv-ledger-sub">月底公帳預計還有 <b>${money(f.balance)}</b>${f.missingDeposit ? `（含還沒記的入金 ${money(f.missingDeposit)}）` : ''}</p>
+      <p class="adv-ledger-sub">月底公帳預計還有 <b>${money(f.balance)}</b>（還沒記的入金不算）</p>
       ${f.balance < 0 ? '<p class="adv-ledger-sub adv-ledger-warn">照這個速度月底會不夠，要補錢或省一點</p>' : ''}
     </section>`;
 }
