@@ -179,10 +179,10 @@ function entryTitle(e: LedgerEntry): string {
   return categoryOf(e)?.label || '支出';
 }
 
-/** 流水與回顧顯示的金額：支出照實寫，入金與調整標出正負 */
+/** 流水與回顧顯示的金額：依對公帳餘額的影響標正負（支出 −、退款與入金 +） */
 function entryAmount(e: LedgerEntry): string {
-  if (e.kind === 'expense') return money(e.amount);
-  return `${e.amount > 0 ? '+' : ''}${money(e.amount)}`;
+  const v = signed(e);
+  return `${v > 0 ? '+' : ''}${money(v)}`;
 }
 
 // ───────────────────────── 分頁本體 ─────────────────────────
