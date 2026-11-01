@@ -236,10 +236,14 @@ export function renderLedger(
       count ? `<span class="adv-guide-season-count">${count}</span>` : ''
     }</button>`;
 
-  // 本月有人還沒記入金就提醒，一鍵帶好金額；未來月份不提醒
+  // 本月入金（含抵先墊）還沒滿 LEDGER_MONTHLY_DEPOSIT 就提醒，按鈕預填扣掉先墊後要實際轉的錢；未來月份不提醒
   const missingDeposit = isFuture
     ? []
-    : IDENTITIES.filter((id) => !monthEntries.some((e) => e.kind === 'deposit' && e.paid_by === id));
+    : IDENTITIES.map((id) => {
+        const short = LEDGER_MONTHLY_DEPOSIT - sum(monthEntries.filter((e) => e.kind === 'deposit' && e.paid_by === id));
+        const covered = Math.min(Math.max(0, ownAdvance(entries, id).pending), Math.max(0, short));
+        return { id, short, need: short - covered };
+      }).filter((r) => r.short > 0);
 
   // 搜尋時改列所有月份的結果，打字時只重畫 [data-ledger-results]，輸入框不會失去焦點
   const listBody = () => searchQuery.trim()
@@ -271,8 +275,10 @@ export function renderLedger(
     </div>
     ${missingDeposit.length ? `
       <div class="adv-ledger-remind">
-        <span>🪙 本月還沒記入金：</span>
-        ${missingDeposit.map((id) => `<button type="button" class="adv-card-btn" data-ledger-deposit="${id}">${id} 存 ${money(LEDGER_MONTHLY_DEPOSIT)}</button>`).join('')}
+        <span>🪙 本月入金還沒滿 ${money(LEDGER_MONTHLY_DEPOSIT)}：</span>
+        ${missingDeposit.map((r) => `<button type="button" class="adv-card-btn" data-ledger-deposit="${r.id}" data-ledger-amount="${r.need}">${
+          r.need > 0 ? `${r.id} 這月實際轉 ${money(r.need)}` : `${r.id} 這月全用先墊抵`
+        }</button>`).join('')}
       </div>` : ''}
     <div class="adv-guide-seasons" role="group" aria-label="切換公帳畫面">
       ${viewChip('list', '📒 流水')}
@@ -316,7 +322,7 @@ export function renderLedger(
       handlers.onAdd({
         kind: 'deposit',
         paid_by: depositBtn.dataset.ledgerDeposit as Identity,
-        amount: LEDGER_MONTHLY_DEPOSIT,
+        amount: Number(depositBtn.dataset.ledgerAmount ?? LEDGER_MONTHLY_DEPOSIT),
         spent_on: month === currentMonth() ? localDate() : `${month}-01`,
       });
       return;
@@ -1523,7 +1529,8 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     // 外幣：主金額欄改填原幣，台幣＝原幣 × 匯率（可以直接改台幣，匯率跟著反算）
     let currency = base.orig_currency || '';
     const baseOrig = base.orig_amount != null ? Math.abs(Number(base.orig_amount)) : null;
-    const baseTwd = base.amount ? Math.abs(base.amount) : null;
+    // 入金提醒會預填 0（這月全用先墊抵），要顯示成 0 而不是空白
+    const baseTwd = base.amount != null ? Math.abs(base.amount) : null;
     const tripBySlug = new Map(opts.trips.map((t) => [t.slug, t]));
     const lockedBefore = opts.existing && opts.balances ? lastMatchedCheckpoint(opts.entries, opts.balances) : null;
     const locked = !!(lockedBefore && opts.existing && opts.existing.spent_on <= lockedBefore);
@@ -1751,20 +1758,29 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       syncOffset();
     };
 
-    /** 新增入金時這次要抵掉的先墊：最多抵這次入金的金額，抵不完的留到下次。修改舊帳不拆 */
-    const offsetNow = (amount: number): number => {
-      if (kind !== 'deposit' || opts.existing || !paidBy || amount <= 0) return 0;
-      return Math.min(amount, Math.max(0, ownAdvance(opts.entries, paidBy).pending));
+    /**
+     * 新增入金時填的是實際轉帳；先墊補到這個月滿 LEDGER_MONTHLY_DEPOSIT 為止（最多抵到待抵），抵不完的留到下個月。
+     * 本月還差＝每月入金 − 這人在入金日期那個月已記的入金（抵先墊也算）。修改舊帳不拆
+     */
+    const offsetPlan = (transfer: number) => {
+      if (kind !== 'deposit' || opts.existing || !paidBy) return null;
+      const pending = ownAdvance(opts.entries, paidBy).pending;
+      if (pending <= 0) return null;
+      const month = (dateEl.value || localDate()).slice(0, 7);
+      const deposited = sum(opts.entries.filter((e) => e.kind === 'deposit' && e.paid_by === paidBy && e.spent_on.startsWith(month)));
+      const short = Math.max(0, LEDGER_MONTHLY_DEPOSIT - deposited);
+      return { pending, short, offset: Math.min(pending, Math.max(0, short - transfer)) };
     };
+    const offsetNow = (transfer: number): number => offsetPlan(transfer)?.offset ?? 0;
     const syncOffset = () => {
       const el = $('#adv-lf-offset');
-      const pending = kind === 'deposit' && !opts.existing && paidBy ? ownAdvance(opts.entries, paidBy).pending : 0;
-      el.hidden = pending <= 0;
-      if (el.hidden || !paidBy) return;
-      const amount = Math.round(Math.abs(parseAmount(amountEl.value)));
-      const offset = offsetNow(amount);
-      el.innerHTML = `👛 ${esc(paidBy)}先墊待抵 <b>${money(pending)}</b> → 這次抵 <b>${money(offset)}</b>，實際轉 <b>${money(amount - offset)}</b>${
-        pending > offset ? `（剩 ${money(pending - offset)} 下次再抵）` : ''
+      const transfer = Math.round(Math.abs(parseAmount(amountEl.value)));
+      const plan = offsetPlan(transfer);
+      el.hidden = !plan;
+      if (!plan || !paidBy) return;
+      const left = plan.pending - plan.offset;
+      el.innerHTML = `👛 ${esc(paidBy)}先墊待抵 <b>${money(plan.pending)}</b>，本月還差 <b>${money(plan.short)}</b> → 實際轉 <b>${money(transfer)}</b>，抵先墊 <b>${money(plan.offset)}</b>${
+        left > 0 ? `（剩 ${money(left)} 下次再抵）` : ''
       }`;
     };
 
@@ -1834,6 +1850,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       } else if (btn.dataset.date) {
         dateEl.value = btn.dataset.date;
         setActive('#adv-lf-quickdate', 'data-date', btn.dataset.date);
+        syncOffset();
       }
       clearError();
     };
@@ -1891,7 +1908,10 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     });
     searchEl.addEventListener('input', renderResults);
     tripEl.addEventListener('change', syncMoreSummary);
-    dateEl.addEventListener('change', () => setActive('#adv-lf-quickdate', 'data-date', dateEl.value));
+    dateEl.addEventListener('change', () => {
+      setActive('#adv-lf-quickdate', 'data-date', dateEl.value);
+      syncOffset();
+    });
     amountEl.addEventListener('input', () => {
       clearError();
       if (currency) recalcTwd();
@@ -1921,9 +1941,12 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       // 支出、入金照正數存（直覺打「-120」記支出也不會變成退款），只有調整可以直接打負數
       const typed = parseAmount(amountEl.value);
       const raw = kind === 'adjust' ? typed : Math.abs(typed);
-      if (!raw) return fail(isFx ? '外幣金額要填一個不是 0 的數字' : '金額要填一個不是 0 的數字', amountEl);
+      // 入金實際轉 0：先墊夠抵這個月時才可以，只記抵先墊那一列（要明確填 0，空白不算）
+      const offset = offsetNow(Math.round(raw));
+      const zeroOk = kind === 'deposit' && offset > 0 && amountEl.value.trim() !== '';
+      if (!raw && !zeroOk) return fail(isFx ? '外幣金額要填一個不是 0 的數字' : '金額要填一個不是 0 的數字', amountEl);
       const amount = (isFx ? Math.round(Math.abs(parseAmount(twdEl.value))) : Math.round(raw)) * sign;
-      if (!amount) return fail(isFx ? '台幣金額要填（填了匯率會自動算）' : '金額要填一個不是 0 的數字', isFx ? rateEl : amountEl);
+      if (!amount && !zeroOk) return fail(isFx ? '台幣金額要填（填了匯率會自動算）' : '金額要填一個不是 0 的數字', isFx ? rateEl : amountEl);
       const origAmount = isFx ? (Math.round(Math.abs(raw) * 100) / 100) * sign : null;
       if (kind === 'expense' && !category) {
         return fail('選一個分類', root.querySelector<HTMLElement>('.adv-ledger-cats [role="radio"]'));
@@ -1937,7 +1960,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       finish({
         action: 'save',
         again: again && !opts.existing,
-        offset: offsetNow(amount),
+        offset,
         input: {
           spent_on: dateEl.value,
           kind,

@@ -218,7 +218,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - **旅行裡直接記帳**：旅行卡片「💰 記一筆」（預帶 `trip_slug`）、行程地圖站點資訊卡與地點彈窗「💰 記一筆」（預帶 `trip_slug` + `place_id`）；卡片顯示「這趟花了 $X（N 筆）・今天 $Y」（`index.ts` `tripSpend`，只算 `expense`，退款負數一起加）。表單選了地點、還沒選分類時依地點分類帶預設（`data.ts` `ledgerCategoryForPlace`：food／cafe／stay 同名，museum／diy／scenery／walk → `fun`，shop 不帶）
 - **分類在網頁管理**（公帳標題列「⚙️ 分類」，`ledger.ts` `openLedgerCategoryModal`）：新增、改名、換 emoji／顏色、隱藏、排序。代號建立後不變，改名後舊帳自動顯示新名稱；**用過的分類只能隱藏**（`dating_map_delete_ledger_category` 會拒絕）。RPC：`dating_map_save_ledger_category`（`p_key` 為 `null` 時新增）、`dating_map_reorder_ledger_categories`、`dating_map_delete_ledger_category`。`data.ts` 的 `LEDGER_CATEGORY` 只是讀不到分類表時的備援，讀到後由 `applyLedgerCategories` 整組換掉；查分類一律用 `ledgerCategory(key)`（不認得的代號也有預設樣子）
 - `is_special` ✨ 特別的日子已建欄位，由 `data.ts` `LEDGER_SHOW_SPECIAL` 控制是否顯示；藏起來時修改舊帳會保留原值
-- **先墊待抵**（`ledger.ts` `ownAdvance`）＝某人未勾的 `own` 支出 − 他的 `own` 入金。「記一筆」新增入金選了人且待抵 > 0 時顯示「這次抵 $Y，實際轉 $Z」，存檔由 `index.ts` `addExpense` 拆成 `own`（抵掉的錢，最多＝這次入金）與 `account`（其餘）兩列，金額 0 的不寫；修改既有入金保留原 `method`、不拆列。抵先墊列照樣算入金（餘額、「還沒存」提醒、回顧）
+- **先墊待抵**（`ledger.ts` `ownAdvance`）＝某人未勾的 `own` 支出 − 他的 `own` 入金。「記一筆」新增入金**填的是實際轉帳**；本月還差＝`LEDGER_MONTHLY_DEPOSIT` − 這人在入金日期那個月已記的入金（含抵先墊），抵先墊＝min(待抵, 本月還差 − 實際轉帳)，表單顯示「待抵、本月還差 → 實際轉帳、抵先墊」。存檔由 `index.ts` `addExpense` 寫 `account`（實際轉帳）與 `own`（抵先墊，> 0 才寫）兩列；實際轉帳 0 只在抵先墊 > 0 時可送出，只寫 `own`。本月入金合計未滿 10,000 時頂端提醒按鈕預填要實際轉的錢（「這月實際轉 $N」／「這月全用先墊抵」），不直接寫入；修改既有入金保留原 `method`、不拆列。抵先墊列照樣算入金（餘額、「還沒存」提醒、回顧）
 - 「✅ 核對」分兩段：👛 先墊待抵（每人「先墊 − 已抵 ＝ 待抵」＋唯讀清單，不逐筆勾）→ 💳 對信用卡帳單
 - 公帳餘額＝入金＋調整−支出（銀行帳戶＋信用卡未繳合計），所以**繳卡費不記**，那只是帳戶轉到信用卡
 - 核對不分月份：列出所有 `method = 'card'` 且未核對的支出，依日期由舊到新，對著帳單勾；勾選時顯示已選合計

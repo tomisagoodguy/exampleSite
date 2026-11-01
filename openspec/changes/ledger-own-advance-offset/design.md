@@ -39,6 +39,14 @@
 
 `openExpenseModal` 在新增入金、`paid_by` 有正待抵時顯示試算列，回傳結果多帶 `offset` 金額；`index.ts` 的 `addExpense` 先存抵先墊列、再存實際轉帳列（金額 0 的跳過），各自走 `saveExpense`，所以改帳紀錄、復原都逐列運作。替代方案是新增批次 RPC，為兩列不值得。
 
+### 入金金額是實際轉帳，抵先墊補到本月 10,000
+
+Supersedes「入金表單拆兩列由前端完成」裡「填的金額＝本月入金總額、抵 min(金額, 待抵)」的算法（255900b 上線版本）。兩人實際操作是轉多少就填多少，所以改為：填的金額＝`account` 列（實際轉帳）；本月還差 `D = LEDGER_MONTHLY_DEPOSIT − 該人在入金日期所屬月份已記的入金合計（own＋account）`；抵先墊 `Y = min(待抵, max(0, D − 填的金額))`，> 0 才寫 `own` 列。拆兩列、各自 `saveExpense` 的做法不變，只是兩列的金額來源對調。
+
+實際轉 0 元時，表單在 `Y > 0` 才接受金額 0，並只寫 `own` 列。替代方案「提醒按鈕直接寫入抵先墊」被否決：誤按就記帳，且繞過表單看不到試算。
+
+本月「還沒存」提醒改看入金合計 `< LEDGER_MONTHLY_DEPOSIT`（原本只看有沒有入金列，入金 1,418 會被當成存過）；按鈕預填 `D − min(待抵, D)`，為 0 時文案改「這月全用先墊抵」。
+
 ### 對銀行餘額的 own_pending 改公式
 
 前端 `bankHTML` 的預覽與 `dating_map_save_balance` 都改為 `Σ own 支出(未勾) − Σ own 入金`（`spent_on ≤ 核對日`）。RPC 用 CREATE OR REPLACE，簽章不變，無 DROP。
@@ -47,9 +55,11 @@
 
 **待抵計算**：`ledger.ts` 匯出一個以 identity 與截止日（選填）計算待抵的函式，供核對頁、對銀行餘額預覽、記入金表單共用；結果可為 0 或負數（多抵時），顯示與抵扣只在大於 0 時發生。
 
-**記入金表單**（新增模式、`kind = 'deposit'`）：選了 `paid_by` 且待抵 > 0 時，金額欄下方顯示「{誰}先墊待抵 $X → 這次抵 $Y，實際轉 $Z」，金額或人改變時即時更新；換成支出、調整或待抵為 0 時隱藏。`ExpenseModalResult` 的 save 結果增加 `offset: number`（非入金或編輯時為 0）。
+**記入金表單**（新增模式、`kind = 'deposit'`）：填的金額＝實際轉帳 T。選了 `paid_by` 且待抵 > 0 時，金額欄下方顯示「{誰}先墊待抵 $X，本月還差 $D → 實際轉 $T，抵先墊 $Y」，金額、人或日期改變時即時更新；換成支出、調整或待抵 ≤ 0 時隱藏。T = 0 只在 Y > 0 時允許送出。`ExpenseModalResult` 的 save 結果帶 `offset: number`（非入金或編輯時為 0），`input.amount` 為 T。
 
-**存檔**：`addExpense` 收到 `offset > 0` 時寫入抵先墊列（`method = 'own'`、備註「抵先墊」、與入金同日同人），再寫 `amount − offset`（> 0 時）的 `account` 入金列；toast 顯示「💰 {誰} 入金 $A（抵先墊 $Y，實際轉 $Z）」。任一列失敗照現有 `withPassphrase` 錯誤處理，已寫入的列保留在流水上可手動刪。
+**存檔**：`addExpense` 收到 `offset > 0` 時寫入抵先墊列（`method = 'own'`、金額 Y、與入金同日同人、備註沿用使用者填的），T > 0 時再寫 `account` 入金列；toast 顯示「💰 {誰} 入金 $(T+Y)（抵先墊 $Y，實際轉 $T）」。任一列失敗照現有 `withPassphrase` 錯誤處理，已寫入的抵先墊列保留在流水上並提示補記。
+
+**提醒按鈕**：本月入金合計 < 10,000 的人才出現；按鈕「{誰} 這月實際轉 $N」或「{誰} 這月全用先墊抵」，開入金表單並預填 N（可為 0），不直接寫入。
 
 **流水標示**：own 入金列的 meta 顯示「抵先墊」而非「轉帳」，標題顯示「{誰} 抵先墊」。
 
@@ -59,7 +69,7 @@
 
 **對銀行餘額**：預覽文案「先墊待抵」，`own_pending` 由 RPC 以新公式存。
 
-**驗收**：`npx tsc`（CLAUDE.md 指令）與 `yarn build` 通過；Playwright 攔截 `rpc/dating_map_save_expense` 驗證 10000 對待抵 8582 送出 own 8582＋account 1418、對待抵 15000 只送 own 10000；SQL 呼叫 `dating_map_save_balance` 後讀回的 `own_pending` 符合新公式（在交易中測試後 rollback）。
+**驗收**：`npx tsc`（CLAUDE.md 指令）與 `yarn build` 通過；Playwright 攔截 `rpc/dating_map_save_expense` 驗證實際轉 1418 對待抵 8582 送出 account 1418＋own 8582、實際轉 0 對待抵 15000 只送 own 10000；SQL 呼叫 `dating_map_save_balance` 後讀回的 `own_pending` 符合新公式（在交易中測試後 rollback）。
 
 **範圍外**：預測（`forecastMonth`）、回顧統計、CSV 不改程式，own 入金自動以入金計入。
 

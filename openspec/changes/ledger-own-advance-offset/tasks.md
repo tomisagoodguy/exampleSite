@@ -18,3 +18,11 @@
 ## 4. 文件
 
 - [x] 4.1 更新 CLAUDE.md 公帳段落與記憶 project_couple_ledger_rules：`method = own` 改為「下次入金時抵扣，扣不完留到下個月」、說明 own 入金＝抵先墊、核對頁先墊區塊與待抵公式，移除「月底由阿康轉回」。驗證：Grep CLAUDE.md 不再含「月底回顧時**由阿康從公帳帳戶轉回」，含「抵先墊」 [after: 3.3]
+
+## 5. 改為「填實際轉帳」（補正 2.1、2.2、2.4）
+
+> 變更說明：2.1、2.2 已完成並上線（255900b），當時是「填的金額＝本月入金總額」；使用者實際是填實際轉進銀行的錢，依 design「入金金額是實際轉帳，抵先墊補到本月 10,000」改算法。2.4 的提醒條件只看有沒有入金列，入金 1,418 會被當成存過，由 5.2 補正。
+
+- [x] 5.1 記入金表單改用實際轉帳算抵先墊（Requirement: Deposit offsets pending advance；design「入金金額是實際轉帳，抵先墊補到本月 10,000」）：`openExpenseModal` 依入金日期所屬月份算本月還差 D，抵先墊 `min(待抵, max(0, D − 填的金額))`，試算列顯示待抵、本月還差、實際轉、抵先墊，改日期也更新；金額 0 只在抵先墊 > 0 時可送出；`index.ts` `addExpense` 寫 account（填的金額，> 0 時）與 own（抵先墊，> 0 時）。驗證：Playwright 攔截 `rpc/dating_map_save_expense`，以假資料跑 spec「offset boundaries」六列，送出的 own／account 金額與表一致（最後一列顯示錯誤訊息、沒有送出）
+- [x] 5.2 本月入金提醒預填實際轉帳（Requirement: Monthly deposit reminder prefills the transfer、Requirement: Offset deposit counts as contribution）：提醒條件改為本月入金合計 < `LEDGER_MONTHLY_DEPOSIT`；按鈕文案「{誰} 這月實際轉 $N」或「{誰} 這月全用先墊抵」，點了開入金表單預填 N，不直接寫入。驗證：Playwright 以假資料（小黃待抵 8582、阿康待抵 15000、皆未入金）讀到「小黃 這月實際轉 $1,418」「阿康 這月全用先墊抵」，點小黃按鈕後表單金額為 1418、沒有任何 save 請求；小黃只有 own 入金 10000 時不出現提醒 [after: 5.1]
+- [x] 5.3 更新 CLAUDE.md 公帳段落：入金填實際轉帳、抵先墊補到本月 10,000、金額 0 的條件、提醒按鈕預填。驗證：Grep CLAUDE.md 含「實際轉帳」與「本月還差」 [after: 5.2]

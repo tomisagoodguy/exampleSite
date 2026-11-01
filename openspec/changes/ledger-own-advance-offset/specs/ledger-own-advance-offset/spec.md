@@ -24,40 +24,56 @@ The ledger SHALL compute, for each identity, a pending advance amount equal to t
 
 ### Requirement: Deposit offsets pending advance
 
-When the user records a new deposit for an identity whose pending advance is greater than zero, the expense form SHALL show the pending amount, the offset amount, and the actual transfer amount before saving. The offset amount SHALL be the smaller of the entered deposit amount and the pending advance; the actual transfer SHALL be the entered amount minus the offset. Saving SHALL write an offset row (`kind = 'deposit'`, `method = 'own'`, amount = offset) and a transfer row (`kind = 'deposit'`, `method = 'account'`, amount = transfer), both with the same date and `paid_by`. A row whose amount would be zero SHALL NOT be written.
+The amount the user enters for a new deposit SHALL be the actual amount transferred into the bank. For the identity and the calendar month of the deposit date, the ledger SHALL compute the month's remaining contribution as `LEDGER_MONTHLY_DEPOSIT` (10000) minus that identity's deposits already recorded in that month (own and account). The offset SHALL be the smaller of the pending advance and the remaining contribution minus the entered transfer, and never below zero. When the identity has a positive pending advance, the expense form SHALL show the pending advance, the month's remaining contribution, the transfer, and the offset, updating when the amount, identity, or date changes. Saving SHALL write an account deposit for the transfer and, when the offset is positive, an own deposit for the offset, both with the same date and `paid_by`. A transfer of 0 SHALL be accepted only when the offset is positive, and then only the own deposit SHALL be written.
 
-#### Scenario: Deposit split into offset and transfer
+#### Scenario: Actual transfer completes the month with an offset
 
-- **WHEN** the user records a 10000 deposit for an identity with pending advance 8582
-- **THEN** the form shows offset 8582 and transfer 1418, and saving writes one own deposit of 8582 and one account deposit of 1418
+- **WHEN** the user records an actual transfer of 1418 for an identity with pending advance 8582 and no deposits yet this month
+- **THEN** the form shows offset 8582, and saving writes one account deposit of 1418 and one own deposit of 8582
 
-#### Scenario: Advance larger than one deposit carries over
+#### Scenario: Advance larger than one month carries over
 
-- **WHEN** the user records a 10000 deposit for an identity with pending advance 15000
-- **THEN** saving writes only one own deposit of 10000, no account deposit, and the identity's pending advance becomes 5000
+- **WHEN** the user records an actual transfer of 0 for an identity with pending advance 15000 and no deposits yet this month
+- **THEN** saving writes only one own deposit of 10000 and the identity's pending advance becomes 5000
 
 #### Scenario: No pending advance
 
 - **WHEN** the user records a deposit for an identity whose pending advance is zero or negative
-- **THEN** the form shows no offset line and saving writes a single account deposit as before
+- **THEN** the form shows no offset line, a transfer of 0 is rejected, and saving writes a single account deposit as before
 
 ##### Example: offset boundaries
 
-| Entered deposit | Pending | Offset row | Transfer row |
-| --- | --- | --- | --- |
-| 10000 | 8582 | 8582 | 1418 |
-| 10000 | 15000 | 10000 | not written |
-| 10000 | 10000 | 10000 | not written |
-| 10000 | 0 | not written | 10000 |
+| Transfer entered | Already deposited this month | Pending | Own row | Account row |
+| --- | --- | --- | --- | --- |
+| 1418 | 0 | 8582 | 8582 | 1418 |
+| 0 | 0 | 15000 | 10000 | not written |
+| 5000 | 0 | 15000 | 5000 | 5000 |
+| 10000 | 0 | 8582 | not written | 10000 |
+| 3000 | 7000 | 8582 | not written | 3000 |
+| 0 | 0 | 0 | rejected | rejected |
+
+### Requirement: Monthly deposit reminder prefills the transfer
+
+For the current month, the ledger SHALL remind about every identity whose deposits recorded in that month total less than `LEDGER_MONTHLY_DEPOSIT`. Each reminder button SHALL state the amount still to transfer, computed as the month's remaining contribution minus the smaller of the pending advance and that remaining contribution, and SHALL open the expense form as a deposit for that identity with this amount prefilled. When the amount still to transfer is 0, the button SHALL say the month is fully covered by the advance and prefill 0. The reminder SHALL NOT write any row without the user saving the form.
+
+#### Scenario: Reminder with a partial advance
+
+- **WHEN** 小黃 has pending advance 8582 and no deposit this month
+- **THEN** the reminder button reads that 小黃 transfers 1418 this month and opens a deposit form for 小黃 prefilled with 1418
+
+#### Scenario: Reminder when the advance covers the month
+
+- **WHEN** an identity has pending advance 15000 and no deposit this month
+- **THEN** the reminder button says the month is fully covered by the advance and opens a deposit form prefilled with 0
 
 ### Requirement: Offset deposit counts as contribution
 
-An own deposit SHALL count as a deposit everywhere deposits are counted: the ledger balance, the month's deposit total, the monthly review, CSV export, and the "this month someone has not deposited yet" reminder.
+An own deposit SHALL count as a deposit everywhere deposits are counted: the ledger balance, the month's deposit total, the monthly review, CSV export, and the monthly deposit reminder total.
 
 #### Scenario: Offset-only month satisfies the reminder
 
 - **WHEN** an identity's only deposit this month is an own deposit of 10000
-- **THEN** the missing-deposit reminder does not list that identity and the month's deposit total includes the 10000
+- **THEN** the monthly deposit reminder does not list that identity and the month's deposit total includes the 10000
 
 ### Requirement: Offset deposit is labelled and preserved on edit
 
