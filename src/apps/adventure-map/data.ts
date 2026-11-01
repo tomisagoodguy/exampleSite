@@ -271,6 +271,9 @@ export const LEDGER_CURRENCY: Record<string, { label: string; symbol: string }> 
 /** 單筆支出達這個金額算「大額」：流水標 🔺、回顧另外統計，月中預估時不拿來推算每天的花費速度 */
 export const LEDGER_BIG_EXPENSE = 3000;
 
+/** 每月總預算：所有分類的支出合計（含自己付、退款扣回）；null＝不設。回顧「🎯 預算」最上面一條，用到 90% 起在流水頂端提醒 */
+export const LEDGER_MONTHLY_BUDGET: number | null = 20000;
+
 /** 公帳卡每月結帳日（1–31，大於當月天數就算月底）：「✅ 核對」依這天把刷卡分成一期一期，對著每期帳單勾 */
 export const LEDGER_CARD_CLOSING_DAY = 15;
 

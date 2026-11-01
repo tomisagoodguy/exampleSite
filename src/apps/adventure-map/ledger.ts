@@ -5,6 +5,7 @@ import {
   LEDGER_CATEGORY,
   LEDGER_CURRENCY,
   LEDGER_METHOD,
+  LEDGER_MONTHLY_BUDGET,
   LEDGER_SHOW_SPECIAL,
   LedgerCategory,
   LedgerCategoryConfig,
@@ -720,20 +721,31 @@ function budgetRows(entries: LedgerEntry[], month: string): BudgetRow[] {
     .map(([key, cfg]) => ({ key, cfg, budget: cfg.budget as number, spent: sum(cur.filter((e) => e.category === key)) }));
 }
 
-/** 流水頂端只提醒用到 90% 以上的分類 */
-function budgetRemindHTML(entries: LedgerEntry[], month: string): string {
-  const tight = budgetRows(entries, month).filter((r) => r.spent >= r.budget * 0.9);
-  if (!tight.length) return '';
-  return `
-    <div class="adv-ledger-remind adv-ledger-remind--budget">
-      ${tight.map((r) => `<span>${esc(r.cfg.emoji)} ${esc(r.cfg.label)} ${r.spent > r.budget ? `超過預算 ${money(r.spent - r.budget)}` : `已用 ${Math.round((r.spent / r.budget) * 100)}%`}</span>`).join('')}
-    </div>`;
+/** 每月總預算那一條：所有支出合計 */
+function totalBudgetRow(entries: LedgerEntry[], month: string): { budget: number; spent: number } | null {
+  return LEDGER_MONTHLY_BUDGET ? { budget: LEDGER_MONTHLY_BUDGET, spent: sum(expensesIn(entries, month)) } : null;
 }
 
-/** 回顧的預算進度；本月多畫一條「照天數該用到哪」的刻度，並算剩下每天能花多少 */
-function budgetBoxHTML(entries: LedgerEntry[], month: string): string {
+const budgetUsedText = (spent: number, budget: number) =>
+  spent > budget ? `超過預算 ${money(spent - budget)}` : `已用 ${Math.round((spent / budget) * 100)}%`;
+
+/** 流水頂端只提醒用到 90% 以上的總預算與分類 */
+function budgetRemindHTML(entries: LedgerEntry[], month: string): string {
+  const total = totalBudgetRow(entries, month);
+  const tight = budgetRows(entries, month).filter((r) => r.spent >= r.budget * 0.9);
+  const spans = [
+    ...(total && total.spent >= total.budget * 0.9 ? [`<span>🎯 這個月總共 ${budgetUsedText(total.spent, total.budget)}</span>`] : []),
+    ...tight.map((r) => `<span>${esc(r.cfg.emoji)} ${esc(r.cfg.label)} ${budgetUsedText(r.spent, r.budget)}</span>`),
+  ];
+  if (!spans.length) return '';
+  return `<div class="adv-ledger-remind adv-ledger-remind--budget">${spans.join('')}</div>`;
+}
+
+/** 回顧的預算進度：最上面是每月總預算，下面是各分類；本月多畫一條「照天數該用到哪」的刻度，並算剩下每天能花多少 */
+function budgetBoxHTML(entries: LedgerEntry[], month: string, forecast: Forecast | null): string {
+  const total = totalBudgetRow(entries, month);
   const rows = budgetRows(entries, month);
-  if (!rows.length) {
+  if (!total && !rows.length) {
     return `<section class="adv-ledger-box"><h4 class="adv-ledger-box__title">🎯 預算</h4><p class="adv-ledger-sub">還沒設定。到「⚙️ 分類」幫分類設每月上限，這裡就會出現進度條。</p></section>`;
   }
   const isNow = month === currentMonth();
@@ -741,28 +753,38 @@ function budgetBoxHTML(entries: LedgerEntry[], month: string): string {
   const today = new Date().getDate();
   const left = dim - today + 1;
   const pace = isNow ? (today / dim) * 100 : 0;
-  const totalBudget = rows.reduce((s, r) => s + r.budget, 0);
-  const totalSpent = rows.reduce((s, r) => s + r.spent, 0);
+
+  const bar = (label: string, color: string, spent: number, budget: number) => {
+    const over = spent > budget;
+    const remain = budget - spent;
+    return `
+      <div class="adv-ledger-bar ${over ? 'adv-ledger-bar--over' : ''}" style="--cat-color:${color}">
+        <span class="adv-ledger-bar__label">${label}</span>
+        <span class="adv-ledger-bar__track">
+          <span class="adv-ledger-bar__fill" style="width:${Math.min(100, Math.max(0, (spent / budget) * 100))}%"></span>
+          ${pace ? `<span class="adv-ledger-bar__pace" style="left:${pace}%" title="照天數到今天該用到這裡"></span>` : ''}
+        </span>
+        <span class="adv-ledger-bar__amt">${money(spent)}<small>／${money(budget)}</small></span>
+        <span class="adv-ledger-bar__note">${
+          over ? `超過 ${money(-remain)}` : isNow ? `還能花 ${money(remain)}，剩 ${left} 天每天約 ${money(Math.floor(remain / left))}` : `剩 ${money(remain)}`}</span>
+      </div>`;
+  };
+
+  const forecastNote = total && forecast
+    ? `<p class="adv-ledger-sub">🔮 照目前速度月底約 ${money(forecast.total)}，${
+      forecast.total > total.budget ? `會超過 ${money(forecast.total - total.budget)}` : `還會剩 ${money(total.budget - forecast.total)}`}</p>`
+    : '';
+  const catSpent = rows.reduce((s, r) => s + r.spent, 0);
+  const catBudget = rows.reduce((s, r) => s + r.budget, 0);
 
   return `
     <section class="adv-ledger-box">
       <h4 class="adv-ledger-box__title">🎯 預算</h4>
-      <div class="adv-ledger-bars">${rows.map((r) => {
-        const over = r.spent > r.budget;
-        const remain = r.budget - r.spent;
-        return `
-          <div class="adv-ledger-bar ${over ? 'adv-ledger-bar--over' : ''}" style="--cat-color:${r.cfg.color}">
-            <span class="adv-ledger-bar__label">${esc(r.cfg.emoji)} ${esc(r.cfg.label)}</span>
-            <span class="adv-ledger-bar__track">
-              <span class="adv-ledger-bar__fill" style="width:${Math.min(100, Math.max(0, (r.spent / r.budget) * 100))}%"></span>
-              ${pace ? `<span class="adv-ledger-bar__pace" style="left:${pace}%" title="照天數到今天該用到這裡"></span>` : ''}
-            </span>
-            <span class="adv-ledger-bar__amt">${money(r.spent)}<small>／${money(r.budget)}</small></span>
-            <span class="adv-ledger-bar__note">${
-              over ? `超過 ${money(-remain)}` : isNow ? `還能花 ${money(remain)}，剩 ${left} 天每天約 ${money(Math.floor(remain / left))}` : `剩 ${money(remain)}`}</span>
-          </div>`;
-      }).join('')}</div>
-      <p class="adv-ledger-sub">有設預算的分類合計 ${money(totalSpent)}／${money(totalBudget)}${pace ? '・直線是照天數到今天該用到的位置' : ''}</p>
+      ${total ? `<div class="adv-ledger-bars">${bar('🎯 這個月總共', 'var(--adv-coral)', total.spent, total.budget)}</div>${forecastNote}` : ''}
+      ${rows.length ? `
+        <div class="adv-ledger-bars">${rows.map((r) => bar(`${esc(r.cfg.emoji)} ${esc(r.cfg.label)}`, r.cfg.color, r.spent, r.budget)).join('')}</div>
+        <p class="adv-ledger-sub">有設預算的分類合計 ${money(catSpent)}／${money(catBudget)}</p>` : ''}
+      ${pace ? '<p class="adv-ledger-sub">直線是照天數到今天該用到的位置</p>' : ''}
     </section>`;
 }
 
@@ -1201,7 +1223,7 @@ function reviewHTML(
   ];
 
   if (forecast && d.count) parts.push(forecastBoxHTML(forecast, d.total));
-  parts.push(budgetBoxHTML(entries, month));
+  parts.push(budgetBoxHTML(entries, month, forecast));
   let chartsAt = parts.length;
 
   if (d.categories.length) {
