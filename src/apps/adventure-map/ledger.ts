@@ -236,9 +236,10 @@ export function renderLedger(
   const unchecked = entries.filter((e) => e.kind === 'expense' && e.method === 'card' && !e.checked);
   const isFuture = month > currentMonth();
 
-  const viewChip = (v: LedgerView, label: string, count?: number) =>
-    `<button type="button" class="adv-guide-season ${view === v ? 'is-active' : ''}" data-ledger-view="${v}" aria-pressed="${view === v}">${label}${
-      count ? `<span class="adv-guide-season-count">${count}</span>` : ''
+  const viewChip = (v: LedgerView, emoji: string, label: string, count?: number) =>
+    `<button type="button" class="adv-ledger-view ${view === v ? 'is-active' : ''}" data-ledger-view="${v}" aria-pressed="${view === v}">
+      <span class="adv-ledger-view__emoji" aria-hidden="true">${emoji}</span>${label}${
+      count ? `<span class="adv-ledger-view__count" aria-label="${count} 筆待核對">${count}</span>` : ''
     }</button>`;
 
   // 搜尋時改列所有月份的結果，打字時只重畫 [data-ledger-results]，輸入框不會失去焦點
@@ -258,6 +259,12 @@ export function renderLedger(
         : `${searchBoxHTML()}<div data-ledger-results>${listBody()}</div>`;
 
   mount.innerHTML = `
+    <div class="adv-ledger-views" role="group" aria-label="切換公帳畫面">
+      ${viewChip('list', '📒', '流水')}
+      ${viewChip('calendar', '📅', '月曆')}
+      ${viewChip('check', '✅', '核對', unchecked.length)}
+      ${viewChip('review', '📊', '回顧')}
+    </div>
     <div class="adv-ledger-month">
       <button type="button" class="adv-ledger-month__nav" data-ledger-month="-1" aria-label="上個月">‹</button>
       <span class="adv-ledger-month__label">${monthLabel(month)}</span>
@@ -268,12 +275,6 @@ export function renderLedger(
       <div class="adv-ach-stat"><b>${money(sum(expensesIn(entries, month)))}</b><span>本月花費</span></div>
       <div class="adv-ach-stat"><b>${money(sum(monthEntries.filter((e) => e.kind === 'deposit')))}</b><span>本月入金</span></div>
       <div class="adv-ach-stat"><b>${money(balanceAt(entries, month))}</b><span>公帳餘額</span></div>
-    </div>
-    <div class="adv-guide-seasons" role="group" aria-label="切換公帳畫面">
-      ${viewChip('list', '📒 流水')}
-      ${viewChip('calendar', '📅 月曆')}
-      ${viewChip('check', '✅ 核對', unchecked.length)}
-      ${viewChip('review', '📊 回顧')}
     </div>
     ${body}
   `;

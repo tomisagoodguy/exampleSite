@@ -2257,6 +2257,82 @@ button.adv-ach-place small {
   max-width: 1000px;
 }
 
+/* 公帳四個畫面：最常按的切換，做成四格等寬的大按鈕 */
+.adv-ledger-views {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 0 0 14px;
+  border: 2.5px solid var(--adv-ink);
+  border-radius: 18px;
+  background: var(--adv-card);
+  box-shadow: 3px 3px 0 var(--adv-drop);
+  overflow: hidden;
+}
+
+.adv-ledger-view {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 58px;
+  padding: 6px 2px;
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: var(--adv-ink);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.adv-ledger-view + .adv-ledger-view {
+  border-left: 2px solid var(--adv-ink);
+}
+
+.adv-ledger-view__emoji {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.adv-ledger-view:hover {
+  background: var(--adv-chip);
+}
+
+.adv-ledger-view.is-active {
+  background: var(--adv-yellow);
+  color: var(--adv-on-flat);
+}
+
+.adv-ledger-view:focus-visible {
+  outline: 3px solid var(--adv-water);
+  outline-offset: -5px;
+}
+
+@media (min-width: 900px) {
+  .adv-ledger-view {
+    flex-direction: row;
+    gap: 8px;
+    min-height: 48px;
+    font-size: 0.95rem;
+  }
+}
+
+.adv-ledger-view__count {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  min-width: 20px;
+  padding: 0 5px;
+  font-size: 0.7rem;
+  line-height: 18px;
+  color: var(--adv-on-flat);
+  background: var(--adv-coral);
+  border: 2px solid var(--adv-ink);
+  border-radius: 999px;
+}
+
 .adv-ledger-month {
   display: flex;
   align-items: center;
