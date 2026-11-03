@@ -1216,13 +1216,17 @@ function donutHTML(categories: { key: string; amount: number }[], total: number)
     const mid = (start + end) / 2;
     const label = share >= 0.08 ? `<text x="${(((R + r) / 2) * Math.sin(mid)).toFixed(1)}" y="${(-((R + r) / 2) * Math.cos(mid)).toFixed(1)}">${cfg.emoji}</text>` : '';
     start = end;
-    return `<g style="--cat-color:${cfg.color}"><title>${esc(cfg.label)} ${Math.round(share * 100)}%・${money(c.amount)}</title>${shape}${label}</g>`;
+    // 滑過／點一下時中間換成這塊的分類與金額（<title> 要停一秒才出現，手機也沒有）
+    const info = `<g class="adv-ledger-donut__info"><text y="-14">${cfg.emoji} ${esc(cfg.label)}</text><text class="adv-ledger-donut__total" y="4">${money(c.amount)}</text><text class="adv-ledger-donut__sub" y="21">${Math.round(share * 100)}%</text></g>`;
+    return `<g class="adv-ledger-donut__slice" tabindex="0" style="--cat-color:${cfg.color}"><title>${esc(cfg.label)} ${Math.round(share * 100)}%・${money(c.amount)}</title>${shape}${label}${info}</g>`;
   }).join('');
   return `
     <svg class="adv-ledger-donut" viewBox="-86 -86 172 172" role="img" aria-label="各分類佔比">
+      <g class="adv-ledger-donut__center">
+        <text class="adv-ledger-donut__total" y="-2">${money(total)}</text>
+        <text class="adv-ledger-donut__sub" y="16">本月花費</text>
+      </g>
       ${slices}
-      <text class="adv-ledger-donut__total" y="-2">${money(total)}</text>
-      <text class="adv-ledger-donut__sub" y="16">本月花費</text>
     </svg>`;
 }
 

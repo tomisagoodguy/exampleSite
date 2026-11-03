@@ -2966,6 +2966,33 @@ button.adv-ach-place small {
   font-size: 9px;
 }
 
+/* 滑過／點一下某塊：中間的本月總額換成該分類的金額 */
+.adv-ledger-donut__slice {
+  cursor: pointer;
+  outline: none;
+}
+
+.adv-ledger-donut__info {
+  display: none;
+}
+
+.adv-ledger-donut__info text:first-child {
+  fill: var(--adv-ink);
+  font-size: 11px;
+}
+
+.adv-ledger-donut__slice:is(:hover, :focus) .adv-ledger-donut__info {
+  display: inline;
+}
+
+.adv-ledger-donut__slice:is(:hover, :focus) path {
+  stroke-width: 4;
+}
+
+.adv-ledger-donut:has(.adv-ledger-donut__slice:is(:hover, :focus)) .adv-ledger-donut__center {
+  display: none;
+}
+
 /* 趨勢圖：SVG 文字與線條都吃 token，夜晚自動換色 */
 .adv-trend__cats {
   margin-bottom: 8px;
