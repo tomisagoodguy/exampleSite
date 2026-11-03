@@ -278,6 +278,7 @@ export function renderLedger(
     </div>
     ${body}
   `;
+  packReview(mount);
 
   const byId = new Map(entries.map((e) => [e.id, e]));
 
@@ -781,7 +782,7 @@ function budgetBoxHTML(entries: LedgerEntry[], month: string, forecast: Forecast
   return `
     <section class="adv-ledger-box">
       <h4 class="adv-ledger-box__title">🎯 預算</h4>
-      ${total ? `<div class="adv-ledger-bars">${bar('🎯 這個月總共', 'var(--adv-coral)', total.spent, total.budget)}</div>${forecastNote}` : ''}
+      ${total ? `<div class="adv-ledger-bars">${bar('🎯 總預算', 'var(--adv-coral)', total.spent, total.budget)}</div>${forecastNote}` : ''}
       ${rows.length ? `
         <div class="adv-ledger-bars">${rows.map((r) => bar(`${esc(r.cfg.emoji)} ${esc(r.cfg.label)}`, r.cfg.color, r.spent, r.budget)).join('')}</div>
         <p class="adv-ledger-sub">有設預算的分類合計 ${money(catSpent)}／${money(catBudget)}</p>` : ''}
@@ -1317,6 +1318,26 @@ function reviewHTML(
     <div class="adv-ledger-review">${parts.join('')}</div>
     ${actionsHTML(true)}
   `;
+}
+
+/**
+ * 回顧桌面兩欄：照順序把每張卡放進目前比較矮的那一欄（瀑布流）。
+ * 用 grid 逐列對齊時，短卡（這個月、預算）旁邊是高卡，下方會空一大塊。
+ */
+function packReview(mount: HTMLElement) {
+  const review = mount.querySelector<HTMLElement>('.adv-ledger-review');
+  if (!review || !window.matchMedia('(min-width: 900px)').matches) return;
+  const boxes = [...review.children] as HTMLElement[];
+  const cols = [0, 1].map(() => {
+    const col = document.createElement('div');
+    col.className = 'adv-ledger-review__col';
+    return col;
+  });
+  review.append(...cols);
+  for (const box of boxes) {
+    const [a, b] = cols;
+    (a.offsetHeight <= b.offsetHeight ? a : b).appendChild(box);
+  }
 }
 
 /** 📄 存 PDF：把回顧複製到 body 最外層，列印時只印這一塊（list.css `#adv-ledger-print`，固定淺色），印完拿掉 */
