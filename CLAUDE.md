@@ -226,7 +226,7 @@ deploy.bat                    # 便利包裝：git add → commit → push（最
 - **流水搜尋**（`searchQuery` 模組變數）：跨所有月份，比對備註、分類、地點、旅行、誰付、付款方式；純數字詞比金額（台幣或原幣）要**完全相等**，`1,280` 不會找到 128；空白分開＝AND。打字只重畫 `[data-ledger-results]`，輸入框不失焦；最多列 200 筆
 - **流水只展開最近 `LIST_OPEN_DAYS`（7）個有記帳的日子**，較早的每天收成一行 `<details>`（日期・筆數・小計）；手動點開的日子記在模組變數 `unfoldedDays`，改完帳重畫仍保持展開。一天超過 `BUSY_DAY_ROWS`（6）筆（旅行日）由 `dayRowsHTML` 改成分類小計＋金額最大的 6 筆，其餘收進「其餘 N 筆」（展開狀態記成 `more:日期`），流水與月曆共用。跨月搜尋結果不收合也不摘要
 - **📅 月曆**（`ledger.ts` `calendarHTML`）：每格是當天支出、底部珊瑚色條（滿格＝有花錢日子平均的兩倍；**不要改回以最多那天為基準**，一晚住宿會把其他天全壓成最短）、📍＝那天去了哪（地點 `visit_date` 等於那天，或當天記帳連到的 `place_id`）、✈️＝當天有帳連到旅行。點某天列出那天的地點與流水（手機在月曆下方、桌面 ≥900px 在右欄），「＋ 記這天的帳」預帶日期；點開的日子存在模組變數 `calendarDay`
-- **📊 回顧**全在前端由流水算出（`ledger.ts`）：分類組成條＋橫條、🔮 本月預估（`forecastMonth`：已花＋剩餘天數 × 每天速度，速度＝本月與前 3 個月平常花費依已過天數加權，**大額不拿來推速度**；月底餘額只扣公帳付的花費速度、不猜還沒記的入金）、📈 每月花費長條圖（近 12 個月，可切分類，點長條跳月）、🐷 餘額折線、⬇️ CSV（本月／全部，含 BOM 給 Excel，文字欄開頭 `=+-@` 加 `'`）、📄 存 PDF（`printReview` 把 `.adv-ledger-review` 複製到 body 最外層 `#adv-ledger-print`，`html.adv-printing` 時列印只留這塊，token 跟 `.adv-tripmap` 同一組固定淺色，`afterprint` 拿掉）。圖是手刻 SVG，文字與線條用 CSS class 吃 `--adv-*`，沒有圖表套件
+- **📊 回顧**全在前端由流水算出（`ledger.ts`）：分類組成條＋橫條、🔮 本月預估（`forecastMonth`：已花＋剩餘天數 × 每天速度，速度＝本月與前 3 個月平常花費依已過天數加權，**大額不拿來推速度**；月底餘額只扣公帳付的花費速度、不猜還沒記的入金）、📈 每月花費長條圖（近 12 個月，可切分類，點長條跳月）、🐷 餘額折線、⬇️ CSV（本月／全部，含 BOM 給 Excel，文字欄開頭 `=+-@` 加 `'`）、📄 存 PDF（`printReview` 把 `.adv-ledger-review` 複製到 body 最外層 `#adv-ledger-print`，`html.adv-printing` 時列印只留這塊，token 跟 `.adv-tripmap` 同一組固定淺色，`afterprint` 拿掉）。圖是手刻 SVG，文字與線條用 CSS class 吃 `--adv-*`，沒有圖表套件。桌面兩欄由 `ledger.ts` `packReview` 排成瀑布流（每張卡放進較矮那欄的 `.adv-ledger-review__col`），**不要改回 grid 逐列對齊**：短卡（這個月、預算）旁邊是高卡時下方會空一大塊
 - 大額門檻 `data.ts` `LEDGER_BIG_EXPENSE`（3,000）：流水左邊珊瑚色條＋「🔺 大額」，回顧另列合計
 - 寫入走 RPC：`dating_map_save_expense`（`saveExpense`，`p_id` 為 `null` 時新增）、`dating_map_delete_expense`、`dating_map_set_expense_checked`（一次多筆）。`fetchLedger` 會分頁讀完，一個月約百筆，幾年就超過 PostgREST 單次 1000 筆上限
 - **流水多選刪除**：流水最下方「☑️ 一次選幾筆刪除」切到 `pickHTML`（重用核對的 `checklistHTML`，action `delete`），模式存在 `ledger.ts` 模組變數 `picking`，換月／換畫面／刪完會關掉。刪除是 `index.ts` `deleteExpenses` 逐筆呼叫 `dating_map_delete_expense`（沒有批次 RPC），每筆都進改帳紀錄、可各自復原
@@ -419,7 +419,7 @@ pipe 左右必須有空格，separator 使用 `---`：
 - **SQL 寫入新資料列不要指定 `id`**：`id` 是 `GENERATED ALWAYS` identity；曾因手動指定 id 匯入導致序列落後 200 號、前端提案撞 PK。若又不同步，用 `select setval(pg_get_serial_sequence('<表>','id'), (select max(id) from <表>))` 校正
 - **匯入地點不要用舊分類 key**：`outdoor`、`indoor`、`night_market`、`park`、`temple`、`oldshop`、`shopping`、`hiking`、`daytrip`、`indoor_sport` 已廢除，寫入後篩選列會直接顯示英文 key。匯入後用 `select category, count(*) from dating_map_places group by 1` 確認只剩上表的合法值
 - **Google Maps 短網址**：`maps.app.goo.gl` 轉址後的 `q=` 參數帶完整地址（如「永康街6巷5號」），取出地址查門牌比直接解析座標可靠
-- **不知道密碼也能測 UI**：Playwright 用 `add_init_script` 預設 localStorage `dating_map_passphrase`（順便設 `dating_map_identity`、`adv-intro-dismissed`），再 `page.route('**/rest/v1/**')` 回假資料（`rpc/dating_map_check_passphrase` 回 `true`，各表回 JSON 陣列），`**/realtime/**` 直接 abort；用 `uv run --with playwright python -I` 跑獨立腳本
+- **不知道密碼也能測 UI**：Playwright 用 `add_init_script` 預設 localStorage `dating_map_passphrase`（順便設 `dating_map_identity`、`adv-intro-dismissed`），再 `page.route('**/rest/v1/**')` 回假資料（`rpc/dating_map_check_passphrase` 回 `true`，各表回 JSON 陣列），`**/realtime/**` 直接 abort；用 `uv run --with playwright python -I` 跑獨立腳本。桌面寬切公帳點 `[data-desk-target="ledger"]`，`[data-mode-target]` 是手機底部列，桌面上隱藏、點不到
 
 ---
 
