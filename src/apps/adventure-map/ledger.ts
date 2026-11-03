@@ -1195,6 +1195,36 @@ function downloadCSV(list: LedgerEntry[], filename: string, placeById: Map<numbe
   showToast(`已下載 ${list.length} 筆`);
 }
 
+/** 🍰 分類圓餅（甜甜圈，中間是本月總額）；退款這種負數不畫，下方橫條當圖例 */
+function donutHTML(categories: { key: string; amount: number }[], total: number): string {
+  const positive = categories.filter((c) => c.amount > 0);
+  const posTotal = positive.reduce((s, c) => s + c.amount, 0);
+  if (!posTotal) return '';
+  const R = 80;
+  const r = 46;
+  const pt = (rad: number, a: number) => `${(rad * Math.sin(a)).toFixed(2)} ${(-rad * Math.cos(a)).toFixed(2)}`;
+  let start = 0;
+  const slices = positive.map((c) => {
+    const cfg = ledgerCategory(c.key);
+    const share = c.amount / posTotal;
+    const end = start + share * Math.PI * 2;
+    const large = end - start > Math.PI ? 1 : 0;
+    const shape = share >= 0.9999
+      ? `<path d="M0 ${-R}A${R} ${R} 0 1 1 0 ${R}A${R} ${R} 0 1 1 0 ${-R}ZM0 ${-r}A${r} ${r} 0 1 0 0 ${r}A${r} ${r} 0 1 0 0 ${-r}Z" fill-rule="evenodd"/>`
+      : `<path d="M${pt(R, start)}A${R} ${R} 0 ${large} 1 ${pt(R, end)}L${pt(r, end)}A${r} ${r} 0 ${large} 0 ${pt(r, start)}Z"/>`;
+    const mid = (start + end) / 2;
+    const label = share >= 0.08 ? `<text x="${(((R + r) / 2) * Math.sin(mid)).toFixed(1)}" y="${(-((R + r) / 2) * Math.cos(mid)).toFixed(1)}">${cfg.emoji}</text>` : '';
+    start = end;
+    return `<g style="--cat-color:${cfg.color}"><title>${esc(cfg.label)} ${Math.round(share * 100)}%・${money(c.amount)}</title>${shape}${label}</g>`;
+  }).join('');
+  return `
+    <svg class="adv-ledger-donut" viewBox="-86 -86 172 172" role="img" aria-label="各分類佔比">
+      ${slices}
+      <text class="adv-ledger-donut__total" y="-2">${money(total)}</text>
+      <text class="adv-ledger-donut__sub" y="16">本月花費</text>
+    </svg>`;
+}
+
 function reviewHTML(
   entries: LedgerEntry[],
   month: string,
@@ -1227,15 +1257,8 @@ function reviewHTML(
   let chartsAt = parts.length;
 
   if (d.categories.length) {
-    // 整條的組成比例（像攤平的圓餅），退款這種負數不畫
-    const positive = d.categories.filter((c) => c.amount > 0);
-    const posTotal = positive.reduce((s, c) => s + c.amount, 0);
-    const stack = posTotal ? `<div class="adv-ledger-stack" role="img" aria-label="各分類佔比">${positive.map((c) => {
-      const cfg = ledgerCategory(c.key);
-      const share = (c.amount / posTotal) * 100;
-      return `<span style="--cat-color:${cfg.color};flex-basis:${share}%" title="${esc(cfg.label)} ${Math.round(share)}%">${share >= 12 ? cfg.emoji : ''}</span>`;
-    }).join('')}</div>` : '';
     chartsAt++;
+    const stack = donutHTML(d.categories, d.total);
     parts.push(box('🍰 花在哪裡', `${stack}<div class="adv-ledger-bars">${d.categories.map((c) => {
       const cfg = ledgerCategory(c.key);
       const share = d.total ? Math.round((c.amount / d.total) * 100) : 0;

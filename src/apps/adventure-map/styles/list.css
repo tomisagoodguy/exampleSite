@@ -2855,26 +2855,39 @@ button.adv-ach-place small {
   box-shadow: inset 4px 0 0 var(--adv-coral-deep);
 }
 
-/* 分類組成：一條攤平的圓餅 */
-.adv-ledger-stack {
-  display: flex;
-  height: 22px;
-  margin-bottom: 12px;
-  border: 2px solid var(--adv-ink);
-  border-radius: 999px;
-  overflow: hidden;
+/* 分類組成：甜甜圈圓餅，墨線框、平塗色，文字吃 token */
+.adv-ledger-donut {
+  display: block;
+  width: min(100%, 200px);
+  height: auto;
+  margin: 0 auto 14px;
+  overflow: visible;
 }
 
-.adv-ledger-stack span {
-  display: grid;
-  place-items: center;
-  min-width: 0;
-  font-size: 0.72rem;
-  background: color-mix(in srgb, var(--cat-color), var(--adv-ink) var(--adv-cat-lift));
+.adv-ledger-donut path {
+  fill: color-mix(in srgb, var(--cat-color), var(--adv-ink) var(--adv-cat-lift));
+  stroke: var(--adv-ink);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
 }
 
-.adv-ledger-stack span + span {
-  border-left: 2px solid var(--adv-ink);
+.adv-ledger-donut text {
+  font-family: var(--adv-font);
+  font-size: 14px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+.adv-ledger-donut .adv-ledger-donut__total {
+  fill: var(--adv-ink);
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-ledger-donut .adv-ledger-donut__sub {
+  fill: var(--adv-muted);
+  font-size: 9px;
 }
 
 /* 趨勢圖：SVG 文字與線條都吃 token，夜晚自動換色 */
