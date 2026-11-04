@@ -33,6 +33,13 @@
 - [x] 6.8 依「帳本直接用完整網頁，LINE 身分換取網頁密碼」實作 Requirement: Ledger book opens from LINE without the passphrase：`/liff` 新增 `session`，表單頁處理 `view=book`，網頁支援 `?tab=ledger`，選單圖片改成帳本。驗證：deno 腳本測白名單外 403 且不含密碼；Playwright 用假 `liff` 測跳轉與 localStorage，hugo 本機測 `?tab=ledger` 開公帳、沒帶參數維持原分頁，390px 與桌面 [after: 6.7]
 - [x] 6.9 擴充 Requirement: Member can query month spending and balance：`餘額` 同時回本月總額與分類小計，`這個月` 維持原樣。驗證：deno 腳本攔截 LINE 回覆、讀真實資料，核對餘額與各分類金額跟 SQL 相同 [after: 6.8]
 
+## 7. 表單入金
+
+- [x] 7.1 依「表單入金只記自己的」用 migration 新增 `dating_map_line_save_deposit`，滿足 Requirement: Form records the member's own deposit 的資料層：同一 `p_message_id` 呼叫兩次只產生一筆，列的 `kind`、`method`、`category`、`paid_by` 符合規格，再用 `dating_map_line_undo` 能刪除。驗證：以 `.env` 的密碼呼叫真實 RPC 跑上述步驟，再用 SQL 清掉測試留下的改帳紀錄與 `dating_map_line_saves` 列，並用 `get_advisors` 確認只有與 `dating_map_line_save_expense` 相同的 anon 可執行警告
+- [x] 7.2 依「表單入金只記自己的」在 `/liff` 新增 `deposit` 動作，實作 Requirement: Form records the member's own deposit 的後端：驗身分、檢查金額、日期、備註與 `liff:` id，寫入後回摘要。驗證：deno 測試腳本攔截 LINE verify 與 RPC，測白名單外 403、不合法金額與日期 400、`p_actor` 是驗證後的姓名而不是請求內容，並確認摘要送回 `parseText` 得到 null；deno check 通過 [after: 7.1]
+- [x] 7.3 依「表單入金只記自己的」在 `static/adventure-map/line-ledger/index.html` 加入 💸 支出／💰 入金切換，實作 Requirement: Form records the member's own deposit 的畫面：入金藏起分類、飲料與付款方式，送出條件只看金額與日期，支出與入金各用一個 `liff:` id。驗證：Playwright 假 `liff` 物件與 `/liff` 回應，測 390px 與桌面 ≥900px、白天與夜晚截圖，以及送出內容、兩種類 id 不同、失敗重送沿用同一 id、支出流程不受影響 [after: 7.2]
+- [ ] 7.4 部署函式、push 表單頁後，在手機 LINE 記一筆測試入金，再傳 `餘額` 與 `復原`。驗證：SQL 核對 `kind`、`method`、`paid_by` 與餘額變化，測試帳由 `復原` 清掉 [after: 7.3]
+
 ## 5. 文件
 
-- [ ] 5.1 更新 CLAUDE.md 公帳段落：LINE 記帳指令、函式位置、secrets、換密碼要同步、餘額規則有兩份要一起改。驗證：內容審閱，並確認 repo 內沒有任何 token（Grep `LINE_CHANNEL` 只出現變數名稱） [after: 4.2, 6.5, 6.6, 6.7, 6.8, 6.9]
+- [ ] 5.1 更新 CLAUDE.md 公帳段落：LINE 記帳指令、表單入金、函式位置、secrets、換密碼要同步、餘額規則有兩份要一起改。驗證：內容審閱，並確認 repo 內沒有任何 token（Grep `LINE_CHANNEL` 只出現變數名稱） [after: 4.2, 6.5, 6.6, 6.7, 6.8, 6.9, 7.4]

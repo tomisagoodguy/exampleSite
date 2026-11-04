@@ -418,6 +418,14 @@ function isValidDate(date: unknown): date is string {
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().startsWith(date);
 }
 
+function isValidRequestId(id: unknown): id is string {
+  return typeof id === 'string' && /^liff:[\w-]{8,64}$/.test(id);
+}
+
+function isValidAmount(amount: unknown): amount is number {
+  return typeof amount === 'number' && Number.isInteger(amount) && amount >= 1 && amount <= AMOUNT_MAX;
+}
+
 interface FormRequest {
   action?: string;
   idToken?: string;
@@ -438,13 +446,9 @@ async function saveFromForm(db: SupabaseClient, actor: string, form: FormRequest
   const picked = visible.find((c) => c.key === category);
 
   if (
-    typeof requestId !== 'string' ||
-    !/^liff:[\w-]{8,64}$/.test(requestId) ||
+    !isValidRequestId(requestId) ||
     !isValidDate(date) ||
-    typeof amount !== 'number' ||
-    !Number.isInteger(amount) ||
-    amount < 1 ||
-    amount > AMOUNT_MAX ||
+    !isValidAmount(amount) ||
     !key ||
     !picked ||
     typeof isDrink !== 'boolean' ||
@@ -465,6 +469,37 @@ async function saveFromForm(db: SupabaseClient, actor: string, form: FormRequest
     drink: isDrink,
   });
   return formResponse(result);
+}
+
+/** 入金只記本人：actor 來自驗過的 ID token，不看請求內容 */
+async function saveDepositFromForm(db: SupabaseClient, actor: string, form: FormRequest): Promise<Response> {
+  const { requestId, date, amount } = form;
+  const note = typeof form.note === 'string' ? form.note.trim() : '';
+
+  if (
+    !isValidRequestId(requestId) ||
+    !isValidDate(date) ||
+    !isValidAmount(amount) ||
+    Array.from(note).length > NOTE_MAX
+  ) {
+    return formResponse({ error: 'invalid' }, 400);
+  }
+
+  const { data, error } = await db.rpc('dating_map_line_save_deposit', {
+    p_passphrase: passphrase(),
+    p_message_id: requestId,
+    p_spent_on: date,
+    p_amount: amount,
+    p_actor: actor,
+    p_note: note,
+  });
+  if (error) throw error;
+
+  const created = (data as { created: boolean }[])[0]?.created ?? false;
+  return formResponse({
+    created,
+    summary: `✅ ${note || '入金'} ${money(amount)}\n💰 入金・${actor}・${shortDate(date)}`,
+  });
 }
 
 /** 記帳表單的 API：身分靠 LIFF ID token，頁面不經手網頁密碼 */
@@ -497,6 +532,7 @@ async function handleForm(req: Request): Promise<Response> {
 
     const db = dbFor(actor);
     if (form.action === 'save') return await saveFromForm(db, actor, form);
+    if (form.action === 'deposit') return await saveDepositFromForm(db, actor, form);
 
     const categories = (await fetchCategories(db))
       .filter((c) => !c.hidden)

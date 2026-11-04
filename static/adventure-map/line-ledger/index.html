@@ -130,6 +130,9 @@
 
   <form id="form" hidden>
     <section>
+      <div class="chips" id="kinds" role="radiogroup" aria-label="種類"></div>
+    </section>
+    <section>
       <label class="label" for="amount">金額</label>
       <div class="amount">
         <input id="amount" type="text" inputmode="numeric" autocomplete="off" placeholder="0">
@@ -137,12 +140,12 @@
       </div>
       <p id="total"></p>
     </section>
-    <section>
+    <section class="only-expense">
       <span class="label" id="category-label">分類</span>
       <div class="chips" id="categories" role="radiogroup" aria-labelledby="category-label"></div>
       <label class="drink"><input id="drink" type="checkbox"> 🧋 寶寶的飲料</label>
     </section>
-    <section>
+    <section class="only-expense">
       <span class="label" id="method-label">付款方式</span>
       <div class="chips" id="methods" role="radiogroup" aria-labelledby="method-label"></div>
     </section>
@@ -168,6 +171,11 @@
   const LIFF_ID = '2012359811-nXRL8yx1';
   const API_URL = 'https://zvomerdcsxvuymnpuvxk.supabase.co/functions/v1/line-webhook/liff';
   const AMOUNT_MAX = 9999999;
+  const KINDS = [
+    { key: 'expense', label: '💸 支出' },
+    { key: 'deposit', label: '💰 入金' },
+  ];
+  const NOTE_HINT = { expense: '例如：午餐', deposit: '例如：這個月存的' };
   const METHODS = [
     { key: 'card', label: '💳 公帳卡' },
     { key: 'account', label: '🏦 公帳帳戶' },
@@ -175,7 +183,7 @@
   ];
 
   const $ = (id) => document.getElementById(id);
-  const state = { category: null, method: null, idToken: '', requestId: '', saving: false, drinkTouched: false };
+  const state = { kind: 'expense', name: '', category: null, method: null, idToken: '', requestIds: {}, saving: false, drinkTouched: false };
 
   function setStatus(text, kind) {
     const el = $('status');
@@ -185,6 +193,11 @@
 
   function newRequestId() {
     return `liff:${crypto.randomUUID()}`;
+  }
+
+  /** 支出與入金各用一個 id：存好才換新，失敗重送不會多記，也不會被另一種擋下 */
+  function renewRequestId(kind) {
+    state.requestIds[kind] = newRequestId();
   }
 
   function todayInTaipei() {
@@ -203,7 +216,12 @@
     const amount = amountValue();
     const text = $('amount').value;
     $('total').textContent = amount !== null && text.includes('+') ? `合計 $${amount.toLocaleString('en-US')}` : '';
-    $('submit').disabled = state.saving || amount === null || !state.category || !state.method || !$('date').value;
+    const isDeposit = state.kind === 'deposit';
+    for (const section of document.querySelectorAll('.only-expense')) section.hidden = isDeposit;
+    $('payer').textContent = `${state.name} ${isDeposit ? '入金' : '付的'}`;
+    $('note').placeholder = NOTE_HINT[state.kind];
+    const chosen = isDeposit || (state.category && state.method);
+    $('submit').disabled = state.saving || amount === null || !chosen || !$('date').value;
   }
 
   function renderChoices(mount, options, field) {
@@ -212,7 +230,7 @@
       chip.type = 'button';
       chip.className = 'chip';
       chip.setAttribute('role', 'radio');
-      chip.setAttribute('aria-checked', 'false');
+      chip.setAttribute('aria-checked', String(state[field] === option.key));
       chip.textContent = option.label;
       chip.addEventListener('click', () => {
         state[field] = option.key;
@@ -239,11 +257,11 @@
     state.category = null;
     state.method = null;
     state.drinkTouched = false;
-    state.requestId = newRequestId();
+    renewRequestId(state.kind);
     $('drink').checked = false;
     $('amount').value = '';
     $('note').value = '';
-    for (const chip of document.querySelectorAll('.chip')) chip.setAttribute('aria-checked', 'false');
+    for (const chip of document.querySelectorAll('.only-expense .chip')) chip.setAttribute('aria-checked', 'false');
     refresh();
   }
 
@@ -272,17 +290,12 @@
     refresh();
     setStatus('記帳中…');
     try {
-      const { status, data } = await api({
-        action: 'save',
-        requestId: state.requestId,
-        date: $('date').value,
-        amount,
-        category: state.category,
-        method: state.method,
-        note: $('note').value,
-        isDrink: $('drink').checked,
-      });
-      if (status !== 200) throw new Error(`status ${status}`);
+      const entry = { requestId: state.requestIds[state.kind], date: $('date').value, amount, note: $('note').value };
+      const { status, data } = await api(state.kind === 'deposit'
+        ? { action: 'deposit', ...entry }
+        : { action: 'save', ...entry, category: state.category, method: state.method, isDrink: $('drink').checked });
+      // 沒有摘要代表函式沒有處理這個動作（例如還是舊版），不能當成已記下
+      if (status !== 200 || !data.summary) throw new Error(`status ${status}`);
       await finish(data.summary);
     } catch (err) {
       console.error('記帳失敗', err);
@@ -324,7 +337,7 @@
       await openBook();
       return;
     }
-    state.requestId = newRequestId();
+    KINDS.forEach(({ key }) => renewRequestId(key));
 
     const { status, data } = await api({ action: 'init' });
     if (status === 403) {
@@ -333,8 +346,9 @@
     }
     if (status !== 200) throw new Error(`status ${status}`);
 
-    $('payer').textContent = `${data.name} 付的`;
+    state.name = data.name;
     $('date').value = todayInTaipei();
+    renderChoices($('kinds'), KINDS, 'kind');
     renderChoices($('categories'), data.categories.map((c) => ({ key: c.key, label: `${c.emoji} ${c.label}` })), 'category');
     renderChoices($('methods'), METHODS, 'method');
 

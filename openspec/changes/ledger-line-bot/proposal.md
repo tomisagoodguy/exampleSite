@@ -10,6 +10,7 @@
 - 記帳者自動帶入為 `paid_by`，改帳紀錄也記到本人；選 `cafe` 時比照網頁標記 🧋 飲料
 - 新增文字指令：查本月花費、查公帳餘額、復原自己剛用 LINE 記的那筆
 - 新增 LINE 內記帳表單（LIFF）：群組公告或 bot 的按鈕一點就開，日期、分類、付款方式都用點的，不用輸入網頁密碼，送出後摘要發到聊天室
+- LINE 內記帳表單可切換「💰 入金」，只記自己的入金，填金額、日期與備註即可，不用另外開網頁；退款與對帳調整仍留在網頁
 - 與 bot 的私訊底部放固定的圖文選單：記一筆、這個月、餘額、復原，不用打字
 - 新增資料表與 RPC，防止重複點選或 LINE 重送造成同一筆記兩次
 
@@ -26,7 +27,7 @@
 ## Impact
 
 - 新增程式：supabase/functions/line-webhook/、static/adventure-map/line-ledger/
-- 新增資料表 `dating_map_line_saves`、RPC `dating_map_line_save_expense`、`dating_map_line_undo`（Supabase migration，不含 DROP）
+- 新增資料表 `dating_map_line_saves`、RPC `dating_map_line_save_expense`、`dating_map_line_save_deposit`、`dating_map_line_undo`（Supabase migration，不含 DROP）
 - 新增 Edge Function secrets：`LINE_CHANNEL_SECRET`、`LINE_CHANNEL_ACCESS_TOKEN`、`LINE_USER_MAP`、`DATING_MAP_PASSPHRASE`、`LINE_SETUP_MODE`、`LINE_LOGIN_CHANNEL_ID`、`LINE_LIFF_ID`；換網頁密碼時 `DATING_MAP_PASSPHRASE` 要同步更新
 - 外部服務：新的 LINE 官方帳號與 LINE Login channel／LIFF app（由使用者建立並設定）
 - 文件：CLAUDE.md 公帳段落

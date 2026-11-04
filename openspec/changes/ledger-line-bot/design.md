@@ -15,7 +15,8 @@
 **Non-Goals:**
 
 - 不接 Gemini 或其他 AI 解析；之後要接時只換文字解析這一層
-- 不支援入金、調整、退款、外幣、連結地點或旅行、核對信用卡帳單，這些留在網頁
+- 不支援調整、退款、外幣、連結地點或旅行、核對信用卡帳單，這些留在網頁
+- 入金只走 LINE 表單，不支援打字記入金：`入金 5000` 仍照一般文字解析成支出草稿，不點選單就不會寫入
 - 不改網頁主站的記帳表單
 - 私訊記帳不通知對方，不用推播
 - 不做替對方記帳：`paid_by` 一律是傳訊者，要改就到網頁
@@ -94,6 +95,18 @@ postback 也帶原傳訊者姓名，點的人不是本人就忽略，避免對�
 
 `cafe` 分類裡有甜點，一律標飲料會讓蛋糕佔掉一週 2 次的額度，所以表單放勾選，行為跟網頁相同。`dating_map_line_save_expense` 新增 9 參數 overload 多帶 `p_is_drink`，8 參數版不動，打字記帳照舊依分類判斷，也不需要含 DROP 的 SQL。
 
+### 表單入金只記自己的
+
+Supersedes：Non-Goals 原本的「不支援入金」。實際使用時兩人在手機記一筆找不到入金，要改開網頁才記得到，所以把入金加進 LIFF 表單；調整與退款不常用，仍留在網頁。
+
+表單頂端切換 💸 支出／💰 入金，切到入金時藏起分類、飲料與付款方式，只留金額、日期、備註。`paid_by` 一律是 LINE 登入的本人，不做替對方入金。
+
+新增 RPC `dating_map_line_save_deposit`，防重方式同 `dating_map_line_save_expense`，內部呼叫 16 參數的 `dating_map_save_expense`，固定 `kind = 'deposit'`、`method = 'account'`、`category = null`，與網頁入金寫入相同。另開一支而不是放寬既有 RPC，打字記帳的路徑才不用動。備註空白時存 null，與網頁相同，流水會顯示「阿康 入金」。
+
+復原與餘額不用改：`dating_map_line_undo` 依 `dating_map_line_saves` 找帳，`dating_map_delete_expense` 不分種類；函式內的 `potEffect` 已把入金算進餘額。
+
+支出與入金各用一個 `liff:` id，存好後才換新。共用一個 id 時，支出存好但回應遺失，改記入金會被當成重複送出，畫面顯示成功卻沒有寫入；切換就換新 id 則會讓來回切換後的重送多記一筆。
+
 ### 金額欄用數字鍵盤加＋按鈕
 
 手機數字鍵盤打不出 `+`，所以表單另放＋按鈕，並即時顯示合計。送出的是算好的整數，函式再檢查一次範圍。
@@ -132,6 +145,11 @@ dating_map_line_undo(p_passphrase text, p_actor text)
   returns table(status text, note text, amount integer)
 dating_map_line_undo(p_passphrase text, p_actor text, p_message_id text)  -- 同上，只看指定訊息
   -- status: 'deleted' | 'checked' | 'none'
+
+dating_map_line_save_deposit(p_passphrase text, p_message_id text, p_spent_on date,
+  p_amount integer, p_actor text, p_note text)
+  returns table(entry_id bigint, created boolean)
+  -- kind = 'deposit'、method = 'account'、category = null、paid_by、created_by = p_actor
 ```
 
 postback `data`：`{"s":"cat"|"pay"|"no"|"undo","m":"<訊息 id>","w":"<姓名>","a":120,"n":"午餐","d":"2026-11-04","c":"food","p":"card"}`，其中 `c`、`p` 在選定前省略，`no` 只需要 `s`、`w`，`undo` 只需要 `s`、`m`、`w`。
@@ -146,6 +164,9 @@ POST {"action":"init","idToken":"..."}
 POST {"action":"save","idToken":"...","requestId":"liff:<uuid>","date":"2026-11-04","amount":120,"category":"food","method":"card","note":"","isDrink":false}
 → {"created":true,"summary":"✅ 吃飯 $120
 🍜 吃飯・公帳卡・阿康・11/4"}
+POST {"action":"deposit","idToken":"...","requestId":"liff:<uuid>","date":"2026-11-04","amount":5000,"note":""}
+→ {"created":true,"summary":"✅ 入金 $5,000
+💰 入金・阿康・11/4"}
 ```
 
 **失敗處理：**

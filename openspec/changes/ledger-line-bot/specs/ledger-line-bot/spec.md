@@ -259,6 +259,35 @@ The form SHALL offer the date defaulting to today in Asia/Taipei, an amount fiel
 - **WHEN** the database rejects the save
 - **THEN** the form shows that nothing was recorded and keeps the entered values
 
+### Requirement: Form records the member's own deposit
+
+The form SHALL offer a choice between 支出 and 入金, defaulting to 支出. Choosing 入金 SHALL hide the category, drink, and payment fields and SHALL enable submit once the amount and date are valid. A saved deposit SHALL have kind `deposit`, method `account`, no category, `is_drink` false, `checked` false, and `paid_by` and `created_by` equal to the member verified by LINE login; the form SHALL NOT let a member record a deposit for the other member. An empty note SHALL be stored as null, as on the website. The amount and date rules, the status 400 rejections for them, and the 60-character note limit SHALL match Requirement: Form records an expense by tapping. Each form session SHALL send one generated `liff:` id per kind, so a repeated submit creates no second row and switching kinds never reuses the id of the other kind. A deposit saved from the form SHALL be undone by the text `復原` under the same rules as Requirement: Member can undo their latest LINE expense, and SHALL count in `餘額` as defined in Requirement: Member can query month spending and balance. The posted summary SHALL follow Requirement: Form result is visible in the chat.
+
+#### Scenario: Submit a deposit
+
+- **WHEN** 小黃 switches to 入金, enters 5000, and submits
+- **THEN** one row exists with kind `deposit`, amount 5000, method `account`, no category, paid_by 小黃, and the form shows success
+
+#### Scenario: Deposit needs no category
+
+- **WHEN** a member switches to 入金 and enters a valid amount without choosing a category or payment method
+- **THEN** submit is enabled
+
+#### Scenario: Double submit a deposit
+
+- **WHEN** the same form session submits the same deposit twice
+- **THEN** exactly one ledger row exists
+
+#### Scenario: Balance rises after a deposit
+
+- **WHEN** a member records a 5000 deposit dated today and sends `餘額`
+- **THEN** the balance is 5000 higher and the month spending total is unchanged
+
+#### Scenario: Undo a deposit
+
+- **WHEN** 阿康 records a deposit from the form and then sends `復原`
+- **THEN** the deposit row is deleted and the website's change history shows the deletion by 阿康
+
 ### Requirement: Form marks drinks like the website
 
 The form SHALL show a 🧋 寶寶的飲料 checkbox. Choosing the category `cafe` SHALL check it and choosing any other category SHALL clear it, until the member changes the checkbox by hand; after that the category SHALL no longer change it for this entry. The saved `is_drink` SHALL equal the checkbox. The function SHALL reject a save whose drink value is not a boolean with status 400.
