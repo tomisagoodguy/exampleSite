@@ -31,7 +31,7 @@
 - [ ] 6.6 依「固定入口用私訊的圖文選單」實作 Requirement: Rich menu gives a permanent entry：使用者在 LINE Official Account Manager 上傳選單圖片並設定四個區塊。驗證：手機開與 bot 的私訊，看得到選單，點記一筆開表單，點餘額有回覆 [after: 6.4]
 - [x] 6.7 依「表單的飲料勾選比照網頁」實作 Requirement: Form marks drinks like the website：新增 9 參數 RPC，表單加勾選，`/liff` 檢查並傳遞。驗證：SQL 在交易內測 `cafe` 配 false 與 `food` 配 true 後回滾；deno 腳本攔截 RPC 確認 `p_is_drink` 與非布林回 400；Playwright 測勾選連動與手動後不再跟分類 [after: 6.3]
 - [x] 6.8 依「帳本直接用完整網頁，LINE 身分換取網頁密碼」實作 Requirement: Ledger book opens from LINE without the passphrase：`/liff` 新增 `session`，表單頁處理 `view=book`，網頁支援 `?tab=ledger`，選單圖片改成帳本。驗證：deno 腳本測白名單外 403 且不含密碼；Playwright 用假 `liff` 測跳轉與 localStorage，hugo 本機測 `?tab=ledger` 開公帳、沒帶參數維持原分頁，390px 與桌面 [after: 6.7]
-- [ ] 6.9 擴充 Requirement: Member can query month spending and balance：`餘額` 同時回本月總額與分類小計，`這個月` 維持原樣。驗證：deno 腳本攔截 LINE 回覆、讀真實資料，核對餘額與各分類金額跟 SQL 相同 [after: 6.8]
+- [x] 6.9 擴充 Requirement: Member can query month spending and balance：`餘額` 同時回本月總額與分類小計，`這個月` 維持原樣。驗證：deno 腳本攔截 LINE 回覆、讀真實資料，核對餘額與各分類金額跟 SQL 相同 [after: 6.8]
 
 ## 5. 文件
 
