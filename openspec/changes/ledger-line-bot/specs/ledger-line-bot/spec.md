@@ -143,12 +143,17 @@ The text `復原` SHALL delete the sender's most recent expense saved from LINE 
 
 ### Requirement: Member can query month spending and balance
 
-The text `這個月` SHALL be answered with the current Asia/Taipei month's expense total, counting negative refunds, and a per-category breakdown. The text `餘額` SHALL be answered with the shared balance through today, computed as on the website: deposits plus adjustments minus expenses, excluding `method = 'own'` expenses that are not `checked`. The totals SHALL read every ledger row across pages rather than stopping at the 1,000-row PostgREST limit.
+The text `這個月` SHALL be answered with the current Asia/Taipei month's expense total, counting negative refunds, and a per-category breakdown. The text `餘額` SHALL be answered with the shared balance through today, computed as on the website: deposits plus adjustments minus expenses, excluding `method = 'own'` expenses that are not `checked`, followed by the same month total and per-category breakdown as `這個月`. The totals SHALL read every ledger row across pages rather than stopping at the 1,000-row PostgREST limit.
 
 #### Scenario: Balance matches website
 
 - **WHEN** a member sends `餘額`
 - **THEN** the number equals the balance shown on the ledger page the same day
+
+#### Scenario: Balance shows where the money went
+
+- **WHEN** a member sends `餘額` in a month with spending in 住宿 and 吃飯
+- **THEN** the reply shows the balance, then the month total, then each category with its amount, largest first
 
 #### Scenario: Self-paid excluded
 

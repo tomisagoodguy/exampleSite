@@ -284,14 +284,8 @@ function potEffect(row: LedgerRow): number {
   return row.method === 'own' && !row.checked ? 0 : -row.amount;
 }
 
-async function replyBalance(db: SupabaseClient, replyToken: string, today: string): Promise<void> {
-  const rows = await fetchLedger(db);
-  const balance = rows.filter((r) => r.spent_on <= today).reduce((sum, r) => sum + potEffect(r), 0);
-  await reply(replyToken, `🐷 公帳餘額 ${money(balance)}`);
-}
-
-async function replyMonth(db: SupabaseClient, replyToken: string, today: string): Promise<void> {
-  const [rows, categories] = await Promise.all([fetchLedger(db), fetchCategories(db)]);
+/** 本月總額與分類小計，金額大的在前 */
+function monthSummary(rows: LedgerRow[], categories: Category[], today: string): string {
   const month = today.slice(0, 7);
   const spent = rows.filter((r) => r.kind === 'expense' && r.spent_on.startsWith(month));
 
@@ -308,7 +302,18 @@ async function replyMonth(db: SupabaseClient, replyToken: string, today: string)
       return `${category ? `${category.emoji} ${category.label}` : key} ${money(amount)}`;
     });
   const total = spent.reduce((sum, r) => sum + r.amount, 0);
-  await reply(replyToken, [`📅 ${Number(month.slice(5))} 月花了 ${money(total)}`, ...lines].join('\n'));
+  return [`📅 ${Number(month.slice(5))} 月花了 ${money(total)}`, ...lines].join('\n');
+}
+
+async function replyBalance(db: SupabaseClient, replyToken: string, today: string): Promise<void> {
+  const [rows, categories] = await Promise.all([fetchLedger(db), fetchCategories(db)]);
+  const balance = rows.filter((r) => r.spent_on <= today).reduce((sum, r) => sum + potEffect(r), 0);
+  await reply(replyToken, `🐷 公帳餘額 ${money(balance)}\n\n${monthSummary(rows, categories, today)}`);
+}
+
+async function replyMonth(db: SupabaseClient, replyToken: string, today: string): Promise<void> {
+  const [rows, categories] = await Promise.all([fetchLedger(db), fetchCategories(db)]);
+  await reply(replyToken, monthSummary(rows, categories, today));
 }
 
 async function onText(
