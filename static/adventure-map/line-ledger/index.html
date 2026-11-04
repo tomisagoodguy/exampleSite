@@ -293,6 +293,26 @@
     }
   }
 
+  /** 網址帶 view=book 時開帳本；LIFF 第一次轉址時參數還包在 liff.state 裡 */
+  function wantsBook() {
+    const query = new URLSearchParams(location.search);
+    return (query.get('view') ?? new URLSearchParams(query.get('liff.state') ?? '').get('view')) === 'book';
+  }
+
+  /** 帳本就是完整網頁：把密碼與身分寫進同網域的 localStorage，再跳去公帳分頁 */
+  async function openBook() {
+    const { status, data } = await api({ action: 'session' });
+    if (status === 403) {
+      setStatus('這個 LINE 帳號不能看公帳', 'error');
+      return;
+    }
+    if (status !== 200) throw new Error(`status ${status}`);
+    localStorage.setItem('dating_map_passphrase', data.passphrase);
+    localStorage.setItem('dating_map_identity', data.name);
+    localStorage.setItem('adv-intro-dismissed', '1');
+    location.replace('/adventure-map/?tab=ledger');
+  }
+
   async function start() {
     await liff.init({ liffId: LIFF_ID });
     if (!liff.isLoggedIn()) {
@@ -300,6 +320,10 @@
       return;
     }
     state.idToken = liff.getIDToken();
+    if (wantsBook()) {
+      await openBook();
+      return;
+    }
     state.requestId = newRequestId();
 
     const { status, data } = await api({ action: 'init' });

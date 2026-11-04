@@ -396,7 +396,9 @@ class DatingMapApp {
       if (target?.dataset.gotoTab) setActive(target.dataset.gotoTab);
     });
 
-    setActive(this.defaultTab());
+    // LINE 的「帳本」按鈕帶 ?tab=ledger 直接開公帳
+    const openLedger = new URLSearchParams(location.search).get('tab') === 'ledger';
+    setActive(openLedger ? 'ledger' : this.defaultTab());
   }
 
   /** 開場停在第一個有內容的分頁，不要讓第一眼看到空白的「提案中」 */

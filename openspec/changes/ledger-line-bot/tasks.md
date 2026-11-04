@@ -26,11 +26,12 @@
 - [x] 6.1 依「群組入口用公告與回覆按鈕，不用圖文選單」實作 Requirement: Expense form opens from LINE without typing：`記帳` 回表單按鈕，一般回覆附 📝 記一筆，選單回覆不超過 13 顆；同時讓 `parse.ts` 接受 `午餐120`，並移除除錯用的 `console.log`。驗證：擴充 scratchpad 的 deno 測試腳本，檢查 `午餐120`、`餘額` 與 `記帳` 的回覆按鈕，`LINE_LIFF_ID` 未設定時不出現按鈕，deno check 通過
 - [x] 6.2 依「記帳表單用 LIFF 靜態頁，身分由 Edge Function 驗證」在 `line-webhook` 新增 `/liff` 路由，實作 Requirement: Form identifies the member by LINE login 與 Requirement: Form records an expense by tapping 的後端：驗 ID token、限 origin、回分類與姓名、檢查欄位後寫入、回摘要。驗證：deno 測試腳本攔截 LINE verify，測白名單外 403、錯誤 origin 被拒、不合法金額與隱藏分類 400、同一 `liff:` id 只寫一筆，測試資料用 `復原` 刪除 [after: 6.1]
 - [x] 6.3 依「金額欄用數字鍵盤加＋按鈕」與「送出結果用 liff.sendMessages 發到聊天室」新增 `static/adventure-map/line-ledger/index.html`，實作 Requirement: Form records an expense by tapping 的畫面與 Requirement: Form result is visible in the chat：頁面不含機密，顏色用白天與夜晚 token。驗證：Playwright 假 `liff` 物件與 `/liff` 回應，測 390px 與桌面 ≥900px、白天與夜晚截圖，送出按鈕的停用條件、`60+55`、失敗時保留輸入、`sendMessages` 失敗時顯示成功 [after: 6.2]
-- [ ] 6.4 使用者在 provider「破關地圖」建立 LINE Login channel 與 LIFF app（Size Full、Scope `openid` 與 `chat_message.write`、Endpoint 指向表單網址），設定 `LINE_LOGIN_CHANNEL_ID`、`LINE_LIFF_ID`；部署函式並 push 表單頁。驗證：手機 LINE 開 `https://liff.line.me/<LIFF ID>`，表單顯示姓名與分類 [after: 6.3]
+- [x] 6.4 使用者在 provider「破關地圖」建立 LINE Login channel 與 LIFF app（Size Full、Scope `openid` 與 `chat_message.write`、Endpoint 指向表單網址），設定 `LINE_LOGIN_CHANNEL_ID`、`LINE_LIFF_ID`；部署函式並 push 表單頁。驗證：手機 LINE 開 `https://liff.line.me/<LIFF ID>`，表單顯示姓名與分類 [after: 6.3]
 - [ ] 6.5 在真實群組測試：群組公告連結開表單、點選記一筆、摘要發到群組且 bot 不回應、`復原` 刪掉測試帳、小黃加入白名單後也能開表單。驗證：SQL 核對 `paid_by`、`category`、`method`，測試帳清掉 [after: 6.4]
 - [ ] 6.6 依「固定入口用私訊的圖文選單」實作 Requirement: Rich menu gives a permanent entry：使用者在 LINE Official Account Manager 上傳選單圖片並設定四個區塊。驗證：手機開與 bot 的私訊，看得到選單，點記一筆開表單，點餘額有回覆 [after: 6.4]
-- [ ] 6.7 依「表單的飲料勾選比照網頁」實作 Requirement: Form marks drinks like the website：新增 9 參數 RPC，表單加勾選，`/liff` 檢查並傳遞。驗證：SQL 在交易內測 `cafe` 配 false 與 `food` 配 true 後回滾；deno 腳本攔截 RPC 確認 `p_is_drink` 與非布林回 400；Playwright 測勾選連動與手動後不再跟分類 [after: 6.3]
+- [x] 6.7 依「表單的飲料勾選比照網頁」實作 Requirement: Form marks drinks like the website：新增 9 參數 RPC，表單加勾選，`/liff` 檢查並傳遞。驗證：SQL 在交易內測 `cafe` 配 false 與 `food` 配 true 後回滾；deno 腳本攔截 RPC 確認 `p_is_drink` 與非布林回 400；Playwright 測勾選連動與手動後不再跟分類 [after: 6.3]
+- [ ] 6.8 依「帳本直接用完整網頁，LINE 身分換取網頁密碼」實作 Requirement: Ledger book opens from LINE without the passphrase：`/liff` 新增 `session`，表單頁處理 `view=book`，網頁支援 `?tab=ledger`，選單圖片改成帳本。驗證：deno 腳本測白名單外 403 且不含密碼；Playwright 用假 `liff` 測跳轉與 localStorage，hugo 本機測 `?tab=ledger` 開公帳、沒帶參數維持原分頁，390px 與桌面 [after: 6.7]
 
 ## 5. 文件
 
-- [ ] 5.1 更新 CLAUDE.md 公帳段落：LINE 記帳指令、函式位置、secrets、換密碼要同步、餘額規則有兩份要一起改。驗證：內容審閱，並確認 repo 內沒有任何 token（Grep `LINE_CHANNEL` 只出現變數名稱） [after: 4.2, 6.5, 6.6, 6.7]
+- [ ] 5.1 更新 CLAUDE.md 公帳段落：LINE 記帳指令、函式位置、secrets、換密碼要同步、餘額規則有兩份要一起改。驗證：內容審閱，並確認 repo 內沒有任何 token（Grep `LINE_CHANNEL` 只出現變數名稱） [after: 4.2, 6.5, 6.6, 6.7, 6.8]

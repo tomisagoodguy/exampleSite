@@ -72,6 +72,12 @@ postback 也帶原傳訊者姓名，點的人不是本人就忽略，避免對�
 
 私訊看不到對方記了什麼，兩人決定不通知，要看時按「這個月」或看網頁。群組入口的程式保留，不用另外移除。
 
+### 帳本直接用完整網頁，LINE 身分換取網頁密碼
+
+流水、月曆、回顧不在 LINE 重做，直接開現有的公帳分頁，功能與網頁永遠相同。同一個 LIFF 用 `?view=book` 分流，頁面以 ID token 向函式換取網頁密碼，寫入同網域 localStorage 後跳到 `/adventure-map/?tab=ledger`，網頁原本的解鎖流程就會自動通過。
+
+密碼本來就是兩人共用，只交給通過 LINE 驗證與白名單的人，靜態檔不含密碼。替代方案是另做唯讀 API 與畫面，但要維護第二份流水與圖表。選單的「這個月」換成「帳本」，文字指令保留。
+
 ### 記帳表單用 LIFF 靜態頁，身分由 Edge Function 驗證
 
 表單是 `static/adventure-map/line-ledger/index.html`，隨 GitHub Pages 部署，頁面只有公開的 LIFF ID。LIFF 掛在同 provider「破關地圖」的 LINE Login channel，userId 才會與 Messaging API 相同。

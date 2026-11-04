@@ -180,7 +180,7 @@ When the secret `LINE_LIFF_ID` is set, every bot reply to a whitelisted member S
 
 ### Requirement: Rich menu gives a permanent entry
 
-The one-on-one chat with the bot SHALL show a rich menu with four areas: 記一筆 opening `https://liff.line.me/<LINE_LIFF_ID>`, and 這個月, 餘額, 復原 each sending that exact text. Recording from this chat SHALL NOT notify the other member and SHALL NOT use push messages.
+The one-on-one chat with the bot SHALL show a rich menu with four areas: 記一筆 opening `https://liff.line.me/<LINE_LIFF_ID>`, 帳本 opening the same link with `?view=book`, and 餘額, 復原 each sending that exact text. Recording from this chat SHALL NOT notify the other member and SHALL NOT use push messages.
 
 #### Scenario: Record without typing
 
@@ -196,6 +196,25 @@ The one-on-one chat with the bot SHALL show a rich menu with four areas: 記一�
 
 - **WHEN** 阿康 records an expense from the one-on-one chat
 - **THEN** 小黃 receives no LINE message about it
+
+### Requirement: Ledger book opens from LINE without the passphrase
+
+Opening the form link with `view=book` SHALL verify the member as in Requirement: Form identifies the member by LINE login, receive the website passphrase and member name from the function, store them in localStorage under `dating_map_passphrase` and `dating_map_identity`, and go to `/adventure-map/?tab=ledger`. The passphrase SHALL be returned only to a whitelisted member and SHALL NOT appear in any static file. The website SHALL open the 公帳 tab when the URL has `tab=ledger` and SHALL keep its usual opening tab otherwise.
+
+#### Scenario: Open the ledger book
+
+- **WHEN** 小黃 taps 帳本 on the rich menu
+- **THEN** the 公帳 page opens inside LINE with 流水, 月曆 and 回顧, without asking for a password
+
+#### Scenario: Stranger opens the book link
+
+- **WHEN** a LINE user outside `LINE_USER_MAP` opens the book link
+- **THEN** the function responds 403, no passphrase is returned, and the page says this account cannot view the ledger
+
+#### Scenario: Website without the parameter
+
+- **WHEN** someone opens `/adventure-map/` without `tab=ledger`
+- **THEN** the opening tab is chosen as before
 
 ### Requirement: Form identifies the member by LINE login
 

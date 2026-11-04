@@ -487,6 +487,9 @@ async function handleForm(req: Request): Promise<Response> {
     const actor = userId && Object.hasOwn(users, userId) ? users[userId] : undefined;
     if (!actor) return formResponse({ error: 'forbidden' }, 403);
 
+    // 帳本用完整網頁：驗過身分才交出網頁密碼，由 LINE 內的瀏覽器存進 localStorage
+    if (form.action === 'session') return formResponse({ name: actor, passphrase: passphrase() });
+
     const db = dbFor(actor);
     if (form.action === 'save') return await saveFromForm(db, actor, form);
 
