@@ -5,6 +5,7 @@ import {
   LEDGER_CATEGORY,
   LEDGER_CURRENCY,
   LEDGER_METHOD,
+  LEDGER_DRINK_WEEKLY_LIMIT,
   LEDGER_MONTHLY_BUDGET,
   LEDGER_SHOW_SPECIAL,
   LedgerCategory,
@@ -245,7 +246,8 @@ export function renderLedger(
   // 搜尋時改列所有月份的結果，打字時只重畫 [data-ledger-results]，輸入框不會失去焦點
   const listBody = () => searchQuery.trim()
     ? searchHTML(entries, searchQuery, placeById, tripBySlug)
-    : (isFuture ? '' : budgetRemindHTML(entries, month)) + listHTML(monthEntries, placeById, tripBySlug);
+    : (month === currentMonth() ? drinkStripHTML(entries) : '')
+      + (isFuture ? '' : budgetRemindHTML(entries, month)) + listHTML(monthEntries, placeById, tripBySlug);
 
   const body = view === 'check'
     ? checkHTML(unchecked, monthEntries.filter((e) => e.kind === 'expense' && e.method === 'card' && e.checked), entries)
@@ -447,6 +449,7 @@ function metaParts(e: LedgerEntry, placeById: Map<number, PlaceEntry>, tripBySlu
   const trip = e.trip_slug ? tripBySlug.get(e.trip_slug) : undefined;
   if (trip) parts.push(`✈️ ${esc(trip.title)}`);
   if (LEDGER_SHOW_SPECIAL && e.is_special) parts.push('✨ 特別的日子');
+  if (e.is_drink) parts.push('🧋 寶寶的飲料');
   if (isBig(e)) parts.push('🔺 大額');
   if (e.kind === 'expense' && e.checked) parts.push(e.method === 'own' ? '✓ 已轉回' : '✓ 已核對');
   return parts;
@@ -741,6 +744,124 @@ function budgetRemindHTML(entries: LedgerEntry[], month: string): string {
   ];
   if (!spans.length) return '';
   return `<div class="adv-ledger-remind adv-ledger-remind--budget">${spans.join('')}</div>`;
+}
+
+/** 這天所在那週的週一；用本地日期算，toISOString 是 UTC 會差一天 */
+function weekStart(day: string): string {
+  const d = new Date(`${day}T00:00:00`);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return localDate(d);
+}
+
+function addDays(day: string, n: number): string {
+  const d = new Date(`${day}T00:00:00`);
+  d.setDate(d.getDate() + n);
+  return localDate(d);
+}
+
+/** 退款是負數，不算喝了一次 */
+const isDrink = (e: LedgerEntry) => e.kind === 'expense' && e.is_drink && e.amount >= 0;
+
+/** 最近幾週（舊到新，最後一格是這週）的次數；跨全部流水算，跨月的週不會被切斷 */
+function drinkWeeks(entries: LedgerEntry[], today: string, weeks: number): { start: string; count: number }[] {
+  const counts = new Map<string, number>();
+  for (const e of entries) {
+    if (!isDrink(e)) continue;
+    const start = weekStart(e.spent_on);
+    counts.set(start, (counts.get(start) || 0) + 1);
+  }
+  const thisWeek = weekStart(today);
+  return Array.from({ length: weeks }, (_, i) => {
+    const start = addDays(thisWeek, (i - weeks + 1) * 7);
+    return { start, count: counts.get(start) || 0 };
+  });
+}
+
+const CUP_SVG = `<svg viewBox="0 0 24 32" aria-hidden="true"><path class="adv-drink-cup__straw" d="M14 9 16 2h4" /><path class="adv-drink-cup__body" d="M4 9h16l-2 20a2 2 0 0 1-2 1.8H8A2 2 0 0 1 6 29Z" /><path class="adv-drink-cup__lid" d="M2.5 9h19" /></svg>`;
+
+/** 上限內實心、沒用到的是虛線空杯、超過的用珊瑚色 */
+function drinkCupsHTML(count: number): string {
+  const total = Math.max(LEDGER_DRINK_WEEKLY_LIMIT, count);
+  const cups = Array.from({ length: total }, (_, i) => {
+    const state = i >= count ? 'is-empty' : i >= LEDGER_DRINK_WEEKLY_LIMIT ? 'is-over' : 'is-full';
+    return `<span class="adv-drink-cup ${state}">${CUP_SVG}</span>`;
+  }).join('');
+  return `<span class="adv-drink-cups" role="img" aria-label="本週喝了 ${count} 次，上限 ${LEDGER_DRINK_WEEKLY_LIMIT} 次">${cups}</span>`;
+}
+
+function daysBetween(from: string, to: string): number {
+  return Math.round((new Date(`${to}T00:00:00`).getTime() - new Date(`${from}T00:00:00`).getTime()) / 86400000);
+}
+
+/** 距離上次喝幾天；未來日期不算，從沒標記過就不顯示 */
+function drinkFreeText(entries: LedgerEntry[], today: string): string {
+  const last = entries.filter((e) => isDrink(e) && e.spent_on <= today).map((e) => e.spent_on).sort().pop();
+  if (!last) return '';
+  const days = daysBetween(last, today);
+  return days ? `🌱 已經 <b>${days}</b> 天沒喝` : '今天喝過';
+}
+
+function drinkWeekRowHTML(entries: LedgerEntry[]): string {
+  const today = localDate();
+  const count = drinkWeeks(entries, today, 1)[0].count;
+  const free = drinkFreeText(entries, today);
+  return `
+    <div class="adv-drink-row">
+      ${drinkCupsHTML(count)}
+      <span class="adv-drink-row__text">
+        <span class="adv-drink-row__count">🧋 本週 <b>${count}</b>／${LEDGER_DRINK_WEEKLY_LIMIT}</span>
+        ${free ? `<span class="adv-drink-row__free">${free}</span>` : ''}
+      </span>
+    </div>`;
+}
+
+/** 流水頂端的本週進度 */
+function drinkStripHTML(entries: LedgerEntry[]): string {
+  return `<div class="adv-drink-strip">${drinkWeekRowHTML(entries)}</div>`;
+}
+
+const DRINK_WEEKS = 8;
+
+/** 回顧卡片：本週杯子、最近 8 週長條與上限線、這個月次數與花費 */
+function drinkBoxHTML(entries: LedgerEntry[], month: string): string {
+  const today = localDate();
+  const weeks = drinkWeeks(entries, today, DRINK_WEEKS);
+  const limit = LEDGER_DRINK_WEEKLY_LIMIT;
+  const max = Math.max(limit + 1, ...weeks.map((w) => w.count));
+  const plotH = CHART_H - CHART_TOP - CHART_BOTTOM;
+  const y = (v: number) => CHART_TOP + (1 - v / max) * plotH;
+  const base = CHART_TOP + plotH;
+  const slot = CHART_W / weeks.length;
+  const barW = Math.min(28, slot * 0.62);
+
+  const cols = weeks.map((w, i) => {
+    const x = slot * i + (slot - barW) / 2;
+    const over = w.count > limit;
+    const label = `${Number(w.start.slice(5, 7))}/${Number(w.start.slice(8))}`;
+    return `
+      <g class="adv-drink-chart__col ${over ? 'is-over' : ''} ${i === weeks.length - 1 ? 'is-current' : ''}">
+        <title>${label} 那週：${w.count} 次</title>
+        ${w.count ? `<rect class="adv-drink-chart__bar" x="${x}" y="${y(w.count)}" width="${barW}" height="${base - y(w.count)}" rx="4" />` : ''}
+        <text x="${x + barW / 2}" y="${y(w.count) - 4}" text-anchor="middle">${w.count}</text>
+        <text class="adv-trend__month" x="${x + barW / 2}" y="${CHART_H - 4}" text-anchor="middle">${label}</text>
+      </g>`;
+  }).join('');
+
+  const kept = weeks.filter((w) => w.count <= limit).length;
+  const monthDrinks = expensesIn(entries, month).filter(isDrink);
+
+  return `
+    <section class="adv-ledger-box adv-drink-box">
+      <h4 class="adv-ledger-box__title">🧋 寶寶的飲料</h4>
+      ${drinkWeekRowHTML(entries)}
+      <svg class="adv-trend adv-drink-chart" viewBox="0 0 ${CHART_W} ${CHART_H}" role="img" aria-label="最近 ${weeks.length} 週每週喝飲料次數長條圖，上限 ${limit} 次">
+        <line class="adv-trend__axis" x1="0" x2="${CHART_W}" y1="${base}" y2="${base}" />
+        <line class="adv-drink-chart__limit" x1="0" x2="${CHART_W}" y1="${y(limit)}" y2="${y(limit)}" />
+        ${cols}
+      </svg>
+      <p class="adv-ledger-sub">最近 ${weeks.length} 週守住 <b>${kept}</b> 週・虛線是一週 ${limit} 次</p>
+      <p class="adv-ledger-sub">${monthLabel(month)}喝了 <b>${monthDrinks.length}</b> 次・花 <b>${money(sum(monthDrinks))}</b></p>
+    </section>`;
 }
 
 /** 回顧的預算進度：最上面是每月總預算，下面是各分類；本月多畫一條「照天數該用到哪」的刻度，並算剩下每天能花多少 */
@@ -1239,7 +1360,7 @@ function reviewHTML(
 ): string {
   const d = reviewData(entries, month, placeById, tripBySlug);
   const forecast = forecastMonth(entries, month);
-  const charts = entries.length ? trendBoxHTML(entries, month, forecast) + balanceBoxHTML(entries, month, forecast) : '';
+  const charts = entries.length ? drinkBoxHTML(entries, month) + trendBoxHTML(entries, month, forecast) + balanceBoxHTML(entries, month, forecast) : '';
   if (!d.count && !d.deposited) {
     return `<p class="adv-empty">這個月還沒有紀錄，回顧會在記帳後出現</p>${charts ? `<div class="adv-ledger-review">${charts}</div>${actionsHTML(false)}` : ''}`;
   }
@@ -1467,6 +1588,7 @@ const HISTORY_FIELDS: [keyof LedgerEntry, string][] = [
   ['place_id', '地點'],
   ['trip_slug', '旅行'],
   ['is_special', '特別的日子'],
+  ['is_drink', '寶寶的飲料'],
 ];
 
 interface HistoryContext {
@@ -1484,7 +1606,8 @@ function fieldText(key: keyof LedgerEntry, v: unknown, ctx: HistoryContext): str
     case 'method': return LEDGER_METHOD[v as LedgerMethod] || String(v);
     case 'place_id': return ctx.placeById.get(Number(v))?.name || '已刪除的地點';
     case 'trip_slug': return ctx.tripBySlug.get(String(v))?.title || String(v);
-    case 'is_special': return v ? '是' : '否';
+    case 'is_special':
+    case 'is_drink': return v ? '是' : '否';
     default: return String(v);
   }
 }
@@ -1616,6 +1739,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
               <span aria-hidden="true">${esc(cfg.emoji)}</span>${esc(cfg.label)}
             </button>`).join('')}
         </div>
+        <label class="adv-ledger-special adv-lf-drink"><input type="checkbox" id="adv-lf-drink" ${base.is_drink ? 'checked' : ''} /> 🧋 寶寶的飲料</label>
       </div>
       <div class="adv-lf-pair">
         <div>
@@ -1683,6 +1807,16 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
     const amountEl = $<HTMLInputElement>('#adv-lf-amount');
     const signBtn = $<HTMLButtonElement>('#adv-lf-sign');
     const refundEl = $<HTMLInputElement>('#adv-lf-refund');
+    const drinkEl = $<HTMLInputElement>('#adv-lf-drink');
+    // 飲料幾乎都是寶寶喝的：新增時跟著分類預設，手動動過就不再改
+    let drinkTouched = !!opts.existing;
+    const syncDrink = () => {
+      if (!drinkTouched) drinkEl.checked = category === 'cafe';
+    };
+    drinkEl.addEventListener('change', () => {
+      drinkTouched = true;
+    });
+    syncDrink();
     const dateEl = $<HTMLInputElement>('#adv-lf-date');
     const noteEl = $<HTMLInputElement>('#adv-lf-note');
     const tripEl = $<HTMLSelectElement>('#adv-lf-trip');
@@ -1805,6 +1939,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       if (!category && kind === 'expense') {
         category = placeCategory(id);
         setActive('.adv-ledger-cats', 'data-cat', category);
+        syncDrink();
       }
     };
 
@@ -1828,6 +1963,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
       } else if (btn.dataset.cat) {
         category = btn.dataset.cat;
         setActive('.adv-ledger-cats', 'data-cat', category);
+        syncDrink();
       } else if (btn.dataset.who) {
         paidBy = btn.dataset.who as Identity;
         setActive('#adv-lf-who', 'data-who', paidBy);
@@ -1867,6 +2003,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
         placeId = e.place_id;
         setActive('.adv-ledger-cats', 'data-cat', category);
         setActive('#adv-lf-method', 'data-method', method);
+        syncDrink();
         renderPicked();
         clearError();
         // 帶入後通常只差改金額：選起來，直接打新數字或按 Enter
@@ -1951,6 +2088,7 @@ export function openExpenseModal(opts: ExpenseModalOptions): Promise<ExpenseModa
           trip_slug: expense ? tripEl.value || null : null,
           // 欄位藏起來時保留原值，之後打開 ✨ 不會把舊資料洗掉
           is_special: !expense ? false : LEDGER_SHOW_SPECIAL ? $<HTMLInputElement>('#adv-lf-special').checked : base.is_special ?? false,
+          is_drink: expense && drinkEl.checked,
           orig_amount: origAmount,
           orig_currency: isFx ? currency : null,
         },

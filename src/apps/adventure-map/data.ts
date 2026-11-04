@@ -277,6 +277,9 @@ export const LEDGER_MONTHLY_BUDGET: number | null = 20000;
 /** 公帳卡每月結帳日（1–31，大於當月天數就算月底）：「✅ 核對」依這天把刷卡分成一期一期，對著每期帳單勾 */
 export const LEDGER_CARD_CLOSING_DAY = 15;
 
+/** 🧋 寶寶一週喝幾次飲料以內（週一到週日） */
+export const LEDGER_DRINK_WEEKLY_LIMIT = 2;
+
 export function filterPlaces(
   places: PlaceEntry[],
   category: string,

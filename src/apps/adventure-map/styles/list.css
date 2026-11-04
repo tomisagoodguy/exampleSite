@@ -3641,3 +3641,99 @@ button.adv-ach-place small {
 .adv-ledger-bar--over .adv-ledger-bar__note {
   color: var(--adv-danger);
 }
+
+/* 🧋 寶寶的飲料：杯子進度與每週長條 */
+.adv-drink-strip {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border: 2px solid var(--adv-ink);
+  border-radius: 16px;
+  background: var(--adv-water-l);
+}
+
+.adv-drink-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.adv-drink-cups {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.adv-drink-cup {
+  display: block;
+  width: 30px;
+  height: 40px;
+}
+
+.adv-drink-cup svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.adv-drink-cup path {
+  fill: none;
+  stroke: var(--adv-ink);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.adv-drink-cup.is-full .adv-drink-cup__body {
+  fill: var(--adv-yellow);
+}
+
+.adv-drink-cup.is-over .adv-drink-cup__body {
+  fill: var(--adv-coral);
+}
+
+.adv-drink-cup.is-empty path {
+  stroke: var(--adv-muted);
+  stroke-dasharray: 3 3;
+}
+
+.adv-drink-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.adv-drink-row__count {
+  font-size: 1.05rem;
+}
+
+.adv-drink-row__free {
+  font-size: 0.85rem;
+  color: var(--adv-green);
+}
+
+.adv-drink-chart__bar {
+  fill: var(--adv-yellow);
+  stroke: var(--adv-ink);
+  stroke-width: 1.5;
+}
+
+.adv-drink-chart__col.is-over .adv-drink-chart__bar {
+  fill: var(--adv-coral);
+}
+
+.adv-drink-chart__col text {
+  fill: var(--adv-ink);
+  font-size: 11px;
+}
+
+.adv-drink-chart__limit {
+  stroke: var(--adv-ink);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+.adv-lf-drink {
+  margin-top: 8px;
+}

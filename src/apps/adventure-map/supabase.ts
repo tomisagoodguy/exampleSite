@@ -484,6 +484,8 @@ export interface LedgerEntry {
   place_id: number | null;
   trip_slug: string | null;
   is_special: boolean;
+  /** 🧋 寶寶的飲料，一筆算一次 */
+  is_drink: boolean;
   /** 已跟信用卡帳單核對；改了日期、金額或付款方式會自動變回 false */
   checked: boolean;
   created_by: string | null;
@@ -537,6 +539,7 @@ export async function saveExpense(
     p_created_by: createdBy,
     p_orig_amount: input.orig_amount,
     p_orig_currency: input.orig_currency,
+    p_is_drink: input.is_drink,
   });
 
   if (error) throw error;
