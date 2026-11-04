@@ -92,6 +92,8 @@
     color: var(--adv-on-flat);
     box-shadow: 0 3px 0 var(--adv-drop);
   }
+  .drink { display: flex; align-items: center; gap: 10px; min-height: 48px; margin-top: 8px; }
+  .drink input { width: 24px; min-height: 24px; height: 24px; accent-color: var(--adv-coral); }
   footer {
     position: fixed;
     inset: auto 0 0;
@@ -138,6 +140,7 @@
     <section>
       <span class="label" id="category-label">分類</span>
       <div class="chips" id="categories" role="radiogroup" aria-labelledby="category-label"></div>
+      <label class="drink"><input id="drink" type="checkbox"> 🧋 寶寶的飲料</label>
     </section>
     <section>
       <span class="label" id="method-label">付款方式</span>
@@ -172,7 +175,7 @@
   ];
 
   const $ = (id) => document.getElementById(id);
-  const state = { category: null, method: null, idToken: '', requestId: '', saving: false };
+  const state = { category: null, method: null, idToken: '', requestId: '', saving: false, drinkTouched: false };
 
   function setStatus(text, kind) {
     const el = $('status');
@@ -213,6 +216,8 @@
       chip.textContent = option.label;
       chip.addEventListener('click', () => {
         state[field] = option.key;
+        // 跟網頁一樣：選飲料甜點自動勾，手動動過就不再跟分類
+        if (field === 'category' && !state.drinkTouched) $('drink').checked = option.key === 'cafe';
         for (const other of mount.children) other.setAttribute('aria-checked', String(other === chip));
         refresh();
       });
@@ -233,7 +238,9 @@
   function resetForm() {
     state.category = null;
     state.method = null;
+    state.drinkTouched = false;
     state.requestId = newRequestId();
+    $('drink').checked = false;
     $('amount').value = '';
     $('note').value = '';
     for (const chip of document.querySelectorAll('.chip')) chip.setAttribute('aria-checked', 'false');
@@ -273,6 +280,7 @@
         category: state.category,
         method: state.method,
         note: $('note').value,
+        isDrink: $('drink').checked,
       });
       if (status !== 200) throw new Error(`status ${status}`);
       await finish(data.summary);
@@ -308,6 +316,7 @@
 
     $('amount').addEventListener('input', refresh);
     $('date').addEventListener('input', refresh);
+    $('drink').addEventListener('change', () => { state.drinkTouched = true; });
     $('plus').addEventListener('click', () => {
       const input = $('amount');
       if (input.value && !input.value.endsWith('+')) input.value += '+';

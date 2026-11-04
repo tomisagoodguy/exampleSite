@@ -16,7 +16,8 @@
 
 - 不接 Gemini 或其他 AI 解析；之後要接時只換文字解析這一層
 - 不支援入金、調整、退款、外幣、連結地點或旅行、核對信用卡帳單，這些留在網頁
-- 不做圖文選單，也不改網頁主站的記帳表單
+- 不改網頁主站的記帳表單
+- 私訊記帳不通知對方，不用推播
 - 不做替對方記帳：`paid_by` 一律是傳訊者，要改就到網頁
 - 不用主動推播，只用 reply，避免消耗訊息額度
 - 不改前端與現有 RPC
@@ -65,6 +66,12 @@ postback 也帶原傳訊者姓名，點的人不是本人就忽略，避免對�
 
 兩人不想在群組打字。圖文選單只在與 bot 的一對一聊天顯示（LINE 文件所載，實作時確認），所以群組用三個入口：群組公告釘 LIFF 連結（使用者手動設定）、bot 每次回覆附「📝 記一筆」、傳 `記帳` 回按鈕。按鈕是 Quick Reply 的 URI action，只在最新一則訊息後出現，所以公告才是常駐入口。
 
+### 固定入口用私訊的圖文選單
+
+群組的三個入口都要先傳訊息或找連結，兩人實際試用後覺得不好用，要的是一直都在的按鈕。所以日常記帳改在與 bot 的私訊：圖文選單放「記一筆」（開 LIFF）與「這個月」「餘額」「復原」（送出同名文字指令），在 LINE Official Account Manager 設定，不寫程式。
+
+私訊看不到對方記了什麼，兩人決定不通知，要看時按「這個月」或看網頁。群組入口的程式保留，不用另外移除。
+
 ### 記帳表單用 LIFF 靜態頁，身分由 Edge Function 驗證
 
 表單是 `static/adventure-map/line-ledger/index.html`，隨 GitHub Pages 部署，頁面只有公開的 LIFF ID。LIFF 掛在同 provider「破關地圖」的 LINE Login channel，userId 才會與 Messaging API 相同。
@@ -76,6 +83,10 @@ postback 也帶原傳訊者姓名，點的人不是本人就忽略，避免對�
 ### 送出結果用 liff.sendMessages 發到聊天室
 
 摘要以本人名義發到開啟表單的聊天室，兩人都看得到，也不用 push。這需要 `chat_message.write` scope；失敗不影響已寫入的帳，只改在表單顯示成功。摘要最後一段是 `吃飯・公帳卡・阿康・11/4`，不是金額，所以 bot 不會當成新的草稿。
+
+### 表單的飲料勾選比照網頁
+
+`cafe` 分類裡有甜點，一律標飲料會讓蛋糕佔掉一週 2 次的額度，所以表單放勾選，行為跟網頁相同。`dating_map_line_save_expense` 新增 9 參數 overload 多帶 `p_is_drink`，8 參數版不動，打字記帳照舊依分類判斷，也不需要含 DROP 的 SQL。
 
 ### 金額欄用數字鍵盤加＋按鈕
 
@@ -126,7 +137,7 @@ postback `data`：`{"s":"cat"|"pay"|"no"|"undo","m":"<訊息 id>","w":"<姓名>"
 ```json
 POST {"action":"init","idToken":"..."}
 → {"name":"阿康","categories":[{"key":"food","label":"吃飯","emoji":"🍜"}]}
-POST {"action":"save","idToken":"...","requestId":"liff:<uuid>","date":"2026-11-04","amount":120,"category":"food","method":"card","note":""}
+POST {"action":"save","idToken":"...","requestId":"liff:<uuid>","date":"2026-11-04","amount":120,"category":"food","method":"card","note":"","isDrink":false}
 → {"created":true,"summary":"✅ 吃飯 $120
 🍜 吃飯・公帳卡・阿康・11/4"}
 ```

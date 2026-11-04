@@ -39,7 +39,8 @@ interface Postback {
 }
 
 type ExpenseStep = Postback & { m: string; a: number; n: string; d: string };
-type CompleteStep = ExpenseStep & { c: string; p: Method };
+/** drink 只有表單會帶；沒帶時由 RPC 依分類判斷 */
+type CompleteStep = ExpenseStep & { c: string; p: Method; drink?: boolean };
 
 interface LedgerRow {
   kind: string;
@@ -229,6 +230,7 @@ async function recordExpense(
     p_method: step.p,
     p_actor: step.w,
     p_note: step.n,
+    ...(step.drink === undefined ? {} : { p_is_drink: step.drink }),
   });
   if (error) throw error;
 
@@ -420,10 +422,11 @@ interface FormRequest {
   category?: unknown;
   method?: unknown;
   note?: unknown;
+  isDrink?: unknown;
 }
 
 async function saveFromForm(db: SupabaseClient, actor: string, form: FormRequest): Promise<Response> {
-  const { requestId, date, amount, category, method } = form;
+  const { requestId, date, amount, category, method, isDrink } = form;
   const note = typeof form.note === 'string' ? form.note.trim() : '';
   const key = typeof method === 'string' && Object.hasOwn(METHOD_LABEL, method) ? (method as Method) : null;
   const visible = (await fetchCategories(db)).filter((c) => !c.hidden);
@@ -439,6 +442,7 @@ async function saveFromForm(db: SupabaseClient, actor: string, form: FormRequest
     amount > AMOUNT_MAX ||
     !key ||
     !picked ||
+    typeof isDrink !== 'boolean' ||
     Array.from(note).length > NOTE_MAX
   ) {
     return formResponse({ error: 'invalid' }, 400);
@@ -453,6 +457,7 @@ async function saveFromForm(db: SupabaseClient, actor: string, form: FormRequest
     d: date,
     c: picked.key,
     p: key,
+    drink: isDrink,
   });
   return formResponse(result);
 }

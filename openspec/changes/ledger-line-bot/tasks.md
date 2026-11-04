@@ -28,7 +28,9 @@
 - [x] 6.3 依「金額欄用數字鍵盤加＋按鈕」與「送出結果用 liff.sendMessages 發到聊天室」新增 `static/adventure-map/line-ledger/index.html`，實作 Requirement: Form records an expense by tapping 的畫面與 Requirement: Form result is visible in the chat：頁面不含機密，顏色用白天與夜晚 token。驗證：Playwright 假 `liff` 物件與 `/liff` 回應，測 390px 與桌面 ≥900px、白天與夜晚截圖，送出按鈕的停用條件、`60+55`、失敗時保留輸入、`sendMessages` 失敗時顯示成功 [after: 6.2]
 - [ ] 6.4 使用者在 provider「破關地圖」建立 LINE Login channel 與 LIFF app（Size Full、Scope `openid` 與 `chat_message.write`、Endpoint 指向表單網址），設定 `LINE_LOGIN_CHANNEL_ID`、`LINE_LIFF_ID`；部署函式並 push 表單頁。驗證：手機 LINE 開 `https://liff.line.me/<LIFF ID>`，表單顯示姓名與分類 [after: 6.3]
 - [ ] 6.5 在真實群組測試：群組公告連結開表單、點選記一筆、摘要發到群組且 bot 不回應、`復原` 刪掉測試帳、小黃加入白名單後也能開表單。驗證：SQL 核對 `paid_by`、`category`、`method`，測試帳清掉 [after: 6.4]
+- [ ] 6.6 依「固定入口用私訊的圖文選單」實作 Requirement: Rich menu gives a permanent entry：使用者在 LINE Official Account Manager 上傳選單圖片並設定四個區塊。驗證：手機開與 bot 的私訊，看得到選單，點記一筆開表單，點餘額有回覆 [after: 6.4]
+- [ ] 6.7 依「表單的飲料勾選比照網頁」實作 Requirement: Form marks drinks like the website：新增 9 參數 RPC，表單加勾選，`/liff` 檢查並傳遞。驗證：SQL 在交易內測 `cafe` 配 false 與 `food` 配 true 後回滾；deno 腳本攔截 RPC 確認 `p_is_drink` 與非布林回 400；Playwright 測勾選連動與手動後不再跟分類 [after: 6.3]
 
 ## 5. 文件
 
-- [ ] 5.1 更新 CLAUDE.md 公帳段落：LINE 記帳指令、函式位置、secrets、換密碼要同步、餘額規則有兩份要一起改。驗證：內容審閱，並確認 repo 內沒有任何 token（Grep `LINE_CHANNEL` 只出現變數名稱） [after: 4.2, 6.5]
+- [ ] 5.1 更新 CLAUDE.md 公帳段落：LINE 記帳指令、函式位置、secrets、換密碼要同步、餘額規則有兩份要一起改。驗證：內容審閱，並確認 repo 內沒有任何 token（Grep `LINE_CHANNEL` 只出現變數名稱） [after: 4.2, 6.5, 6.6, 6.7]

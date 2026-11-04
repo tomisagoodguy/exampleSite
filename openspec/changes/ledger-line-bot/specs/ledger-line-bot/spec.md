@@ -96,11 +96,11 @@ An expense draft SHALL be answered with quick reply buttons listing the rows of 
 
 ### Requirement: Saved expense behaves like a website expense
 
-A row saved from LINE SHALL have kind `expense`, `is_drink` true exactly when the category is `cafe`, and `checked` false. The change history SHALL attribute LINE actions to the member by sending the `x-dating-map-who` header. Saving SHALL go through `dating_map_save_expense` so the existing validation and sync trigger apply.
+A row saved from LINE SHALL have kind `expense` and `checked` false. A row saved from a text message SHALL have `is_drink` true exactly when the category is `cafe`; a row saved from the form SHALL use the form's drink checkbox. The change history SHALL attribute LINE actions to the member by sending the `x-dating-map-who` header. Saving SHALL go through `dating_map_save_expense` so the existing validation and sync trigger apply.
 
 #### Scenario: Cafe expense
 
-- **WHEN** a member completes `手搖 60` with category `cafe`
+- **WHEN** a member completes the text `手搖 60` with category `cafe`
 - **THEN** the row has `is_drink = true` and the website's drink count includes it
 
 #### Scenario: Open website updates
@@ -178,6 +178,25 @@ When the secret `LINE_LIFF_ID` is set, every bot reply to a whitelisted member S
 - **WHEN** a member sends `餘額`
 - **THEN** the balance reply also has the 📝 記一筆 button
 
+### Requirement: Rich menu gives a permanent entry
+
+The one-on-one chat with the bot SHALL show a rich menu with four areas: 記一筆 opening `https://liff.line.me/<LINE_LIFF_ID>`, and 這個月, 餘額, 復原 each sending that exact text. Recording from this chat SHALL NOT notify the other member and SHALL NOT use push messages.
+
+#### Scenario: Record without typing
+
+- **WHEN** a member opens the chat with the bot and taps 記一筆
+- **THEN** the expense form opens without sending any message first
+
+#### Scenario: Query without typing
+
+- **WHEN** a member taps 餘額 on the rich menu
+- **THEN** the bot replies with the shared balance
+
+#### Scenario: Other member not notified
+
+- **WHEN** 阿康 records an expense from the one-on-one chat
+- **THEN** 小黃 receives no LINE message about it
+
 ### Requirement: Form identifies the member by LINE login
 
 The form SHALL send the LIFF ID token to the `line-webhook` function, which SHALL verify it with the LINE verify endpoint against `LINE_LOGIN_CHANNEL_ID` and map its `sub` through `LINE_USER_MAP`. An invalid token or a user outside the map SHALL receive status 403, SHALL cause no write, and the form SHALL show that this account cannot record. The form SHALL NOT ask for the website passphrase and the page SHALL contain no secret. Form requests SHALL be accepted only from the origin `https://tomisagoodguy.github.io`.
@@ -215,6 +234,25 @@ The form SHALL offer the date defaulting to today in Asia/Taipei, an amount fiel
 
 - **WHEN** the database rejects the save
 - **THEN** the form shows that nothing was recorded and keeps the entered values
+
+### Requirement: Form marks drinks like the website
+
+The form SHALL show a 🧋 寶寶的飲料 checkbox. Choosing the category `cafe` SHALL check it and choosing any other category SHALL clear it, until the member changes the checkbox by hand; after that the category SHALL no longer change it for this entry. The saved `is_drink` SHALL equal the checkbox. The function SHALL reject a save whose drink value is not a boolean with status 400.
+
+#### Scenario: Drink by default
+
+- **WHEN** a member chooses 飲料甜點 and submits without touching the checkbox
+- **THEN** the row has `is_drink = true`
+
+#### Scenario: Dessert is not a drink
+
+- **WHEN** a member chooses 飲料甜點, unchecks the checkbox, and submits
+- **THEN** the row has category `cafe` and `is_drink = false`, and the weekly drink count does not change
+
+#### Scenario: Drink under another category
+
+- **WHEN** a member checks the box by hand and then chooses 吃飯
+- **THEN** the box stays checked and the row has `is_drink = true`
 
 ### Requirement: Form result is visible in the chat
 
