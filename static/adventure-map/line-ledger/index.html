@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>記一筆｜公帳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&display=swap">
+<style>
+  :root {
+    --adv-paper: #FFFCF6;
+    --adv-card: #FFFFFF;
+    --adv-chip: #F7F0E4;
+    --adv-ink: #3E3A39;
+    --adv-muted: #6E6662;
+    --adv-line: #D9CFC2;
+    --adv-coral: #F2A497;
+    --adv-yellow: #F6D27A;
+    --adv-green: #4E8A3A;
+    --adv-danger: #C0392B;
+    --adv-on-flat: #3E3A39;
+    --adv-drop: #3E3A39;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --adv-paper: #1F2440;
+      --adv-card: #2A3154;
+      --adv-chip: #343C63;
+      --adv-ink: #F3E9D2;
+      --adv-muted: #C2BBD2;
+      --adv-line: #4A5280;
+      --adv-coral: #E58E81;
+      --adv-yellow: #E8C468;
+      --adv-green: #A6D191;
+      --adv-danger: #FF8A7A;
+      --adv-drop: #0E1124;
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { color-scheme: light dark; }
+  body {
+    margin: 0;
+    background: var(--adv-paper);
+    color: var(--adv-ink);
+    font-family: "Huninn", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    font-size: 16px;
+  }
+  main { max-width: 480px; margin: 0 auto; padding: 16px 16px 112px; }
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  h1 { margin: 0; font-size: 22px; font-weight: 400; }
+  #payer { color: var(--adv-muted); font-size: 14px; }
+  section { margin-top: 18px; }
+  .label { display: block; margin-bottom: 8px; color: var(--adv-muted); font-size: 14px; }
+  input {
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 14px;
+    border: 2px solid var(--adv-ink);
+    border-radius: 16px;
+    background: var(--adv-card);
+    color: var(--adv-ink);
+    font: inherit;
+  }
+  .amount { display: flex; gap: 8px; }
+  #amount { flex: 1; min-width: 0; font-size: 28px; }
+  #plus {
+    flex: none;
+    width: 64px;
+    border: 2px solid var(--adv-ink);
+    border-radius: 16px;
+    background: var(--adv-chip);
+    color: var(--adv-ink);
+    font: inherit;
+    font-size: 26px;
+  }
+  #total { min-height: 20px; margin: 6px 2px 0; color: var(--adv-muted); font-size: 14px; }
+  .chips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  #methods { grid-template-columns: repeat(3, 1fr); }
+  .chip {
+    min-height: 48px;
+    padding: 8px 6px;
+    border: 2px solid var(--adv-line);
+    border-radius: 16px;
+    background: var(--adv-card);
+    color: var(--adv-ink);
+    font: inherit;
+  }
+  .chip[aria-checked="true"] {
+    border-color: var(--adv-ink);
+    background: var(--adv-yellow);
+    color: var(--adv-on-flat);
+    box-shadow: 0 3px 0 var(--adv-drop);
+  }
+  footer {
+    position: fixed;
+    inset: auto 0 0;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: var(--adv-paper);
+    border-top: 2px solid var(--adv-line);
+  }
+  #submit {
+    display: block;
+    width: 100%;
+    max-width: 448px;
+    min-height: 54px;
+    margin: 0 auto;
+    border: 3px solid var(--adv-ink);
+    border-radius: 18px;
+    background: var(--adv-coral);
+    color: var(--adv-on-flat);
+    font: inherit;
+    font-size: 18px;
+  }
+  #submit:disabled { background: var(--adv-chip); color: var(--adv-muted); border-color: var(--adv-line); }
+  #status { margin-top: 18px; white-space: pre-line; line-height: 1.6; }
+  #status.is-error { color: var(--adv-danger); }
+  #status.is-ok { color: var(--adv-green); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>📝 記一筆</h1>
+    <span id="payer"></span>
+  </header>
+
+  <form id="form" hidden>
+    <section>
+      <label class="label" for="amount">金額</label>
+      <div class="amount">
+        <input id="amount" type="text" inputmode="numeric" autocomplete="off" placeholder="0">
+        <button id="plus" type="button" aria-label="再加一個金額">＋</button>
+      </div>
+      <p id="total"></p>
+    </section>
+    <section>
+      <span class="label" id="category-label">分類</span>
+      <div class="chips" id="categories" role="radiogroup" aria-labelledby="category-label"></div>
+    </section>
+    <section>
+      <span class="label" id="method-label">付款方式</span>
+      <div class="chips" id="methods" role="radiogroup" aria-labelledby="method-label"></div>
+    </section>
+    <section>
+      <label class="label" for="date">日期</label>
+      <input id="date" type="date">
+    </section>
+    <section>
+      <label class="label" for="note">備註（可不填）</label>
+      <input id="note" type="text" maxlength="60" autocomplete="off" placeholder="例如：午餐">
+    </section>
+  </form>
+
+  <p id="status" role="status">載入中…</p>
+</main>
+
+<footer id="bar" hidden>
+  <button id="submit" type="submit" form="form" disabled>記下來</button>
+</footer>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+  const LIFF_ID = '2012359811-nXRL8yx1';
+  const API_URL = 'https://zvomerdcsxvuymnpuvxk.supabase.co/functions/v1/line-webhook/liff';
+  const AMOUNT_MAX = 9999999;
+  const METHODS = [
+    { key: 'card', label: '💳 公帳卡' },
+    { key: 'account', label: '🏦 公帳帳戶' },
+    { key: 'own', label: '👛 自己付' },
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  const state = { category: null, method: null, idToken: '', requestId: '', saving: false };
+
+  function setStatus(text, kind) {
+    const el = $('status');
+    el.textContent = text;
+    el.className = kind ? `is-${kind}` : '';
+  }
+
+  function newRequestId() {
+    return `liff:${crypto.randomUUID()}`;
+  }
+
+  function todayInTaipei() {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei' }).format(new Date());
+  }
+
+  /** 60+55 → 115；不合法回 null */
+  function amountValue() {
+    const text = $('amount').value.trim();
+    if (!/^\d+(\+\d+)*$/.test(text)) return null;
+    const sum = text.split('+').reduce((total, term) => total + Number(term), 0);
+    return sum >= 1 && sum <= AMOUNT_MAX ? sum : null;
+  }
+
+  function refresh() {
+    const amount = amountValue();
+    const text = $('amount').value;
+    $('total').textContent = amount !== null && text.includes('+') ? `合計 $${amount.toLocaleString('en-US')}` : '';
+    $('submit').disabled = state.saving || amount === null || !state.category || !state.method || !$('date').value;
+  }
+
+  function renderChoices(mount, options, field) {
+    mount.replaceChildren(...options.map((option) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chip';
+      chip.setAttribute('role', 'radio');
+      chip.setAttribute('aria-checked', 'false');
+      chip.textContent = option.label;
+      chip.addEventListener('click', () => {
+        state[field] = option.key;
+        for (const other of mount.children) other.setAttribute('aria-checked', String(other === chip));
+        refresh();
+      });
+      return chip;
+    }));
+  }
+
+  async function api(body) {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...body, idToken: state.idToken }),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { status: res.status, data };
+  }
+
+  function resetForm() {
+    state.category = null;
+    state.method = null;
+    state.requestId = newRequestId();
+    $('amount').value = '';
+    $('note').value = '';
+    for (const chip of document.querySelectorAll('.chip')) chip.setAttribute('aria-checked', 'false');
+    refresh();
+  }
+
+  /** 開在聊天室時把摘要發進去並關閉；發不出去帳也已經存好，改在這裡顯示 */
+  async function finish(summary) {
+    const type = liff.getContext()?.type;
+    if (liff.isInClient() && ['utou', 'group', 'room'].includes(type)) {
+      try {
+        await liff.sendMessages([{ type: 'text', text: summary }]);
+        liff.closeWindow();
+        return;
+      } catch (err) {
+        console.error('sendMessages 失敗', err);
+      }
+    }
+    setStatus(`${summary}\n已記下，可以再記一筆`, 'ok');
+    resetForm();
+  }
+
+  async function submit(event) {
+    event.preventDefault();
+    const amount = amountValue();
+    if (state.saving || amount === null) return;
+
+    state.saving = true;
+    refresh();
+    setStatus('記帳中…');
+    try {
+      const { status, data } = await api({
+        action: 'save',
+        requestId: state.requestId,
+        date: $('date').value,
+        amount,
+        category: state.category,
+        method: state.method,
+        note: $('note').value,
+      });
+      if (status !== 200) throw new Error(`status ${status}`);
+      await finish(data.summary);
+    } catch (err) {
+      console.error('記帳失敗', err);
+      setStatus('沒有記到，內容還在，請再試一次', 'error');
+    } finally {
+      state.saving = false;
+      refresh();
+    }
+  }
+
+  async function start() {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) {
+      liff.login({ redirectUri: location.href });
+      return;
+    }
+    state.idToken = liff.getIDToken();
+    state.requestId = newRequestId();
+
+    const { status, data } = await api({ action: 'init' });
+    if (status === 403) {
+      setStatus('這個 LINE 帳號不能記公帳', 'error');
+      return;
+    }
+    if (status !== 200) throw new Error(`status ${status}`);
+
+    $('payer').textContent = `${data.name} 付的`;
+    $('date').value = todayInTaipei();
+    renderChoices($('categories'), data.categories.map((c) => ({ key: c.key, label: `${c.emoji} ${c.label}` })), 'category');
+    renderChoices($('methods'), METHODS, 'method');
+
+    $('amount').addEventListener('input', refresh);
+    $('date').addEventListener('input', refresh);
+    $('plus').addEventListener('click', () => {
+      const input = $('amount');
+      if (input.value && !input.value.endsWith('+')) input.value += '+';
+      input.focus();
+      refresh();
+    });
+    $('form').addEventListener('submit', submit);
+
+    $('form').hidden = false;
+    $('bar').hidden = false;
+    setStatus('');
+    refresh();
+  }
+
+  start().catch((err) => {
+    console.error('表單載入失敗', err);
+    setStatus('表單打不開，請稍後再試或到網頁記帳', 'error');
+  });
+</script>
+</body>
+</html>
